@@ -21,7 +21,7 @@ public enum Trait implements StringRepresentable {
     EGG_PRODUCTION("egg_production"),
     /** How fast larvae become adults. */
     LARVAE_GROWTH("larvae_growth"),
-    /** Hunts per soldier at Fighting Sites, and fewer casualties. */
+    /** Hunts per soldier at Hunting Chambers, and fewer casualties. */
     SOLDIER_STRENGTH("soldier_strength"),
     /** Food grown per farmer. */
     FARMER_PRODUCTIVITY("farmer_productivity"),

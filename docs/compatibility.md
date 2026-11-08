@@ -20,10 +20,10 @@ when this was written (AE2, Refined Storage 3 and Ender IO had 26.1.2 builds; Cr
 ports). Everything goes through NeoForge's shared systems, which those mods use:
 
 - **Items** (Create funnels, chutes and arms; Mekanism transporters; Ender IO conduits; AE2 and Refined Storage
-  import, export and storage buses; hoppers): Resource Piles can be emptied, Queen Chamber Queens taken out, and the
-  Terrarium, Food Storage, Queen Chamber, Genetic Laboratory and Generator filled, from any side.
-- **Energy** (Mekanism cables, Ender IO conduits, any FE network): the Genetic Laboratory takes FE at its controller and
-  Genetic Energy Core; the Generator gives FE out.
+  import, export and storage buses; hoppers): Storage chambers can be emptied, Queen Chamber Queens taken out, and the
+  Terrarium, Storage, Queen Chamber, Genetic Laboratory and Generator filled, from any side.
+- **Energy** (Mekanism cables, Ender IO conduits, any FE network): the Genetic Laboratory takes FE from any side; the
+  Generator gives FE out.
 - **Tags**: Diamond and Emerald Fragments are in `c:nuggets/diamond` and `c:nuggets/emerald`.
 - **Species for other mods' materials**, which only load when a mod that adds the material is installed, and find it
   through the common `c:` tags (whichever mod provides it):

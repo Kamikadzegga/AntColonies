@@ -4,10 +4,9 @@
   "key": {
     "M": "minecraft:packed_mud",
     "G": "minecraft:gold_ingot",
-    "R": "antcolonies:royal_jelly",
-    "T": "antcolonies:ant_tunnel"
+    "R": "antcolonies:royal_jelly"
   },
-  "pattern": ["MGM", "RTR", "MMM"],
+  "pattern": ["MGM", "RMR", "MMM"],
   "result": {
     "id": "antcolonies:queen_chamber"
   }

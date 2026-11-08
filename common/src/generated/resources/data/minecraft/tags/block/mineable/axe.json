@@ -1,8 +1,7 @@
 {
   "values": [
     "antcolonies:terrarium",
-    "antcolonies:resource_pile",
-    "antcolonies:food_storage",
+    "antcolonies:storage",
     "antcolonies:upgrade_station"
   ]
 }

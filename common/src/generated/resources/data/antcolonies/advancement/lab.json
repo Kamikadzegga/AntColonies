@@ -6,7 +6,7 @@
       "conditions": {
         "items": [
           {
-            "items": "antcolonies:genetic_lab_controller"
+            "items": "antcolonies:genetic_laboratory"
           }
         ]
       }
@@ -14,7 +14,7 @@
   },
   "display": {
     "icon": {
-      "id": "antcolonies:genetic_lab_controller"
+      "id": "antcolonies:genetic_laboratory"
     },
     "title": {
       "translate": "advancements.antcolonies.lab.title"

@@ -62,7 +62,7 @@ public class GeneticLabMenu extends BaseMenu {
     public static GeneticLabMenu fromNetwork(int containerId, Inventory inventory, RegistryFriendlyByteBuf buffer) {
         BlockPos pos = buffer.readBlockPos();
         GeneticLabBlockEntity lab = inventory.player.level().getBlockEntity(pos) instanceof GeneticLabBlockEntity be ? be
-                : new GeneticLabBlockEntity(pos, ModBlocks.GENETIC_LAB_CONTROLLER.get().defaultBlockState());
+                : new GeneticLabBlockEntity(pos, ModBlocks.GENETIC_LAB.get().defaultBlockState());
         return new GeneticLabMenu(containerId, inventory, lab, new SimpleContainerData(GeneticLabBlockEntity.DATA_COUNT));
     }
 

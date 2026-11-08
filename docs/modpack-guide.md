@@ -77,7 +77,7 @@ world is loaded (singleplayer: when you open the world; server: at startup), and
 
 ## 3. Recipes
 
-Every crafted item (Terrarium, structures, upgrades, tools, foods, lab parts) uses ordinary vanilla recipe types
+Every crafted item (Terrarium, chambers, upgrades, tools, foods, the lab) uses ordinary vanilla recipe types
 (`minecraft:crafting_shaped`, `crafting_shapeless`), 72 recipes in all, in `data/antcolonies/recipe/`. Change them like
 any vanilla recipe: replace the file with the same name, or remove and add recipes with KubeJS.
 
@@ -111,7 +111,7 @@ The recipe ids are the file names, e.g. `antcolonies:terrarium`, `antcolonies:sp
 ## 4. Ant food
 
 What colonies can eat, and how much food each item is worth, is the data map `antcolonies:ant_food`. Items that are not
-in it can't be fed to a Terrarium or a Food Storage.
+in it can't be fed to a Terrarium.
 
 File: `data/antcolonies/data_maps/item/ant_food.json`. Data maps from several packs **merge**, so your file adds to and
 overrides single entries of the built-in one; it doesn't have to repeat them.
@@ -187,9 +187,9 @@ required; every other field has a default.
 | `diet.special_food`, `diet.special_per_egg` | none, `0` | Special food the eggs need (section 4). |
 | `production.rate` | `1.0` | Finds per worker multiplier at job sites. |
 | `production.outputs` | none | What workers find (output fields below). |
-| `farming.food`, `farming.harvest` | `0`, none | A `food` above 0 lets the species tend Farmer Ant Gardens: food per minute per farmer, plus `harvest` outputs. |
-| `combat.strength` | `1.0` | Soldier strength at Fighting Sites. |
-| `combat.targets` | zombie, skeleton, spider, creeper, slime | List of `{"entity": "minecraft:blaze", "weight": 10}`. Fighting Sites roll that mob's own loot table (no mob is spawned). |
+| `farming.food`, `farming.harvest` | `0`, none | A `food` above 0 lets the species tend Fungus Gardens: food per minute per farmer, plus `harvest` outputs. |
+| `combat.strength` | `1.0` | Soldier strength in Hunting Chambers. |
+| `combat.targets` | zombie, skeleton, spider, creeper, slime | List of `{"entity": "minecraft:blaze", "weight": 10}`. Hunting Chambers roll that mob's own loot table (no mob is spawned). |
 | `rearing.cost` | none | What a Queen Chamber uses to rear a new Queen of this species. |
 | `rearing.time` | `2400` | Rearing time in ticks (20 ticks = 1 second). |
 | `breeding.eggs`, `breeding.growth` | `1.0` | Egg laying and larvae growth speed. |
@@ -203,7 +203,7 @@ required; every other field has a default.
 | `weight` | `10` | How often it is picked compared to the other outputs. Any positive number: rare finds use small ones (the built-in Diamond Ant's whole diamonds are 3 against 85; a sniffer egg is 0.006). |
 | `min_stage` | `1` | Colony stage (1–4) needed. |
 | `special` | `false` | A rare signature find: Specialization genetics make it more likely, and it always comes as `count` items (Gathering genetics don't multiply it). |
-| `processed` | none | What Processing upgrades and the Resource Processing Chamber turn it into. |
+| `processed` | none | What Processing species upgrades turn it into. |
 | `ratio` | `9` | How many of it make one `processed` item. |
 
 A `tag` output uses the first item in the tag and is skipped while the tag is empty, so materials from other mods only
@@ -299,7 +299,7 @@ parents need an average trait level of at least `min_average_level` (1–10, def
 ## 8. Mutations
 
 File: `data/<ns>/antcolonies/mutation/<id>.json`. A Queen gets a random mutation when she is reared, or a chosen one
-in the lab's Mutation Chamber by feeding its `catalyst`.
+in the Genetic Laboratory by feeding its `catalyst`.
 
 ```json
 {
@@ -316,15 +316,15 @@ in the lab's Mutation Chamber by feeding its `catalyst`.
 |---|---|---|
 | `effects` | required | Multipliers (1 = unchanged): `production`, `gathering`, `food`, `eggs`, `growth`, `soldiers`, `farming`, `special`; and `cold_resistant`, `heat_resistant` (true/false). |
 | `random_weight` | `10` | How often it is rolled at random; `0` = never at random. |
-| `negative` | `false` | A harmful one: the Mutation Chamber can't give it, and the lab's Purge removes it. |
+| `negative` | `false` | A harmful one: the lab can't give it on purpose, and the lab's Purge removes it. |
 | `rare` | `false` | Shown as rare; never rolled at random below Mutation Probability 5. |
-| `catalyst` | none | What the Mutation Chamber needs to give it on purpose. Without one, it is random only. |
+| `catalyst` | none | What the lab needs to give it on purpose. Without one, it is random only. |
 | `categories` | all | Species categories it can appear in. |
 
 The mutation's name in game is `mutation.<ns>.<id>` in the language file.
 
 A Queen carries at most 3 beneficial mutations (`maxBeneficialMutations` in the server config; flaws don't count),
-because their effects multiply. The Mutation Chamber won't add a fourth, and daughters don't inherit or roll more than
+because their effects multiply. The lab won't add a fourth, and daughters don't inherit or roll more than
 the cap. Effects also pass through the production formula's softening (`bonusExponent`), so keep single multipliers
 modest: the built-in ones are 0.8 to 1.5.
 
@@ -357,17 +357,15 @@ rather than adding a second one.
 ## 10. Powering the Genetic Laboratory (FE)
 
 The Genetic Laboratory runs on **Forge Energy (FE)**, the energy most NeoForge tech mods use (often called RF). It holds
-1,000,000 FE and takes up to 4,000 FE per transfer. Energy goes in at the **Genetic Laboratory Controller** or the
-**Genetic Energy Core** (any side). The core passes it to the formed laboratory around it; while the laboratory isn't
-formed, the core takes nothing. The lab never gives energy out.
+1,000,000 FE and takes up to 4,000 FE per transfer. Energy goes in at any side of the lab, which is a single block.
+The lab never gives energy out.
 
 Any mod's cables, batteries or generators can power it. Ant Colonies adds one simple source, the **Generator**:
 
 - It burns anything a furnace burns, for as long as a furnace would (one coal: 1,600 ticks; a lava bucket leaves its
   bucket behind).
 - It makes 40 FE per tick while burning (one coal = 64,000 FE) and stores up to 100,000 FE.
-- Every tick it gives up to 1,000 FE to the blocks next to it that take FE, so put it against the controller or the
-  Genetic Energy Core, or connect it with another mod's cables (they can also pull from it).
+- Every tick it gives up to 1,000 FE to the blocks next to it that take FE, so put it against the lab, or connect it with another mod's cables (they can also pull from it).
 - It only starts a new item when it has room, and pauses when full, so no fuel is wasted. Hoppers can fill it.
 - Recipe: iron ingots around a furnace, copper ingots and redstone underneath (`antcolonies:generator`; change it like
   any recipe, section 3).
@@ -463,7 +461,7 @@ The key is `species.<namespace>.<id>` and `mutation.<namespace>.<id>`, matching 
 `config/antcolonies/server.toml` is created on first launch and synced to players. It holds the numbers that are not
 per species: simulation interval and offline catch-up, capacities, egg and growth times, food use and starvation,
 production rates, upgrade strengths, trait multipliers and starting weights, mutation, evolution and hybrid chance
-multipliers, wild Queen and soldier chances, connector rates, the Generator's output (`[power]`) and the soldiers a Guard Ant
+multipliers, wild Queen and soldier chances, the Generator's output (`[power]`) and the soldiers a Guard Ant
 costs (`[guards] soldierCost`). To make every rare
 find (outputs marked `special`) rarer or more common at once, change `rareFindMultiplier` under `[production]` (default
 1.0; 0.5 halves them, 0 turns them off) instead of editing each species. Every option has a comment in the file. For a modpack,

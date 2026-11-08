@@ -11,9 +11,9 @@ import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.colony.model.StructureKind;
 
 /**
- * Puts the colony's ants to work. Workers kept for maintenance are taken out first; the rest go to Farmer Gardens
- * (food first), then Resource Processing Chambers, then Scavenging Sites, each site in the scan's fixed order taking what
- * it asks for (or all it can hold) up to its capacity. Soldiers go to Fighting Sites the same way.
+ * Puts the colony's ants to work. Workers kept for maintenance are taken out first; the rest go to Fungus Gardens
+ * (food first), then Foraging Chambers, each site in the scan's fixed order taking what
+ * it asks for (or all it can hold) up to its capacity. Soldiers go to Hunting Chambers the same way.
  *
  * <p>An ant is only ever counted once: the totals handed out never exceed the ants available, which
  * {@link #allocate} checks. A structure that is gone, unloaded or disconnected simply isn't in the next step's list, so
@@ -21,10 +21,9 @@ import com.antcolonies.colony.model.StructureKind;
  */
 public final class Allocation {
     /** The order workers are handed out in. */
-    private static final List<StructureKind> WORKER_ORDER = List.of(StructureKind.FARMER_GARDEN, StructureKind.PROCESSING_CHAMBER,
-            StructureKind.SCAVENGING_SITE);
+    private static final List<StructureKind> WORKER_ORDER = List.of(StructureKind.FUNGUS_GARDEN, StructureKind.FORAGING_CHAMBER);
 
-    /** One job site and the ants it got this step. */
+    /** One working chamber and the ants it got this step. */
     public static final class Site {
         private final StructureBlockEntity entity;
         private final int assigned;
@@ -66,7 +65,7 @@ public final class Allocation {
         }
     }
 
-    /** A job site with a redstone signal on it is paused: its ants go to the other sites (or stay home). */
+    /** A working chamber with a redstone signal on it is paused: its ants go to the other sites (or stay home). */
     private static boolean paused(ColonySimulator.Step step, StructureBlockEntity entity) {
         return step.level.hasNeighborSignal(entity.getBlockPos());
     }
@@ -87,7 +86,7 @@ public final class Allocation {
                 int status = 0;
                 int capacity = entity.capacity();
                 int wanted = entity.requested() < 0 ? capacity : Math.min(entity.requested(), capacity);
-                if (kind == StructureKind.FARMER_GARDEN && !step.species.canFarm()) {
+                if (kind == StructureKind.FUNGUS_GARDEN && !step.species.canFarm()) {
                     // A garden needs Farmer Ants (or a species that farms); other ants leave it alone.
                     wanted = 0;
                     status |= ColonyStatus.INCOMPATIBLE_SPECIES.bit();
@@ -106,14 +105,14 @@ public final class Allocation {
             }
         }
         int freeSoldiers = Math.max(0, soldiers);
-        for (StructureBlockEntity entity : step.of(StructureKind.FIGHTING_SITE)) {
+        for (StructureBlockEntity entity : step.of(StructureKind.HUNTING_CHAMBER)) {
             int capacity = entity.capacity();
             int wanted = paused(step, entity) ? 0 : entity.requested() < 0 ? capacity : Math.min(entity.requested(), capacity);
             int given = Math.min(wanted, freeSoldiers);
             freeSoldiers -= given;
             allocation.assignedSoldiers += given;
             int status = (given == 0 && wanted > 0 ? ColonyStatus.NO_SOLDIERS.bit() : 0) | (paused(step, entity) ? ColonyStatus.PAUSED.bit() : 0);
-            allocation.sites.computeIfAbsent(StructureKind.FIGHTING_SITE, k -> new ArrayList<>())
+            allocation.sites.computeIfAbsent(StructureKind.HUNTING_CHAMBER, k -> new ArrayList<>())
                     .add(new Site(entity, given, entity.requested(), capacity, status));
         }
         if (allocation.assignedWorkers > Math.max(0, workers) || allocation.assignedSoldiers > Math.max(0, soldiers)) {

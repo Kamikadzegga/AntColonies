@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  * assignments), so the GUI and the Terrarium's animation show exactly what the server works with.
  */
 public final class Colony {
-    /** One job site's ants, as the GUI lists them. */
+    /** One working chamber's ants, as the GUI lists them. */
     public record Assignment(BlockPos pos, StructureKind kind, int assigned, int requested, int capacity, int status, double rate) {
         public static final Codec<Assignment> CODEC = RecordCodecBuilder.create(i -> i.group(
                 BlockPos.CODEC.fieldOf("pos").forGetter(Assignment::pos),
@@ -91,7 +91,7 @@ public final class Colony {
     double specialFood;
     double health = 1;
     double starvedMinutes;
-    /** Share of new adults raised as soldiers (when barracks have room). */
+    /** Share of new adults raised as soldiers (when Housing has room). */
     double soldierShare = 0.2;
     int evolutionAttempts;
     int catalystCharges;

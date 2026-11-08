@@ -61,7 +61,7 @@ public class ColonyScannerItem extends Item {
                 String.format(java.util.Locale.ROOT, "%.1f", colony.stats().foodIn()), String.format(java.util.Locale.ROOT, "%.1f", colony.stats().foodOut()))
                 .withStyle(ChatFormatting.GRAY));
         player.sendSystemMessage(Component.translatable("scanner.antcolonies.health", Math.round(colony.health() * 100), colony.stats().structures(),
-                colony.layout().conduits().size()).withStyle(ChatFormatting.GRAY));
+                colony.layout().missing()).withStyle(ChatFormatting.GRAY));
         if (colony.queen() != null) {
             player.sendSystemMessage(Component.translatable("scanner.antcolonies.queen", colony.queen().genome().lineage().name(),
                     Tooltips.rarity(colony.queen().genome().rarity())).withStyle(ChatFormatting.GRAY));

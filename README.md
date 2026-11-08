@@ -18,16 +18,16 @@ soldiers to work, evolve mineral species and engineer their genes.
 
 </div>
 
-![A stage 4 Diamond Ant colony with its structures](docs/images/screenshots/overview.png)
+![A stage 4 Diamond Ant colony: a Terrarium and its ring of 8 chambers](docs/images/screenshots/overview.png)
 
 ## Features
 
 - **Living colonies.** A Terrarium holds a whole colony: Queen, eggs, larvae, workers, soldiers, food and health. You
-  can watch the ants dig tunnels, carry food and walk the glass tubes. The simulation is plain numbers on the server, so
-  even a colony of thousands costs almost nothing.
-- **Jobs and structures.** Connect Breeding Chambers, Nurseries, Housing, Scavenging Sites, Farmer Gardens, Fighting
-  Sites, Resource Piles and more with glass tubes or tunnels. Workers find their species' resources, farmers grow food,
-  and soldiers hunt for mob drops without spawning a single mob.
+  can watch the ants dig tunnels, carry food and work in the chambers. The simulation is plain numbers on the server,
+  so even a colony of thousands costs almost nothing.
+- **One simple 3x3 build.** A colony is a Terrarium with 8 chambers around it, in any mix of seven kinds: Brood
+  Chamber, Housing, Storage, Foraging Chamber, Fungus Garden, Hunting Chamber and Queen Chamber. Workers find their
+  species' resources, farmers grow food, and soldiers hunt for mob drops without spawning a single mob.
 - **38 species.** Thirteen wild species live in their own biomes, with nests. Mineral species (iron, gold, diamond,
   emerald, netherite, ender and more) evolve from them, and eleven hybrids come from crossing Queens. Ten more species
   turn on when Mekanism, Create, Thermal, Immersive Engineering or AE2 add their ores.

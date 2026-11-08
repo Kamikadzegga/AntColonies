@@ -5,7 +5,6 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import com.antcolonies.AntColonies;
-import com.antcolonies.content.block.LabPartBlock;
 import com.antcolonies.colony.model.StructureKind;
 import com.antcolonies.compat.recipes.AntRecipe;
 import com.antcolonies.compat.recipes.AntRecipes;
@@ -37,28 +36,23 @@ public class AntColoniesEmiPlugin implements EmiPlugin {
     private record Kind(String name, ItemLike icon, int rows, int textLines, Function<AntRecipes, List<AntRecipe>> recipes, ItemLike... stations) {}
 
     private static List<Kind> kinds() {
-        ItemLike mutationChamber = ModBlocks.LAB_PARTS.get(LabPartBlock.Part.MUTATION_CHAMBER).get();
-        ItemLike[] lab = new ItemLike[LabPartBlock.Part.values().length + 1];
-        lab[0] = ModItems.GENETIC_LAB_CONTROLLER.get();
-        for (LabPartBlock.Part part : LabPartBlock.Part.values()) {
-            lab[part.ordinal() + 1] = ModBlocks.LAB_PARTS.get(part).get();
-        }
+        ItemLike lab = ModItems.GENETIC_LAB.get();
         return List.of(
                 new Kind("species", ModItems.ANT_IDENTIFICATION_BOOK.get(), 2, 5, AntRecipes::species, ModItems.ANT_IDENTIFICATION_BOOK.get(), ModItems.TWEEZERS.get()),
                 new Kind("breeding", structure(StructureKind.QUEEN_CHAMBER), 2, 2, AntRecipes::rearing, structure(StructureKind.QUEEN_CHAMBER)),
                 new Kind("evolution", ModItems.TERRARIUM.get(), 1, 3, AntRecipes::evolution, ModItems.TERRARIUM.get(), ModItems.EVOLUTION_CATALYST.get()),
-                new Kind("mutation", mutationChamber, 1, 4, AntRecipes::mutations, mutationChamber, structure(StructureKind.QUEEN_CHAMBER)),
+                new Kind("mutation", lab, 1, 4, AntRecipes::mutations, lab, structure(StructureKind.QUEEN_CHAMBER)),
                 new Kind("hybrid", ModItems.GENETIC_SAMPLE.get(), 1, 4, AntRecipes::hybrids, structure(StructureKind.QUEEN_CHAMBER)),
-                new Kind("eggs", structure(StructureKind.BREEDING_CHAMBER), 1, 3, AntRecipes::eggs, ModItems.TERRARIUM.get(), structure(StructureKind.BREEDING_CHAMBER)),
-                new Kind("larvae", structure(StructureKind.NURSERY), 1, 2, AntRecipes::larvae, structure(StructureKind.NURSERY)),
-                new Kind("production", structure(StructureKind.SCAVENGING_SITE), 2, 1, AntRecipes::production, structure(StructureKind.SCAVENGING_SITE),
-                        structure(StructureKind.RESOURCE_PILE), structure(StructureKind.PROCESSING_CHAMBER)),
-                new Kind("farming", structure(StructureKind.FARMER_GARDEN), 2, 1, AntRecipes::farming, structure(StructureKind.FARMER_GARDEN),
-                        structure(StructureKind.FOOD_STORAGE)),
-                new Kind("fighting", structure(StructureKind.FIGHTING_SITE), 2, 2, AntRecipes::fighting, structure(StructureKind.FIGHTING_SITE),
-                        structure(StructureKind.SOLDIER_BARRACKS)),
-                new Kind("lab", ModItems.GENETIC_LAB_CONTROLLER.get(), 1, 4, AntRecipes::lab, lab),
-                new Kind("trait", ModItems.GENETIC_ANALYZER.get(), 1, 3, AntRecipes::traits, ModItems.GENETIC_LAB_CONTROLLER.get(), ModItems.GENETIC_ANALYZER.get()),
+                new Kind("eggs", structure(StructureKind.BROOD_CHAMBER), 1, 3, AntRecipes::eggs, ModItems.TERRARIUM.get(), structure(StructureKind.BROOD_CHAMBER)),
+                new Kind("larvae", structure(StructureKind.BROOD_CHAMBER), 1, 2, AntRecipes::larvae, structure(StructureKind.BROOD_CHAMBER)),
+                new Kind("production", structure(StructureKind.FORAGING_CHAMBER), 2, 1, AntRecipes::production, structure(StructureKind.FORAGING_CHAMBER),
+                        structure(StructureKind.STORAGE)),
+                new Kind("farming", structure(StructureKind.FUNGUS_GARDEN), 2, 1, AntRecipes::farming, structure(StructureKind.FUNGUS_GARDEN),
+                        structure(StructureKind.STORAGE)),
+                new Kind("fighting", structure(StructureKind.HUNTING_CHAMBER), 2, 2, AntRecipes::fighting, structure(StructureKind.HUNTING_CHAMBER),
+                        structure(StructureKind.HOUSING)),
+                new Kind("lab", ModItems.GENETIC_LAB.get(), 1, 4, AntRecipes::lab, lab),
+                new Kind("trait", ModItems.GENETIC_ANALYZER.get(), 1, 3, AntRecipes::traits, ModItems.GENETIC_LAB.get(), ModItems.GENETIC_ANALYZER.get()),
                 new Kind("species_upgrade", ModItems.UPGRADE_STATION.get(), 1, 2, AntRecipes::speciesUpgrades, ModItems.UPGRADE_STATION.get()));
     }
 

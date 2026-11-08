@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 
-/** A species-specific upgrade ("Diamond Extraction II"): only works in Scavenging Sites of its species' colonies. */
+/** A species-specific upgrade ("Diamond Extraction II"): only works in Foraging Chambers of its species' colonies. */
 public class SpeciesUpgradeItem extends Item {
     private static final String[] NUMERALS = {"I", "II", "III"};
 

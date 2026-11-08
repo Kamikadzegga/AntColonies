@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "antcolonies:block/brood_chamber_front",
+    "side": "antcolonies:block/brood_chamber_side",
+    "top": "antcolonies:block/brood_chamber_top"
+  }
+}

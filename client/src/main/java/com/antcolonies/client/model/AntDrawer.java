@@ -19,7 +19,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.LightCoordsUtil;
 
 /**
- * Draws ants for every renderer (wild ants, Terrariums, tubes, job sites): the grey model tinted with the species'
+ * Draws ants for every renderer (wild ants, Terrariums, working chambers): the grey model tinted with the species'
  * colors, its gaster pattern over it, its crystals (glowing for species that glow) and whatever it carries.
  */
 public final class AntDrawer {

@@ -1,0 +1,131 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "antcolonies:block/hunting_chamber_side",
+    "side": "antcolonies:block/hunting_chamber_side",
+    "top": "antcolonies:block/hunting_chamber_top",
+    "bone": "minecraft:block/bone_block_side"
+  },
+  "elements": [
+    {
+      "from": [0.0, 0.0, 0.0],
+      "to": [16.0, 10.0, 16.0],
+      "faces": {
+        "down": {
+          "texture": "#top"
+        },
+        "up": {
+          "texture": "#top"
+        },
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [0.0, 10.0, 0.0],
+      "to": [2.0, 13.0, 2.0],
+      "faces": {
+        "down": {
+          "texture": "#bone"
+        },
+        "up": {
+          "texture": "#bone"
+        },
+        "north": {
+          "texture": "#bone"
+        },
+        "south": {
+          "texture": "#bone"
+        },
+        "west": {
+          "texture": "#bone"
+        },
+        "east": {
+          "texture": "#bone"
+        }
+      }
+    },
+    {
+      "from": [14.0, 10.0, 0.0],
+      "to": [16.0, 13.0, 2.0],
+      "faces": {
+        "down": {
+          "texture": "#bone"
+        },
+        "up": {
+          "texture": "#bone"
+        },
+        "north": {
+          "texture": "#bone"
+        },
+        "south": {
+          "texture": "#bone"
+        },
+        "west": {
+          "texture": "#bone"
+        },
+        "east": {
+          "texture": "#bone"
+        }
+      }
+    },
+    {
+      "from": [0.0, 10.0, 14.0],
+      "to": [2.0, 13.0, 16.0],
+      "faces": {
+        "down": {
+          "texture": "#bone"
+        },
+        "up": {
+          "texture": "#bone"
+        },
+        "north": {
+          "texture": "#bone"
+        },
+        "south": {
+          "texture": "#bone"
+        },
+        "west": {
+          "texture": "#bone"
+        },
+        "east": {
+          "texture": "#bone"
+        }
+      }
+    },
+    {
+      "from": [14.0, 10.0, 14.0],
+      "to": [16.0, 13.0, 16.0],
+      "faces": {
+        "down": {
+          "texture": "#bone"
+        },
+        "up": {
+          "texture": "#bone"
+        },
+        "north": {
+          "texture": "#bone"
+        },
+        "south": {
+          "texture": "#bone"
+        },
+        "west": {
+          "texture": "#bone"
+        },
+        "east": {
+          "texture": "#bone"
+        }
+      }
+    }
+  ]
+}

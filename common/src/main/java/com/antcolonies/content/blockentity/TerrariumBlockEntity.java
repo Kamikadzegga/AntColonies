@@ -3,11 +3,10 @@ package com.antcolonies.content.blockentity;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.antcolonies.content.block.AntTubeBlock;
 import com.antcolonies.colony.model.Colony;
 import com.antcolonies.colony.model.ColonyAccess;
 import com.antcolonies.colony.model.ColonyLayout;
-import com.antcolonies.colony.model.ColonyNetwork;
+import com.antcolonies.colony.model.ColonyRing;
 import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.colony.evolution.EvolutionLogic;
@@ -112,7 +111,6 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
     // Timers start long ago, never at Long.MIN_VALUE: "now - then" would overflow to a negative number, and the network
     // scan, the climate check and evolution attempts would never come due.
     private long scannedAt = Long.MIN_VALUE / 2;
-    private Set<BlockPos> activeTubes = new HashSet<>();
     private int feedStatus;
     private long lastEvolutionAttempt = Long.MIN_VALUE / 2;
     private int lastSyncHash;
@@ -189,7 +187,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         if (time % FEED_INTERVAL == 0) {
             be.processSlots(serverLevel);
         }
-        long version = ColonyNetwork.version(level);
+        long version = ColonyRing.version(level);
         if (version != be.scannedVersion && time - be.scannedAt >= 10 || time - be.scannedAt >= RESCAN_INTERVAL) {
             be.rescan(serverLevel);
         }
@@ -256,23 +254,11 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         return Math.max(0, Math.min(awayTicks / 1200.0, allowance));
     }
 
-    /** Looks at the network again; tubes of a working colony get their ants. */
+    /** Looks at the ring of chambers around the Terrarium again. */
     public void rescan(ServerLevel level) {
-        scannedVersion = ColonyNetwork.version(level);
+        scannedVersion = ColonyRing.version(level);
         scannedAt = level.getGameTime();
-        ColonyLayout layout = ColonyNetwork.scan(level, worldPosition);
-        colony.setLayout(layout);
-        boolean active = colony.adults() > 0 && !layout.twoColonies();
-        Set<BlockPos> nowActive = active ? new HashSet<>(layout.conduits()) : new HashSet<>();
-        for (BlockPos tube : nowActive) {
-            AntTubeBlock.setActive(level, tube, true, colony.species());
-        }
-        for (BlockPos tube : activeTubes) {
-            if (!nowActive.contains(tube)) {
-                AntTubeBlock.setActive(level, tube, false, null);
-            }
-        }
-        activeTubes = nowActive;
+        colony.setLayout(ColonyRing.scan(level, worldPosition));
     }
 
     /** The Queen slot and the feed slot. */
@@ -561,11 +547,6 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         if (level != null) {
             Containers.dropContents(level, pos, items);
             Containers.dropContents(level, pos, upgrades);
-            if (level instanceof ServerLevel serverLevel) {
-                for (BlockPos tube : activeTubes) {
-                    AntTubeBlock.setActive(serverLevel, tube, false, null);
-                }
-            }
         }
     }
 

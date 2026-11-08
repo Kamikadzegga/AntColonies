@@ -5,12 +5,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.antcolonies.AntColonies;
-import com.antcolonies.content.block.AntTubeBlock;
-import com.antcolonies.content.block.GeneticLabControllerBlock;
-import com.antcolonies.content.block.LabPartBlock;
+import com.antcolonies.content.block.GeneticLabBlock;
 import com.antcolonies.content.block.StructureBlock;
 import com.antcolonies.content.block.TerrariumBlock;
-import com.antcolonies.content.block.TunnelBlock;
 import com.antcolonies.content.block.UpgradeStationBlock;
 import com.antcolonies.content.block.WildNestBlock;
 import com.antcolonies.colony.model.StructureKind;
@@ -29,15 +26,7 @@ public final class ModBlocks {
                     .isViewBlocking((state, level, pos, near) -> false).isSuffocating((state, level, pos) -> false)
                     .isRedstoneConductor((state, level, pos) -> false));
 
-    public static final DeferredBlock<AntTubeBlock> ANT_TUBE = BLOCKS.registerBlock("ant_tube", AntTubeBlock::new,
-            p -> p.mapColor(MapColor.NONE).strength(0.3F).sound(SoundType.GLASS).noOcclusion()
-                    .isViewBlocking((state, level, pos, near) -> false).isSuffocating((state, level, pos) -> false)
-                    .isRedstoneConductor((state, level, pos) -> false));
-
-    public static final DeferredBlock<TunnelBlock> ANT_TUNNEL = BLOCKS.registerBlock("ant_tunnel", TunnelBlock::new,
-            p -> p.mapColor(MapColor.DIRT).strength(0.6F).sound(SoundType.ROOTED_DIRT));
-
-    /** The colony structures, in {@link StructureKind} order. */
+    /** The colony chambers, in {@link StructureKind} order. */
     public static final Map<StructureKind, DeferredBlock<StructureBlock>> STRUCTURES = new EnumMap<>(StructureKind.class);
 
     static {
@@ -48,11 +37,10 @@ public final class ModBlocks {
 
     private static BlockBehaviour.Properties structureProperties(StructureKind kind, BlockBehaviour.Properties p) {
         return switch (kind) {
-            case RESOURCE_PILE, FOOD_STORAGE -> p.mapColor(MapColor.WOOD).strength(1.5F).sound(SoundType.WOOD).noOcclusion();
-            case FARMER_GARDEN -> p.mapColor(MapColor.COLOR_GREEN).strength(0.8F).sound(SoundType.ROOTED_DIRT).noOcclusion();
-            case FIGHTING_SITE -> p.mapColor(MapColor.STONE).strength(1.5F).sound(SoundType.BONE_BLOCK).noOcclusion();
-            case SCAVENGING_SITE -> p.mapColor(MapColor.DIRT).strength(0.8F).sound(SoundType.ROOTED_DIRT).noOcclusion();
-            case COLONY_CONNECTOR -> p.mapColor(MapColor.COLOR_ORANGE).strength(1.0F).sound(SoundType.GLASS).noOcclusion();
+            case STORAGE -> p.mapColor(MapColor.WOOD).strength(1.5F).sound(SoundType.WOOD).noOcclusion();
+            case FUNGUS_GARDEN -> p.mapColor(MapColor.COLOR_GREEN).strength(0.8F).sound(SoundType.ROOTED_DIRT).noOcclusion();
+            case HUNTING_CHAMBER -> p.mapColor(MapColor.STONE).strength(1.5F).sound(SoundType.BONE_BLOCK).noOcclusion();
+            case FORAGING_CHAMBER -> p.mapColor(MapColor.DIRT).strength(0.8F).sound(SoundType.ROOTED_DIRT).noOcclusion();
             default -> p.mapColor(MapColor.DIRT).strength(1.2F).sound(SoundType.PACKED_MUD).noOcclusion();
         };
     }
@@ -64,20 +52,12 @@ public final class ModBlocks {
             p -> p.mapColor(MapColor.METAL).strength(3.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
                     .lightLevel(state -> state.getValue(com.antcolonies.content.block.GeneratorBlock.LIT) ? 10 : 0));
 
-    public static final DeferredBlock<GeneticLabControllerBlock> GENETIC_LAB_CONTROLLER = BLOCKS.registerBlock("genetic_lab_controller",
-            GeneticLabControllerBlock::new, p -> labProperties(p));
-
-    public static final Map<LabPartBlock.Part, DeferredBlock<LabPartBlock>> LAB_PARTS = new EnumMap<>(LabPartBlock.Part.class);
-
-    static {
-        for (LabPartBlock.Part part : LabPartBlock.Part.values()) {
-            LAB_PARTS.put(part, BLOCKS.registerBlock(part.id(), p -> new LabPartBlock(part, p), ModBlocks::labProperties));
-        }
-    }
+    public static final DeferredBlock<GeneticLabBlock> GENETIC_LAB = BLOCKS.registerBlock("genetic_laboratory",
+            GeneticLabBlock::new, p -> labProperties(p));
 
     private static BlockBehaviour.Properties labProperties(BlockBehaviour.Properties p) {
         return p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.COPPER).noOcclusion().requiresCorrectToolForDrops()
-                .lightLevel(state -> state.hasProperty(LabPartBlock.FORMED) && state.getValue(LabPartBlock.FORMED) ? 9 : 2);
+                .lightLevel(state -> state.getValue(GeneticLabBlock.WORKING) ? 10 : 3);
     }
 
     /** One wild nest per species that lives in the wild, by species path. */

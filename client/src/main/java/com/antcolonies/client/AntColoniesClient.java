@@ -3,7 +3,6 @@ package com.antcolonies.client;
 import com.antcolonies.AntColonies;
 import com.antcolonies.client.model.AntModel;
 import com.antcolonies.client.model.CarryModel;
-import com.antcolonies.client.renderer.AntTubeRenderer;
 import com.antcolonies.client.renderer.GeneticLabRenderer;
 import com.antcolonies.client.renderer.StructureRenderer;
 import com.antcolonies.client.renderer.TerrariumRenderer;
@@ -52,7 +51,6 @@ public final class AntColoniesClient {
         event.registerEntityRenderer(ModEntities.WILD_ANT.get(), WildAntRenderer<com.antcolonies.content.entity.WildAnt>::new);
         event.registerEntityRenderer(ModEntities.GUARD_ANT.get(), WildAntRenderer<com.antcolonies.content.entity.GuardAnt>::new);
         event.registerBlockEntityRenderer(ModBlockEntities.TERRARIUM.get(), TerrariumRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.ANT_TUBE.get(), AntTubeRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.STRUCTURE.get(), StructureRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.GENETIC_LAB.get(), GeneticLabRenderer::new);
     }

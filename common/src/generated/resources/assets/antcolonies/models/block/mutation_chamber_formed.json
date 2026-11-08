@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "antcolonies:block/mutation_chamber_front_formed",
-    "side": "antcolonies:block/mutation_chamber_side_formed",
-    "top": "antcolonies:block/mutation_chamber_top_formed"
-  }
-}

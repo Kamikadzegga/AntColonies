@@ -21,36 +21,20 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * A colony's Resource Piles as one store. Finds go into the first pile with room; with Connectors (when the server
- * allows it) the piles of joined colonies take what the colony's own can't.
+ * A colony's Storage chambers as one store. Finds go into the first Storage with room.
  */
 public final class ColonyStorage {
-    /** What processing turns an item into, from every species' outputs: built once per set of loaded data. */
-    private static RegistryAccess processingSource;
-    private static Map<Item, SpeciesOutput> processing = Map.of();
-
     public static List<StructureBlockEntity> piles(ServerLevel level, Colony colony) {
         List<StructureBlockEntity> piles = new ArrayList<>();
-        addPiles(level, colony, piles);
-        if (AntConfig.get(AntConfig.CONNECTOR_SHARES_STORAGE)) {
-            for (BlockPos linked : colony.layout().linkedTerrariums()) {
-                if (level.isLoaded(linked) && level.getBlockEntity(linked) instanceof TerrariumBlockEntity other) {
-                    addPiles(level, other.colony(), piles);
-                }
-            }
+        if (!colony.layout().complete()) {
+            return piles;
         }
-        return piles;
-    }
-
-    private static void addPiles(ServerLevel level, Colony colony, List<StructureBlockEntity> piles) {
-        if (colony.layout().twoColonies()) {
-            return;
-        }
-        for (BlockPos pos : colony.layout().of(StructureKind.RESOURCE_PILE)) {
-            if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof StructureBlockEntity pile && pile.kind() == StructureKind.RESOURCE_PILE) {
+        for (BlockPos pos : colony.layout().of(StructureKind.STORAGE)) {
+            if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof StructureBlockEntity pile && pile.kind() == StructureKind.STORAGE) {
                 piles.add(pile);
             }
         }
+        return piles;
     }
 
     /** Whether all of the stacks would fit (checked before a find, so nothing is ever lost). */
@@ -142,50 +126,6 @@ public final class ColonyStorage {
         return left;
     }
 
-    /**
-     * One Resource Processing Chamber operation: some pile holding {@code ratio} of an item with a processed form
-     * (nuggets, shards...) gives them up for one processed item. Returns false when nothing could be processed.
-     */
-    public static boolean processOne(ServerLevel level, Colony colony) {
-        Map<Item, SpeciesOutput> recipes = processing(level.registryAccess());
-        for (StructureBlockEntity pile : piles(level, colony)) {
-            for (int slot = 0; slot < pile.unlockedSlots(); slot++) {
-                ItemStack stack = pile.getItem(slot);
-                SpeciesOutput recipe = recipes.get(stack.getItem());
-                if (recipe != null && stack.getCount() >= recipe.ratio() && recipe.processed().isPresent()) {
-                    ItemStack result = new ItemStack(recipe.processed().get());
-                    ItemStack taken = stack.split(recipe.ratio());
-                    pile.setItemQuietly(slot, stack);
-                    if (!insert(level, colony, result).isEmpty()) {
-                        // No room for the result: undo.
-                        stack.grow(taken.getCount());
-                        pile.setItemQuietly(slot, stack);
-                        return false;
-                    }
-                    pile.setChanged();
-                    pile.contentsChanged();
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public static synchronized Map<Item, SpeciesOutput> processing(RegistryAccess registries) {
-        if (registries != processingSource) {
-            Map<Item, SpeciesOutput> map = new HashMap<>();
-            registries.lookup(ModRegistries.SPECIES).ifPresent(lookup -> lookup.stream().forEach((AntSpecies species) -> {
-                for (SpeciesOutput output : species.production().outputs()) {
-                    if (output.processed().isPresent() && output.item().isPresent()) {
-                        map.putIfAbsent(output.item().get().value(), output);
-                    }
-                }
-            }));
-            processing = Map.copyOf(map);
-            processingSource = registries;
-        }
-        return processing;
-    }
 
     private ColonyStorage() {}
 }

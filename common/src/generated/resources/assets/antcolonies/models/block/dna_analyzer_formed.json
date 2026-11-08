@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "antcolonies:block/dna_analyzer_front_formed",
-    "side": "antcolonies:block/dna_analyzer_side_formed",
-    "top": "antcolonies:block/dna_analyzer_top_formed"
-  }
-}

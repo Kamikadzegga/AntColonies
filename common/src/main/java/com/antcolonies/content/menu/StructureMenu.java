@@ -15,8 +15,8 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 
 /**
- * Any colony structure's GUI: its status and link, for job sites the ants it has and wants (+/- buttons), its own slots
- * (Resource Pile, Food Storage, Queen Chamber) and its upgrade slots on the right.
+ * Any colony structure's GUI: its status and link, for working chambers the ants it has and wants (+/- buttons), its own slots
+ * (Storage, Storage, Queen Chamber) and its upgrade slots on the right.
  */
 public class StructureMenu extends BaseMenu {
     public static final int LESS = 0;
@@ -41,16 +41,11 @@ public class StructureMenu extends BaseMenu {
         this.data = data;
         StructureKind kind = structure.kind();
         switch (kind) {
-            case RESOURCE_PILE -> {
+            case STORAGE -> {
                 for (int slot = 0; slot < kind.slots(); slot++) {
                     int s = slot;
                     addSlot(new FilteredSlot(structure, slot, 8 + (slot % 9) * 18, 18 + (slot / 9) * 18, stack -> true, 64,
                             () -> s < data.get(StructureBlockEntity.DATA_UNLOCKED)));
-                }
-            }
-            case FOOD_STORAGE -> {
-                for (int slot = 0; slot < kind.slots(); slot++) {
-                    addSlot(new FilteredSlot(structure, slot, 8 + slot * 18, 52, stack -> ModDataMaps.food(stack) != null, 64));
                 }
             }
             case QUEEN_CHAMBER -> {
@@ -72,13 +67,13 @@ public class StructureMenu extends BaseMenu {
     }
 
     public static int inventoryY(StructureKind kind) {
-        return kind == StructureKind.RESOURCE_PILE ? 152 : 84;
+        return kind == StructureKind.STORAGE ? 152 : 84;
     }
 
     public static StructureMenu fromNetwork(int containerId, Inventory inventory, RegistryFriendlyByteBuf buffer) {
         BlockPos pos = buffer.readBlockPos();
         StructureBlockEntity structure = inventory.player.level().getBlockEntity(pos) instanceof StructureBlockEntity be ? be
-                : new StructureBlockEntity(pos, ModBlocks.STRUCTURES.get(StructureKind.RESOURCE_PILE).get().defaultBlockState());
+                : new StructureBlockEntity(pos, ModBlocks.STRUCTURES.get(StructureKind.STORAGE).get().defaultBlockState());
         return new StructureMenu(containerId, inventory, structure, new SimpleContainerData(StructureBlockEntity.DATA_COUNT));
     }
 

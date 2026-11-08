@@ -336,7 +336,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                     for (ColonyStatus status : ColonyStatus.of(job.status())) {
                         lines.add(Component.translatable(status.translationKey()).withStyle(status.color()));
                     }
-                    if (job.kind() == StructureKind.FARMER_GARDEN) {
+                    if (job.kind() == StructureKind.FUNGUS_GARDEN) {
                         lines.add(Component.translatable("gui.antcolonies.farm.hint").withStyle(ChatFormatting.GRAY));
                     }
                     graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);

@@ -112,19 +112,16 @@ public final class ModItems {
                     TerrariumBlock.describeColony(stack, tooltip);
                 }
             }, p -> p.useBlockDescriptionPrefix());
-    public static final DeferredItem<BlockItem> ANT_TUBE = block(ModBlocks.ANT_TUBE);
-    public static final DeferredItem<BlockItem> ANT_TUNNEL = block(ModBlocks.ANT_TUNNEL);
 
     static {
         ModBlocks.STRUCTURES.values().forEach(ModItems::described);
     }
 
     public static final DeferredItem<BlockItem> UPGRADE_STATION = described(ModBlocks.UPGRADE_STATION);
-    public static final DeferredItem<BlockItem> GENETIC_LAB_CONTROLLER = described(ModBlocks.GENETIC_LAB_CONTROLLER);
+    public static final DeferredItem<BlockItem> GENETIC_LAB = described(ModBlocks.GENETIC_LAB);
     public static final DeferredItem<BlockItem> GENERATOR = described(ModBlocks.GENERATOR);
 
     static {
-        ModBlocks.LAB_PARTS.values().forEach(ModItems::described);
         ModBlocks.NESTS.values().forEach(ModItems::described);
     }
 

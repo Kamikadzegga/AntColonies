@@ -14,8 +14,8 @@ iconBlur=false
 bannerFile="logo.png"
 description='''
 Build a civilization, one ant at a time. Catch wild ants, raise Queens in living Terrariums,
-assign workers to Scavenging Sites, Farmer Gardens and Fighting Sites, evolve your Queens into
-mineral species and perfect their genetics in the Genetic Laboratory.
+surround each with a ring of chambers, put workers to foraging, farming and hunting, evolve your
+Queens into mineral species and perfect their genetics in the Genetic Laboratory.
 '''
 
 [[dependencies.${mod_id}]]

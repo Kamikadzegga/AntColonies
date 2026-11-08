@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.antcolonies.content.block.LabPartBlock;
 import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.colony.genetics.Genome;
@@ -64,9 +63,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The Genetic Laboratory's controller. The laboratory is formed when a DNA Analyzer, a Mutation Chamber, Genetic
- * Storage, a Queen Enhancement Chamber and a Genetic Energy Core all stand within two blocks of the controller
- * (one block up or down). Formed, it works on the Queen in its Queen slot:
+ * The Genetic Laboratory, one block. Powered with FE (a Generator next to it, or any mod's cable), it works on the Queen
+ * in its Queen slot:
  * <ul>
  * <li><b>Upgrade</b>: raises one trait by one level, for the materials of the trait's data file and Genetic Energy.
  * Permanent, and no other trait changes.</li>
@@ -92,7 +90,6 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
     /** FE the lab stores, and the most it takes in per tick (from a Generator or any mod's cable). */
     public static final int ENERGY_CAPACITY = 1_000_000;
     public static final int MAX_RECEIVE = 4_000;
-    public static final int RANGE = 2;
 
     public enum Operation {
         NONE, UPGRADE, REROLL, MUTATE, PURGE, SAMPLE;
@@ -108,8 +105,7 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
     public static final int DATA_OPERATION = 3;
     public static final int DATA_TRAIT = 4;
     public static final int DATA_STATUS = 5;
-    public static final int DATA_MISSING = 6;
-    public static final int DATA_COUNT = 7;
+    public static final int DATA_COUNT = 6;
 
     private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
     private final SimpleContainer upgrades = new SimpleContainer(UPGRADE_SLOTS) {
@@ -140,11 +136,6 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
     private int progress;
     private int time;
     private int status;
-    /** Bits of the parts the laboratory still lacks (see {@link LabPartBlock.Part}). */
-    private int missing = (1 << LabPartBlock.Part.values().length) - 1;
-    /** When the parts were last looked for. Starts long ago (but not Long.MIN_VALUE: "now - then" would overflow and the
-     * lab would never look). */
-    private long checkedAt = Long.MIN_VALUE / 2;
 
     private final ContainerData data = new ContainerData() {
         @Override
@@ -156,7 +147,6 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
                 case DATA_OPERATION -> operation.ordinal();
                 case DATA_TRAIT -> selectedTrait;
                 case DATA_STATUS -> status;
-                case DATA_MISSING -> missing;
                 default -> 0;
             };
         }
@@ -183,14 +173,6 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         return upgrades;
     }
 
-    public boolean formed() {
-        return missing == 0;
-    }
-
-    public int missing() {
-        return missing;
-    }
-
     public Operation operation() {
         return operation;
     }
@@ -199,7 +181,7 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         return energy.getAmountAsInt();
     }
 
-    /** The FE input, for the controller and the Genetic Energy Core: takes energy in, never gives it out. */
+    /** The FE input, on every side: takes energy in, never gives it out. */
     public EnergyHandler energyHandler() {
         return energy;
     }
@@ -235,53 +217,18 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
                 .flatMap(lookup -> lookup.listElements().map(Holder::value).filter(upgrade -> upgrade.trait() == trait).findFirst());
     }
 
-    // --- The multiblock ---
-
-    /** Looks for the five parts around the controller and lights the ones it found. */
-    public void checkStructure(ServerLevel level) {
-        Set<LabPartBlock.Part> found = EnumSet.noneOf(LabPartBlock.Part.class);
-        List<BlockPos> parts = new ArrayList<>();
-        for (BlockPos pos : BlockPos.betweenClosed(worldPosition.offset(-RANGE, -1, -RANGE), worldPosition.offset(RANGE, 1, RANGE))) {
-            BlockState state = level.getBlockState(pos);
-            if (state.getBlock() instanceof LabPartBlock part) {
-                found.add(part.part());
-                parts.add(pos.immutable());
-            }
-        }
-        int nowMissing = 0;
-        for (LabPartBlock.Part part : LabPartBlock.Part.values()) {
-            if (!found.contains(part)) {
-                nowMissing |= 1 << part.ordinal();
-            }
-        }
-        boolean formed = nowMissing == 0;
-        for (BlockPos pos : parts) {
-            LabPartBlock.setFormed(level, pos, formed);
-        }
-        if (getBlockState().hasProperty(LabPartBlock.FORMED) && getBlockState().getValue(LabPartBlock.FORMED) != formed) {
-            level.setBlock(worldPosition, getBlockState().setValue(LabPartBlock.FORMED, formed), Block.UPDATE_ALL);
-        }
-        if (nowMissing != missing) {
-            missing = nowMissing;
-            setChanged();
-        }
-    }
-
     // --- Working ---
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, GeneticLabBlockEntity lab) {
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
         }
-        if (level.getGameTime() - lab.checkedAt >= 40) {
-            lab.checkedAt = level.getGameTime();
-            lab.checkStructure(serverLevel);
+        // The block lights up while the lab works.
+        boolean working = lab.operation != Operation.NONE;
+        if (state.hasProperty(com.antcolonies.content.block.GeneticLabBlock.WORKING) && state.getValue(com.antcolonies.content.block.GeneticLabBlock.WORKING) != working) {
+            level.setBlock(pos, state.setValue(com.antcolonies.content.block.GeneticLabBlock.WORKING, working), Block.UPDATE_ALL);
         }
-        if (lab.operation == Operation.NONE) {
-            return;
-        }
-        if (!lab.formed()) {
-            lab.status = ColonyStatus.INVALID_MULTIBLOCK.bit();
+        if (!working) {
             return;
         }
         QueenData queen = lab.queen();
@@ -313,10 +260,6 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         }
         status = 0;
         QueenData queen = queen();
-        if (!formed()) {
-            status = ColonyStatus.INVALID_MULTIBLOCK.bit();
-            return;
-        }
         if (queen == null) {
             status = ColonyStatus.NO_QUEEN.bit();
             return;
@@ -591,7 +534,7 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("block.antcolonies.genetic_lab_controller");
+        return Component.translatable("block.antcolonies.genetic_laboratory");
     }
 
     @Override
@@ -625,7 +568,6 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         selectedTrait = input.getIntOr("trait", 0);
         progress = input.getIntOr("progress", 0);
         time = input.getIntOr("time", 0);
-        missing = input.getIntOr("missing", missing);
     }
 
     @Override
@@ -641,7 +583,6 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         output.putInt("trait", selectedTrait);
         output.putInt("progress", progress);
         output.putInt("time", time);
-        output.putInt("missing", missing);
     }
 
     /** Clients see the Queen (for the enhancement chamber's display) and whether it is working. */

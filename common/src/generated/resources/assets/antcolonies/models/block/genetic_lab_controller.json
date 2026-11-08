@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "antcolonies:block/genetic_lab_controller_front",
-    "side": "antcolonies:block/genetic_lab_controller_side",
-    "top": "antcolonies:block/genetic_lab_controller_top"
-  }
-}

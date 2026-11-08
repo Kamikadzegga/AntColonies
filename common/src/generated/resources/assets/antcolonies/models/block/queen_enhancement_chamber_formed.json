@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "antcolonies:block/queen_enhancement_chamber_front_formed",
-    "side": "antcolonies:block/queen_enhancement_chamber_side_formed",
-    "top": "antcolonies:block/queen_enhancement_chamber_top_formed"
-  }
-}

@@ -514,49 +514,18 @@ public class TexGen {
         line(glass, 2, 12, 6, 8, argb(110, 255, 255, 255));
         line(glass, 3, 13, 8, 8, argb(70, 255, 255, 255));
         glass.save("block/terrarium_glass");
-        // Tubes: faint glass with rings; the rim seen at an open end.
-        Img tube = new Img(16, 16);
-        for (int y = 0; y < 16; y++) {
-            for (int x = 0; x < 16; x++) {
-                tube.set(x, y, argb(y % 8 == 0 ? 90 : 34, 210, 235, 250));
-            }
-        }
-        line(tube, 1, 3, 1, 12, argb(120, 255, 255, 255));
-        tube.save("block/ant_tube");
-        Img rim = new Img(16, 16);
-        for (int y = 0; y < 16; y++) {
-            for (int x = 0; x < 16; x++) {
-                boolean ring = x <= 5 || x >= 10 || y <= 5 || y >= 10;
-                rim.set(x, y, ring ? argb(80, 210, 235, 250) : 0);
-            }
-        }
-        rim.save("block/ant_tube_rim");
-        // Tunnels: packed soil with gallery holes.
-        Img tunnel = block(rgb(112, 82, 56), 10, 5);
-        for (int[] hole : new int[][] {{4, 4}, {11, 6}, {6, 11}, {12, 12}}) {
-            disc(tunnel, hole[0], hole[1], 1.6, rgb(42, 28, 18));
-            tunnel.set(hole[0] - 1, hole[1] - 2, rgb(150, 112, 78));
-        }
-        tunnel.save("block/ant_tunnel");
 
         // Structures.
         int mud = rgb(128, 98, 72);
         int mortar = rgb(92, 68, 48);
         Object[][] simple = {
-                {"breeding_chamber", rgb(176, 120, 90)}, {"nursery", rgb(214, 196, 168)}, {"queen_chamber", rgb(196, 160, 72)},
-                {"worker_housing", mud}, {"soldier_barracks", rgb(120, 120, 124)}, {"processing_chamber", rgb(110, 110, 116)},
-                {"food_storage", rgb(150, 108, 64)},
+                {"brood_chamber", rgb(176, 120, 90)}, {"queen_chamber", rgb(196, 160, 72)}, {"housing", mud},
         };
         for (Object[] s : simple) {
             String id = (String) s[0];
             int color = (Integer) s[1];
             Img side = new Img(16, 16);
-            if (id.equals("food_storage")) {
-                planks(side, color, random);
-                border(side, 0, 0, 16, 16, shade(color, 0.6));
-            } else if (id.equals("soldier_barracks") || id.equals("processing_chamber")) {
-                bricks(side, color, random, shade(color, 0.65));
-            } else {
+            {
                 bricks(side, color, random, shade(color, 0.72));
             }
             side.save("block/" + id + "_side");
@@ -572,19 +541,15 @@ public class TexGen {
                 }
             }
             switch (id) {
-                case "breeding_chamber" -> {
-                    // A round chamber with eggs inside.
+                case "brood_chamber" -> {
+                    // A round chamber with eggs and larvae inside.
                     disc(front, 8, 9, 5.2, rgb(52, 34, 24));
                     for (int[] egg : new int[][] {{6, 10}, {8, 11}, {10, 10}, {7, 8}, {9, 8}}) {
                         front.set(egg[0], egg[1], rgb(246, 242, 228));
                         front.set(egg[0], egg[1] + 1, rgb(220, 214, 196));
                     }
-                }
-                case "nursery" -> {
-                    disc(front, 8, 9, 5.2, rgb(60, 44, 30));
-                    for (int[] larva : new int[][] {{5, 10}, {9, 11}, {8, 8}}) {
-                        line(front, larva[0], larva[1], larva[0] + 2, larva[1], rgb(238, 226, 196));
-                    }
+                    line(front, 5, 12, 6, 12, rgb(238, 226, 196));
+                    line(front, 10, 12, 11, 12, rgb(238, 226, 196));
                 }
                 case "queen_chamber" -> {
                     disc(front, 8, 9, 5.5, rgb(60, 40, 18));
@@ -594,28 +559,9 @@ public class TexGen {
                     front.set(11, 5, rgb(240, 200, 80));
                     disc(front, 8, 10, 2.5, rgb(140, 70, 30));
                 }
-                case "worker_housing" -> {
+                case "housing" -> {
                     for (int[] hole : new int[][] {{4, 5}, {8, 4}, {12, 5}, {4, 11}, {8, 10}, {12, 11}}) {
                         disc(front, hole[0], hole[1], 1.4, rgb(36, 24, 16));
-                    }
-                }
-                case "soldier_barracks" -> {
-                    front.fill(5, 4, 11, 14, rgb(40, 40, 44));
-                    line(front, 8, 5, 8, 12, rgb(200, 200, 210));
-                    line(front, 6, 10, 10, 10, rgb(150, 110, 60));
-                }
-                case "processing_chamber" -> {
-                    disc(front, 8, 8, 4.5, rgb(60, 60, 64));
-                    disc(front, 8, 8, 2.2, rgb(220, 120, 40));
-                    for (int k = 0; k < 8; k++) {
-                        double a = k * Math.PI / 4;
-                        front.set((int) (8 + Math.cos(a) * 5.5), (int) (8 + Math.sin(a) * 5.5), rgb(150, 150, 156));
-                    }
-                }
-                case "food_storage" -> {
-                    front.fill(3, 3, 13, 13, rgb(90, 62, 36));
-                    for (int[] seed : new int[][] {{5, 10}, {7, 11}, {9, 10}, {11, 11}, {6, 8}, {8, 9}, {10, 8}}) {
-                        front.set(seed[0], seed[1], rgb(220, 186, 96));
                     }
                 }
                 default -> {
@@ -623,30 +569,30 @@ public class TexGen {
             }
             front.save("block/" + id + "_front");
         }
-        // Scavenging Site: loose soil with twigs and pebbles.
+        // Foraging Chamber: loose soil with twigs and pebbles.
         Img scavSide = block(rgb(118, 86, 58), 12, 21);
         scavSide.fill(0, 0, 16, 2, rgb(96, 128, 64));
-        scavSide.save("block/scavenging_site_side");
+        scavSide.save("block/foraging_chamber_side");
         Img scavTop = block(rgb(124, 92, 62), 14, 22);
         line(scavTop, 2, 3, 7, 6, rgb(150, 110, 60));
         line(scavTop, 9, 12, 14, 10, rgb(150, 110, 60));
         scavTop.set(11, 4, rgb(140, 140, 140));
         scavTop.set(4, 12, rgb(160, 160, 160));
         disc(scavTop, 8, 8, 1.4, rgb(36, 24, 16));
-        scavTop.save("block/scavenging_site_top");
-        // Fighting Site: a worn stone arena.
+        scavTop.save("block/foraging_chamber_top");
+        // Hunting Chamber: a worn stone arena.
         Img fightSide = new Img(16, 16);
         bricks(fightSide, rgb(126, 122, 118), random, rgb(84, 80, 78));
-        fightSide.save("block/fighting_site_side");
+        fightSide.save("block/hunting_chamber_side");
         Img fightTop = block(rgb(150, 138, 118), 10, 23);
         border(fightTop, 0, 0, 16, 16, rgb(100, 94, 86));
         line(fightTop, 3, 3, 12, 12, rgb(120, 40, 30));
         line(fightTop, 12, 4, 5, 11, rgb(110, 36, 28));
-        fightTop.save("block/fighting_site_top");
-        // Farmer Garden: fungus-covered soil.
+        fightTop.save("block/hunting_chamber_top");
+        // Fungus Garden: fungus-covered soil.
         Img gardenSide = block(rgb(110, 80, 54), 12, 24);
         gardenSide.fill(0, 0, 16, 3, rgb(186, 172, 140));
-        gardenSide.save("block/farmer_garden_side");
+        gardenSide.save("block/fungus_garden_side");
         Img gardenTop = block(rgb(190, 176, 146), 12, 25);
         for (int i = 0; i < 18; i++) {
             gardenTop.set(random.nextInt(16), random.nextInt(16), rgb(232, 224, 204));
@@ -654,30 +600,17 @@ public class TexGen {
         for (int i = 0; i < 8; i++) {
             gardenTop.set(random.nextInt(16), random.nextInt(16), rgb(80, 140, 60));
         }
-        gardenTop.save("block/farmer_garden_top");
-        // Resource Pile: a wooden crate holding a heap.
+        gardenTop.save("block/fungus_garden_top");
+        // Storage: a wooden crate holding a heap.
         Img crate = new Img(16, 16);
         planks(crate, rgb(160, 120, 74), random);
         border(crate, 0, 0, 16, 16, rgb(96, 68, 40));
-        crate.save("block/resource_pile_side");
+        crate.save("block/storage_side");
         Img inside = new Img(16, 16);
         planks(inside, rgb(120, 88, 52), random);
-        inside.save("block/resource_pile_inside");
+        inside.save("block/storage_inside");
         Img heap = block(rgb(120, 96, 70), 18, 26);
-        heap.save("block/resource_pile_top");
-        // Colony Connector: amber glass round a copper core.
-        Img connector = new Img(16, 16);
-        for (int y = 0; y < 16; y++) {
-            for (int x = 0; x < 16; x++) {
-                connector.set(x, y, argb(70, 240, 170, 80));
-            }
-        }
-        border(connector, 0, 0, 16, 16, argb(170, 200, 120, 60));
-        connector.save("block/colony_connector_side");
-        Img core = block(rgb(196, 110, 72), 12, 27);
-        border(core, 0, 0, 16, 16, rgb(120, 64, 40));
-        core.fill(6, 6, 10, 10, rgb(250, 200, 120));
-        core.save("block/colony_connector_top");
+        heap.save("block/storage_top");
         // Upgrade Station: a workbench with chitin plates and tools.
         Img stationSide = new Img(16, 16);
         planks(stationSide, rgb(170, 128, 80), random);
@@ -690,14 +623,13 @@ public class TexGen {
         stationTop.fill(10, 11, 14, 14, rgb(60, 110, 50));
         stationTop.save("block/upgrade_station_top");
 
-        // The Genetic Laboratory: dark panels; when formed, glowing windows in each part's color.
-        Object[][] lab = {{"genetic_lab_controller", rgb(80, 200, 255)}, {"dna_analyzer", rgb(220, 90, 255)}, {"mutation_chamber", rgb(120, 230, 90)},
-                {"genetic_storage", rgb(150, 170, 255)}, {"queen_enhancement_chamber", rgb(240, 190, 70)}, {"genetic_energy_core", rgb(70, 190, 230)}};
+        // The Genetic Laboratory: a dark panel with a DNA screen; while it works, the windows glow.
+        Object[][] lab = {{"genetic_laboratory", rgb(80, 200, 255)}};
         for (Object[] part : lab) {
             String id = (String) part[0];
             int color = (Integer) part[1];
             for (boolean lit : new boolean[] {false, true}) {
-                String suffix = lit ? "_formed" : "";
+                String suffix = lit ? "_working" : "";
                 Img side = labPanel(color, lit, id.hashCode());
                 glassWindow(side, 4, 4, 12, 12, color, lit);
                 side.save("block/" + id + "_side" + suffix);
@@ -706,7 +638,7 @@ public class TexGen {
                 top.save("block/" + id + "_top" + suffix);
                 Img front = labPanel(color, lit, id.hashCode() + 2);
                 switch (id) {
-                    case "dna_analyzer" -> {
+                    case "genetic_laboratory" -> {
                         glassWindow(front, 3, 3, 13, 9, color, lit);
                         for (int x = 4; x < 12; x++) {
                             int y = 6 + (int) Math.round(Math.sin(x * 0.9) * 2);
@@ -715,28 +647,6 @@ public class TexGen {
                         front.fill(4, 11, 12, 13, rgb(30, 34, 40));
                         front.set(5, 12, lit ? rgb(90, 255, 120) : rgb(60, 80, 60));
                         front.set(7, 12, lit ? rgb(255, 80, 80) : rgb(80, 60, 60));
-                    }
-                    case "mutation_chamber" -> {
-                        glassWindow(front, 4, 2, 12, 14, color, lit);
-                        for (int i = 0; i < 5; i++) {
-                            front.set(6 + (i * 3) % 5, 4 + i * 2, lit ? rgb(230, 255, 210) : rgb(70, 90, 70));
-                        }
-                    }
-                    case "genetic_storage" -> {
-                        for (int row = 0; row < 3; row++) {
-                            for (int col = 0; col < 3; col++) {
-                                glassWindow(front, 3 + col * 4, 3 + row * 4, 5 + col * 4, 5 + row * 4, color, lit);
-                            }
-                        }
-                    }
-                    case "queen_enhancement_chamber" -> {
-                        glassWindow(front, 3, 3, 13, 13, color, lit);
-                        disc(front, 8, 9, 2.5, lit ? rgb(150, 70, 30) : rgb(60, 40, 30));
-                        line(front, 6, 5, 10, 5, lit ? rgb(255, 230, 120) : rgb(100, 90, 60));
-                    }
-                    case "genetic_energy_core" -> {
-                        glassWindow(front, 4, 4, 12, 12, color, lit);
-                        disc(front, 8, 8, 2.2, lit ? rgb(230, 250, 255) : rgb(70, 80, 90));
                     }
                     default -> {
                         glassWindow(front, 3, 3, 13, 9, color, lit);

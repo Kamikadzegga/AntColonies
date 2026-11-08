@@ -20,7 +20,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-/** Any colony structure: its link and problems, its ants (job sites), its slots, and its upgrades on the right. */
+/** Any colony structure: its link and problems, its ants (working chambers), its slots, and its upgrades on the right. */
 public class StructureScreen extends AntScreen<StructureMenu> {
     private final StructureKind kind;
     /** Status lines cut to fit this frame, with their full text for the hover tooltip. */
@@ -47,9 +47,9 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         clipped.clear();
         boolean linked = menu.data(StructureBlockEntity.DATA_LINKED) != 0;
         int x = 8;
-        int y = kind == StructureKind.RESOURCE_PILE ? 130 : 18;
-        // The locked Resource Pile slots, darkened.
-        if (kind == StructureKind.RESOURCE_PILE) {
+        int y = kind == StructureKind.STORAGE ? 130 : 18;
+        // The locked Storage slots, darkened.
+        if (kind == StructureKind.STORAGE) {
             int unlocked = menu.data(StructureBlockEntity.DATA_UNLOCKED);
             for (int slot = unlocked; slot < kind.slots(); slot++) {
                 int sx = leftPos + 8 + (slot % 9) * 18 - 1;
@@ -87,11 +87,9 @@ public class StructureScreen extends AntScreen<StructureMenu> {
             y += 11;
         }
         int status = menu.data(StructureBlockEntity.DATA_STATUS) | (kind == StructureKind.QUEEN_CHAMBER ? menu.data(StructureBlockEntity.DATA_REARING_STATUS) : 0);
-        boolean slotted = kind == StructureKind.QUEEN_CHAMBER || kind == StructureKind.FOOD_STORAGE;
+        boolean slotted = kind == StructureKind.QUEEN_CHAMBER;
         if (kind == StructureKind.QUEEN_CHAMBER) {
             drawQueenChamber(graphics, x);
-        } else if (kind == StructureKind.FOOD_STORAGE) {
-            label(graphics, fit(Component.translatable("gui.antcolonies.food_storage.hint").getString(), 170), x, 40, DIM);
         } else if (!kind.job().any()) {
             y = wrapped(graphics, Component.translatable("gui.antcolonies.effect." + kind.getSerializedName()), x, y, 170, 9, DIM);
         }
@@ -140,7 +138,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
             drawGlyph(graphics, "queen", x, y);
         } else if ("qc_output".equals(role)) {
             drawGlyph(graphics, "output", x, y);
-        } else if (kind == StructureKind.FOOD_STORAGE && slot.container == menu.structure() || "qc_materials".equals(role)) {
+        } else if ("qc_materials".equals(role)) {
             drawGlyph(graphics, "feed", x, y);
         }
     }

@@ -1,7 +1,6 @@
 package com.antcolonies.client.renderer;
 
 import com.antcolonies.AntColonies;
-import com.antcolonies.content.block.LabPartBlock;
 import com.antcolonies.content.blockentity.GeneticLabBlockEntity;
 import com.antcolonies.client.ClientSpecies;
 import com.antcolonies.colony.genetics.QueenData;
@@ -24,7 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Over a formed Genetic Laboratory's controller turns a glowing double helix in the colors of the Queen being worked
+ * Over a Genetic Laboratory turns a glowing double helix in the colors of the Queen being worked
  * on, faster while an operation runs.
  */
 public class GeneticLabRenderer implements BlockEntityRenderer<GeneticLabBlockEntity, GeneticLabRenderer.State> {
@@ -32,7 +31,6 @@ public class GeneticLabRenderer implements BlockEntityRenderer<GeneticLabBlockEn
     private static final RenderType GLOW = RenderTypes.eyes(TEXTURE);
 
     public static class State extends BlockEntityRenderState {
-        boolean formed;
         boolean working;
         float time;
         int colorA = 0xFF4FE3FF;
@@ -51,7 +49,6 @@ public class GeneticLabRenderer implements BlockEntityRenderer<GeneticLabBlockEn
     public void extractRenderState(GeneticLabBlockEntity lab, State state, float partialTicks, Vec3 camera,
                                    ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(lab, state, partialTicks, camera, breakProgress);
-        state.formed = lab.getBlockState().hasProperty(LabPartBlock.FORMED) && lab.getBlockState().getValue(LabPartBlock.FORMED);
         state.working = lab.operation() != GeneticLabBlockEntity.Operation.NONE;
         state.time = lab.getLevel() == null ? 0 : lab.getLevel().getGameTime() + partialTicks;
         QueenData queen = lab.queen();
@@ -67,9 +64,6 @@ public class GeneticLabRenderer implements BlockEntityRenderer<GeneticLabBlockEn
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-        if (!state.formed) {
-            return;
-        }
         float spin = state.time * (state.working ? 6 : 1.5F);
         poseStack.pushPose();
         poseStack.translate(0.5, 1.05, 0.5);

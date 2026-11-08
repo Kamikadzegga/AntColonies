@@ -231,7 +231,7 @@ public class DataGen {
                         Out.of("melon_seeds", 5), Out.of("pumpkin_seeds", 5), Out.of("glow_berries", 5).atStage(3).asSpecial()),
                 0.8, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"brown_mushroom", "4"}), 2400, 1.0, 1.0,
                 "brown_mushroom", "Leaf Cutting", "Fungus Curing", "Garden Rotation",
-                "Leafcutters that grow fungus gardens. Their Farmer Gardens feed their own colony and, through Colony Connectors, others."));
+                "Leafcutters that grow fungus gardens. Their Fungus Gardens feed the whole colony."));
         List<String[]> mineralRearing = List.of(new String[] {ac("royal_jelly"), "2"}, new String[] {ac("mineral_ant_food"), "4"});
         List<String[]> crystalRearing = List.of(new String[] {ac("royal_jelly"), "3"}, new String[] {ac("crystal_ant_food"), "6"},
                 new String[] {ac("nuptial_pheromone"), "1"});
@@ -419,7 +419,7 @@ public class DataGen {
                         Out.of("shroomlight", 4).atStage(3).asSpecial()),
                 1.0, List.of(), netherRearing, 4800, 1.0, 1.0, "nether_wart",
                 "Fungal Extraction", "Wart Curing", "Spore Efficiency",
-                "A hybrid of Farmer and Fire Ants that grows Nether fungus. Tends Farmer Gardens for food, wart and shroomlight."));
+                "A hybrid of Farmer and Fire Ants that grows Nether fungus. Tends Fungus Gardens for food, wart and shroomlight."));
         SPECIES.add(new Species("obsidian", "Obsidian Ant", 3, "hybrid", "hot", null, "14101E", "2A1E40", "8A4AE0", "faceted", "A060FF", true,
                 1.1, 1.6, "mineral", 0.6, 0.3,
                 List.of(Out.of("obsidian", 20), Out.of("basalt", 12), Out.of("magma_block", 10), Out.of("blackstone", 10), Out.of("cobblestone", 10),
@@ -447,7 +447,7 @@ public class DataGen {
                 1.6, List.of(Out.of("honey_bottle", 20), Out.of("sugar", 20), Out.of("sweet_berries", 16), Out.of("honeycomb", 10).atStage(2).asSpecial()),
                 0.8, List.of(), List.of(new String[] {ac("royal_jelly"), "2"}, new String[] {"honey_bottle", "2"}), 3600, 1.05, 1.0,
                 "honey_bottle", "Nectar Extraction", "Honey Thickening", "Sweet Thrift",
-                "A hybrid of Blossom and Farmer Ants. Some workers swell into living honey jars: honey, sugar and comb. Tends Farmer Gardens."));
+                "A hybrid of Blossom and Farmer Ants. Some workers swell into living honey jars: honey, sugar and comb. Tends Fungus Gardens."));
         SPECIES.add(new Species("harvester", "Harvester Ant", 2, "hybrid", "hot", null, "7A2A12", "A8461E", "D89A50", "plain", null, false,
                 1.1, 1.0, "", 0, 0.7,
                 List.of(Out.of("wheat_seeds", 16), Out.of("beetroot_seeds", 10), Out.of("pumpkin_seeds", 6), Out.of("melon_seeds", 6),
@@ -456,7 +456,7 @@ public class DataGen {
                         Out.of("sugar_cane", 8), Out.of("poisonous_potato", 2), Out.of("golden_carrot", 1).atStage(4).asSpecial()),
                 1.1, List.of(), List.of(new String[] {ac("royal_jelly"), "2"}, new String[] {"wheat", "16"}), 3600, 1.0, 1.0,
                 "wheat", "Granary Foraging", "Seed Husking", "Granary Thrift",
-                "A hybrid of Farmer and Savanna Ants, after the real seed-storing harvester ants. Tend Farmer Gardens for crops of every kind."));
+                "A hybrid of Farmer and Savanna Ants, after the real seed-storing harvester ants. Tend Fungus Gardens for crops of every kind."));
         SPECIES.add(new Species("reef", "Reef Ant", 2, "hybrid", "temperate", null, "1E4A6A", "E05A8A", "FFD040", "speckled", "60D8E8", false,
                 0.95, 1.1, "", 0, 0.55,
                 List.of(Out.of("tube_coral_block", 6), Out.of("brain_coral_block", 6), Out.of("bubble_coral_block", 6), Out.of("fire_coral_block", 6),
@@ -667,16 +667,16 @@ public class DataGen {
         advancement("catch_queen", "catch_ants", "queen_test_tube", "task", "Long Live the Queen", "Catch or raise a Queen", hasItem("queen_test_tube"));
         advancement("first_colony", "catch_queen", "terrarium", "task", "Home Sweet Home", "Start a colony: a Terrarium with a Queen",
                 colony("has_queen", true));
-        advancement("stage_2", "first_colony", structureItem("breeding_chamber"), "task", "Growing Family",
-                "Reach colony stage 2 (a Breeding Chamber and enough adults)", colony("stage", obj("min", 2)));
-        advancement("stage_4", "stage_2", structureItem("nursery"), "goal", "Metropolis", "Reach colony stage 4", colony("stage", obj("min", 4)));
+        advancement("stage_2", "first_colony", structureItem("brood_chamber"), "task", "Growing Family",
+                "Reach colony stage 2 (a Brood Chamber and enough adults)", colony("stage", obj("min", 2)));
+        advancement("stage_4", "stage_2", structureItem("housing"), "goal", "Metropolis", "Reach colony stage 4", colony("stage", obj("min", 4)));
         advancement("evolution", "first_colony", "evolution_catalyst", "task", "Evolution", "Evolve a colony into a mineral species",
                 colony("category", "mineral"));
         advancement("hybrid", "evolution", "genetic_sample", "goal", "Hybrid Vigor", "Raise a hybrid colony from a Queen Chamber cross",
                 colony("category", "hybrid"));
         advancement("generator", "root", "generator", "task", "Power Up", "Make a Generator to power the Genetic Laboratory", hasItem("generator"));
-        advancement("lab", "generator", "genetic_lab_controller", "task", "Genetic Engineer", "Make a Genetic Laboratory Controller",
-                hasItem("genetic_lab_controller"));
+        advancement("lab", "generator", "genetic_laboratory", "task", "Genetic Engineer", "Make a Genetic Laboratory",
+                hasItem("genetic_laboratory"));
         advancement("perfect_trait", "lab", "genetic_analyzer", "challenge", "Perfection", "Own a colony whose Queen has a trait at level 10",
                 colony("best_trait", obj("min", 10)));
         advancement("netherite", "evolution", "minecraft:netherite_scrap", "challenge", "Forged in the Deep", "Raise a Netherite Ant colony",
@@ -834,30 +834,19 @@ public class DataGen {
         shaped("genetic_analyzer", ac("genetic_analyzer"), 1, new String[] {" G ", "ICI", " I "}, "G", "glass_pane", "I", "iron_ingot", "C", ac("genetic_circuit"));
         // Blocks.
         shaped("terrarium", ac("terrarium"), 1, new String[] {"PGP", "GDG", "PPP"}, "P", "#minecraft:planks", "G", "glass", "D", "dirt");
-        shaped("ant_tube", ac("ant_tube"), 8, new String[] {"GGG", "   ", "GGG"}, "G", "glass");
-        shaped("ant_tunnel", ac("ant_tunnel"), 8, new String[] {"DDD", "D D", "DDD"}, "D", "packed_mud");
-        shaped("breeding_chamber", ac("breeding_chamber"), 1, new String[] {"MRM", "MTM", "MMM"}, "M", "packed_mud", "R", ac("royal_jelly"), "T", ac("ant_tunnel"));
-        shaped("scavenging_site", ac("scavenging_site"), 1, new String[] {"S S", "DTD", "DDD"}, "S", "stick", "D", "coarse_dirt", "T", ac("ant_tunnel"));
-        shaped("resource_pile", ac("resource_pile"), 1, new String[] {"P P", "PCP", "PPP"}, "P", "#minecraft:planks", "C", "chest");
-        shaped("fighting_site", ac("fighting_site"), 1, new String[] {"BWB", "STS", "SSS"}, "B", "bone", "W", "iron_sword", "S", "cobblestone", "T", ac("ant_tunnel"));
-        shaped("farmer_garden", ac("farmer_garden"), 1, new String[] {"MBM", "DTD", "DDD"}, "M", "brown_mushroom", "B", "bone_meal", "D", "dirt", "T", ac("ant_tunnel"));
-        shaped("food_storage", ac("food_storage"), 1, new String[] {"PFP", "PCP", "PPP"}, "P", "#minecraft:planks", "F", ac("ant_food"), "C", "chest");
-        shaped("nursery", ac("nursery"), 1, new String[] {"MWM", "MTM", "MMM"}, "M", "packed_mud", "W", "#minecraft:wool", "T", ac("ant_tunnel"));
-        shaped("queen_chamber", ac("queen_chamber"), 1, new String[] {"MGM", "RTR", "MMM"}, "M", "packed_mud", "G", "gold_ingot", "R", ac("royal_jelly"), "T", ac("ant_tunnel"));
-        shaped("worker_housing", ac("worker_housing"), 1, new String[] {"MMM", "TTT", "MMM"}, "M", "packed_mud", "T", ac("ant_tunnel"));
-        shaped("soldier_barracks", ac("soldier_barracks"), 1, new String[] {"SIS", "STS", "SSS"}, "S", "stone_bricks", "I", "iron_ingot", "T", ac("ant_tunnel"));
-        shaped("processing_chamber", ac("processing_chamber"), 1, new String[] {"SPS", "TFT", "SSS"}, "S", "stone_bricks", "P", "piston", "F", "furnace", "T", ac("ant_tunnel"));
-        shaped("colony_connector", ac("colony_connector"), 1, new String[] {"GCG", "TQT", "GCG"}, "G", "glass", "C", "copper_ingot", "T", ac("ant_tube"), "Q", "quartz");
+        // The colony chambers: packed mud and what each one is for.
+        shaped("brood_chamber", ac("brood_chamber"), 1, new String[] {"MRM", "MWM", "MMM"}, "M", "packed_mud", "R", ac("royal_jelly"), "W", "#minecraft:wool");
+        shaped("housing", ac("housing"), 1, new String[] {"MMM", "M M", "MMM"}, "M", "packed_mud");
+        shaped("storage", ac("storage"), 1, new String[] {"P P", "PCP", "PPP"}, "P", "#minecraft:planks", "C", "chest");
+        shaped("foraging_chamber", ac("foraging_chamber"), 1, new String[] {"S S", "DMD", "DDD"}, "S", "stick", "D", "coarse_dirt", "M", "packed_mud");
+        shaped("fungus_garden", ac("fungus_garden"), 1, new String[] {"RBR", "DMD", "DDD"}, "R", "brown_mushroom", "B", "bone_meal", "D", "dirt", "M", "packed_mud");
+        shaped("hunting_chamber", ac("hunting_chamber"), 1, new String[] {"BWB", "SMS", "SSS"}, "B", "bone", "W", "iron_sword", "S", "cobblestone", "M", "packed_mud");
+        shaped("queen_chamber", ac("queen_chamber"), 1, new String[] {"MGM", "RMR", "MMM"}, "M", "packed_mud", "G", "gold_ingot", "R", ac("royal_jelly"));
         shaped("generator", ac("generator"), 1, new String[] {"III", "IFI", "CRC"}, "I", "iron_ingot", "F", "furnace", "C", "copper_ingot", "R", "redstone");
         shaped("upgrade_station", ac("upgrade_station"), 1, new String[] {"CCC", "PTP", "P P"}, "C", ac("chitin_plate"), "P", "#minecraft:planks", "T", "crafting_table");
-        shaped("genetic_lab_controller", ac("genetic_lab_controller"), 1, new String[] {"IGI", "CXC", "IGI"}, "I", "iron_ingot", "G", "glass", "C", ac("genetic_circuit"),
-                "X", ac("genetic_analyzer"));
-        shaped("dna_analyzer", ac("dna_analyzer"), 1, new String[] {"IGI", "CRC", "III"}, "I", "iron_ingot", "G", "glass", "C", ac("genetic_circuit"), "R", "redstone_block");
-        shaped("mutation_chamber", ac("mutation_chamber"), 1, new String[] {"IGI", "GFG", "III"}, "I", "iron_ingot", "G", "glass", "F", "fermented_spider_eye");
-        shaped("genetic_storage", ac("genetic_storage"), 1, new String[] {"ICI", "CHC", "ICI"}, "I", "iron_ingot", "C", ac("genetic_circuit"), "H", "chest");
-        shaped("queen_enhancement_chamber", ac("queen_enhancement_chamber"), 1, new String[] {"IGI", "GJG", "IAI"}, "I", "iron_ingot", "G", "glass",
-                "J", ac("royal_jelly"), "A", "amethyst_block");
-        shaped("genetic_energy_core", ac("genetic_energy_core"), 1, new String[] {"IAI", "ARA", "IAI"}, "I", "iron_ingot", "A", "amethyst_shard", "R", "redstone_block");
+        // The Genetic Laboratory, one block: about what its controller and five parts used to cost together.
+        shaped("genetic_laboratory", ac("genetic_laboratory"), 1, new String[] {"IGI", "CXC", "ARA"}, "I", "iron_ingot", "G", "glass",
+                "C", ac("genetic_circuit"), "X", ac("genetic_analyzer"), "A", "amethyst_block", "R", "redstone_block");
         // Upgrades: tier 1 from an Upgrade Base, tiers 2 and 3 from the tier below.
         String[][] materials = {{"speed", "sugar"}, {"food_efficiency", "golden_carrot"}, {"simulation", "comparator"}, {"storage", "chest"},
                 {"breeding", "egg"}, {"genetic", ac("genetic_circuit")}, {"soldier", "iron_sword"}, {"automation", "hopper"},
@@ -877,9 +866,7 @@ public class DataGen {
 
     // ------------------------------------------------------------------ Blocks, items, loot, tags, worldgen, models
 
-    static final String[] STRUCTURES = {"breeding_chamber", "scavenging_site", "resource_pile", "fighting_site", "farmer_garden", "food_storage", "nursery",
-            "queen_chamber", "worker_housing", "soldier_barracks", "processing_chamber", "colony_connector"};
-    static final String[] LAB_PARTS = {"dna_analyzer", "mutation_chamber", "genetic_storage", "queen_enhancement_chamber", "genetic_energy_core"};
+    static final String[] STRUCTURES = {"brood_chamber", "housing", "storage", "foraging_chamber", "fungus_garden", "hunting_chamber", "queen_chamber"};
     static final String[] NESTS = {"common", "wood", "stone", "snow", "desert", "farmer", "jungle", "swamp", "savanna", "shore", "blossom", "pale",
             "badlands"};
     static final String[] UPGRADE_TYPES = {"speed", "food_efficiency", "simulation", "storage", "breeding", "genetic", "soldier", "automation",
@@ -896,13 +883,10 @@ public class DataGen {
                 "entries", arr(obj("type", "minecraft:item", "modifier", obj("type", "minecraft:copy_components", "include",
                         arr("minecraft:custom_name", ac("colony")), "source", "block_entity"), "name", ac("terrarium"))), "rolls", 1)),
                 "random_sequence", ac("blocks/terrarium")));
-        for (String block : new String[] {"ant_tube", "ant_tunnel", "upgrade_station", "genetic_lab_controller", "generator"}) {
+        for (String block : new String[] {"upgrade_station", "genetic_laboratory", "generator"}) {
             selfDrop(block);
         }
         for (String block : STRUCTURES) {
-            selfDrop(block);
-        }
-        for (String block : LAB_PARTS) {
             selfDrop(block);
         }
         for (String nest : NESTS) {
@@ -925,23 +909,16 @@ public class DataGen {
         List<Object> pickaxe = new ArrayList<>();
         List<Object> shovel = new ArrayList<>();
         List<Object> axe = new ArrayList<>();
-        for (String part : LAB_PARTS) {
-            pickaxe.add(ac(part));
-        }
-        pickaxe.add(ac("genetic_lab_controller"));
+        pickaxe.add(ac("genetic_laboratory"));
         pickaxe.add(ac("generator"));
-        pickaxe.add(ac("fighting_site"));
-        pickaxe.add(ac("soldier_barracks"));
-        pickaxe.add(ac("processing_chamber"));
-        pickaxe.add(ac("colony_connector"));
-        for (String s : new String[] {"breeding_chamber", "scavenging_site", "farmer_garden", "nursery", "queen_chamber", "worker_housing"}) {
+        pickaxe.add(ac("hunting_chamber"));
+        for (String s : new String[] {"brood_chamber", "housing", "foraging_chamber", "fungus_garden", "queen_chamber"}) {
             shovel.add(ac(s));
         }
-        shovel.add(ac("ant_tunnel"));
         for (String nest : NESTS) {
             shovel.add(ac(nest + "_ant_nest"));
         }
-        for (String s : new String[] {"terrarium", "resource_pile", "food_storage", "upgrade_station"}) {
+        for (String s : new String[] {"terrarium", "storage", "upgrade_station"}) {
             axe.add(ac(s));
         }
         write(RES.resolve("data/minecraft/tags/block/mineable/pickaxe.json"), obj("values", pickaxe));
@@ -1001,36 +978,23 @@ public class DataGen {
         for (String s : STRUCTURES) {
             facing(s);
         }
-        write(states.resolve("ant_tunnel.json"), obj("variants", obj("", obj("model", ac("block/ant_tunnel")))));
-        write(blockModels.resolve("ant_tunnel.json"), obj("parent", "minecraft:block/cube_all", "textures", obj("all", ac("block/ant_tunnel"))));
         write(states.resolve("upgrade_station.json"), obj("variants", obj("", obj("model", ac("block/upgrade_station")))));
-        // The tube: a core and an arm per connected side (with ants or without makes no difference to the block).
-        List<Object> parts = new ArrayList<>();
-        parts.add(obj("apply", obj("model", ac("block/ant_tube_core"))));
-        String[][] arms = {{"north", "0", "0"}, {"east", "0", "90"}, {"south", "0", "180"}, {"west", "0", "270"}, {"up", "270", "0"}, {"down", "90", "0"}};
-        for (String[] arm : arms) {
-            parts.add(obj("when", obj(arm[0], "true"), "apply", obj("model", ac("block/ant_tube_arm"), "x", Integer.parseInt(arm[1]) == 0 ? null : Integer.parseInt(arm[1]),
-                    "y", Integer.parseInt(arm[2]) == 0 ? null : Integer.parseInt(arm[2]), "uvlock", false)));
-        }
-        write(states.resolve("ant_tube.json"), obj("multipart", parts));
-        // Lab blocks: facing, lit when formed.
-        List<String> lab = new ArrayList<>(Arrays.asList(LAB_PARTS));
-        lab.add("genetic_lab_controller");
-        for (String part : lab) {
+        // The Genetic Laboratory: facing, its windows lit while it works.
+        for (String part : new String[] {"genetic_laboratory"}) {
             Map<String, Object> variants = new LinkedHashMap<>();
             String[] facings = {"north", "east", "south", "west"};
             int[] rotations = {0, 90, 180, 270};
             for (int f = 0; f < 4; f++) {
-                for (String formed : new String[] {"false", "true"}) {
-                    variants.put("facing=" + facings[f] + ",formed=" + formed, obj("model", ac("block/" + part + (formed.equals("true") ? "_formed" : "")),
+                for (String working : new String[] {"false", "true"}) {
+                    variants.put("facing=" + facings[f] + ",working=" + working, obj("model", ac("block/" + part + (working.equals("true") ? "_working" : "")),
                             "y", rotations[f] == 0 ? null : rotations[f]));
                 }
             }
             write(states.resolve(part + ".json"), obj("variants", variants));
-            for (String formed : new String[] {"", "_formed"}) {
-                write(blockModels.resolve(part + formed + ".json"), obj("parent", "minecraft:block/orientable",
-                        "textures", obj("front", ac("block/" + part + "_front" + formed), "side", ac("block/" + part + "_side" + formed),
-                                "top", ac("block/" + part + "_top" + formed))));
+            for (String working : new String[] {"", "_working"}) {
+                write(blockModels.resolve(part + working + ".json"), obj("parent", "minecraft:block/orientable",
+                        "textures", obj("front", ac("block/" + part + "_front" + working), "side", ac("block/" + part + "_side" + working),
+                                "top", ac("block/" + part + "_top" + working))));
             }
         }
         // The Generator: facing, its front glowing while it burns.
@@ -1097,16 +1061,13 @@ public class DataGen {
         }
         // Block items use their block models.
         List<String> blocks = new ArrayList<>(Arrays.asList(STRUCTURES));
-        blocks.addAll(Arrays.asList(LAB_PARTS));
-        blocks.addAll(List.of("terrarium", "ant_tunnel", "upgrade_station", "genetic_lab_controller", "generator"));
+        blocks.addAll(List.of("terrarium", "upgrade_station", "genetic_laboratory", "generator"));
         for (String nest : NESTS) {
             blocks.add(nest + "_ant_nest");
         }
         for (String block : blocks) {
             write(items.resolve(block + ".json"), obj("model", obj("type", "minecraft:model", "model", ac("block/" + block))));
         }
-        write(items.resolve("ant_tube.json"), obj("model", obj("type", "minecraft:model", "model", ac("item/ant_tube"))));
-        write(models.resolve("ant_tube.json"), obj("parent", ac("block/ant_tube_item")));
     }
 
     static void particles() {
@@ -1184,13 +1145,6 @@ public class DataGen {
                 box(p(1.5, 15.25, 1.5), p(14.5, 15.5, 14.5), glass, glass));
         model("terrarium", obj("particle", ac("block/terrarium_wood"), "wood", ac("block/terrarium_wood"),
                 "glass", obj("force_translucent", true, "sprite", ac("block/terrarium_glass"))), terrarium);
-        // The tube: a glass core and an arm per connection (the arm model points north; blockstates turn it).
-        Map<String, Object> tubeTextures = obj("particle", ac("block/ant_tube"), "glass", obj("force_translucent", true, "sprite", ac("block/ant_tube")),
-                "rim", obj("force_translucent", true, "sprite", ac("block/ant_tube_rim")));
-        model("ant_tube_core", tubeTextures, arr(box(p(5, 5, 5), p(11, 11, 11), glass, glass)));
-        model("ant_tube_arm", tubeTextures, arr(obj("from", arr(5, 5, 0), "to", arr(11, 11, 5), "faces", obj(
-                "down", face(glass), "up", face(glass), "west", face(glass), "east", face(glass), "north", face("#rim")))));
-        model("ant_tube_item", tubeTextures, arr(box(p(5, 5, 0), p(11, 11, 16), glass, glass)));
         // Wild nests: a mound with an entrance on top.
         write(ASSETS.resolve("models/block/ant_nest.json"), obj("parent", "minecraft:block/block", "textures", obj("particle", "#side"), "elements", arr(
                 box(p(1, 0, 1), p(15, 4, 15), "#side", "#side"), box(p(3, 4, 3), p(13, 7, 13), "#side", "#side"),
@@ -1202,22 +1156,22 @@ public class DataGen {
             String top = ac("block/" + s + "_top");
             String front = ac("block/" + s + "_front");
             switch (s) {
-                case "scavenging_site" -> model(s, obj("particle", side, "side", side, "top", top, "stick", "minecraft:block/oak_log"), arr(
+                case "foraging_chamber" -> model(s, obj("particle", side, "side", side, "top", top, "stick", "minecraft:block/oak_log"), arr(
                         box(p(0, 0, 0), p(16, 12, 16), "#side", "#top"),
                         box(p(2, 12, 2), p(6, 13, 6), "#side", "#top"), box(p(10, 12, 9), p(14, 13.5, 13), "#side", "#top"),
                         obj("from", arr(9, 12, 3), "to", arr(10, 13, 9), "rotation", obj("angle", 22.5, "axis", "y", "origin", arr(9.5, 12.5, 6)),
                                 "faces", obj("up", face("#stick"), "north", face("#stick"), "south", face("#stick"), "west", face("#stick"), "east", face("#stick")))));
-                case "fighting_site" -> model(s, obj("particle", side, "side", side, "top", top, "bone", "minecraft:block/bone_block_side"), arr(
+                case "hunting_chamber" -> model(s, obj("particle", side, "side", side, "top", top, "bone", "minecraft:block/bone_block_side"), arr(
                         box(p(0, 0, 0), p(16, 10, 16), "#side", "#top"),
                         box(p(0, 10, 0), p(2, 13, 2), "#bone", "#bone"), box(p(14, 10, 0), p(16, 13, 2), "#bone", "#bone"),
                         box(p(0, 10, 14), p(2, 13, 16), "#bone", "#bone"), box(p(14, 10, 14), p(16, 13, 16), "#bone", "#bone")));
-                case "farmer_garden" -> model(s, obj("particle", side, "side", side, "top", top, "stem", "minecraft:block/mushroom_stem",
+                case "fungus_garden" -> model(s, obj("particle", side, "side", side, "top", top, "stem", "minecraft:block/mushroom_stem",
                         "cap", "minecraft:block/red_mushroom_block", "cap2", "minecraft:block/brown_mushroom_block"), arr(
                         box(p(0, 0, 0), p(16, 12, 16), "#side", "#top"),
                         box(p(2.5, 12, 2.5), p(3.5, 14, 3.5), "#stem", "#stem"), box(p(1.5, 14, 1.5), p(4.5, 15, 4.5), "#cap", "#cap"),
                         box(p(12.5, 12, 11.5), p(13.5, 15, 12.5), "#stem", "#stem"), box(p(11, 15, 10), p(15, 16, 14), "#cap2", "#cap2"),
                         box(p(12, 12, 3), p(12.8, 13.2, 3.8), "#stem", "#stem"), box(p(11.4, 13.2, 2.4), p(13.4, 13.9, 4.4), "#cap", "#cap")));
-                case "resource_pile" -> model(s, obj("particle", side, "side", side, "top", top, "inside", ac("block/resource_pile_inside")), arr(
+                case "storage" -> model(s, obj("particle", side, "side", side, "top", top, "inside", ac("block/storage_inside")), arr(
                         box(p(0, 0, 0), p(16, 2, 16), "#side", "#side"),
                         obj("from", arr(1, 2, 1), "to", arr(15, 10, 2), "faces", obj("north", face("#side"), "south", face("#inside"), "up", face("#side"),
                                 "west", face("#side"), "east", face("#side"))),
@@ -1226,8 +1180,6 @@ public class DataGen {
                         obj("from", arr(1, 2, 2), "to", arr(2, 10, 14), "faces", obj("west", face("#side"), "east", face("#inside"), "up", face("#side"))),
                         obj("from", arr(14, 2, 2), "to", arr(15, 10, 14), "faces", obj("east", face("#side"), "west", face("#inside"), "up", face("#side"))),
                         obj("from", arr(2, 2, 2), "to", arr(14, 9.5, 14), "faces", obj("up", face("#top")))));
-                case "colony_connector" -> model(s, obj("particle", side, "glass", obj("force_translucent", true, "sprite", side), "core", top), arr(
-                        box(p(5, 5, 5), p(11, 11, 11), "#core", "#core"), box(p(2, 2, 2), p(14, 14, 14), glass, glass)));
                 default -> write(ASSETS.resolve("models/block/" + s + ".json"), obj("parent", "minecraft:block/orientable",
                         "textures", obj("front", front, "side", side, "top", top)));
             }
@@ -1396,7 +1348,7 @@ public class DataGen {
             LANG.put(NS + ".configuration.section." + section.group(1) + ".title", "Ant Colonies: " + title);
         }
         LANG.put(NS + ".configuration.title", "Ant Colonies Configuration");
-        if (options < 70) {
+        if (options < 60) {
             throw new IllegalStateException("Only " + options + " config options found in " + source + ": did its format change?");
         }
     }
@@ -1436,14 +1388,10 @@ public class DataGen {
                 l.put("item." + NS + "." + u[0] + "_upgrade_" + t, u[1] + " Upgrade " + numerals[t - 1]);
             }
         }
-        String[][] blocks = {{"terrarium", "Terrarium"}, {"ant_tube", "Glass Ant Tube"}, {"ant_tunnel", "Underground Tunnel"},
-                {"breeding_chamber", "Breeding Chamber"}, {"scavenging_site", "Scavenging Site"}, {"resource_pile", "Resource Pile"},
-                {"fighting_site", "Fighting Site"}, {"farmer_garden", "Farmer Ant Garden"}, {"food_storage", "Food Storage"}, {"nursery", "Ant Nursery"},
-                {"queen_chamber", "Queen Chamber"}, {"worker_housing", "Worker Housing"}, {"soldier_barracks", "Soldier Barracks"},
-                {"processing_chamber", "Resource Processing Chamber"}, {"colony_connector", "Colony Connector"}, {"upgrade_station", "Upgrade Station"}, {"generator", "Generator"},
-                {"genetic_lab_controller", "Genetic Laboratory Controller"}, {"dna_analyzer", "DNA Analyzer"}, {"mutation_chamber", "Mutation Chamber"},
-                {"genetic_storage", "Genetic Storage"}, {"queen_enhancement_chamber", "Queen Enhancement Chamber"},
-                {"genetic_energy_core", "Genetic Energy Core"}};
+        String[][] blocks = {{"terrarium", "Terrarium"}, {"brood_chamber", "Brood Chamber"}, {"housing", "Housing"}, {"storage", "Storage"},
+                {"foraging_chamber", "Foraging Chamber"}, {"fungus_garden", "Fungus Garden"}, {"hunting_chamber", "Hunting Chamber"},
+                {"queen_chamber", "Queen Chamber"}, {"upgrade_station", "Upgrade Station"}, {"generator", "Generator"},
+                {"genetic_laboratory", "Genetic Laboratory"}};
         for (String[] b : blocks) {
             l.put("block." + NS + "." + b[0], b[1]);
         }
@@ -1454,23 +1402,17 @@ public class DataGen {
         l.put("entity." + NS + ".wild_ant", "Wild Ant");
         // Tooltips of blocks and items.
         String[][] tips = {
-                {"terrarium", "The heart of a colony. Put a Queen in, feed her, and connect structures with tubes or tunnels."},
-                {"ant_tube", ""}, {"breeding_chamber", "Lets the Queen lay eggs at full speed; more chambers lay faster."},
-                {"scavenging_site", "Workers assigned here find their species' resources. More workers, faster finds."},
-                {"resource_pile", "Stores what the colony finds. Hoppers can empty it; Storage Upgrades open more slots."},
-                {"fighting_site", "Soldiers hunt here: drops come from the hunted mobs' own loot tables, no mobs are spawned."},
-                {"farmer_garden", "Farmer Ants grow food here, plus mushrooms, seeds and berries."},
-                {"food_storage", "Holds the colony's food (25,000 each) and eats the ant food put into it."},
-                {"nursery", "Larvae grow faster and more of them fit."}, {"queen_chamber", "Raises new Queens from the colony's Queen."},
-                {"worker_housing", "Houses 2,000 more adults."}, {"soldier_barracks", "Lets the colony raise soldiers and houses them."},
-                {"processing_chamber", "Workers here compress nuggets and fragments in the Resource Piles."},
-                {"colony_connector", "Joins two colonies: they share food and storage but stay separate colonies."},
+                {"terrarium", "The heart of a colony: surround it with 8 chambers (sides and corners, same level). Put a Queen in and feed her."},
+                {"brood_chamber", "Eggs at full speed, faster larvae and room for them. More Brood Chambers, faster still."},
+                {"housing", "Room for 3,000 adults, up to 1,000 of them soldiers. A colony needs one to raise soldiers."},
+                {"storage", "Holds what the colony finds, and food room. Hoppers can empty it; Storage Upgrades open more slots."},
+                {"foraging_chamber", "Workers here find their species' resources. More workers, faster finds."},
+                {"fungus_garden", "Farmer Ants grow food here, plus mushrooms, seeds and berries."},
+                {"hunting_chamber", "Soldiers hunt here: drops come from the hunted mobs' own loot tables, no mobs are spawned."},
+                {"queen_chamber", "Raises new Queens from the colony's Queen."},
                 {"upgrade_station", "Makes species upgrades from an Upgrade Base and a species' signature material."},
                 {"generator", "Burns furnace fuel into FE and gives it to the machines next to it, such as the Genetic Laboratory."},
-                {"genetic_lab_controller", "The Genetic Laboratory: surround it with its five parts (within 2 blocks)."},
-                {"dna_analyzer", "A Genetic Laboratory part."}, {"mutation_chamber", "A Genetic Laboratory part: applies mutations."},
-                {"genetic_storage", "A Genetic Laboratory part."}, {"queen_enhancement_chamber", "A Genetic Laboratory part."},
-                {"genetic_energy_core", "A Genetic Laboratory part: turns redstone, glowstone, lapis, amethyst into Genetic Energy."},
+                {"genetic_laboratory", "Upgrades, rerolls, mutates and purges a Queen's genes. Runs on FE: put a Generator next to it."},
                 {"tweezers", "Catches wild ants into empty Test Tubes in your inventory. Also works on wild nests."},
                 {"test_tube", "Holds caught ants. Keep some in your inventory when using Tweezers."},
                 {"ant_food", "Basic colony food (200 food)."}, {"mineral_ant_food", "Food for mineral species; their eggs need it."},
@@ -1489,8 +1431,6 @@ public class DataGen {
                 l.put("tooltip." + NS + "." + tip[0], tip[1]);
             }
         }
-        l.put("tooltip." + NS + ".ant_tube", "Joins colony blocks it touches. Ants walk through it.");
-        l.put("tooltip." + NS + ".ant_tunnel", "Joins colony blocks it touches, underground.");
         l.put("tooltip." + NS + ".tweezers.terrarium", "On a Terrarium: take workers (sneak: eggs) to start another colony.");
         l.put("tooltip." + NS + ".colony_scanner", "Right-click a Terrarium or colony structure for a report.");
         l.put("tooltip." + NS + ".genetic_analyzer", "Right-click a Terrarium, or use with a Queen in the other hand.");
@@ -1505,19 +1445,19 @@ public class DataGen {
         l.put("tooltip." + NS + ".queen.generation", "Generation %s");
         l.put("tooltip." + NS + ".hold_shift", "Hold Shift for genetics");
         l.put("tooltip." + NS + ".upgrade.tier", "Tier %s");
-        String[][] upgradeTips = {{"speed", "Faster work at job sites, labs and nurseries."}, {"food_efficiency", "Less food eaten."},
-                {"simulation", "Terrarium: more offline catch-up (numbers only, no entities)."}, {"storage", "More Resource Pile slots, more Food Storage room."},
+        String[][] upgradeTips = {{"speed", "Faster work in chambers and the lab, faster larvae."}, {"food_efficiency", "Less food eaten."},
+                {"simulation", "Terrarium: more offline catch-up (numbers only, no entities)."}, {"storage", "Storage: more slots and more food room."},
                 {"breeding", "Faster egg laying and Queen rearing."}, {"genetic", "Cheaper lab work; more mutations in Queen Chambers."},
-                {"soldier", "Stronger soldiers."}, {"automation", "Resource Pile: pushes into the container below. Food Storage: pulls food from above."},
-                {"population", "More ants housed, or more at one job site."}, {"evolution", "Terrarium: better evolution chances."}};
+                {"soldier", "Stronger soldiers."}, {"automation", "Storage: pushes its finds into the container below."},
+                {"population", "More ants housed, or more working in one chamber."}, {"evolution", "Terrarium: better evolution chances."}};
         for (String[] u : upgradeTips) {
             l.put("tooltip." + NS + ".upgrade." + u[0], u[1]);
         }
         l.put("tooltip." + NS + ".species_upgrade.blank", "Made at the Upgrade Station.");
         l.put("tooltip." + NS + ".species_upgrade.for", "For %s colonies only");
-        l.put("tooltip." + NS + ".species_upgrade.extraction", "+%s%% finds at Scavenging Sites");
+        l.put("tooltip." + NS + ".species_upgrade.extraction", "+%s%% finds in Foraging Chambers");
         l.put("tooltip." + NS + ".species_upgrade.processing", "Finds come processed (nuggets to ingots, fragments to gems), +%s%%");
-        l.put("tooltip." + NS + ".species_upgrade.efficiency", "Site workers eat less; signature finds more often (%s%%)");
+        l.put("tooltip." + NS + ".species_upgrade.efficiency", "Foragers eat less; signature finds more often (%s%%)");
         // Castes, categories, climates, rarity, grades, traits.
         l.put("caste." + NS + ".worker", "Workers");
         l.put("caste." + NS + ".soldier", "Soldiers");
@@ -1554,13 +1494,13 @@ public class DataGen {
         }
         // Statuses.
         String[][] statuses = {{"no_queen", "No Queen: no eggs are laid"}, {"no_food", "No food"}, {"no_workers", "No workers for the jobs"},
-                {"no_soldiers", "No soldiers for the Fighting Sites"}, {"missing_connection", "Missing connection: not linked to a Terrarium"},
-                {"invalid_multiblock", "Invalid multiblock: parts missing"}, {"storage_full", "Storage full"},
+                {"no_soldiers", "No soldiers for the Hunting Chambers"}, {"missing_connection", "Not part of a colony: put it next to a Terrarium"},
+                {"invalid_multiblock", "Incomplete colony: put a chamber in all 8 places around the Terrarium"}, {"storage_full", "Storage full"},
                 {"incompatible_species", "Incompatible species"}, {"insufficient_materials", "Insufficient materials (or colony not ready)"},
-                {"two_colonies", "Two colonies are connected: separate them with a Colony Connector"}, {"unknown_species", "Unknown species (missing data)"},
-                {"no_storage", "No Resource Pile connected"}, {"no_special_food", "Eggs lack their special food"}, {"climate", "Wrong climate for this species"},
-                {"low_health", "Colony health is low"}, {"no_breeding_chamber", "No Breeding Chamber: slow egg laying"},
-                {"no_barracks", "No Soldier Barracks: no soldiers are raised"}, {"population_full", "Housing full"}, {"starving", "Starving!"},
+                {"two_colonies", "A chamber touches two Terrariums: keep Terrariums 3 blocks apart"}, {"unknown_species", "Unknown species (missing data)"},
+                {"no_storage", "No Storage in the colony: finds have nowhere to go"}, {"no_special_food", "Eggs lack their special food"}, {"climate", "Wrong climate for this species"},
+                {"low_health", "Colony health is low"}, {"no_brood_chamber", "No Brood Chamber: slow egg laying"},
+                {"no_housing", "No Housing: no soldiers are raised"}, {"population_full", "Housing full"}, {"starving", "Starving!"},
                 {"working", "Working"}, {"paused", "Paused by a redstone signal"}};
         for (String[] s : statuses) {
             l.put("status." + NS + "." + s[0], s[1]);
@@ -1569,22 +1509,22 @@ public class DataGen {
         String[][] gui = {{"page.overview", "Colony"}, {"page.genetics", "Genes"}, {"page.jobs", "Jobs"}, {"page.production", "Stats"},
                 {"stage", "Stage %s"}, {"queen", "Queen %s"}, {"workers", "Workers: %s"}, {"soldiers", "Soldiers: %s"}, {"larvae", "Larvae: %s"},
                 {"eggs", "Eggs: %s"}, {"housing", "Adults %s / %s housed"}, {"food", "Food"}, {"health", "Health"},
-                {"soldier_share", "New soldiers: %s%%"}, {"soldier_share.hint", "Share of new adults raised as soldiers (needs Soldier Barracks)"},
+                {"soldier_share", "New soldiers: %s%%"}, {"soldier_share.hint", "Share of new adults raised as soldiers (needs a Housing)"},
                 {"remove_queen", "Take the Queen out"}, {"remove_queen.hint", "Needs an empty Test Tube in the Queen slot"},
                 {"slot.queen", "Queen slot"}, {"slot.queen.hint", "A Queen Test Tube starts the colony; an empty Test Tube takes the Queen out"},
                 {"slot.feed", "Feed slot"}, {"slot.feed.hint", "Food, ants in Test Tubes, eggs, larvae or an Evolution Catalyst"},
                 {"slot.output", "Output"}, {"slot.output.hint", "Empty Test Tubes and leftovers come out here"},
-                {"slot.upgrade", "Upgrade slot"}, {"slot.upgrade.hint", "Population, Simulation, Evolution, Food Efficiency or Breeding upgrades"}, {"slot.structure_upgrade.hint", "Upgrades this structure accepts (see JEI or the item tooltip)"},
+                {"slot.upgrade", "Upgrade slot"}, {"slot.upgrade.hint", "Population, Simulation, Evolution, Food Efficiency or Breeding upgrades"}, {"slot.structure_upgrade.hint", "Upgrades this chamber accepts (see JEI or EMI, or the item tooltip)"},
                 {"transforming", "Transforming from %s: %s%%"}, {"genetics_of", "%s, generation %s"}, {"no_mutations", "No mutations"},
-                {"mutations", "Mutations:"}, {"jobs_header", "Job sites - %s ants home"}, {"job_workers", "%s / %s ants"}, {"no_jobs", "No job sites connected"},
-                {"auto", "Auto"}, {"auto.hint", "Auto: as many ants as the site holds"}, {"per_minute", "/min"}, {"less_10", "-10"}, {"less_1", "-1"},
+                {"mutations", "Mutations:"}, {"jobs_header", "Working chambers - %s ants home"}, {"job_workers", "%s / %s ants"}, {"no_jobs", "No Foraging Chamber, Fungus Garden or Hunting Chamber"},
+                {"auto", "Auto"}, {"auto.hint", "Auto: as many ants as the chamber holds"}, {"per_minute", "/min"}, {"less_10", "-10"}, {"less_1", "-1"},
                 {"more_1", "+1"}, {"more_10", "+10"}, {"farm.hint", "Needs Farmer Ants (or a species that farms)"},
                 {"stat.eggs", "Eggs laid"}, {"stat.raised", "Adults raised"}, {"stat.food_in", "Food in"}, {"stat.food_out", "Food eaten"},
                 {"stat.finds", "Finds"}, {"stat.hunts", "Hunts"}, {"stat.deaths", "Deaths"}, {"stat.soldier_room", "Soldier room"},
                 {"stat.larvae_room", "Larvae room"}, {"stat.structures", "Structures"}, {"stat.found_total", "Found in total"},
                 {"evolution_attempts", "Evolution attempts: %s, catalysts: %s"}, {"upgrades", "Upgrades"}, {"linked", "Linked to a colony"}, {"not_linked", "Not linked to a Terrarium"},
                 {"site.workers", "Workers: %s / %s (wanted: %s)"}, {"site.soldiers", "Soldiers: %s / %s (wanted: %s)"}, {"site.rate", "%s per minute"},
-                {"food_storage.hint", "Ant food here feeds the colony"}, {"queen_chamber.slots", "Rears a new Queen"}, {"queen_chamber.time", "Takes %s s at full speed"},
+                {"queen_chamber.slots", "Rears a new Queen"}, {"queen_chamber.time", "Takes %s s at full speed"},
                 {"slot.qc_tube", "Test Tube slot"}, {"slot.qc_tube.hint", "An empty Test Tube to hold the new Queen"},
                 {"slot.qc_sample", "Sample slot (optional)"}, {"slot.qc_sample.hint", "A Genetic Sample can cross a hybrid into the daughter"},
                 {"slot.qc_output", "New Queen"}, {"slot.qc_output.hint", "The finished Queen Test Tube comes out here"},
@@ -1600,26 +1540,24 @@ public class DataGen {
                 {"station.efficiency", "Efficient"}, {"station.extraction.hint", "More finds"}, {"station.processing.hint", "Finds come processed"},
                 {"station.efficiency.hint", "Less food, more signature finds"},
                 {"station.hint", "Base or upgrade + 4/8/16 signature items"},
-                {"lab.title", "Genetic Laboratory"}, {"lab.online", "ONLINE"}, {"lab.offline", "INCOMPLETE"}, {"lab.no_queen", "No specimen"},
+                {"lab.title", "Genetic Laboratory"}, {"lab.online", "ONLINE"}, {"lab.offline", "NO POWER"}, {"lab.no_queen", "No specimen"},
                 {"lab.insert", "Add a Queen"}, {"lab.energy_label", "Energy"}, {"lab.level_short", "Lv %s"}, {"lab.cancel_button", "Cancel"},
-                {"lab.max_button", "Perfected"}, {"lab.parts", "Laboratory parts"},
-                {"lab.build_hint", "Place the five parts within 2 blocks of the controller, at most 1 block up or down."},
+                {"lab.max_button", "Perfected"},
                 {"lab.catalyst_gives", "This catalyst gives: %s"}, {"lab.working.upgrade", "Raising %s... %s%%"}, {"lab.working.reroll", "Rerolling %s... %s%%"},
                 {"lab.working.mutate", "Inducing a mutation... %2$s%%"}, {"lab.working.purge", "Purging a harmful mutation... %2$s%%"},
-                {"lab.working.sample", "Copying her genes... %2$s%%"}, {"lab.incomplete", "The laboratory is incomplete: build the missing parts"},
+                {"lab.working.sample", "Copying her genes... %2$s%%"},
                 {"lab.hint", "Select a trait, put its materials below, then Upgrade"}, {"lab.trait_hint", "%s: %s"}, {"lab.time", "Takes %s s"}, {"lab.have", "Have %s, need %s"},
                 {"lab.materials_hint", "Materials go in the three slots under the costs"},
-                {"lab.power_hint", "Runs on FE: put a Generator, or any mod's cable, next to the controller or the Genetic Energy Core"},
+                {"lab.power_hint", "Runs on FE: put a Generator, or any mod's cable, next to it"},
                 {"lab.mutation_cap", "This Queen already carries %s beneficial mutations, the most one can (flaws don't count)"},
                 {"generator.making", "Making %s FE/t"}, {"generator.full", "Full: waiting for a machine"}, {"generator.idle", "Idle: needs fuel"},
                 {"generator.fuel", "Fuel slot"}, {"generator.fuel.hint", "Anything a furnace burns, for as long as it burns there"},
                 {"generator.push", "Gives its energy to the machines and cables next to it"},
-                {"generator.hint", "Place it next to the Genetic Laboratory's controller or Genetic Energy Core"},
+                {"generator.hint", "Place it next to the Genetic Laboratory"},
                 {"lab.catalyst_hint", "Catalyst: Reroll Serum, a mutation catalyst, or an empty Test Tube"},
                 {"lab.upgrade_slot_hint", "Speed or Genetic Upgrade"},
-                {"effect.breeding_chamber", "Egg laying at full speed."}, {"effect.nursery", "Faster larvae, more room."},
-                {"effect.worker_housing", "+2,000 housing."}, {"effect.soldier_barracks", "Soldiers raised and housed."},
-                {"effect.colony_connector", "Shares food and storage with the colony beyond."}, {"effect.resource_pile", ""}};
+                {"effect.brood_chamber", "Eggs at full speed, faster larvae, room for 1,500 larvae."},
+                {"effect.housing", "Room for 3,000 adults (up to 1,000 soldiers)."}, {"effect.storage", ""}};
         for (String[] g : gui) {
             if (!g[1].isEmpty()) {
                 l.put("gui." + NS + "." + g[0], g[1]);
@@ -1630,7 +1568,7 @@ public class DataGen {
                 {"message." + NS + ".tweezers.caught", "Caught: %s"}, {"message." + NS + ".tweezers.no_eggs", "Not enough eggs"},
                 {"message." + NS + ".tweezers.no_workers", "No spare workers"}, {"message." + NS + ".nest.recovering", "The nest is still recovering"},
                 {"scanner." + NS + ".colony", "%s colony, stage %s"}, {"scanner." + NS + ".population", "%s workers, %s soldiers, %s larvae, %s eggs"},
-                {"scanner." + NS + ".food", "Food %s / %s (+%s, -%s per minute)"}, {"scanner." + NS + ".health", "Health %s%%, %s structures, %s tubes"},
+                {"scanner." + NS + ".food", "Food %s / %s (+%s, -%s per minute)"}, {"scanner." + NS + ".health", "Health %s%%, %s chambers, %s places empty"},
                 {"scanner." + NS + ".queen", "Queen %s (%s)"}, {"scanner." + NS + ".linked", "Linked to the Terrarium at %s, %s, %s"},
                 {"scanner." + NS + ".site", "%s / %s ants, %s per minute"}, {"analyzer." + NS + ".header", "Genetic analysis"},
                 {"analyzer." + NS + ".lineage", "Lineage: %s"}, {"book." + NS + ".kind", "%s, tier %s, %s"}, {"book." + NS + ".wild", "Wild in: %s"},
@@ -1643,7 +1581,7 @@ public class DataGen {
         // JEI.
         String[][] jei = {{"species", "Ant Species"}, {"breeding", "Queen Rearing"}, {"evolution", "Queen Evolution"}, {"mutation", "Genetic Mutation"},
                 {"hybrid", "Hybrid Species"}, {"eggs", "Egg Production"}, {"larvae", "Larvae Development"}, {"production", "Resource Production"},
-                {"farming", "Farmer Ant Production"}, {"fighting", "Fighting Site Loot"}, {"lab", "Genetic Laboratory"},
+                {"farming", "Farmer Ant Production"}, {"fighting", "Hunting Chamber Loot"}, {"lab", "Genetic Laboratory"},
                 {"trait", "Genetic Upgrades"}, {"species_upgrade", "Species Upgrades"}, {"hybrid_of", "%s x %s = %s"}, {"effect.production", "Production %s"}, {"effect.gathering", "Gathering %s"},
                 {"effect.food", "Food use %s"}, {"effect.eggs", "Eggs %s"}, {"effect.growth", "Growth %s"}, {"effect.soldiers", "Soldiers %s"},
                 {"effect.farming", "Farming %s"}, {"effect.special", "Signature finds %s"}, {"effect.cold_resistant", "Cold resistant"},

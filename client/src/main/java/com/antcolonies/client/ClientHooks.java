@@ -1,7 +1,6 @@
 package com.antcolonies.client;
 
-import com.antcolonies.content.block.LabPartBlock;
-import com.antcolonies.content.block.NetworkEntityBlock;
+import com.antcolonies.content.block.ColonyEntityBlock;
 import com.antcolonies.content.blockentity.GeneticLabBlockEntity;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
@@ -44,7 +43,7 @@ public final class ClientHooks {
 
     public static TerrariumVisuals visuals(TerrariumBlockEntity terrarium) {
         BlockState state = terrarium.getBlockState();
-        int front = switch (state.hasProperty(NetworkEntityBlock.FACING) ? state.getValue(NetworkEntityBlock.FACING) : Direction.NORTH) {
+        int front = switch (state.hasProperty(ColonyEntityBlock.FACING) ? state.getValue(ColonyEntityBlock.FACING) : Direction.NORTH) {
             case EAST -> 1;
             case SOUTH -> 2;
             case WEST -> 3;
@@ -147,28 +146,23 @@ public final class ClientHooks {
             return;
         }
         int color = switch (kind) {
-            case FARMER_GARDEN -> 0xFF5DAA3C;
-            case FIGHTING_SITE -> 0xFF8A1F1F;
-            case PROCESSING_CHAMBER -> 0xFFB0B0B0;
+            case FUNGUS_GARDEN -> 0xFF5DAA3C;
+            case HUNTING_CHAMBER -> 0xFF8A1F1F;
             default -> 0xFF6B4A2E;
         };
         if (random.nextInt(2) == 0) {
-            level.addParticle(ColorParticleOption.create(kind == StructureKind.FARMER_GARDEN ? ModParticles.CRUMB.get() : ModParticles.SOIL.get(), color),
+            level.addParticle(ColorParticleOption.create(kind == StructureKind.FUNGUS_GARDEN ? ModParticles.CRUMB.get() : ModParticles.SOIL.get(), color),
                     pos.getX() + 0.15 + random.nextDouble() * 0.7, pos.getY() + 0.8, pos.getZ() + 0.15 + random.nextDouble() * 0.7, 0, 0.03, 0);
         }
     }
 
-    public static void labParticles(Level level, BlockPos pos, LabPartBlock.Part part, RandomSource random) {
+    /** Gene particles over a working Genetic Laboratory, in its four colors. */
+    public static void labParticles(Level level, BlockPos pos, RandomSource random) {
         if (!AntConfig.client(AntConfig.PARTICLES) || random.nextInt(3) != 0) {
             return;
         }
-        int color = switch (part) {
-            case GENETIC_ENERGY_CORE -> 0xFF3FB8E0;
-            case MUTATION_CHAMBER -> 0xFF7FE04F;
-            case QUEEN_ENHANCEMENT_CHAMBER -> 0xFFE0B040;
-            case DNA_ANALYZER -> 0xFFE04FFF;
-            default -> 0xFF8FA8FF;
-        };
+        int[] colors = {0xFF3FB8E0, 0xFF7FE04F, 0xFFE0B040, 0xFFE04FFF};
+        int color = colors[random.nextInt(colors.length)];
         level.addParticle(ColorParticleOption.create(ModParticles.GENE.get(), color), pos.getX() + 0.2 + random.nextDouble() * 0.6,
                 pos.getY() + 1.0, pos.getZ() + 0.2 + random.nextDouble() * 0.6, 0, 0.01, 0);
     }

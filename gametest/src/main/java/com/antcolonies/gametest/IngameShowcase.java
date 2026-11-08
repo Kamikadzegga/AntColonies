@@ -7,8 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.antcolonies.AntColonies;
-import com.antcolonies.content.block.LabPartBlock;
-import com.antcolonies.content.block.NetworkEntityBlock;
+import com.antcolonies.content.block.ColonyEntityBlock;
 import com.antcolonies.content.blockentity.GeneticLabBlockEntity;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
@@ -128,13 +127,11 @@ public class IngameShowcase {
     private final boolean guiCheck = Files.exists(GUI_MARKER);
     /** Screens to open in the GUI check: a name for the picture and the block's offset from the origin. */
     private static final Object[][] GUI_TARGETS = {
-            {"upgrades_terrarium", 0, 0, 4}, {"upgrades_scavenging_site", 2, 0, 6}, {"upgrades_breeding_chamber", 0, 0, 6},
-            {"user_lab", -6, 0, -4}, {"lonely_scavenging_site", 3, 0, -6}, {"breeding_chamber", 0, 0, 6}, {"nursery", -1, 0, 6}, {"worker_housing", 1, 0, 6}, {"soldier_barracks", -2, 0, 6},
-            {"fighting_site", -3, 0, 6}, {"scavenging_site", 2, 0, 6}, {"resource_pile", 4, 0, 6}, {"food_storage", 0, 0, 7},
-            {"queen_chamber", -4, 0, 6}, {"processing_chamber", -5, 0, 6}, {"farmer_garden", 5, 0, 6}, {"genetic_lab", 0, 0, 9},
-            {"lonely_breeding_chamber", 3, 0, -4}, {"lonely_queen_chamber", 5, 0, -4}};
-    /** Where the copy of the player's lab is: like theirs, two Genetic Storages and no Energy Core, a Generator below. */
-    private static final int[] USER_LAB = {-6, 0, -4};
+            {"upgrades_terrarium", 0, 0, 5}, {"upgrades_foraging_chamber", -1, 0, 4}, {"upgrades_brood_chamber", 1, 0, 6},
+            {"storage", 0, 0, 4}, {"foraging_chamber", 1, 0, 4}, {"brood_chamber", 1, 0, 6}, {"queen_chamber", 0, 0, 6},
+            {"hunting_chamber", -1, 0, 6}, {"housing", -1, 0, 5}, {"fungus_garden", -5, 0, 6}, {"young_terrarium", -6, 0, 5},
+            {"genetic_laboratory", 0, 0, 10}, {"lonely_brood_chamber", 3, 0, -4}, {"lonely_queen_chamber", 5, 0, -4},
+            {"lonely_foraging_chamber", 3, 0, -6}};
 
     private void guiStep(Minecraft minecraft, IntegratedServer server) {
         if (ticks == 60) {
@@ -143,7 +140,7 @@ public class IngameShowcase {
             server.execute(() -> {
                 command(server, "difficulty peaceful");
                 build(server);
-                buildUserLab(server);
+                buildGuiExtras(server);
             });
             return;
         }
@@ -152,80 +149,40 @@ public class IngameShowcase {
         }
         int index = (ticks - 140) / 30;
         int phase = (ticks - 140) % 30;
-        if (ticks >= 140 && index < GUI_TARGETS.length) {
+        if (index < GUI_TARGETS.length) {
             Object[] target = GUI_TARGETS[index];
             BlockPos pos = origin.offset((int) target[1], (int) target[2], (int) target[3]);
             if (phase == 0) {
-                server.execute(() -> open(server, pos));
+                // Step up to the block first: a screen closes when its block is more than 8 blocks away.
+                server.execute(() -> {
+                    command(server, String.format(java.util.Locale.ROOT, "tp @s %.1f %d %.1f", pos.getX() + 0.5, pos.getY(), pos.getZ() - 2.5));
+                    open(server, pos);
+                });
             } else if (phase == 25) {
                 screenshot(minecraft, "g_" + target[0]);
-                if (target[0].equals("user_lab")) {
-                    server.execute(() -> reportUserLab(server, "as built"));
-                }
             }
             return;
         }
-        int after = ticks - 140 - GUI_TARGETS.length * 30;
-        BlockPos userLab = origin.offset(USER_LAB[0], USER_LAB[1], USER_LAB[2]);
-        switch (after) {
-            // The fix the player needs: swap the second Genetic Storage for a Genetic Energy Core.
-            case 0 -> server.execute(() -> {
-                place(server.overworld(), userLab.south(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.GENETIC_ENERGY_CORE).get().defaultBlockState());
-                result("user lab: replaced the second Genetic Storage with a Genetic Energy Core");
-            });
-            case 100 -> server.execute(() -> open(server, userLab));
-            case 125 -> {
-                screenshot(minecraft, "g_user_lab_completed");
-                server.execute(() -> reportUserLab(server, "completed"));
-            }
-            case 130 -> finish(minecraft);
-            default -> { }
-        }
+        finish(minecraft);
     }
 
-    /** The player's lab as they built it: controller, DNA Analyzer east, Mutation Chamber west, Queen Enhancement Chamber
-     * south-west, Genetic Storage south and south-east, and a Generator with coal under the controller. */
-    private void buildUserLab(IntegratedServer server) {
+    /** Upgrades in the Terrarium and two chambers (to see them in their slots), and three chambers with no Terrarium. */
+    private void buildGuiExtras(IntegratedServer server) {
         ServerLevel level = server.overworld();
-        BlockPos lab = origin.offset(USER_LAB[0], USER_LAB[1], USER_LAB[2]);
-        place(level, lab.below(), ModBlocks.GENERATOR.get().defaultBlockState());
-        ((com.antcolonies.content.blockentity.GeneratorBlockEntity) level.getBlockEntity(lab.below())).setItem(0, new ItemStack(Items.COAL, 16));
-        place(level, lab, ModBlocks.GENETIC_LAB_CONTROLLER.get().defaultBlockState());
-        place(level, lab.east(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.DNA_ANALYZER).get().defaultBlockState());
-        place(level, lab.west(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.MUTATION_CHAMBER).get().defaultBlockState());
-        place(level, lab.west().south(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.QUEEN_ENHANCEMENT_CHAMBER).get().defaultBlockState());
-        place(level, lab.south(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.GENETIC_STORAGE).get().defaultBlockState());
-        place(level, lab.east().south(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.GENETIC_STORAGE).get().defaultBlockState());
-        // Upgrades in the Terrarium, a Scavenging Site and the Breeding Chamber, to see them in their slots.
-        var terrariumUpgrades = ((TerrariumBlockEntity) level.getBlockEntity(origin.offset(0, 0, 4))).upgrades();
+        var terrariumUpgrades = ((TerrariumBlockEntity) level.getBlockEntity(origin.offset(0, 0, 5))).upgrades();
         terrariumUpgrades.setItem(0, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.POPULATION, 3)));
         terrariumUpgrades.setItem(1, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.SIMULATION, 2)));
         terrariumUpgrades.setItem(2, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.EVOLUTION, 1)));
-        var siteUpgrades = ((StructureBlockEntity) level.getBlockEntity(origin.offset(2, 0, 6))).upgrades();
+        var siteUpgrades = ((StructureBlockEntity) level.getBlockEntity(origin.offset(-1, 0, 4))).upgrades();
         siteUpgrades.setItem(0, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.SPEED, 1)));
         siteUpgrades.setItem(1, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.SPEED, 2)));
         siteUpgrades.setItem(2, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.POPULATION, 3)));
-        ((StructureBlockEntity) level.getBlockEntity(origin.offset(0, 0, 6))).upgrades()
+        ((StructureBlockEntity) level.getBlockEntity(origin.offset(1, 0, 6))).upgrades()
                 .setItem(0, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.BREEDING, 2)));
-        // Three structures with no Terrarium, apart from each other: their screens say they aren't linked.
-        structure(level, origin.offset(3, 0, -4), StructureKind.BREEDING_CHAMBER);
+        // Three chambers with no Terrarium, apart from each other: their screens say they aren't part of a colony.
+        structure(level, origin.offset(3, 0, -4), StructureKind.BROOD_CHAMBER);
         structure(level, origin.offset(5, 0, -4), StructureKind.QUEEN_CHAMBER);
-        structure(level, origin.offset(3, 0, -6), StructureKind.SCAVENGING_SITE);
-    }
-
-    private void reportUserLab(IntegratedServer server, String when) {
-        BlockPos pos = origin.offset(USER_LAB[0], USER_LAB[1], USER_LAB[2]);
-        if (server.overworld().getBlockEntity(pos) instanceof GeneticLabBlockEntity lab) {
-            List<String> missing = new java.util.ArrayList<>();
-            for (LabPartBlock.Part part : LabPartBlock.Part.values()) {
-                if ((lab.missing() & (1 << part.ordinal())) != 0) {
-                    missing.add(part.name());
-                }
-            }
-            result("user lab " + when + ": formed " + lab.formed() + ", missing " + missing + ", energy " + lab.energy() + " FE");
-        } else {
-            result("FAIL user lab: no controller at " + pos);
-        }
+        structure(level, origin.offset(3, 0, -6), StructureKind.FORAGING_CHAMBER);
     }
 
     private void onClientTick(ClientTickEvent.Post event) {
@@ -290,25 +247,25 @@ public class IngameShowcase {
             }
             case 120 -> camera(server, 0.5, 3.4, -2.5, 0, 38);
             case 160 -> screenshot(minecraft, "01_overview");
-            case 165 -> camera(server, 0.5, 0.45 - 1.62, 4 - 1.05, 0, 8);
+            case 165 -> camera(server, 0.5, 1.25 - 1.62, 3.4, 0, 20);
             case 205 -> screenshot(minecraft, "02_terrarium_front");
-            case 210 -> camera(server, 0.5 - 1.05, 0.5 - 1.62, 4.5, -90, 12);
+            case 210 -> camera(server, -1.7, 1.9 - 1.62, 5.5, -90, 35);
             case 250 -> screenshot(minecraft, "03_terrarium_side");
-            case 255 -> camera(server, 0.5, 1.25 - 1.62, 4.5 - 0.6, 0, 70);
+            case 255 -> camera(server, 0.5, 2.2 - 1.62, 4.6, 0, 70);
             case 295 -> screenshot(minecraft, "04_terrarium_top");
-            case 300 -> camera(server, -6 + 0.5, 0.45 - 1.62, 4 - 1.05, 0, 8);
+            case 300 -> camera(server, -5.5, 1.25 - 1.62, 3.4, 0, 20);
             case 340 -> screenshot(minecraft, "05_young_colony");
-            case 345 -> camera(server, 3.5, 1.6 - 1.62, 4.6, 0, 40);
+            case 345 -> camera(server, 0.5, 3.2 - 1.62, 2.4, 0, 50);
             case 385 -> screenshot(minecraft, "06_job_sites");
             case 390 -> camera(server, 0.2, 1.05 - 1.62, -1.0, 0, 38);
             case 430 -> screenshot(minecraft, "07_wild_ants");
-            case 435 -> camera(server, 0.5, 2.2 - 1.62, 9.5 - 3.2, 0, 25);
+            case 435 -> camera(server, 0.5, 2.2 - 1.62, 10.5 - 3.2, 0, 25);
             case 475 -> screenshot(minecraft, "08_genetic_lab");
             case 480 -> {
                 if (minecraft.gui.hud.isHidden()) {
                     minecraft.gui.hud.toggle();
                 }
-                server.execute(() -> open(server, origin.offset(0, 0, 4)));
+                server.execute(() -> open(server, origin.offset(0, 0, 5)));
             }
             case 510 -> screenshot(minecraft, "09_gui_overview");
             case 512 -> clickTab(minecraft, 1);
@@ -318,18 +275,18 @@ public class IngameShowcase {
             case 552 -> clickTab(minecraft, 3);
             case 570 -> screenshot(minecraft, "12_gui_stats");
             case 575 -> {
-                server.execute(() -> open(server, origin.offset(2, 0, 6)));
+                server.execute(() -> open(server, origin.offset(-1, 0, 4)));
             }
-            case 600 -> screenshot(minecraft, "13_gui_scavenging_site");
+            case 600 -> screenshot(minecraft, "13_gui_foraging_chamber");
             case 605 -> {
-                server.execute(() -> open(server, origin.offset(0, 0, 9)));
+                server.execute(() -> open(server, origin.offset(0, 0, 10)));
             }
             case 630 -> screenshot(minecraft, "14_gui_genetic_lab");
             case 633 -> server.execute(() -> {
-                GeneticLabBlockEntity lab = (GeneticLabBlockEntity) server.overworld().getBlockEntity(origin.offset(0, 0, 9));
+                GeneticLabBlockEntity lab = (GeneticLabBlockEntity) server.overworld().getBlockEntity(origin.offset(0, 0, 10));
                 lab.start(GeneticLabBlockEntity.Operation.UPGRADE, server.registryAccess());
                 result("lab start: " + lab.operation() + ", energy " + lab.energy() + ", status "
-                        + com.antcolonies.colony.model.ColonyStatus.of(lab.data().get(GeneticLabBlockEntity.DATA_STATUS)) + ", missing " + lab.missing());
+                        + com.antcolonies.colony.model.ColonyStatus.of(lab.data().get(GeneticLabBlockEntity.DATA_STATUS)));
             });
             case 678 -> {
                 if (minecraft.player.containerMenu instanceof com.antcolonies.content.menu.GeneticLabMenu labMenu) {
@@ -337,7 +294,7 @@ public class IngameShowcase {
                             + labMenu.data(GeneticLabBlockEntity.DATA_PROGRESS) + "/" + labMenu.data(GeneticLabBlockEntity.DATA_TIME));
                 }
                 server.execute(() -> {
-                    GeneticLabBlockEntity lab = (GeneticLabBlockEntity) server.overworld().getBlockEntity(origin.offset(0, 0, 9));
+                    GeneticLabBlockEntity lab = (GeneticLabBlockEntity) server.overworld().getBlockEntity(origin.offset(0, 0, 10));
                     var player = server.getPlayerList().getPlayers().getFirst();
                     result("server lab: operation " + lab.operation() + ", progress " + lab.data().get(GeneticLabBlockEntity.DATA_PROGRESS)
                             + ", player menu " + player.containerMenu.getClass().getSimpleName()
@@ -362,9 +319,9 @@ public class IngameShowcase {
             case 835 -> screenshot(minecraft, "19_jei_hybrid");
             case 845 -> {
                 minecraft.gui.setScreen(null);
-                server.execute(() -> open(server, origin.offset(4, 0, 6)));
+                server.execute(() -> open(server, origin.offset(0, 0, 4)));
             }
-            case 870 -> screenshot(minecraft, "20_gui_resource_pile");
+            case 870 -> screenshot(minecraft, "20_gui_storage");
             case 875 -> {
                 minecraft.player.closeContainer();
                 minecraft.gui.setScreen(new com.antcolonies.client.screen.IdentificationBookScreen());
@@ -373,12 +330,12 @@ public class IngameShowcase {
             // Jade look-at tooltips (when Jade is in run/mods): the crosshair on a Terrarium, a job site and the lab.
             case 900 -> {
                 minecraft.gui.setScreen(null);
-                look(server, 0.5, 0, 1.5, 0, 22.5F);
+                look(server, 0.5, 1.2, 3.3, 0, 41);
             }
             case 930 -> screenshot(minecraft, "22_jade_terrarium");
-            case 935 -> look(server, 2.5, 0, 3.5, 0, 22.5F);
-            case 965 -> screenshot(minecraft, "23_jade_scavenging_site");
-            case 970 -> look(server, 0.5, 1.2, 7.5, 0, 50);
+            case 935 -> look(server, -0.5, 0, 2.2, 0, 30);
+            case 965 -> screenshot(minecraft, "23_jade_foraging_chamber");
+            case 970 -> look(server, 0.5, 1.2, 8.5, 0, 50);
             case 1000 -> screenshot(minecraft, "24_jade_genetic_lab");
             // EMI (when it is in run/mods): two of the mod's categories in EMI's recipe screen.
             case 1005 -> emi(minecraft, "production");
@@ -444,33 +401,19 @@ public class IngameShowcase {
         ServerLevel level = server.overworld();
         command(server, "time set 6000");
         command(server, "weather clear");
-        BlockPos t = origin.offset(0, 0, 4);
-        place(level, t, ModBlocks.TERRARIUM.get().defaultBlockState().setValue(NetworkEntityBlock.FACING, Direction.NORTH));
-        // The network behind the Terrarium, so its front and sides stay in view.
-        place(level, t.south(), ModBlocks.ANT_TUBE.get().defaultBlockState());
-        structure(level, origin.offset(0, 0, 6), StructureKind.BREEDING_CHAMBER);
-        structure(level, origin.offset(-1, 0, 6), StructureKind.NURSERY);
-        structure(level, origin.offset(1, 0, 6), StructureKind.WORKER_HOUSING);
-        structure(level, origin.offset(-2, 0, 6), StructureKind.SOLDIER_BARRACKS);
-        structure(level, origin.offset(-3, 0, 6), StructureKind.FIGHTING_SITE);
-        structure(level, origin.offset(2, 0, 6), StructureKind.SCAVENGING_SITE);
-        structure(level, origin.offset(3, 0, 6), StructureKind.SCAVENGING_SITE);
-        StructureBlockEntity pile = structure(level, origin.offset(4, 0, 6), StructureKind.RESOURCE_PILE);
-        structure(level, origin.offset(0, 0, 7), StructureKind.FOOD_STORAGE);
-        structure(level, origin.offset(-4, 0, 6), StructureKind.QUEEN_CHAMBER);
-        structure(level, origin.offset(-5, 0, 6), StructureKind.PROCESSING_CHAMBER);
-        structure(level, origin.offset(5, 0, 6), StructureKind.FARMER_GARDEN);
+        // The Diamond colony: a full ring, its low Storage in front so the Terrarium shows behind it.
+        BlockPos t = origin.offset(0, 0, 5);
+        place(level, t, ModBlocks.TERRARIUM.get().defaultBlockState().setValue(ColonyEntityBlock.FACING, Direction.NORTH));
+        StructureKind[] diamondRing = {StructureKind.FORAGING_CHAMBER, StructureKind.STORAGE, StructureKind.FORAGING_CHAMBER,
+                StructureKind.FORAGING_CHAMBER, StructureKind.BROOD_CHAMBER, StructureKind.QUEEN_CHAMBER, StructureKind.HUNTING_CHAMBER,
+                StructureKind.HOUSING};
+        ring(level, t, diamondRing);
         place(level, origin.offset(6, 0, 3), ModBlocks.UPGRADE_STATION.get().defaultBlockState());
+        StructureBlockEntity pile = (StructureBlockEntity) level.getBlockEntity(origin.offset(0, 0, 4));
         pile.setItem(0, new ItemStack(ModItems.DIAMOND_FRAGMENT.get(), 64));
         pile.setItem(1, new ItemStack(ModItems.DIAMOND_FRAGMENT.get(), 40));
         pile.setItem(2, new ItemStack(Items.COAL, 50));
         pile.setItem(3, new ItemStack(Items.DIAMOND, 6));
-        // A glass tube running up and over, for the walking ants.
-        place(level, origin.offset(1, 1, 6), ModBlocks.ANT_TUBE.get().defaultBlockState());
-        place(level, origin.offset(1, 2, 6), ModBlocks.ANT_TUBE.get().defaultBlockState());
-        place(level, origin.offset(2, 2, 6), ModBlocks.ANT_TUBE.get().defaultBlockState());
-        place(level, origin.offset(3, 2, 6), ModBlocks.ANT_TUBE.get().defaultBlockState());
-        place(level, origin.offset(3, 1, 6), ModBlocks.ANT_TUBE.get().defaultBlockState());
         TerrariumBlockEntity diamond = (TerrariumBlockEntity) level.getBlockEntity(t);
         Colony colony = diamond.colony();
         QueenData queen = Genetics.wildQueen(AntColonies.id("diamond"), RandomSource.create(4));
@@ -487,9 +430,11 @@ public class IngameShowcase {
             ColonySimulator.step(diamond, level, 0.05);
         }
         diamond.syncNow();
-        // A young Fire Ant colony on its own (one of the newer species).
-        BlockPos young = origin.offset(-6, 0, 4);
-        place(level, young, ModBlocks.TERRARIUM.get().defaultBlockState().setValue(NetworkEntityBlock.FACING, Direction.NORTH));
+        // A young Fire Ant colony with its own ring (one of the newer species).
+        BlockPos young = origin.offset(-6, 0, 5);
+        place(level, young, ModBlocks.TERRARIUM.get().defaultBlockState().setValue(ColonyEntityBlock.FACING, Direction.NORTH));
+        ring(level, young, new StructureKind[] {StructureKind.BROOD_CHAMBER, StructureKind.STORAGE, StructureKind.FORAGING_CHAMBER,
+                StructureKind.HOUSING, StructureKind.FUNGUS_GARDEN, StructureKind.QUEEN_CHAMBER, StructureKind.HOUSING, StructureKind.FORAGING_CHAMBER});
         TerrariumBlockEntity common = (TerrariumBlockEntity) level.getBlockEntity(young);
         common.colony().setQueen(Genetics.wildQueen(AntColonies.id("fire"), RandomSource.create(8)));
         common.colony().setPopulation(6, 4, 9, 0);
@@ -497,20 +442,16 @@ public class IngameShowcase {
         common.rescan(level);
         ColonySimulator.step(common, level, 0.05);
         common.syncNow();
-        // A formed Genetic Laboratory with a Queen inside.
-        BlockPos lab = origin.offset(0, 0, 9);
-        place(level, lab, ModBlocks.GENETIC_LAB_CONTROLLER.get().defaultBlockState());
-        BlockPos[] spots = {lab.east(), lab.west(), lab.south(), lab.east().south(), lab.west().south()};
-        for (int i = 0; i < LabPartBlock.Part.values().length; i++) {
-            place(level, spots[i], ModBlocks.LAB_PARTS.get(LabPartBlock.Part.values()[i]).get().defaultBlockState());
-        }
+        // The Genetic Laboratory with a Queen inside, a Generator burning coal beside it, the lab already charged (through
+        // its FE input, as a cable would).
+        BlockPos lab = origin.offset(0, 0, 10);
+        place(level, lab, ModBlocks.GENETIC_LAB.get().defaultBlockState());
         GeneticLabBlockEntity labEntity = (GeneticLabBlockEntity) level.getBlockEntity(lab);
         ItemStack tube = new ItemStack(ModItems.QUEEN_TEST_TUBE.get());
         tube.set(ModDataComponents.QUEEN.get(), colony.queen());
         labEntity.setItem(GeneticLabBlockEntity.SLOT_QUEEN, tube);
-        // A Generator burning coal beside the Energy Core, and a lab already charged (through its FE input, as a cable would).
-        place(level, lab.west().south().west(), ModBlocks.GENERATOR.get().defaultBlockState());
-        ((com.antcolonies.content.blockentity.GeneratorBlockEntity) level.getBlockEntity(lab.west().south().west())).setItem(0, new ItemStack(Items.COAL, 16));
+        place(level, lab.east(), ModBlocks.GENERATOR.get().defaultBlockState());
+        ((com.antcolonies.content.blockentity.GeneratorBlockEntity) level.getBlockEntity(lab.east())).setItem(0, new ItemStack(Items.COAL, 16));
         for (int i = 0; i < 50; i++) {
             try (var transaction = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
                 labEntity.energyHandler().insert(4000, transaction);
@@ -520,17 +461,8 @@ public class IngameShowcase {
         labEntity.setItem(GeneticLabBlockEntity.SLOT_MATERIAL, new ItemStack(ModItems.GENETIC_CIRCUIT.get(), 4));
         labEntity.setItem(GeneticLabBlockEntity.SLOT_MATERIAL + 1, new ItemStack(Items.IRON_INGOT, 12));
         labEntity.setItem(GeneticLabBlockEntity.SLOT_CATALYST, new ItemStack(Items.EMERALD, 4));
-        labEntity.checkStructure(level);
-        // A second formed lab with no Queen, and a lone controller (an incomplete lab), for the audit.
-        BlockPos emptyLab = origin.offset(-7, 0, 9);
-        place(level, emptyLab, ModBlocks.GENETIC_LAB_CONTROLLER.get().defaultBlockState());
-        BlockPos[] emptySpots = {emptyLab.east(), emptyLab.west(), emptyLab.south(), emptyLab.east().south(), emptyLab.west().south()};
-        for (int i = 0; i < LabPartBlock.Part.values().length; i++) {
-            place(level, emptySpots[i], ModBlocks.LAB_PARTS.get(LabPartBlock.Part.values()[i]).get().defaultBlockState());
-        }
-        ((GeneticLabBlockEntity) level.getBlockEntity(emptyLab)).checkStructure(level);
-        place(level, origin.offset(6, 0, 9), ModBlocks.GENETIC_LAB_CONTROLLER.get().defaultBlockState());
-        ((GeneticLabBlockEntity) level.getBlockEntity(origin.offset(6, 0, 9))).checkStructure(level);
+        // A second lab with no Queen and no power, for the audit.
+        place(level, origin.offset(-7, 0, 10), ModBlocks.GENETIC_LAB.get().defaultBlockState());
         // Wild ants of a few species.
         String[] species = {"common", "wood", "desert", "snow", "farmer"};
         for (int i = 0; i < species.length; i++) {
@@ -554,6 +486,14 @@ public class IngameShowcase {
     private static StructureBlockEntity structure(ServerLevel level, BlockPos pos, StructureKind kind) {
         level.setBlock(pos, ModBlocks.STRUCTURES.get(kind).get().defaultBlockState(), Block.UPDATE_ALL);
         return (StructureBlockEntity) level.getBlockEntity(pos);
+    }
+
+    /** A colony ring around a Terrarium: the chambers in the ring's places (north-west first, clockwise). */
+    private static void ring(ServerLevel level, BlockPos center, StructureKind[] kinds) {
+        List<BlockPos> places = com.antcolonies.colony.model.ColonyRing.places(center);
+        for (int i = 0; i < places.size(); i++) {
+            structure(level, places.get(i), kinds[i % kinds.length]);
+        }
     }
 
     private static void command(IntegratedServer server, String command) {
@@ -744,17 +684,16 @@ public class IngameShowcase {
         int index = t / AUDIT_STEP;
         boolean shoot = t % AUDIT_STEP == AUDIT_STEP - 2;
         Object[][] screens = {
-                {"a01_food_storage", origin.offset(0, 0, 7)},
-                {"a02_queen_chamber", origin.offset(-4, 0, 6)},
-                {"a03_breeding_chamber", origin.offset(0, 0, 6)},
-                {"a04_fighting_site", origin.offset(-3, 0, 6)},
-                {"a05_farmer_garden", origin.offset(5, 0, 6)},
-                {"a06_processing_chamber", origin.offset(-5, 0, 6)},
-                {"a07_nursery", origin.offset(-1, 0, 6)},
+                {"a01_housing", origin.offset(-1, 0, 5)},
+                {"a02_queen_chamber", origin.offset(0, 0, 6)},
+                {"a03_brood_chamber", origin.offset(1, 0, 6)},
+                {"a04_hunting_chamber", origin.offset(-1, 0, 6)},
+                {"a05_fungus_garden", origin.offset(-5, 0, 6)},
+                {"a06_young_terrarium", origin.offset(-6, 0, 5)},
+                {"a07_young_storage", origin.offset(-6, 0, 4)},
                 {"a08_upgrade_station", origin.offset(6, 0, 3)},
-                {"a09_lab_no_queen", origin.offset(-7, 0, 9)},
-                {"a10_lab_incomplete", origin.offset(6, 0, 9)},
-                {"a11_generator", origin.offset(-2, 0, 10)},
+                {"a09_lab_no_queen", origin.offset(-7, 0, 10)},
+                {"a10_generator", origin.offset(1, 0, 10)},
         };
         mezz.jei.api.recipe.types.IRecipeType<?>[] jei = {
                 com.antcolonies.compat.jei.AntColoniesJeiPlugin.BREEDING, com.antcolonies.compat.jei.AntColoniesJeiPlugin.MUTATION,
@@ -821,7 +760,7 @@ public class IngameShowcase {
                 minecraft.options.inactivityFpsLimit().set(net.minecraft.client.InactivityFpsLimit.MINIMIZED);
                 minecraft.options.framerateLimit().set(net.minecraft.client.Options.UNLIMITED_FRAMERATE_CUTOFF);
                 server.execute(() -> benchmarkGrid(server, true));
-                camera(server, 0.5, 4.0, 11.0, 0, 32);
+                camera(server, 0.5, 6.0, 10.0, 0, 38);
             }
             return;
         }
@@ -883,7 +822,7 @@ public class IngameShowcase {
                 screenshot(minecraft, "e02_2d_surface_ants");
             } else {
                 com.antcolonies.core.config.AntConfig.ANT_3D_MODELS.set(false);
-                camera(server, 0.5, 1.6 - 1.62, 4.5 - 1.0, 0, 50);
+                camera(server, 0.5, 2.2 - 1.62, 4.6, 0, 70);
             }
             return;
         }
@@ -903,21 +842,22 @@ public class IngameShowcase {
     private int fpsNoAnts;
     private int fpsFlat;
 
-    /** 25 stage-4 Diamond colonies in a 5x5 grid south of the lab (or, with {@code build} false, the same spots cleared). */
+    /** 25 stage-4 colonies, each a full ring, in a 5x5 grid south of the lab (or, with {@code build} false, the same spots cleared). */
     private void benchmarkGrid(IntegratedServer server, boolean build) {
         ServerLevel level = server.overworld();
         for (int gx = 0; gx < 5; gx++) {
             for (int gz = 0; gz < 5; gz++) {
-                BlockPos pos = origin.offset(-4 + gx * 2, 0, 14 + gz * 2);
+                BlockPos pos = origin.offset(-6 + gx * 3, 0, 15 + gz * 3);
                 if (!build) {
-                    for (BlockPos clear : new BlockPos[] {pos, pos.west(), pos.north()}) {
+                    place(level, pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+                    for (BlockPos clear : com.antcolonies.colony.model.ColonyRing.places(pos)) {
                         place(level, clear, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
                     }
                     continue;
                 }
-                structure(level, pos.west(), StructureKind.BREEDING_CHAMBER);
-                structure(level, pos.north(), StructureKind.NURSERY);
-                place(level, pos, ModBlocks.TERRARIUM.get().defaultBlockState().setValue(NetworkEntityBlock.FACING, Direction.NORTH));
+                place(level, pos, ModBlocks.TERRARIUM.get().defaultBlockState().setValue(ColonyEntityBlock.FACING, Direction.NORTH));
+                ring(level, pos, new StructureKind[] {StructureKind.BROOD_CHAMBER, StructureKind.STORAGE, StructureKind.FORAGING_CHAMBER,
+                        StructureKind.HOUSING});
                 TerrariumBlockEntity terrarium = (TerrariumBlockEntity) level.getBlockEntity(pos);
                 Colony colony = terrarium.colony();
                 colony.setQueen(Genetics.wildQueen(AntColonies.id(gx % 2 == 0 ? "diamond" : "fire"), RandomSource.create(gx * 5L + gz)));
@@ -935,7 +875,7 @@ public class IngameShowcase {
             return auditItems;
         }
         List<ItemStack> list = new java.util.ArrayList<>();
-        TerrariumBlockEntity terrarium = (TerrariumBlockEntity) server.overworld().getBlockEntity(origin.offset(0, 0, 4));
+        TerrariumBlockEntity terrarium = (TerrariumBlockEntity) server.overworld().getBlockEntity(origin.offset(0, 0, 5));
         ItemStack queen = new ItemStack(ModItems.QUEEN_TEST_TUBE.get());
         queen.set(ModDataComponents.QUEEN.get(), terrarium.colony().queen());
         list.add(queen);
@@ -957,7 +897,7 @@ public class IngameShowcase {
         list.add(new ItemStack(ModItems.TWEEZERS.get()));
         list.add(new ItemStack(ModItems.EVOLUTION_CATALYST.get()));
         list.add(new ItemStack(ModItems.CRYSTAL_ANT_FOOD.get()));
-        list.add(new ItemStack(ModItems.GENETIC_LAB_CONTROLLER.get()));
+        list.add(new ItemStack(ModItems.GENETIC_LAB.get()));
         list.add(new ItemStack(ModBlocks.STRUCTURES.get(StructureKind.QUEEN_CHAMBER).get()));
         list.add(new ItemStack(ModItems.GENERATOR.get()));
         ItemStack guard = new ItemStack(ModItems.GUARD_ANT.get());
@@ -972,9 +912,9 @@ public class IngameShowcase {
     /** The Colony Scanner on the Terrarium and on a job site, then the Genetic Analyzer on the Terrarium. */
     private void chatReports(IntegratedServer server) {
         ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
-        use(player, new ItemStack(ModItems.COLONY_SCANNER.get()), origin.offset(0, 0, 4));
-        use(player, new ItemStack(ModItems.COLONY_SCANNER.get()), origin.offset(2, 0, 6));
-        use(player, new ItemStack(ModItems.GENETIC_ANALYZER.get()), origin.offset(0, 0, 4));
+        use(player, new ItemStack(ModItems.COLONY_SCANNER.get()), origin.offset(0, 0, 5));
+        use(player, new ItemStack(ModItems.COLONY_SCANNER.get()), origin.offset(-1, 0, 4));
+        use(player, new ItemStack(ModItems.GENETIC_ANALYZER.get()), origin.offset(0, 0, 5));
     }
 
     private static void use(ServerPlayer player, ItemStack stack, BlockPos pos) {
@@ -1002,18 +942,18 @@ public class IngameShowcase {
 
     private void report(IntegratedServer server) {
         ServerLevel level = server.overworld();
-        if (level.getBlockEntity(origin.offset(0, 0, 4)) instanceof TerrariumBlockEntity terrarium) {
+        if (level.getBlockEntity(origin.offset(0, 0, 5)) instanceof TerrariumBlockEntity terrarium) {
             Colony colony = terrarium.colony();
             result("diamond colony: stage " + colony.stage() + ", workers " + colony.workers() + ", soldiers " + colony.soldiers()
                     + ", food " + (long) colony.food() + ", status " + com.antcolonies.colony.model.ColonyStatus.of(colony.status())
                     + ", jobs " + colony.assignments().size() + ", finds/min " + colony.stats().finds());
         }
-        if (level.getBlockEntity(origin.offset(4, 0, 6)) instanceof StructureBlockEntity pile) {
+        if (level.getBlockEntity(origin.offset(0, 0, 4)) instanceof StructureBlockEntity pile) {
             int total = 0;
             for (int slot = 0; slot < pile.getContainerSize(); slot++) {
                 total += pile.getItem(slot).getCount();
             }
-            result("resource pile items: " + total);
+            result("storage items: " + total);
         }
         result("done");
     }

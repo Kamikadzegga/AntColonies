@@ -41,7 +41,7 @@ import org.jspecify.annotations.Nullable;
  * its connected structures; nothing here looks at entities or at what the client draws.
  *
  * <p>Order of a step: structures and modifiers, ants to jobs, food in and out, eggs, larvae and adults, deaths,
- * production at the job sites, Queen rearing, food shared through Connectors, then stage and status.
+ * production in the working chambers, Queen rearing, then stage and status.
  */
 public final class ColonySimulator {
     /** At most this many finds per site and step, so a long catch-up can't stall the server. */
@@ -131,34 +131,43 @@ public final class ColonySimulator {
         AntSpecies former = colony.formerSpecies() == null ? null : ModRegistries.species(level.registryAccess(), colony.formerSpecies());
         Step step = new Step(level, terrarium, species, former, dt);
         ColonyLayout layout = colony.layout();
-        if (layout.twoColonies()) {
-            step.status |= ColonyStatus.TWO_COLONIES.bit();
-        } else {
-            collectSites(step, layout);
+        collectSites(step, layout);
+        if (!layout.complete()) {
+            // The ring isn't whole (or shares a chamber with another colony): the colony waits, nothing grows or works.
+            int status = (layout.twoColonies() ? ColonyStatus.TWO_COLONIES.bit() : ColonyStatus.INVALID_MULTIBLOCK.bit())
+                    | (colony.queen() == null ? ColonyStatus.NO_QUEEN.bit() : 0);
+            ColonyAccess.finish(colony, colony.stage(), status, colony.stats(), Colony.Activity.NONE, List.of(), 0);
+            for (List<StructureBlockEntity> list : step.sites.values()) {
+                for (StructureBlockEntity site : list) {
+                    site.setAssignment(0, 0, 0, 0);
+                    site.linkTo(terrarium.getBlockPos(), status);
+                }
+            }
+            return;
         }
 
         // --- Capacities ---
         int terrariumPopulation = terrarium.upgradeTier(UpgradeType.POPULATION);
         long maxPopulation = AntConfig.get(AntConfig.MAX_COLONY_POPULATION);
         double adultCapacity = AntConfig.get(AntConfig.TERRARIUM_CAPACITY) * (1 + terrariumPopulation);
-        for (StructureBlockEntity housing : step.of(StructureKind.WORKER_HOUSING)) {
-            adultCapacity += AntConfig.get(AntConfig.WORKER_HOUSING_CAPACITY) * (1 + 0.5 * housing.upgradeTier(UpgradeType.POPULATION));
-        }
+        // Housing: room for adults, of which a share may be soldiers (without Housing a colony raises no soldiers).
         double soldierCapacity = 0;
-        for (StructureBlockEntity barracks : step.of(StructureKind.SOLDIER_BARRACKS)) {
-            soldierCapacity += AntConfig.get(AntConfig.BARRACKS_CAPACITY) * (1 + 0.5 * barracks.upgradeTier(UpgradeType.POPULATION));
+        for (StructureBlockEntity housing : step.of(StructureKind.HOUSING)) {
+            double room = 1 + 0.5 * housing.upgradeTier(UpgradeType.POPULATION);
+            adultCapacity += AntConfig.get(AntConfig.HOUSING_CAPACITY) * room;
+            soldierCapacity += AntConfig.get(AntConfig.HOUSING_SOLDIER_CAPACITY) * room;
         }
-        adultCapacity = Math.min(maxPopulation, adultCapacity + soldierCapacity);
+        adultCapacity = Math.min(maxPopulation, adultCapacity);
         double larvaeCapacity = Math.max(20, AntConfig.get(AntConfig.TERRARIUM_CAPACITY) / 2.0);
-        for (StructureBlockEntity nursery : step.of(StructureKind.NURSERY)) {
-            larvaeCapacity += AntConfig.get(AntConfig.NURSERY_LARVAE_CAPACITY) * (1 + 0.5 * nursery.upgradeTier(UpgradeType.POPULATION));
+        for (StructureBlockEntity brood : step.of(StructureKind.BROOD_CHAMBER)) {
+            larvaeCapacity += AntConfig.get(AntConfig.BROOD_LARVAE_CAPACITY) * (1 + 0.5 * brood.upgradeTier(UpgradeType.POPULATION));
         }
         double foodCapacity = AntConfig.get(AntConfig.TERRARIUM_FOOD_CAPACITY);
-        for (StructureBlockEntity storage : step.of(StructureKind.FOOD_STORAGE)) {
-            foodCapacity += AntConfig.get(AntConfig.FOOD_STORAGE_CAPACITY) * (1 + storage.upgradeTier(UpgradeType.STORAGE));
+        for (StructureBlockEntity storage : step.of(StructureKind.STORAGE)) {
+            foodCapacity += AntConfig.get(AntConfig.STORAGE_FOOD_CAPACITY) * (1 + storage.upgradeTier(UpgradeType.STORAGE));
         }
 
-        // --- Food from items (Terrarium feed slot, Food Storage slots) ---
+        // --- Food from items (the Terrarium's feed slot) ---
         FoodIntake.Result intake = FoodIntake.take(step, foodCapacity);
 
         // --- Health ---
@@ -196,7 +205,7 @@ public final class ColonySimulator {
 
         // --- Food in and out ---
         double farmed = 0;
-        for (Allocation.Site site : allocation.of(StructureKind.FARMER_GARDEN)) {
+        for (Allocation.Site site : allocation.of(StructureKind.FUNGUS_GARDEN)) {
             farmed += Farming.food(step, site);
         }
         double consumption = foodUse(step, allocation, maintenance);
@@ -231,17 +240,14 @@ public final class ColonySimulator {
         // --- Job sites ---
         double finds = 0;
         double hunts = 0;
-        for (Allocation.Site site : allocation.of(StructureKind.SCAVENGING_SITE)) {
+        for (Allocation.Site site : allocation.of(StructureKind.FORAGING_CHAMBER)) {
             Scavenging.run(step, site);
             finds += site.rate();
         }
-        for (Allocation.Site site : allocation.of(StructureKind.FARMER_GARDEN)) {
+        for (Allocation.Site site : allocation.of(StructureKind.FUNGUS_GARDEN)) {
             Farming.harvest(step, site);
         }
-        for (Allocation.Site site : allocation.of(StructureKind.PROCESSING_CHAMBER)) {
-            Processing.run(step, site);
-        }
-        for (Allocation.Site site : allocation.of(StructureKind.FIGHTING_SITE)) {
+        for (Allocation.Site site : allocation.of(StructureKind.HUNTING_CHAMBER)) {
             Fighting.run(step, site);
             hunts += site.rate();
         }
@@ -252,31 +258,27 @@ public final class ColonySimulator {
             QueenRearing.tick(step.level, colony, step.species, chamber, step.dt, step.foodFactor);
         }
 
-        // --- Food shared with colonies joined through Connectors ---
-        Connections.shareFood(step, layout.linkedTerrariums(), foodCapacity);
-
         // --- Stage and status ---
         int stage = stage(step, colony.exactAdults());
         if (colony.queen() == null) {
             step.status |= ColonyStatus.NO_QUEEN.bit();
         }
-        if (!step.of(StructureKind.SCAVENGING_SITE).isEmpty() || !step.of(StructureKind.FARMER_GARDEN).isEmpty()
-                || !step.of(StructureKind.PROCESSING_CHAMBER).isEmpty()) {
+        if (!step.of(StructureKind.FORAGING_CHAMBER).isEmpty() || !step.of(StructureKind.FUNGUS_GARDEN).isEmpty()) {
             if (allocation.assignedWorkers() == 0) {
                 step.status |= ColonyStatus.NO_WORKERS.bit();
             }
         }
-        if (!step.of(StructureKind.FIGHTING_SITE).isEmpty() && allocation.assignedSoldiers() == 0) {
+        if (!step.of(StructureKind.HUNTING_CHAMBER).isEmpty() && allocation.assignedSoldiers() == 0) {
             step.status |= ColonyStatus.NO_SOLDIERS.bit();
         }
-        if (step.count(StructureKind.BREEDING_CHAMBER) == 0) {
-            step.status |= ColonyStatus.NO_BREEDING_CHAMBER.bit();
+        if (step.count(StructureKind.BROOD_CHAMBER) == 0) {
+            step.status |= ColonyStatus.NO_BROOD_CHAMBER.bit();
         }
-        if (step.count(StructureKind.SOLDIER_BARRACKS) == 0 && ColonyAccess.soldierShare(colony) > 0) {
-            step.status |= ColonyStatus.NO_BARRACKS.bit();
+        if (step.count(StructureKind.HOUSING) == 0 && ColonyAccess.soldierShare(colony) > 0) {
+            step.status |= ColonyStatus.NO_HOUSING.bit();
         }
-        if ((allocation.of(StructureKind.SCAVENGING_SITE).size() + allocation.of(StructureKind.FIGHTING_SITE).size()) > 0
-                && step.of(StructureKind.RESOURCE_PILE).isEmpty()) {
+        if ((allocation.of(StructureKind.FORAGING_CHAMBER).size() + allocation.of(StructureKind.HUNTING_CHAMBER).size()) > 0
+                && step.of(StructureKind.STORAGE).isEmpty()) {
             step.status |= ColonyStatus.NO_STORAGE.bit();
         }
         if (bred.full()) {
@@ -290,10 +292,10 @@ public final class ColonySimulator {
         }
         double adultsNow = Math.max(1, colony.exactAdults());
         Colony.Activity activity = new Colony.Activity(
-                (float) (allocation.assigned(StructureKind.SCAVENGING_SITE) / adultsNow),
-                (float) (allocation.assigned(StructureKind.FIGHTING_SITE) / adultsNow),
-                (float) (allocation.assigned(StructureKind.FARMER_GARDEN) / adultsNow),
-                (float) (allocation.assigned(StructureKind.PROCESSING_CHAMBER) / adultsNow),
+                (float) (allocation.assigned(StructureKind.FORAGING_CHAMBER) / adultsNow),
+                (float) (allocation.assigned(StructureKind.HUNTING_CHAMBER) / adultsNow),
+                (float) (allocation.assigned(StructureKind.FUNGUS_GARDEN) / adultsNow),
+                0F,
                 (float) (maintenance / adultsNow),
                 (float) Math.max(0, 1 - (allocation.assignedWorkers() + allocation.assignedSoldiers() + maintenance) / adultsNow),
                 intake.food() > 0 || farmed > 0, starving, bred.eggs() > 0);
@@ -356,9 +358,9 @@ public final class ColonySimulator {
         int three = thresholds.size() > 1 ? thresholds.get(1) : 1000;
         int four = thresholds.size() > 2 ? thresholds.get(2) : 5000;
         int stage = 1;
-        if (adults >= two && step.count(StructureKind.BREEDING_CHAMBER) > 0) {
+        if (adults >= two && step.count(StructureKind.BROOD_CHAMBER) > 0) {
             stage = 2;
-            if (adults >= three && step.count(StructureKind.NURSERY) > 0) {
+            if (adults >= three) {
                 stage = 3;
                 if (adults >= four && (step.species.tier() >= 1 || step.genome.averageLevel() >= 5)) {
                     stage = 4;
@@ -368,7 +370,7 @@ public final class ColonySimulator {
         return stage;
     }
 
-    // --- The job sites ---
+    // --- The working chambers ---
 
     static final class Scavenging {
         static double run(Step step, Allocation.Site site) {
@@ -400,7 +402,7 @@ public final class ColonySimulator {
             return rate;
         }
 
-        /** The garden's harvest (mushrooms, seeds, berries), into the Resource Piles. */
+        /** The garden's harvest (mushrooms, seeds, berries), into the Storage chambers. */
         static double harvest(Step step, Allocation.Site site) {
             if (site.assigned() <= 0 || !step.species.canFarm() || step.species.farming().harvest().isEmpty()) {
                 return 0;
@@ -419,8 +421,8 @@ public final class ColonySimulator {
             }
             StructureBlockEntity entity = site.entity();
             double strength = step.trait(Trait.SOLDIER_STRENGTH) * step.effects.soldiers() * step.species.combat().strength();
-            // The colony's barracks help every Fighting Site, but no more than one fully upgraded barracks would (two tier-3 upgrades).
-            int soldierTiers = entity.upgradeTier(UpgradeType.SOLDIER) + Math.min(6, step.tiers(StructureKind.SOLDIER_BARRACKS, UpgradeType.SOLDIER));
+            // The colony's Housing help every Hunting Chamber, but no more than one fully upgraded Housing would (two tier-3 upgrades).
+            int soldierTiers = entity.upgradeTier(UpgradeType.SOLDIER) + Math.min(6, step.tiers(StructureKind.HOUSING, UpgradeType.SOLDIER));
             double rate = AntConfig.get(AntConfig.FIGHT_ROLLS) * step.effective(site)
                     * ProductionMath.bonus(strength * (1 + 0.25 * soldierTiers) * ProductionMath.speed(entity.upgradeTier(UpgradeType.SPEED)))
                     * step.healthFactor * step.foodFactor;
@@ -463,28 +465,6 @@ public final class ColonySimulator {
         }
     }
 
-    static final class Processing {
-        static void run(Step step, Allocation.Site site) {
-            if (site.assigned() <= 0) {
-                return;
-            }
-            StructureBlockEntity entity = site.entity();
-            double rate = AntConfig.get(AntConfig.PROCESSING_PER_WORKER) * step.effective(site)
-                    * ProductionMath.bonus(ProductionMath.speed(entity.upgradeTier(UpgradeType.SPEED))) * step.healthFactor * step.foodFactor;
-            site.setRate(rate);
-            double progress = entity.progress() + rate * step.dt;
-            int done = 0;
-            while (progress >= 1 && done < MAX_ROLLS) {
-                if (!ColonyStorage.processOne(step.level, step.colony)) {
-                    progress = Math.min(progress, 1);
-                    break;
-                }
-                progress -= 1;
-                done++;
-            }
-            entity.setProgress(Math.min(progress, MAX_ROLLS));
-        }
-    }
 
     /**
      * Finds from a species' output list (or its garden harvest) at {@code rate} per minute, into the colony's Resource

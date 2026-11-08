@@ -1,12 +1,10 @@
 {
   "values": [
-    "antcolonies:breeding_chamber",
-    "antcolonies:scavenging_site",
-    "antcolonies:farmer_garden",
-    "antcolonies:nursery",
+    "antcolonies:brood_chamber",
+    "antcolonies:housing",
+    "antcolonies:foraging_chamber",
+    "antcolonies:fungus_garden",
     "antcolonies:queen_chamber",
-    "antcolonies:worker_housing",
-    "antcolonies:ant_tunnel",
     "antcolonies:common_ant_nest",
     "antcolonies:wood_ant_nest",
     "antcolonies:stone_ant_nest",

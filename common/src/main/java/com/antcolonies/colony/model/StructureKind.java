@@ -9,27 +9,30 @@ import com.mojang.serialization.Codec;
 import net.minecraft.util.StringRepresentable;
 
 /**
- * The colony structures a Terrarium can connect to through tubes and tunnels. Each kind is one block; what it does is
- * worked out by the colony's simulation.
+ * The colony chambers. A colony is a 3x3 ring: the Terrarium in the middle and eight chambers around it on the same
+ * level, of any kinds in any mix. Each kind is one block; what it does is worked out by the colony's simulation.
  *
  * @param job       which ants it puts to work, if any
  * @param slots     its own item slots
  * @param upgrades  its upgrade slots
- * @param allowed   the generic upgrades it takes (species upgrades go into job sites of workers)
+ * @param allowed   the generic upgrades it takes (species upgrades go into Foraging Chambers)
  */
 public enum StructureKind implements StringRepresentable {
-    BREEDING_CHAMBER("breeding_chamber", Job.NONE, 0, 2, EnumSet.of(UpgradeType.BREEDING, UpgradeType.SPEED)),
-    SCAVENGING_SITE("scavenging_site", Job.WORKERS, 0, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
-    RESOURCE_PILE("resource_pile", Job.NONE, 54, 2, EnumSet.of(UpgradeType.STORAGE, UpgradeType.AUTOMATION)),
-    FIGHTING_SITE("fighting_site", Job.SOLDIERS, 0, 3, EnumSet.of(UpgradeType.SPEED, UpgradeType.SOLDIER, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
-    FARMER_GARDEN("farmer_garden", Job.FARMERS, 0, 3, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
-    FOOD_STORAGE("food_storage", Job.NONE, 9, 2, EnumSet.of(UpgradeType.STORAGE, UpgradeType.AUTOMATION)),
-    NURSERY("nursery", Job.NONE, 0, 2, EnumSet.of(UpgradeType.SPEED, UpgradeType.POPULATION)),
-    QUEEN_CHAMBER("queen_chamber", Job.NONE, 7, 2, EnumSet.of(UpgradeType.BREEDING, UpgradeType.GENETIC, UpgradeType.SPEED)),
-    WORKER_HOUSING("worker_housing", Job.NONE, 0, 2, EnumSet.of(UpgradeType.POPULATION)),
-    SOLDIER_BARRACKS("soldier_barracks", Job.NONE, 0, 2, EnumSet.of(UpgradeType.POPULATION, UpgradeType.SOLDIER)),
-    PROCESSING_CHAMBER("processing_chamber", Job.WORKERS, 0, 3, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
-    COLONY_CONNECTOR("colony_connector", Job.NONE, 0, 0, EnumSet.noneOf(UpgradeType.class));
+    /** Egg laying at full speed, faster larvae, room for larvae. */
+    BROOD_CHAMBER("brood_chamber", Job.NONE, 0, 2, EnumSet.of(UpgradeType.BREEDING, UpgradeType.SPEED, UpgradeType.POPULATION)),
+    /** Houses adults, workers and soldiers; a colony needs one to raise soldiers. */
+    HOUSING("housing", Job.NONE, 0, 2, EnumSet.of(UpgradeType.POPULATION, UpgradeType.SOLDIER)),
+    /** Holds what the colony finds, and food room. */
+    STORAGE("storage", Job.NONE, 54, 2, EnumSet.of(UpgradeType.STORAGE, UpgradeType.AUTOMATION)),
+    /** Workers find the species' resources. */
+    FORAGING_CHAMBER("foraging_chamber", Job.WORKERS, 0, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
+    /** Farmer Ants grow food and harvest. */
+    FUNGUS_GARDEN("fungus_garden", Job.FARMERS, 0, 3, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
+    /** Soldiers hunt for mob drops. */
+    HUNTING_CHAMBER("hunting_chamber", Job.SOLDIERS, 0, 3, EnumSet.of(UpgradeType.SPEED, UpgradeType.SOLDIER, UpgradeType.FOOD_EFFICIENCY,
+            UpgradeType.POPULATION)),
+    /** Raises new Queens, and hybrids when a Genetic Sample is crossed in. */
+    QUEEN_CHAMBER("queen_chamber", Job.NONE, 7, 2, EnumSet.of(UpgradeType.BREEDING, UpgradeType.GENETIC, UpgradeType.SPEED));
 
     public static final Codec<StructureKind> CODEC = StringRepresentable.fromEnum(StructureKind::values);
 
@@ -84,7 +87,7 @@ public enum StructureKind implements StringRepresentable {
 
     /** Whether species-specific upgrades fit (they change what workers find). */
     public boolean takesSpeciesUpgrades() {
-        return this == SCAVENGING_SITE;
+        return this == FORAGING_CHAMBER;
     }
 
     public String translationKey() {

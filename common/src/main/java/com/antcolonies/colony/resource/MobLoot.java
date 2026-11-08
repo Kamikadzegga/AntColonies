@@ -22,7 +22,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Simulated hunts: one roll of a mob's own loot table, as if it died near the Fighting Site. The mob is never spawned:
+ * Simulated hunts: one roll of a mob's own loot table, as if it died near the Hunting Chamber. The mob is never spawned:
  * one instance per type is made once and kept off-world, only so its loot table (vanilla's or any mod's) gets the entity
  * it expects. No player killed it, so player-only drops (like Wither Skeleton skulls from Looting) don't come.
  */

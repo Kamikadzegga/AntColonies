@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "antcolonies:block/nursery_front",
-    "side": "antcolonies:block/nursery_side",
-    "top": "antcolonies:block/nursery_top"
-  }
-}

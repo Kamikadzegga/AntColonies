@@ -21,17 +21,16 @@ public final class AntConfig {
     public static final ModConfigSpec.IntValue OFFLINE_CATCH_UP_MINUTES;
     public static final ModConfigSpec.ConfigValue<List<? extends Integer>> SIMULATION_UPGRADE_MINUTES;
     public static final ModConfigSpec.LongValue MAX_COLONY_POPULATION;
-    public static final ModConfigSpec.IntValue NETWORK_SCAN_LIMIT;
 
     // --- Population ---
     public static final ModConfigSpec.IntValue TERRARIUM_CAPACITY;
-    public static final ModConfigSpec.IntValue WORKER_HOUSING_CAPACITY;
-    public static final ModConfigSpec.IntValue BARRACKS_CAPACITY;
-    public static final ModConfigSpec.IntValue NURSERY_LARVAE_CAPACITY;
-    public static final ModConfigSpec.DoubleValue NURSERY_GROWTH_BONUS;
+    public static final ModConfigSpec.IntValue HOUSING_CAPACITY;
+    public static final ModConfigSpec.IntValue HOUSING_SOLDIER_CAPACITY;
+    public static final ModConfigSpec.IntValue BROOD_LARVAE_CAPACITY;
+    public static final ModConfigSpec.DoubleValue BROOD_GROWTH_BONUS;
     public static final ModConfigSpec.DoubleValue BASE_EGGS_PER_MINUTE;
-    public static final ModConfigSpec.DoubleValue NO_BREEDING_CHAMBER_FACTOR;
-    public static final ModConfigSpec.DoubleValue BREEDING_CHAMBER_BONUS;
+    public static final ModConfigSpec.DoubleValue NO_BROOD_CHAMBER_FACTOR;
+    public static final ModConfigSpec.DoubleValue BROOD_CHAMBER_BONUS;
     public static final ModConfigSpec.DoubleValue EGG_HATCH_MINUTES;
     public static final ModConfigSpec.DoubleValue LARVAE_GROW_MINUTES;
     public static final ModConfigSpec.DoubleValue MAINTENANCE_FRACTION;
@@ -45,7 +44,7 @@ public final class AntConfig {
     public static final ModConfigSpec.DoubleValue LARVA_FOOD;
     public static final ModConfigSpec.DoubleValue IDLE_ACTIVITY;
     public static final ModConfigSpec.IntValue TERRARIUM_FOOD_CAPACITY;
-    public static final ModConfigSpec.IntValue FOOD_STORAGE_CAPACITY;
+    public static final ModConfigSpec.IntValue STORAGE_FOOD_CAPACITY;
     public static final ModConfigSpec.DoubleValue STARVATION_GRACE_MINUTES;
     public static final ModConfigSpec.DoubleValue STARVATION_DECLINE;
     public static final ModConfigSpec.DoubleValue STARVED_FACTOR;
@@ -62,12 +61,11 @@ public final class AntConfig {
     public static final ModConfigSpec.DoubleValue FARMER_BYPRODUCT_ROLLS;
     public static final ModConfigSpec.DoubleValue FIGHT_ROLLS;
     public static final ModConfigSpec.DoubleValue SOLDIER_CASUALTY_CHANCE;
-    public static final ModConfigSpec.DoubleValue PROCESSING_PER_WORKER;
     public static final ModConfigSpec.DoubleValue SPEED_UPGRADE_BONUS;
     public static final ModConfigSpec.DoubleValue FOOD_UPGRADE_SAVING;
     public static final ModConfigSpec.DoubleValue SPECIES_UPGRADE_BONUS;
     public static final ModConfigSpec.DoubleValue RARE_FIND_MULTIPLIER;
-    public static final ModConfigSpec.IntValue RESOURCE_PILE_SLOTS_PER_UPGRADE;
+    public static final ModConfigSpec.IntValue STORAGE_SLOTS_PER_UPGRADE;
 
     // --- Genetics ---
     public static final ModConfigSpec.DoubleValue TRAIT_MIN_MULTIPLIER;
@@ -95,14 +93,11 @@ public final class AntConfig {
     public static final ModConfigSpec.IntValue GUARD_SOLDIER_COST;
 
     // --- Connections ---
-    public static final ModConfigSpec.DoubleValue CONNECTOR_FOOD_PER_MINUTE;
-    public static final ModConfigSpec.BooleanValue CONNECTOR_SHARES_STORAGE;
     public static final ModConfigSpec.IntValue GENERATOR_OUTPUT;
     public static final ModConfigSpec.IntValue GENERATOR_PUSH;
 
     // --- Client ---
     public static final ModConfigSpec.IntValue MAX_VISUAL_ANTS;
-    public static final ModConfigSpec.BooleanValue TUBE_ANTS;
     public static final ModConfigSpec.BooleanValue STRUCTURE_ANTS;
     public static final ModConfigSpec.DoubleValue ANT_DETAIL_DISTANCE;
     public static final ModConfigSpec.BooleanValue ANT_3D_MODELS;
@@ -122,33 +117,32 @@ public final class AntConfig {
                 .defineList("simulationUpgradeMinutes", List.of(15, 60, 240), () -> 15, o -> o instanceof Integer i && i >= 0);
         MAX_COLONY_POPULATION = s.comment("Hard cap on the adults of one colony, whatever its housing.")
                 .defineInRange("maxColonyPopulation", 1_000_000L, 100L, 100_000_000L);
-        NETWORK_SCAN_LIMIT = s.comment("Most blocks (tubes, tunnels, structures) one colony's network may hold.")
-                .defineInRange("networkScanLimit", 1024, 16, 16384);
         s.pop();
 
         s.push("population");
         TERRARIUM_CAPACITY = s.comment("Adults a Terrarium houses on its own.").defineInRange("terrariumCapacity", 60, 1, 100000);
-        WORKER_HOUSING_CAPACITY = s.comment("Adults each Worker Housing adds.").defineInRange("workerHousingCapacity", 2000, 1, 1000000);
-        BARRACKS_CAPACITY = s.comment("Soldiers each Soldier Barracks houses. Without barracks a colony raises no soldiers.")
-                .defineInRange("barracksCapacity", 1000, 1, 1000000);
-        NURSERY_LARVAE_CAPACITY = s.comment("Larvae each Ant Nursery holds on top of the Terrarium's own room.")
-                .defineInRange("nurseryLarvaeCapacity", 1500, 1, 1000000);
-        NURSERY_GROWTH_BONUS = s.comment("Larvae growth speed added by each Ant Nursery (diminishing).").defineInRange("nurseryGrowthBonus", 0.5, 0, 10);
-        BASE_EGGS_PER_MINUTE = s.comment("Eggs a Queen with average genetics lays per minute with one Breeding Chamber.")
+        HOUSING_CAPACITY = s.comment("Adults each Housing adds (plus half as many again per Population Upgrade tier).")
+                .defineInRange("housingCapacity", 3000, 1, 1000000);
+        HOUSING_SOLDIER_CAPACITY = s.comment("Of each Housing's room, how many may be soldiers. Without Housing a colony raises no soldiers.")
+                .defineInRange("housingSoldierCapacity", 1000, 0, 1000000);
+        BROOD_LARVAE_CAPACITY = s.comment("Larvae each Brood Chamber holds on top of the Terrarium's own room.")
+                .defineInRange("broodLarvaeCapacity", 1500, 1, 1000000);
+        BROOD_GROWTH_BONUS = s.comment("Larvae growth speed added by each Brood Chamber (diminishing).").defineInRange("broodGrowthBonus", 0.5, 0, 10);
+        BASE_EGGS_PER_MINUTE = s.comment("Eggs a Queen with average genetics lays per minute with one Brood Chamber.")
                 .defineInRange("baseEggsPerMinute", 12.0, 0.01, 10000);
-        NO_BREEDING_CHAMBER_FACTOR = s.comment("Egg laying speed of a Queen without any Breeding Chamber.").defineInRange("noBreedingChamberFactor", 0.25, 0, 1);
-        BREEDING_CHAMBER_BONUS = s.comment("Egg laying added by each Breeding Chamber after the first (diminishing).")
-                .defineInRange("breedingChamberBonus", 0.75, 0, 10);
+        NO_BROOD_CHAMBER_FACTOR = s.comment("Egg laying speed of a Queen without any Brood Chamber.").defineInRange("noBroodChamberFactor", 0.25, 0, 1);
+        BROOD_CHAMBER_BONUS = s.comment("Egg laying added by each Brood Chamber after the first (diminishing).")
+                .defineInRange("broodChamberBonus", 0.75, 0, 10);
         EGG_HATCH_MINUTES = s.comment("Average minutes until an egg hatches into a larva.").defineInRange("eggHatchMinutes", 1.5, 0.05, 1000);
-        LARVAE_GROW_MINUTES = s.comment("Average minutes until a larva becomes an adult (before genetics and nurseries).")
+        LARVAE_GROW_MINUTES = s.comment("Average minutes until a larva becomes an adult (before genetics and Brood Chambers).")
                 .defineInRange("larvaeGrowMinutes", 3.0, 0.05, 1000);
-        MAINTENANCE_FRACTION = s.comment("Share of a colony's adults that must stay home to clean tunnels and tend the brood.",
+        MAINTENANCE_FRACTION = s.comment("Share of a colony's adults that must stay home to clean the nest and tend the brood.",
                         "Workers kept for maintenance are never assigned to a job; too few of them lower colony health.")
                 .defineInRange("maintenanceFraction", 0.05, 0, 0.9);
         ADULT_LIFESPAN_MINUTES = s.comment("Average minutes an adult ant lives. A colony without a Queen dwindles; with one, eggs replace the dead.")
                 .defineInRange("adultLifespanMinutes", 240.0, 1, 1000000);
-        STAGE_POPULATIONS = s.comment("Adults a colony needs for stages 2, 3 and 4 (stage 2 also needs a Breeding Chamber, stage 3 a Nursery,",
-                        "stage 4 a mineral or better species, or average genetics of 5 or more).")
+        STAGE_POPULATIONS = s.comment("Adults a colony needs for stages 2, 3 and 4 (stages 2 and 3 also need a Brood Chamber, stage 4",
+                        "a mineral or better species, or average genetics of 5 or more).")
                 .defineList("stagePopulations", List.of(100, 1000, 5000), () -> 100, o -> o instanceof Integer i && i >= 0);
         s.pop();
 
@@ -159,7 +153,7 @@ public final class AntConfig {
         LARVA_FOOD = s.comment("Food a larva eats per minute.").defineInRange("larva", 0.015, 0, 100);
         IDLE_ACTIVITY = s.comment("How much an ant without a job eats, compared to a busy one.").defineInRange("idleActivity", 0.5, 0, 1);
         TERRARIUM_FOOD_CAPACITY = s.comment("Food a Terrarium stores on its own.").defineInRange("terrariumFoodCapacity", 2000, 1, Integer.MAX_VALUE);
-        FOOD_STORAGE_CAPACITY = s.comment("Food each Food Storage adds.").defineInRange("foodStorageCapacity", 25000, 1, Integer.MAX_VALUE);
+        STORAGE_FOOD_CAPACITY = s.comment("Food room each Storage adds (more with Storage Upgrades).").defineInRange("storageFoodCapacity", 25000, 1, Integer.MAX_VALUE);
         STARVATION_GRACE_MINUTES = s.comment("Minutes without food before the population starts to die.").defineInRange("starvationGraceMinutes", 3.0, 0, 1000);
         STARVATION_DECLINE = s.comment("Share of the population lost per minute of starvation after the grace period.")
                 .defineInRange("starvationDecline", 0.05, 0, 1);
@@ -174,8 +168,10 @@ public final class AntConfig {
         BONUS_EXPONENT = s.comment("Stacked bonuses (genetics x mutations x upgrades) above 1 count as bonus^exponent, so they can't multiply without end.",
                         "1 = no softening; 0.6 turns x20 into x6.")
                 .defineInRange("bonusExponent", 0.6, 0.1, 1.0);
-        SITE_BASE_CAPACITY = s.comment("Ants one job site takes before Population Upgrades.").defineInRange("siteBaseCapacity", 64, 1, 1000000);
-        SITE_CAPACITY_PER_UPGRADE = s.comment("Ants each Population Upgrade tier adds to a job site.").defineInRange("siteCapacityPerUpgrade", 64, 0, 1000000);
+        SITE_BASE_CAPACITY = s.comment("Ants one Foraging Chamber, Fungus Garden or Hunting Chamber takes before Population Upgrades.")
+                .defineInRange("chamberBaseCapacity", 256, 1, 1000000);
+        SITE_CAPACITY_PER_UPGRADE = s.comment("Ants each Population Upgrade tier adds to one of those chambers.")
+                .defineInRange("chamberCapacityPerUpgrade", 400, 0, 1000000);
         SCAVENGE_ROLLS = s.comment("Scavenging finds per minute per effective worker, before the species' own rate.")
                 .defineInRange("scavengeRolls", 0.6, 0, 10000);
         FARMER_FOOD = s.comment("Food per minute per effective farmer, before the species' own food production.")
@@ -186,18 +182,16 @@ public final class AntConfig {
                 .defineInRange("fightRolls", 0.05, 0, 10000);
         SOLDIER_CASUALTY_CHANCE = s.comment("Chance a hunt costs one soldier, before the soldiers' strength.")
                 .defineInRange("soldierCasualtyChance", 0.03, 0, 1);
-        PROCESSING_PER_WORKER = s.comment("Items a Resource Processing Chamber processes per minute per effective worker.")
-                .defineInRange("processingPerWorker", 0.5, 0, 10000);
         SPEED_UPGRADE_BONUS = s.comment("Work speed added per Speed Upgrade tier.").defineInRange("speedUpgradeBonus", 0.25, 0, 100);
         FOOD_UPGRADE_SAVING = s.comment("Share of food saved per Food Efficiency Upgrade tier (at most 75% in total).")
                 .defineInRange("foodUpgradeSaving", 0.12, 0, 1);
         SPECIES_UPGRADE_BONUS = s.comment("Strength of species-specific upgrades per tier.").defineInRange("speciesUpgradeBonus", 0.3, 0, 100);
         RARE_FIND_MULTIPLIER = s.comment("Multiplier on the chance of every rare (\"special\") find: diamonds, netherite scrap, shells, sponges, sniffer eggs...",
                         "0.5 halves them, 0 turns them off, 2 doubles them. Common finds are not changed (lower scavengeRolls for those).",
-                        "Fighting Site loot comes from mob loot tables and is not affected (use fightRolls).")
+                        "Hunting Chamber loot comes from mob loot tables and is not affected (use fightRolls).")
                 .defineInRange("rareFindMultiplier", 1.0, 0, 100);
-        RESOURCE_PILE_SLOTS_PER_UPGRADE = s.comment("Resource Pile slots unlocked per Storage Upgrade tier (base 9, at most 54).")
-                .defineInRange("resourcePileSlotsPerUpgrade", 9, 0, 45);
+        STORAGE_SLOTS_PER_UPGRADE = s.comment("Storage slots unlocked per Storage Upgrade tier (base 9, at most 54).")
+                .defineInRange("storageSlotsPerUpgrade", 9, 0, 45);
         s.pop();
 
         s.push("genetics");
@@ -238,13 +232,6 @@ public final class AntConfig {
                 .defineInRange("soldierCost", 50, 1, 1000000);
         s.pop();
 
-        s.push("connections");
-        CONNECTOR_FOOD_PER_MINUTE = s.comment("Food a Colony Connector moves per minute from a colony with spare food to one that needs it.")
-                .defineInRange("connectorFoodPerMinute", 600.0, 0, 1e9);
-        CONNECTOR_SHARES_STORAGE = s.comment("Whether colonies joined by a Colony Connector may put resources into each other's Resource Piles.")
-                .define("connectorSharesStorage", true);
-        s.pop();
-
         s.push("power");
         GENERATOR_OUTPUT = s.comment("FE a Generator makes per tick while it burns fuel (one coal burns for 1600 ticks).")
                 .defineInRange("generatorOutput", 40, 1, 100000);
@@ -255,8 +242,7 @@ public final class AntConfig {
         ModConfigSpec.Builder c = new ModConfigSpec.Builder();
         MAX_VISUAL_ANTS = c.comment("Most animated ants drawn in one Terrarium (they only show the colony; they never decide anything).")
                 .defineInRange("maxVisualAnts", 40, 0, 120);
-        TUBE_ANTS = c.comment("Ants walking through Glass Ant Tubes.").define("tubeAnts", true);
-        STRUCTURE_ANTS = c.comment("Ants working on top of job sites.").define("structureAnts", true);
+        STRUCTURE_ANTS = c.comment("Ants working on top of working chambers.").define("structureAnts", true);
         PARTICLES = c.comment("Colony particles (soil, food, crystals, genetics).").define("particles", true);
         AMBIENT_SOUNDS = c.comment("Colony ambience and ant footsteps.").define("ambientSounds", true);
         VISUAL_DISTANCE = c.comment("Blocks from which Terrarium ants are no longer drawn.").defineInRange("visualDistance", 32.0, 4, 128);

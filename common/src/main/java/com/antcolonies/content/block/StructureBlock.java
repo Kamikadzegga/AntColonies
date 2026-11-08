@@ -18,33 +18,21 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-/** One of the colony structures (see {@link StructureKind}); all share one block entity type. */
-public class StructureBlock extends NetworkEntityBlock {
+/** One of the colony chambers (see {@link StructureKind}); all share one block entity type. */
+public class StructureBlock extends ColonyEntityBlock {
     private final StructureKind kind;
     private final VoxelShape shape;
 
     public StructureBlock(StructureKind kind, Properties properties) {
         super(properties);
         this.kind = kind;
-        this.shape = switch (kind) {
-            case RESOURCE_PILE -> Shapes.or(Block.box(0, 0, 0, 16, 2, 16), Block.box(1, 2, 1, 15, 10, 15));
-            case SCAVENGING_SITE, FARMER_GARDEN, FIGHTING_SITE -> Block.box(0, 0, 0, 16, 12, 16);
-            case COLONY_CONNECTOR -> Block.box(2, 2, 2, 14, 14, 14);
-            default -> Shapes.block();
-        };
+        // Storage is a low heap (its biggest stacks show on top); the chambers where ants work are open on top (the ants
+        // show there); the others are full blocks.
+        this.shape = kind == StructureKind.STORAGE ? Shapes.or(Block.box(0, 0, 0, 16, 2, 16), Block.box(1, 2, 1, 15, 10, 15))
+                : kind.job().any() ? Block.box(0, 0, 0, 16, 12, 16) : Shapes.block();
     }
 
     public StructureKind structureKind() {
-        return kind;
-    }
-
-    @Override
-    public Role role(BlockState state) {
-        return kind == StructureKind.COLONY_CONNECTOR ? Role.CONNECTOR : Role.STRUCTURE;
-    }
-
-    @Override
-    public StructureKind kind(BlockState state) {
         return kind;
     }
 

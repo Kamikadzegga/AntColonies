@@ -12,7 +12,7 @@
   },
   "display": {
     "icon": {
-      "id": "antcolonies:breeding_chamber"
+      "id": "antcolonies:brood_chamber"
     },
     "title": {
       "translate": "advancements.antcolonies.stage_2.title"

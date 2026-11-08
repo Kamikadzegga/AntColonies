@@ -9,7 +9,7 @@ import net.minecraft.util.StringRepresentable;
 
 /**
  * The three upgrades every species has, made at the Upgrade Station from an Upgrade Base and the species' signature
- * material. They only work in Scavenging Sites of a colony of their species ("Diamond Extraction" does nothing for Gold
+ * material. They only work in Foraging Chambers of a colony of their species ("Diamond Extraction" does nothing for Gold
  * Ants). Each species' JSON-free names come from the language file ({@code upgrade.antcolonies.<species>.<kind>}).
  */
 public enum SpeciesUpgradeKind implements StringRepresentable {

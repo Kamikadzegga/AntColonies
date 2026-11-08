@@ -1,15 +1,7 @@
 {
   "values": [
-    "antcolonies:dna_analyzer",
-    "antcolonies:mutation_chamber",
-    "antcolonies:genetic_storage",
-    "antcolonies:queen_enhancement_chamber",
-    "antcolonies:genetic_energy_core",
-    "antcolonies:genetic_lab_controller",
+    "antcolonies:genetic_laboratory",
     "antcolonies:generator",
-    "antcolonies:fighting_site",
-    "antcolonies:soldier_barracks",
-    "antcolonies:processing_chamber",
-    "antcolonies:colony_connector"
+    "antcolonies:hunting_chamber"
   ]
 }

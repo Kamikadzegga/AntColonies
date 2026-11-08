@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "M": "minecraft:packed_mud",
+    "R": "antcolonies:royal_jelly",
+    "W": "#minecraft:wool"
+  },
+  "pattern": ["MRM", "MWM", "MMM"],
+  "result": {
+    "id": "antcolonies:brood_chamber"
+  }
+}

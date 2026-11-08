@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "G": "minecraft:glass",
+    "C": "antcolonies:genetic_circuit",
+    "X": "antcolonies:genetic_analyzer",
+    "A": "minecraft:amethyst_block",
+    "R": "minecraft:redstone_block"
+  },
+  "pattern": ["IGI", "CXC", "ARA"],
+  "result": {
+    "id": "antcolonies:genetic_laboratory"
+  }
+}

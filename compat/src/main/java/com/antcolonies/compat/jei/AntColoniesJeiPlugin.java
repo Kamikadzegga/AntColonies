@@ -5,7 +5,6 @@ import com.antcolonies.compat.recipes.AntRecipes;
 import java.util.Objects;
 
 import com.antcolonies.AntColonies;
-import com.antcolonies.content.block.LabPartBlock;
 import com.antcolonies.colony.model.StructureKind;
 import com.antcolonies.colony.genetics.QueenData;
 import com.antcolonies.content.item.AntSample;
@@ -100,14 +99,14 @@ public class AntColoniesJeiPlugin implements IModPlugin {
                 new AntCategory(SPECIES, "species", ModItems.ANT_IDENTIFICATION_BOOK.get(), gui, 2, 5),
                 new AntCategory(BREEDING, "breeding", structure(StructureKind.QUEEN_CHAMBER), gui, 2, 2),
                 new AntCategory(EVOLUTION, "evolution", ModItems.TERRARIUM.get(), gui, 1, 3),
-                new AntCategory(MUTATION, "mutation", ModBlocks.LAB_PARTS.get(LabPartBlock.Part.MUTATION_CHAMBER).get(), gui, 1, 4),
+                new AntCategory(MUTATION, "mutation", ModItems.GENETIC_LAB.get(), gui, 1, 4),
                 new AntCategory(HYBRID, "hybrid", ModItems.GENETIC_SAMPLE.get(), gui, 1, 4),
-                new AntCategory(EGGS, "eggs", structure(StructureKind.BREEDING_CHAMBER), gui, 1, 3),
-                new AntCategory(LARVAE, "larvae", structure(StructureKind.NURSERY), gui, 1, 2),
-                new AntCategory(PRODUCTION, "production", structure(StructureKind.SCAVENGING_SITE), gui, 2, 1),
-                new AntCategory(FARMING, "farming", structure(StructureKind.FARMER_GARDEN), gui, 2, 1),
-                new AntCategory(FIGHTING, "fighting", structure(StructureKind.FIGHTING_SITE), gui, 2, 2),
-                new AntCategory(LAB, "lab", ModItems.GENETIC_LAB_CONTROLLER.get(), gui, 1, 4),
+                new AntCategory(EGGS, "eggs", structure(StructureKind.BROOD_CHAMBER), gui, 1, 3),
+                new AntCategory(LARVAE, "larvae", structure(StructureKind.BROOD_CHAMBER), gui, 1, 2),
+                new AntCategory(PRODUCTION, "production", structure(StructureKind.FORAGING_CHAMBER), gui, 2, 1),
+                new AntCategory(FARMING, "farming", structure(StructureKind.FUNGUS_GARDEN), gui, 2, 1),
+                new AntCategory(FIGHTING, "fighting", structure(StructureKind.HUNTING_CHAMBER), gui, 2, 2),
+                new AntCategory(LAB, "lab", ModItems.GENETIC_LAB.get(), gui, 1, 4),
                 new AntCategory(TRAIT, "trait", ModItems.GENETIC_ANALYZER.get(), gui, 1, 3),
                 new AntCategory(SPECIES_UPGRADE, "species_upgrade", ModItems.UPGRADE_STATION.get(), gui, 1, 2));
     }
@@ -140,19 +139,15 @@ public class AntColoniesJeiPlugin implements IModPlugin {
         registration.addCraftingStation(SPECIES, ModItems.ANT_IDENTIFICATION_BOOK.get(), ModItems.TWEEZERS.get());
         registration.addCraftingStation(BREEDING, structure(StructureKind.QUEEN_CHAMBER));
         registration.addCraftingStation(EVOLUTION, ModItems.TERRARIUM.get(), ModItems.EVOLUTION_CATALYST.get());
-        registration.addCraftingStation(MUTATION, ModBlocks.LAB_PARTS.get(LabPartBlock.Part.MUTATION_CHAMBER).get(), structure(StructureKind.QUEEN_CHAMBER));
+        registration.addCraftingStation(MUTATION, ModItems.GENETIC_LAB.get(), structure(StructureKind.QUEEN_CHAMBER));
         registration.addCraftingStation(HYBRID, structure(StructureKind.QUEEN_CHAMBER));
-        registration.addCraftingStation(EGGS, ModItems.TERRARIUM.get(), structure(StructureKind.BREEDING_CHAMBER));
-        registration.addCraftingStation(LARVAE, structure(StructureKind.NURSERY));
-        registration.addCraftingStation(PRODUCTION, structure(StructureKind.SCAVENGING_SITE), structure(StructureKind.RESOURCE_PILE),
-                structure(StructureKind.PROCESSING_CHAMBER));
-        registration.addCraftingStation(FARMING, structure(StructureKind.FARMER_GARDEN), structure(StructureKind.FOOD_STORAGE));
-        registration.addCraftingStation(FIGHTING, structure(StructureKind.FIGHTING_SITE), structure(StructureKind.SOLDIER_BARRACKS));
-        registration.addCraftingStation(LAB, ModItems.GENETIC_LAB_CONTROLLER.get());
-        for (LabPartBlock.Part part : LabPartBlock.Part.values()) {
-            registration.addCraftingStation(LAB, ModBlocks.LAB_PARTS.get(part).get());
-        }
-        registration.addCraftingStation(TRAIT, ModItems.GENETIC_LAB_CONTROLLER.get(), ModItems.GENETIC_ANALYZER.get());
+        registration.addCraftingStation(EGGS, ModItems.TERRARIUM.get(), structure(StructureKind.BROOD_CHAMBER));
+        registration.addCraftingStation(LARVAE, structure(StructureKind.BROOD_CHAMBER));
+        registration.addCraftingStation(PRODUCTION, structure(StructureKind.FORAGING_CHAMBER), structure(StructureKind.STORAGE));
+        registration.addCraftingStation(FARMING, structure(StructureKind.FUNGUS_GARDEN), structure(StructureKind.STORAGE));
+        registration.addCraftingStation(FIGHTING, structure(StructureKind.HUNTING_CHAMBER), structure(StructureKind.HOUSING));
+        registration.addCraftingStation(LAB, ModItems.GENETIC_LAB.get());
+        registration.addCraftingStation(TRAIT, ModItems.GENETIC_LAB.get(), ModItems.GENETIC_ANALYZER.get());
         registration.addCraftingStation(SPECIES_UPGRADE, ModItems.UPGRADE_STATION.get());
     }
 }

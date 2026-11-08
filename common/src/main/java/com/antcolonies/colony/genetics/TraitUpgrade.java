@@ -26,7 +26,7 @@ public record TraitUpgrade(Trait trait, List<Step> steps) {
     }
 
     /**
-     * @param energy Genetic Energy used (from the Energy Core's fuel)
+     * @param energy FE used
      * @param time   ticks of processing
      */
     public record Step(List<Cost> cost, int energy, int time) {

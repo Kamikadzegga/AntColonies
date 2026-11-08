@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "antcolonies:block/genetic_storage_front_formed",
-    "side": "antcolonies:block/genetic_storage_side_formed",
-    "top": "antcolonies:block/genetic_storage_top_formed"
-  }
-}

@@ -3,7 +3,6 @@ package com.antcolonies.core.registry;
 import java.util.function.Supplier;
 
 import com.antcolonies.AntColonies;
-import com.antcolonies.content.blockentity.AntTubeBlockEntity;
 import com.antcolonies.content.blockentity.GeneticLabBlockEntity;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
@@ -21,10 +20,8 @@ public final class ModBlockEntities {
             () -> new BlockEntityType<>(TerrariumBlockEntity::new, ModBlocks.TERRARIUM.get()));
     public static final Supplier<BlockEntityType<StructureBlockEntity>> STRUCTURE = BLOCK_ENTITY_TYPES.register("structure",
             () -> new BlockEntityType<>(StructureBlockEntity::new, ModBlocks.STRUCTURES.values().stream().map(b -> (Block) b.get()).toArray(Block[]::new)));
-    public static final Supplier<BlockEntityType<AntTubeBlockEntity>> ANT_TUBE = BLOCK_ENTITY_TYPES.register("ant_tube",
-            () -> new BlockEntityType<>(AntTubeBlockEntity::new, ModBlocks.ANT_TUBE.get()));
     public static final Supplier<BlockEntityType<GeneticLabBlockEntity>> GENETIC_LAB = BLOCK_ENTITY_TYPES.register("genetic_lab",
-            () -> new BlockEntityType<>(GeneticLabBlockEntity::new, ModBlocks.GENETIC_LAB_CONTROLLER.get()));
+            () -> new BlockEntityType<>(GeneticLabBlockEntity::new, ModBlocks.GENETIC_LAB.get()));
     public static final Supplier<BlockEntityType<com.antcolonies.content.blockentity.GeneratorBlockEntity>> GENERATOR = BLOCK_ENTITY_TYPES.register("generator",
             () -> new BlockEntityType<>(com.antcolonies.content.blockentity.GeneratorBlockEntity::new, ModBlocks.GENERATOR.get()));
     public static final Supplier<BlockEntityType<UpgradeStationBlockEntity>> UPGRADE_STATION = BLOCK_ENTITY_TYPES.register("upgrade_station",

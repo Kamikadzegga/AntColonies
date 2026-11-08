@@ -2,7 +2,7 @@ package com.antcolonies;
 
 import org.slf4j.Logger;
 
-import com.antcolonies.colony.model.ColonyNetwork;
+import com.antcolonies.colony.model.ColonyRing;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.content.entity.WildAnt;
 import com.antcolonies.core.registry.ModBlockEntities;
@@ -55,7 +55,7 @@ public class AntColonies {
         modEventBus.addListener(WildAnt::registerSpawnPlacement);
         modEventBus.addListener(ModCapabilities::register);
         // Any colony block placed or broken makes nearby Terrariums look at their network again.
-        NeoForge.EVENT_BUS.addListener(ColonyNetwork::onLevelUnload);
+        NeoForge.EVENT_BUS.addListener(ColonyRing::onLevelUnload);
         NeoForge.EVENT_BUS.addListener(com.antcolonies.content.item.ChitinGear::onPlayerTick);
     }
 

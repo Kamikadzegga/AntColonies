@@ -51,9 +51,9 @@ import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Every colony structure: its own slots (Resource Pile storage, Food Storage food, Queen Chamber materials), its upgrade
- * slots, how many ants the player wants at it, and what the colony's last step gave it. Structures don't simulate
- * anything themselves: their Terrarium's colony does, and tells them the results.
+ * Every colony chamber: its own slots (Storage for finds, Queen Chamber materials), its upgrade slots, how many ants the
+ * player wants at it, and what the colony's last step gave it. Chambers don't simulate anything themselves: their
+ * Terrarium's colony does, and tells them the results.
  */
 public class StructureBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, com.antcolonies.content.block.ComparatorSource {
     /** Job sites: how full their workforce is. Other structures: how full their slots are. */
@@ -129,7 +129,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
 
     public StructureBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STRUCTURE.get(), pos, state);
-        this.kind = state.getBlock() instanceof StructureBlock block ? block.structureKind() : StructureKind.RESOURCE_PILE;
+        this.kind = state.getBlock() instanceof StructureBlock block ? block.structureKind() : StructureKind.STORAGE;
         this.items = NonNullList.withSize(kind.slots(), ItemStack.EMPTY);
         this.upgrades = new SimpleContainer(kind.upgradeSlots()) {
             @Override
@@ -308,14 +308,14 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         return queensRaised;
     }
 
-    // --- Resource Pile ---
+    // --- Storage ---
 
-    /** Resource Pile slots open with its Storage Upgrades; other structures use all their slots. */
+    /** Storage slots open with its Storage Upgrades; other structures use all their slots. */
     public int unlockedSlots() {
-        if (kind != StructureKind.RESOURCE_PILE) {
+        if (kind != StructureKind.STORAGE) {
             return kind.slots();
         }
-        return Math.min(kind.slots(), 9 + AntConfig.get(AntConfig.RESOURCE_PILE_SLOTS_PER_UPGRADE) * upgradeTier(UpgradeType.STORAGE) * 2);
+        return Math.min(kind.slots(), 9 + AntConfig.get(AntConfig.STORAGE_SLOTS_PER_UPGRADE) * upgradeTier(UpgradeType.STORAGE) * 2);
     }
 
     /** Sets a slot without the change notice (bulk inserts call {@link #contentsChanged()} once). */
@@ -323,7 +323,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         items.set(slot, stack);
     }
 
-    /** Clients will get the change (the Resource Pile's heap, a site's ants) at the next sync. */
+    /** Clients will get the change (the Storage's heap, a site's ants) at the next sync. */
     public void contentsChanged() {
         syncPending = true;
     }
@@ -338,10 +338,8 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
             be.contentsChanged();
         }
         if ((time + pos.asLong()) % 20 == 0 && level instanceof ServerLevel serverLevel) {
-            if (be.kind == StructureKind.RESOURCE_PILE && be.upgradeTier(UpgradeType.AUTOMATION) > 0) {
+            if (be.kind == StructureKind.STORAGE && be.upgradeTier(UpgradeType.AUTOMATION) > 0) {
                 be.pushDown(serverLevel, pos);
-            } else if (be.kind == StructureKind.FOOD_STORAGE && be.upgradeTier(UpgradeType.AUTOMATION) > 0) {
-                be.pullFoodFromAbove(serverLevel, pos);
             }
         }
         if (be.syncPending && time % 10 == 0) {
@@ -350,7 +348,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         }
     }
 
-    /** Automation: a Resource Pile empties into the container under it, a stack per second per tier. */
+    /** Automation: a Storage empties into the container under it, a stack per second per tier. */
     private void pushDown(ServerLevel level, BlockPos pos) {
         var target = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Item.BLOCK, pos.below(), Direction.UP);
         if (target == null) {
@@ -371,36 +369,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
                 setChanged();
                 contentsChanged();
             }
-        }
-    }
-
-    /** Automation: Food Storage takes ant food from the container above it. */
-    private void pullFoodFromAbove(ServerLevel level, BlockPos pos) {
-        if (!(level.getBlockEntity(pos.above()) instanceof Container source)) {
-            return;
-        }
-        int budget = 16 * upgradeTier(UpgradeType.AUTOMATION);
-        for (int from = 0; from < source.getContainerSize() && budget > 0; from++) {
-            ItemStack stack = source.getItem(from);
-            if (ModDataMaps.food(stack) == null) {
-                continue;
-            }
-            for (int slot = 0; slot < items.size() && !stack.isEmpty() && budget > 0; slot++) {
-                ItemStack here = items.get(slot);
-                if (here.isEmpty()) {
-                    int moved = Math.min(budget, stack.getCount());
-                    items.set(slot, stack.split(moved));
-                    budget -= moved;
-                } else if (ItemStack.isSameItemSameComponents(here, stack) && here.getCount() < here.getMaxStackSize()) {
-                    int moved = Math.min(budget, Math.min(stack.getCount(), here.getMaxStackSize() - here.getCount()));
-                    here.grow(moved);
-                    stack.shrink(moved);
-                    budget -= moved;
-                }
-            }
-            source.setItem(from, stack);
-            source.setChanged();
-            setChanged();
         }
     }
 
@@ -447,8 +415,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
         return switch (kind) {
-            case RESOURCE_PILE -> slot < unlockedSlots();
-            case FOOD_STORAGE -> ModDataMaps.food(stack) != null;
+            case STORAGE -> slot < unlockedSlots();
             case QUEEN_CHAMBER -> slot < StructureKind.QUEEN_CHAMBER_MATERIALS
                     || slot == StructureKind.QUEEN_CHAMBER_TUBE && stack.is(ModItems.TEST_TUBE.get())
                     || slot == StructureKind.QUEEN_CHAMBER_SAMPLE && stack.is(ModItems.GENETIC_SAMPLE.get());
@@ -471,8 +438,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     public int[] getSlotsForFace(Direction side) {
         return switch (kind) {
-            case RESOURCE_PILE -> range(0, unlockedSlots());
-            case FOOD_STORAGE -> range(0, items.size());
+            case STORAGE -> range(0, unlockedSlots());
             case QUEEN_CHAMBER -> range(0, items.size());
             default -> NO_SLOTS;
         };
@@ -486,15 +452,15 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         return slots;
     }
 
-    /** Hoppers and pipes may feed Food Storage and Queen Chambers; Resource Piles are only emptied. */
+    /** Hoppers and pipes may feed Queen Chambers; Storage is only emptied. */
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction side) {
-        return kind != StructureKind.RESOURCE_PILE && slot != StructureKind.QUEEN_CHAMBER_OUTPUT && canPlaceItem(slot, stack);
+        return kind != StructureKind.STORAGE && slot != StructureKind.QUEEN_CHAMBER_OUTPUT && canPlaceItem(slot, stack);
     }
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return kind == StructureKind.RESOURCE_PILE || kind == StructureKind.QUEEN_CHAMBER && slot == StructureKind.QUEEN_CHAMBER_OUTPUT;
+        return kind == StructureKind.STORAGE || kind == StructureKind.QUEEN_CHAMBER && slot == StructureKind.QUEEN_CHAMBER_OUTPUT;
     }
 
     // --- Menu ---
@@ -509,7 +475,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         return new StructureMenu(containerId, inventory, this);
     }
 
-    /** The Resource Pile's renderer draws its heap from this box. */
+    /** The Storage's renderer draws its heap from this box. */
     public AABB getRenderBox() {
         return new AABB(worldPosition).inflate(0.5);
     }

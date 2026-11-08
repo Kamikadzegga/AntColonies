@@ -44,7 +44,7 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
             BuiltInRegistries.ITEM.holderByNameCodec().optionalFieldOf("signature_item").forGetter(AntSpecies::signature)
     ).apply(i, AntSpecies::new));
 
-    /** Whether its workers can tend a Farmer Ant Garden. */
+    /** Whether its workers can tend a Fungus Garden. */
     public boolean canFarm() {
         return farming.foodPerMinute() > 0;
     }
@@ -72,7 +72,7 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
         ).apply(i, Diet::new));
     }
 
-    /** What its workers find at Scavenging Sites, and how fast compared to Common Ants. */
+    /** What its workers find at Foraging Chambers, and how fast compared to Common Ants. */
     public record Production(double rate, List<SpeciesOutput> outputs) {
         public static final Production NONE = new Production(1.0, List.of());
         public static final Codec<Production> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -82,8 +82,8 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
     }
 
     /**
-     * What its workers grow in a Farmer Ant Garden: food per minute compared to Farmer Ants (0: they can't farm), and
-     * the harvest (mushrooms, seeds, berries) that goes to the Resource Piles.
+     * What its workers grow in a Fungus Garden: food per minute compared to Farmer Ants (0: they can't farm), and
+     * the harvest (mushrooms, seeds, berries) that goes to the Storage chambers.
      */
     public record Farming(double foodPerMinute, List<SpeciesOutput> harvest) {
         public static final Farming NONE = new Farming(0, List.of());
@@ -93,7 +93,7 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
         ).apply(i, Farming::new));
     }
 
-    /** How hard its soldiers hit, and what they hunt at Fighting Sites (each mob's own loot table is used). */
+    /** How hard its soldiers hit, and what they hunt at Hunting Chambers (each mob's own loot table is used). */
     public record Combat(double strength, List<Target> targets) {
         public static final Combat DEFAULT = new Combat(1.0, List.of());
         public static final Codec<Combat> CODEC = RecordCodecBuilder.create(i -> i.group(

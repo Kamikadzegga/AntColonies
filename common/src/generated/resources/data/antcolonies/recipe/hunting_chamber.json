@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:bone",
+    "W": "minecraft:iron_sword",
+    "S": "minecraft:cobblestone",
+    "M": "minecraft:packed_mud"
+  },
+  "pattern": ["BWB", "SMS", "SSS"],
+  "result": {
+    "id": "antcolonies:hunting_chamber"
+  }
+}

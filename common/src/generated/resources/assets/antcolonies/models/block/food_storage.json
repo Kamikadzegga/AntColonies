@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "antcolonies:block/food_storage_front",
-    "side": "antcolonies:block/food_storage_side",
-    "top": "antcolonies:block/food_storage_top"
-  }
-}

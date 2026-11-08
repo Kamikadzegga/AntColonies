@@ -11,11 +11,24 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 - An in-game config screen: Mods → Ant Colonies → Config, with readable names and explanations for every option.
 - Upgrade items show their tier (I, II or III) on their icon in every slot and inventory.
 
+### Changed
+
+- A colony is now one 3x3 build: the Terrarium in the middle and any 8 chambers around it (sides and corners, same
+  level). It works once all 8 places are filled. Glass Ant Tubes, Underground Tunnels and the Colony Connector are gone.
+- Twelve structures became seven chambers: Brood Chamber (was Breeding Chamber and Ant Nursery), Housing (was Worker
+  Housing and Soldier Barracks), Storage (was Resource Pile and Food Storage), Foraging Chamber (was Scavenging Site),
+  Fungus Garden (was Farmer Ant Garden), Hunting Chamber (was Fighting Site) and Queen Chamber. The Resource Processing
+  Chamber is gone; Processing species upgrades still turn finds into their processed form.
+- The Genetic Laboratory is one block that takes FE from any side. Its five parts and the Genetic Energy Core are gone.
+- Food goes in only through the Terrarium. Storage adds food room.
+- Ants inside chambers are drawn only up close (`antDetailDistance`) with 3D models on: a view of 25 colonies runs
+  about 80% faster.
+- Worlds from 0.1.0: the removed and renamed blocks disappear. Rebuild colonies as rings.
+
 ### Fixed
 
 - Terrariums never scanned for their structures in a real game, so nothing linked to them; climate was never read and
   evolution was never attempted. A timer started at the lowest possible value and "now - then" overflowed.
-- The Genetic Laboratory never checked for its parts (the same timer bug), so it stayed incomplete.
 - The "not linked" line on colony structure screens ran past the edge of the panel.
 - Upgrades in a Terrarium vanished from its screen a moment after being put in: the updates sent to players left them
   out and emptied the slots (the upgrades kept working).

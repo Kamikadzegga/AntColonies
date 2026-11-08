@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Locale;
 
 import com.antcolonies.AntColonies;
-import com.antcolonies.content.block.LabPartBlock;
 import com.antcolonies.content.blockentity.GeneticLabBlockEntity;
 import com.antcolonies.client.ClientSpecies;
 import com.antcolonies.colony.model.ColonyStatus;
@@ -84,8 +83,9 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
         return Trait.values()[Math.clamp(menu.data(GeneticLabBlockEntity.DATA_TRAIT), 0, Trait.values().length - 1)];
     }
 
-    private boolean formed() {
-        return menu.data(GeneticLabBlockEntity.DATA_MISSING) == 0;
+    /** Whether the lab has energy to work with. */
+    private boolean powered() {
+        return menu.data(GeneticLabBlockEntity.DATA_ENERGY) > 0;
     }
 
     private boolean idle() {
@@ -114,10 +114,10 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int xm, int ym) {
         graphics.text(font, Component.translatable("gui.antcolonies.lab.title"), 10, 7, TEXT, false);
-        Component state = Component.translatable(formed() ? "gui.antcolonies.lab.online" : "gui.antcolonies.lab.offline");
+        Component state = Component.translatable(powered() ? "gui.antcolonies.lab.online" : "gui.antcolonies.lab.offline");
         int width = font.width(state);
         int chipX = imageWidth - 12 - width - 8;
-        int color = formed() ? GREEN : RED;
+        int color = powered() ? GREEN : RED;
         // A status light that pulses while the lab works.
         float pulse = idle() ? 1 : 0.6F + 0.4F * Mth.sin(time() * 0.3F);
         graphics.fill(chipX, 8, chipX + 5, 13, scaleAlpha(color, pulse));
@@ -134,12 +134,8 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
     protected void extractPage(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         QueenData queen = queen();
         specimen(graphics, queen);
-        if (!formed()) {
-            missingParts(graphics);
-        } else {
-            genome(graphics, queen, mouseX, mouseY);
-            detail(graphics, queen);
-        }
+        genome(graphics, queen, mouseX, mouseY);
+        detail(graphics, queen);
         tools(graphics, queen);
         strip(graphics, queen);
     }
@@ -297,28 +293,10 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
         return minecraft.level == null ? null : menu.lab().requirement(GeneticLabBlockEntity.Operation.UPGRADE, queen, minecraft.level.registryAccess());
     }
 
-    /** Before the lab is complete, the middle lists its five parts and the right says how to build it. */
-    private void missingParts(GuiGraphicsExtractor graphics) {
-        int missing = menu.data(GeneticLabBlockEntity.DATA_MISSING);
-        label(graphics, Component.translatable("gui.antcolonies.lab.parts"), LIST_X + 6, 24, CYAN);
-        int y = 38;
-        for (LabPartBlock.Part part : LabPartBlock.Part.values()) {
-            boolean has = (missing & (1 << part.ordinal())) == 0;
-            graphics.fill(leftPos + LIST_X + 6, topPos + y + 1, leftPos + LIST_X + 11, topPos + y + 6, has ? GREEN : RED);
-            label(graphics, fit(Component.translatable("block.antcolonies." + part.id()).getString(), LIST_W - 20), LIST_X + 15, y, has ? TEXT : TEXT_DIM);
-            y += 12;
-        }
-        int x = DETAIL_X + 5;
-        int line = 24;
-        for (String word : wrap(Component.translatable("gui.antcolonies.lab.build_hint").getString(), DETAIL_W - 10)) {
-            label(graphics, word, x, line, TEXT_DIM);
-            line += 10;
-        }
-    }
 
     /** The row under the panels: upgrades (they need no buttons), the catalyst slot and the lab's tools. */
     private void tools(GuiGraphicsExtractor graphics, @Nullable QueenData queen) {
-        boolean ready = formed() && idle() && queen != null;
+        boolean ready = idle() && queen != null;
         int y = GeneticLabMenu.TOOLS_Y + 1;
         String[][] tools = {{"reroll", String.valueOf(GeneticLabMenu.BUTTON_REROLL)}, {"mutate", String.valueOf(GeneticLabMenu.BUTTON_MUTATE)},
                 {"purge", String.valueOf(GeneticLabMenu.BUTTON_PURGE)}, {"sample", String.valueOf(GeneticLabMenu.BUTTON_SAMPLE)}};
@@ -367,10 +345,7 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
         int color;
         int status = menu.data(GeneticLabBlockEntity.DATA_STATUS);
         ColonyStatus problem = ColonyStatus.of(status).stream().filter(ColonyStatus::problem).findFirst().orElse(null);
-        if (!formed()) {
-            message = Component.translatable("gui.antcolonies.lab.incomplete");
-            color = RED;
-        } else if (queen == null) {
+        if (queen == null) {
             message = Component.translatable("gui.antcolonies.lab.insert_queen");
             color = TEXT_DIM;
         } else if (problem != null) {
@@ -462,7 +437,7 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
 
     @Override
     protected boolean clickPage(double mouseX, double mouseY) {
-        if (!formed() || !idle() || queen() == null) {
+        if (!idle() || queen() == null) {
             return false;
         }
         for (int row = 0; row < Trait.values().length; row++) {
@@ -477,42 +452,40 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
     @Override
     protected void extractPageTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         QueenData queen = queen();
-        if (formed()) {
-            for (Trait trait : Trait.values()) {
-                if (over(mouseX, mouseY, LIST_X + 2, ROW_Y + trait.ordinal() * ROW_H - 1, LIST_W - 4, ROW_H)) {
-                    List<Component> lines = new ArrayList<>();
-                    lines.add(Component.translatable(trait.translationKey()).withStyle(ChatFormatting.AQUA));
-                    lines.add(Component.translatable(trait.translationKey() + ".desc").withStyle(ChatFormatting.GRAY));
-                    if (queen != null) {
-                        int level = queen.genome().level(trait);
-                        lines.add(Component.translatable("gui.antcolonies.lab.level", level, Component.translatable(Trait.gradeKey(level)),
-                                String.format(Locale.ROOT, "x%.2f", Trait.multiplier(level))).withStyle(Tooltips.levelColor(level)));
-                    }
-                    graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
-                    return;
-                }
-            }
-            if (queen != null && !queen.genome().mutations().isEmpty() && over(mouseX, mouseY, LEFT_X, 62, LEFT_W, 34)) {
+        for (Trait trait : Trait.values()) {
+            if (over(mouseX, mouseY, LIST_X + 2, ROW_Y + trait.ordinal() * ROW_H - 1, LIST_W - 4, ROW_H)) {
                 List<Component> lines = new ArrayList<>();
-                lines.add(Component.translatable("gui.antcolonies.mutations").withStyle(ChatFormatting.LIGHT_PURPLE));
-                for (Identifier mutation : queen.genome().mutations()) {
-                    lines.add(Component.literal(" ").append(Component.translatable(Mutation.translationKey(mutation))).withStyle(ChatFormatting.GRAY));
+                lines.add(Component.translatable(trait.translationKey()).withStyle(ChatFormatting.AQUA));
+                lines.add(Component.translatable(trait.translationKey() + ".desc").withStyle(ChatFormatting.GRAY));
+                if (queen != null) {
+                    int level = queen.genome().level(trait);
+                    lines.add(Component.translatable("gui.antcolonies.lab.level", level, Component.translatable(Trait.gradeKey(level)),
+                            String.format(Locale.ROOT, "x%.2f", Trait.multiplier(level))).withStyle(Tooltips.levelColor(level)));
                 }
                 graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
                 return;
             }
-            if (queen != null && queen.genome().level(selected()) < Trait.maxLevel()) {
-                GeneticLabBlockEntity.Requirement requirement = requirement(queen);
-                if (requirement != null) {
-                    for (int i = 0; i < requirement.materials().size(); i++) {
-                        if (over(mouseX, mouseY, DETAIL_X + 5 + i * 20, 75, 16, 16)) {
-                            Cost cost = requirement.materials().get(i);
-                            graphics.setComponentTooltipForNextFrame(font, List.of(shown(cost).getHoverName(),
-                                    Component.translatable("gui.antcolonies.lab.have", have(cost), cost.count())
-                                            .withStyle(have(cost) >= cost.count() ? ChatFormatting.GREEN : ChatFormatting.RED),
-                                    Component.translatable("gui.antcolonies.lab.materials_hint").withStyle(ChatFormatting.DARK_GRAY)), mouseX, mouseY);
-                            return;
-                        }
+        }
+        if (queen != null && !queen.genome().mutations().isEmpty() && over(mouseX, mouseY, LEFT_X, 62, LEFT_W, 34)) {
+            List<Component> lines = new ArrayList<>();
+            lines.add(Component.translatable("gui.antcolonies.mutations").withStyle(ChatFormatting.LIGHT_PURPLE));
+            for (Identifier mutation : queen.genome().mutations()) {
+                lines.add(Component.literal(" ").append(Component.translatable(Mutation.translationKey(mutation))).withStyle(ChatFormatting.GRAY));
+            }
+            graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+            return;
+        }
+        if (queen != null && queen.genome().level(selected()) < Trait.maxLevel()) {
+            GeneticLabBlockEntity.Requirement requirement = requirement(queen);
+            if (requirement != null) {
+                for (int i = 0; i < requirement.materials().size(); i++) {
+                    if (over(mouseX, mouseY, DETAIL_X + 5 + i * 20, 75, 16, 16)) {
+                        Cost cost = requirement.materials().get(i);
+                        graphics.setComponentTooltipForNextFrame(font, List.of(shown(cost).getHoverName(),
+                                Component.translatable("gui.antcolonies.lab.have", have(cost), cost.count())
+                                        .withStyle(have(cost) >= cost.count() ? ChatFormatting.GREEN : ChatFormatting.RED),
+                                Component.translatable("gui.antcolonies.lab.materials_hint").withStyle(ChatFormatting.DARK_GRAY)), mouseX, mouseY);
+                        return;
                     }
                 }
             }

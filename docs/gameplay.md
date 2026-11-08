@@ -19,22 +19,28 @@ world content, species, genetics and the settings. For data packs and modpacks s
 
 ## How colonies work
 
+A colony is one **3x3 build**: a **Terrarium** in the middle and **8 chambers** around it (the four sides and the four
+corners, on the same level). Any chambers in any mix fill the ring; four Foraging Chambers and one of each other kind
+is as good as one of each. The colony works only while all 8 places are filled, and a chamber may touch only one
+Terrarium, so keep Terrariums at least 3 blocks apart (two rings may not share a chamber).
+
 A colony's population is plain numbers on the server: eggs, larvae, workers and soldiers, food, health. The ants you
-see in the Terrarium, in the tubes and on the job sites are a picture of those numbers (how many, which jobs, hungry
-or not, transforming or not). They never decide anything, and no ant entities are spawned for a colony.
+see in the Terrarium and the chambers are a picture of those numbers (how many, which jobs, hungry or not,
+transforming or not). They never decide anything, and no ant entities are spawned for a colony.
 
 Every simulation step (1 second by default) a colony:
 
-1. finds its connected structures (through Glass Ant Tubes, Underground Tunnels and touching structures),
-2. keeps 5% of its adults home for maintenance, then hands out workers to Farmer Gardens, Processing Chambers and
-   Scavenging Sites, and soldiers to Fighting Sites (each site takes what it asks for, up to its capacity; an ant is
-   never counted twice, and a removed site frees its ants at once),
-3. eats food and grows food, lays eggs, hatches larvae, raises adults, loses the old and (when starving) the weak,
+1. checks its ring (a chamber placed or broken rechecks it at once); with a place empty it pauses and its screen
+   says which,
+2. keeps 5% of its adults home for maintenance, then hands out workers to Fungus Gardens and Foraging Chambers, and
+   soldiers to Hunting Chambers (each chamber takes what it asks for, up to its capacity; an ant is never counted
+   twice),
+3. eats food, lays eggs, hatches larvae, raises adults, loses the old and (when starving) the weak,
 4. produces: `rate = base x species x (workers on that kind of job)^0.85 x bonus^0.6 x health`, where `bonus` is
-   genetics x mutations x upgrades. The workers are counted over all of a colony's sites of one kind, so many small sites
-   find no more than one big one; the bonus is softened so stacked bonuses can't multiply without end. Rare finds
-   (diamonds, netherite scrap, shells, sponges...) are one item each: Gathering only multiplies common finds,
-5. raises Queens in Queen Chambers and shares food with colonies joined by a Colony Connector.
+   genetics x mutations x upgrades. The workers are counted over all of a colony's chambers of one kind; the bonus is
+   softened so stacked bonuses can't multiply without end. Rare finds (diamonds, netherite scrap, shells, sponges...)
+   are one item each: Gathering only multiplies common finds. Finds go into the ring's Storage,
+5. raises Queens in Queen Chambers.
 
 While a Terrarium is unloaded its colony stands still. When it loads again it catches up on at most 5 minutes (more
 with Simulation Upgrades), never on the whole time away.
@@ -44,45 +50,48 @@ with Simulation Upgrades), never on the whole time away.
 1. Craft **Tweezers** and a few **Test Tubes**. Find wild ants (or a wild **Ant Nest**) in plains, forests, taigas,
    mountains, snowy biomes, deserts, jungles. Right-click an ant (or the nest) with Tweezers: it goes into an empty
    tube from your inventory. Queens are rare; nests give one now and then.
-2. Place a **Terrarium**, put the **Queen Test Tube** in (right-click or the Queen slot) and some **Ant Food**.
-3. Connect a **Breeding Chamber** (full-speed egg laying), a **Nursery**, **Worker Housing**, a **Scavenging Site** and a
-   **Resource Pile** with tubes or tunnels. Workers start finding their species' resources.
-4. Grow: stage 2 needs 100 adults and a Breeding Chamber; stage 3 1,000 adults and a Nursery; stage 4 5,000 adults and
-   a mineral species or good genetics. Stages unlock outputs and change the Terrarium's look.
+2. Place a **Terrarium**, put the **Queen Test Tube** in (right-click or the Queen slot) and some **Ant Food**. Food
+   only ever goes in through the Terrarium's feed slot (by hand, or a hopper or pipe into the Terrarium).
+3. Put 8 chambers around it. A good first ring: a **Brood Chamber**, **Housing**, **Storage**, a **Queen Chamber** and
+   four **Foraging Chambers**. Workers start finding their species' resources and put them in the Storage.
+4. Grow: stage 2 needs 100 adults and a Brood Chamber; stage 3 1,000 adults; stage 4 5,000 adults and a mineral
+   species or good genetics. Stages unlock outputs and change the Terrarium's look.
+
+```
+ F  S  F        F = Foraging Chamber   S = Storage
+ H  T  F        H = Housing            T = Terrarium
+ Q  B  F        Q = Queen Chamber      B = Brood Chamber
+```
 
 ## Structures
 
 | Structure | What it does |
 |---|---|
 | Terrarium | The colony: Queen, food, evolution feeding, overview GUI (Colony, Genes, Jobs, Stats). Keeps the colony when broken. |
-| Breeding Chamber | Egg laying at full speed (without one: 25%). More chambers lay faster (diminishing). |
-| Ant Nursery | Faster larvae, more larvae room. |
-| Worker Housing / Soldier Barracks | More adults housed; barracks are needed to raise soldiers. |
-| Scavenging Site | Workers find the species' outputs. Takes species upgrades. |
-| Farmer Ant Garden | Farmer Ants grow food and harvest mushrooms, seeds, berries. Other species can't farm. |
-| Fighting Site | Soldiers hunt: drops come from the hunted mobs' own loot tables (vanilla or modded). No mobs spawn. |
-| Resource Pile | Storage for finds, 9 to 54 slots (Storage Upgrades). Hoppers can empty it; Automation pushes it down. |
-| Food Storage | Food room and a place to put ant food (Automation pulls food from above). |
+| Brood Chamber | Egg laying at full speed (without one: 25%), faster larvae, room for 1,500 larvae. More chambers lay faster (diminishing). |
+| Housing | Room for 3,000 adults, up to 1,000 of them soldiers. A colony needs one to raise soldiers. |
+| Storage | 9 to 54 slots for finds (Storage Upgrades) and 25,000 food room. Hoppers can empty it; Automation pushes it down. |
+| Foraging Chamber | Workers find the species' outputs. Takes species upgrades. |
+| Fungus Garden | Farmer Ants grow food and harvest mushrooms, seeds, berries. Other species can't farm. |
+| Hunting Chamber | Soldiers hunt: drops come from the hunted mobs' own loot tables (vanilla or modded). No mobs spawn. |
 | Queen Chamber | Raises daughter Queens; a Genetic Sample crossed in can make hybrids. |
-| Resource Processing Chamber | Workers compress nuggets and fragments in the piles. |
-| Colony Connector | Ends a network: the colony beyond is linked (food and storage shared) but stays separate. Two Terrariums in one network are flagged and stop working. |
-| Genetic Laboratory | Controller plus DNA Analyzer, Mutation Chamber, Genetic Storage, Queen Enhancement Chamber and Genetic Energy Core within 2 blocks. Upgrades one trait at a time, rerolls, mutates, purges, copies genes. Runs on FE (1,000,000 stored), taken in at the controller or the Genetic Energy Core. |
+| Genetic Laboratory | One block. Upgrades one trait at a time, rerolls, mutates, purges, copies genes. Runs on FE (1,000,000 stored) from any side: a Generator next to it or any mod's FE cable. |
 | Generator | Burns furnace fuel into FE (40 FE/t, 100k buffer) and gives it to the blocks next to it; any mod's FE cables work too. |
 | Upgrade Station | Makes species upgrades (Upgrade Base + the species' signature material). |
 
 ### Redstone and comparators
 
-- **Pausing a job site**: a redstone signal into a Scavenging Site, Farmer Ant Garden or Fighting Site stops it. It takes
-  no ants (its status says "Paused by a redstone signal"), and its ants go to the colony's other sites.
+- **Pausing a chamber**: a redstone signal into a Foraging Chamber, Fungus Garden or Hunting Chamber stops it. It
+  takes no ants (its status says "Paused by a redstone signal"), and its ants go to the colony's other chambers.
 - **Generator**: a redstone signal stops it from burning fuel; the fuel waits in the slot.
 - **Comparators** read:
 
 | Block | Comparator signal |
 |---|---|
 | Terrarium | How full its food is (0 when empty, 15 when full) |
-| Scavenging Site, Farmer Ant Garden, Fighting Site | Its ants out of the most it takes |
-| Resource Pile, Food Storage and other structures with slots | How full the slots are, like a chest |
-| Generator, Genetic Laboratory controller | Stored FE |
+| Foraging Chamber, Fungus Garden, Hunting Chamber | Its ants out of the most it takes |
+| Storage, Queen Chamber | How full the slots are, like a chest |
+| Generator, Genetic Laboratory | Stored FE |
 
 ## Giant anthills
 
@@ -160,7 +169,7 @@ multiplier used by the simulation. Wild Queens roll random levels; daughters inh
 The Genetic Laboratory raises one trait by one level per operation (permanent; no other trait changes), so every
 Queen can be perfected.
 
-31 mutations. 18 are given on purpose in the lab's Mutation Chamber by their catalyst (each catalyst gives exactly
+31 mutations. 18 are given on purpose in the Genetic Laboratory by their catalyst (each catalyst gives exactly
 one), for example Industrious (redstone block), Keen Senses (spyglass), Fertile (golden carrots), Armored Carapace
 (armadillo scutes), Lucky Strike (rabbit's foot), Resonant (echo shard), Void Touched (shulker shell). Rare ones
 (Royal Vigor, Adaptive, Hive Mind) only come at random with high Mutation Probability. Nine are flaws (Sluggish,
@@ -176,11 +185,11 @@ single-player. Every option explains itself when you point at it. The same optio
 
 `config/antcolonies/server.toml` (synced to players): simulation interval, offline catch-up, capacities, egg and growth
 times, food use, starvation, production rates and diminishing returns, upgrade strengths, trait multipliers and
-starting weights, mutation and evolution chances, wild spawn and Queen chances, connector rates, Generator output
+starting weights, mutation and evolution chances, wild spawn and Queen chances, Generator output
 (`[power]`), the soldiers a Guard Ant costs (`[guards] soldierCost`), how much stacked bonuses are softened
 (`bonusExponent`), the mutation cap, and `rareFindMultiplier` (scales the chance of every rare find at once, for modpacks: 0.5 halves diamonds, netherite scrap, shells and the like,
-0 turns them off; common finds and Fighting Site loot are not changed).
-`config/antcolonies/client.toml`: how many ants a Terrarium draws, tube and site ants, particles, sounds, draw
-distance; `ant3DModels` (false draws the surface ants as 2D sprites like the tunnel ants, far cheaper with many
-colonies in view) and `antDetailDistance` (beyond it, default 8 blocks, surface ants are 2D anyway).
+0 turns them off; common finds and Hunting Chamber loot are not changed).
+`config/antcolonies/client.toml`: how many ants a Terrarium and its chambers draw, particles, sounds, draw
+distance; `ant3DModels` (false draws the surface ants as 2D sprites, far cheaper with many
+colonies in view) and `antDetailDistance` (beyond it, default 8 blocks, surface ants are 2D anyway, and the ants inside chambers are only drawn closer than it with 3D models on).
 

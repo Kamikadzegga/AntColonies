@@ -25,12 +25,12 @@ public enum ColonyStatus {
     NO_SPECIAL_FOOD(true),
     CLIMATE(false),
     LOW_HEALTH(false),
-    NO_BREEDING_CHAMBER(false),
-    NO_BARRACKS(false),
+    NO_BROOD_CHAMBER(false),
+    NO_HOUSING(false),
     POPULATION_FULL(false),
     STARVING(true),
     WORKING(false),
-    /** A redstone signal has paused this job site: it takes no ants. */
+    /** A redstone signal has paused this working chamber: it takes no ants. */
     PAUSED(false);
 
     private final boolean problem;

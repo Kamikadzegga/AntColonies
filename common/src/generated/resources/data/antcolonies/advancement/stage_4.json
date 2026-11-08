@@ -12,7 +12,7 @@
   },
   "display": {
     "icon": {
-      "id": "antcolonies:nursery"
+      "id": "antcolonies:housing"
     },
     "title": {
       "translate": "advancements.antcolonies.stage_4.title"

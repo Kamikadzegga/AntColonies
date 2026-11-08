@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "antcolonies:block/housing"
+    },
+    "facing=east": {
+      "model": "antcolonies:block/housing",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "antcolonies:block/housing",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "antcolonies:block/housing",
+      "y": 270
+    }
+  }
+}

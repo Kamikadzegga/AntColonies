@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "antcolonies:block/genetic_energy_core_front",
-    "side": "antcolonies:block/genetic_energy_core_side",
-    "top": "antcolonies:block/genetic_energy_core_top"
-  }
-}

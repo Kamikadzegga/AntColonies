@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
  * @param weight    how often it is picked compared to the species' other outputs
  * @param minStage  the colony stage (1-4) it needs
  * @param special   a rare, signature output: Specialization genetics make it more likely
- * @param processed what Processing upgrades and the Resource Processing Chamber turn {@code ratio} of it into
+ * @param processed what Processing species upgrades turn {@code ratio} of it into
  */
 public record SpeciesOutput(Optional<Holder<Item>> item, Optional<TagKey<Item>> tag, int count, double weight, int minStage, boolean special,
                             Optional<Holder<Item>> processed, int ratio) {
