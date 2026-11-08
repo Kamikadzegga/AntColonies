@@ -9,6 +9,7 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 ### Added
 
 - An in-game config screen: Mods → Ant Colonies → Config, with readable names and explanations for every option.
+- Upgrade items show their tier (I, II or III) on their icon in every slot and inventory.
 
 ### Fixed
 
@@ -16,6 +17,8 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
   evolution was never attempted. A timer started at the lowest possible value and "now - then" overflowed.
 - The Genetic Laboratory never checked for its parts (the same timer bug), so it stayed incomplete.
 - The "not linked" line on colony structure screens ran past the edge of the panel.
+- Upgrades in a Terrarium vanished from its screen a moment after being put in: the updates sent to players left them
+  out and emptied the slots (the upgrades kept working).
 
 ## [0.1.0] - 2026-11-08
 

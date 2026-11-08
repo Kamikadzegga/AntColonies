@@ -128,6 +128,7 @@ public class IngameShowcase {
     private final boolean guiCheck = Files.exists(GUI_MARKER);
     /** Screens to open in the GUI check: a name for the picture and the block's offset from the origin. */
     private static final Object[][] GUI_TARGETS = {
+            {"upgrades_terrarium", 0, 0, 4}, {"upgrades_scavenging_site", 2, 0, 6}, {"upgrades_breeding_chamber", 0, 0, 6},
             {"user_lab", -6, 0, -4}, {"lonely_scavenging_site", 3, 0, -6}, {"breeding_chamber", 0, 0, 6}, {"nursery", -1, 0, 6}, {"worker_housing", 1, 0, 6}, {"soldier_barracks", -2, 0, 6},
             {"fighting_site", -3, 0, 6}, {"scavenging_site", 2, 0, 6}, {"resource_pile", 4, 0, 6}, {"food_storage", 0, 0, 7},
             {"queen_chamber", -4, 0, 6}, {"processing_chamber", -5, 0, 6}, {"farmer_garden", 5, 0, 6}, {"genetic_lab", 0, 0, 9},
@@ -195,6 +196,17 @@ public class IngameShowcase {
         place(level, lab.west().south(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.QUEEN_ENHANCEMENT_CHAMBER).get().defaultBlockState());
         place(level, lab.south(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.GENETIC_STORAGE).get().defaultBlockState());
         place(level, lab.east().south(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.GENETIC_STORAGE).get().defaultBlockState());
+        // Upgrades in the Terrarium, a Scavenging Site and the Breeding Chamber, to see them in their slots.
+        var terrariumUpgrades = ((TerrariumBlockEntity) level.getBlockEntity(origin.offset(0, 0, 4))).upgrades();
+        terrariumUpgrades.setItem(0, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.POPULATION, 3)));
+        terrariumUpgrades.setItem(1, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.SIMULATION, 2)));
+        terrariumUpgrades.setItem(2, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.EVOLUTION, 1)));
+        var siteUpgrades = ((StructureBlockEntity) level.getBlockEntity(origin.offset(2, 0, 6))).upgrades();
+        siteUpgrades.setItem(0, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.SPEED, 1)));
+        siteUpgrades.setItem(1, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.SPEED, 2)));
+        siteUpgrades.setItem(2, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.POPULATION, 3)));
+        ((StructureBlockEntity) level.getBlockEntity(origin.offset(0, 0, 6))).upgrades()
+                .setItem(0, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.BREEDING, 2)));
         // Three structures with no Terrarium, apart from each other: their screens say they aren't linked.
         structure(level, origin.offset(3, 0, -4), StructureKind.BREEDING_CHAMBER);
         structure(level, origin.offset(5, 0, -4), StructureKind.QUEEN_CHAMBER);

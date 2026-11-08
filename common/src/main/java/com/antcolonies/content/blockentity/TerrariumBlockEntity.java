@@ -618,11 +618,15 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         ContainerHelper.saveAllItems(output, items);
+        saveUpgrades(output);
+        colony.save(output.child("colony"), false);
+    }
+
+    private void saveUpgrades(ValueOutput output) {
         ValueOutput.TypedOutputList<ItemStack> list = output.list("upgrades", ItemStack.OPTIONAL_CODEC);
         for (int slot = 0; slot < UPGRADE_SLOTS; slot++) {
             list.add(upgrades.getItem(slot));
         }
-        colony.save(output.child("colony"), false);
     }
 
     /** Clients get the colony with its last step's results, for the GUI and the animation. */
@@ -630,6 +634,8 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, registries);
         ContainerHelper.saveAllItems(output, items);
+        // The upgrades too: loading clears them, so an update without them would empty the slots on the client.
+        saveUpgrades(output);
         colony.save(output.child("colony"), true);
         output.putInt("feed_status", feedStatus);
         return output.buildResult();

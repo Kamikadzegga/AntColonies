@@ -97,6 +97,7 @@ public class AntColoniesGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> ANTHILL = test("giant_anthill", AntColoniesGameTests::giantAnthill);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> RUNS_ALONE = test("colony_runs_by_itself", AntColoniesGameTests::colonyRunsByItself);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> LAB_FORMS = test("lab_forms_by_itself", AntColoniesGameTests::labFormsByItself);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> UPGRADE_SYNC = test("terrarium_update_keeps_upgrades", AntColoniesGameTests::terrariumUpdateKeepsUpgrades);
 
     public AntColoniesGameTests(IEventBus modEventBus) {
         TESTS.register(modEventBus);
@@ -112,7 +113,7 @@ public class AntColoniesGameTests {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(AntColonies.id("default"), new TestEnvironmentDefinition.AllOf(List.of()));
         for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> test : List.of(SPECIES_DATA_LOADS, COLONY_PERSISTS, ALLOCATION, SCAVENGING,
                 MORE_WORKERS, STARVATION, BREEDING, FARMING, GARDEN_NEEDS_FARMERS, FIGHTING, EVOLUTION, REARING, HYBRIDS, TWO_COLONIES, CONNECTOR, OFFLINE,
-                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL, RUNS_ALONE, LAB_FORMS)) {
+                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL, RUNS_ALONE, LAB_FORMS, UPGRADE_SYNC)) {
             event.registerTest(test.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, test.getId()),
                     spaced(environment, 200)));
         }
@@ -949,6 +950,27 @@ public class AntColoniesGameTests {
         }
         GeneticLabBlockEntity lab = helper.getBlockEntity(pos, GeneticLabBlockEntity.class);
         helper.succeedWhen(() -> helper.assertTrue(lab.formed(), "The laboratory never noticed its five parts"));
+    }
+
+
+    /**
+     * A Terrarium's upgrades must survive the updates sent to players: loading an update clears the upgrade slots, so
+     * an update without them emptied the slots on every client while the screen was open.
+     */
+    private static void terrariumUpdateKeepsUpgrades(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        TerrariumBlockEntity terrarium = terrarium(helper, pos, COMMON, 50, 0, 1000);
+        ItemStack upgrade = new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.POPULATION, 2));
+        terrarium.upgrades().setItem(1, upgrade.copy());
+        var registries = helper.getLevel().registryAccess();
+        var tag = terrarium.getUpdateTag(registries);
+        // What a client does with the update: load it into its own copy of the Terrarium.
+        TerrariumBlockEntity client = new TerrariumBlockEntity(helper.absolutePos(pos), helper.getBlockState(pos));
+        client.upgrades().setItem(1, upgrade.copy());
+        client.loadCustomOnly(net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING, registries, tag));
+        helper.assertTrue(ItemStack.isSameItemSameComponents(client.upgrades().getItem(1), upgrade),
+                "After an update the client's upgrade slot holds " + client.upgrades().getItem(1) + " instead of the upgrade");
+        helper.succeed();
     }
 
     /** Two Terrariums joined by a tube are flagged and work no structures; a Connector keeps them apart but linked. */
