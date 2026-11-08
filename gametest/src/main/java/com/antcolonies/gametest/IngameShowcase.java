@@ -127,11 +127,11 @@ public class IngameShowcase {
     private final boolean guiCheck = Files.exists(GUI_MARKER);
     /** Screens to open in the GUI check: a name for the picture and the block's offset from the origin. */
     private static final Object[][] GUI_TARGETS = {
-            {"upgrades_terrarium", 0, 0, 5}, {"upgrades_foraging_chamber", -1, 0, 4}, {"upgrades_brood_chamber", 1, 0, 6},
-            {"storage", 0, 0, 4}, {"foraging_chamber", 1, 0, 4}, {"brood_chamber", 1, 0, 6}, {"queen_chamber", 0, 0, 6},
-            {"hunting_chamber", -1, 0, 6}, {"housing", -1, 0, 5}, {"fungus_garden", -5, 0, 6}, {"young_terrarium", -6, 0, 5},
-            {"genetic_laboratory", 0, 0, 10}, {"lonely_brood_chamber", 3, 0, -4}, {"lonely_queen_chamber", 5, 0, -4},
-            {"lonely_foraging_chamber", 3, 0, -6}};
+            {"upgrades_terrarium", 0, 0, 5}, {"upgrades_foraging_site", -1, 0, 4}, {"upgrades_nest_chamber", 1, 0, 6},
+            {"storage", 0, 0, 4}, {"foraging_site", 1, 0, 4}, {"nest_chamber", 1, 0, 6}, {"queen_chamber", 0, 0, 6},
+            {"foraging_site_soldiers", -1, 0, 6}, {"nest_chamber_west", -1, 0, 5}, {"harvesting_site", -6, 0, 6}, {"young_terrarium", -6, 0, 5},
+            {"genetic_laboratory", 0, 0, 10}, {"lonely_nest_chamber", 3, 0, -4}, {"lonely_queen_chamber", 5, 0, -4},
+            {"lonely_foraging_site", 3, 0, -6}};
 
     private void guiStep(Minecraft minecraft, IntegratedServer server) {
         if (ticks == 60) {
@@ -180,9 +180,9 @@ public class IngameShowcase {
         ((StructureBlockEntity) level.getBlockEntity(origin.offset(1, 0, 6))).upgrades()
                 .setItem(0, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.BREEDING, 2)));
         // Three chambers with no Terrarium, apart from each other: their screens say they aren't part of a colony.
-        structure(level, origin.offset(3, 0, -4), StructureKind.BROOD_CHAMBER);
+        structure(level, origin.offset(3, 0, -4), StructureKind.NEST_CHAMBER);
         structure(level, origin.offset(5, 0, -4), StructureKind.QUEEN_CHAMBER);
-        structure(level, origin.offset(3, 0, -6), StructureKind.FORAGING_CHAMBER);
+        structure(level, origin.offset(3, 0, -6), StructureKind.FORAGING_SITE);
     }
 
     private void onClientTick(ClientTickEvent.Post event) {
@@ -274,10 +274,12 @@ public class IngameShowcase {
             case 550 -> screenshot(minecraft, "11_gui_jobs");
             case 552 -> clickTab(minecraft, 3);
             case 570 -> screenshot(minecraft, "12_gui_stats");
+            case 571 -> clickTab(minecraft, 4);
+            case 574 -> screenshot(minecraft, "12b_gui_species");
             case 575 -> {
                 server.execute(() -> open(server, origin.offset(-1, 0, 4)));
             }
-            case 600 -> screenshot(minecraft, "13_gui_foraging_chamber");
+            case 600 -> screenshot(minecraft, "13_gui_foraging_site");
             case 605 -> {
                 server.execute(() -> open(server, origin.offset(0, 0, 10)));
             }
@@ -326,7 +328,16 @@ public class IngameShowcase {
                 minecraft.player.closeContainer();
                 minecraft.gui.setScreen(new com.antcolonies.client.screen.IdentificationBookScreen());
             }
-            case 895 -> screenshot(minecraft, "21_book");
+            case 893 -> screenshot(minecraft, "21_book");
+            case 894 -> {
+                // The second species in the book's list (after its how-to-play pages).
+                if (minecraft.gui.screen() instanceof com.antcolonies.client.screen.IdentificationBookScreen book) {
+                    int left = (book.width - 330) / 2;
+                    int top = (book.height - 196) / 2;
+                    book.mouseClicked(new MouseButtonEvent(left + 30, top + 9 + 10 * 10 + 4, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0)), false);
+                }
+            }
+            case 898 -> screenshot(minecraft, "21b_book_species");
             // Jade look-at tooltips (when Jade is in run/mods): the crosshair on a Terrarium, a job site and the lab.
             case 900 -> {
                 minecraft.gui.setScreen(null);
@@ -404,9 +415,9 @@ public class IngameShowcase {
         // The Diamond colony: a full ring, its low Storage in front so the Terrarium shows behind it.
         BlockPos t = origin.offset(0, 0, 5);
         place(level, t, ModBlocks.TERRARIUM.get().defaultBlockState().setValue(ColonyEntityBlock.FACING, Direction.NORTH));
-        StructureKind[] diamondRing = {StructureKind.FORAGING_CHAMBER, StructureKind.STORAGE, StructureKind.FORAGING_CHAMBER,
-                StructureKind.FORAGING_CHAMBER, StructureKind.BROOD_CHAMBER, StructureKind.QUEEN_CHAMBER, StructureKind.HUNTING_CHAMBER,
-                StructureKind.HOUSING};
+        StructureKind[] diamondRing = {StructureKind.FORAGING_SITE, StructureKind.STORAGE, StructureKind.FORAGING_SITE,
+                StructureKind.FORAGING_SITE, StructureKind.NEST_CHAMBER, StructureKind.QUEEN_CHAMBER, StructureKind.FORAGING_SITE,
+                StructureKind.NEST_CHAMBER};
         ring(level, t, diamondRing);
         place(level, origin.offset(6, 0, 3), ModBlocks.UPGRADE_STATION.get().defaultBlockState());
         StructureBlockEntity pile = (StructureBlockEntity) level.getBlockEntity(origin.offset(0, 0, 4));
@@ -430,11 +441,13 @@ public class IngameShowcase {
             ColonySimulator.step(diamond, level, 0.05);
         }
         diamond.syncNow();
-        // A young Fire Ant colony with its own ring (one of the newer species).
+        // A young Fire Ant colony (one of the newer species) with a smaller build: a chamber on each side of its Terrarium.
         BlockPos young = origin.offset(-6, 0, 5);
         place(level, young, ModBlocks.TERRARIUM.get().defaultBlockState().setValue(ColonyEntityBlock.FACING, Direction.NORTH));
-        ring(level, young, new StructureKind[] {StructureKind.BROOD_CHAMBER, StructureKind.STORAGE, StructureKind.FORAGING_CHAMBER,
-                StructureKind.HOUSING, StructureKind.FUNGUS_GARDEN, StructureKind.QUEEN_CHAMBER, StructureKind.HOUSING, StructureKind.FORAGING_CHAMBER});
+        structure(level, young.north(), StructureKind.STORAGE);
+        structure(level, young.east(), StructureKind.FORAGING_SITE);
+        structure(level, young.south(), StructureKind.HARVESTING_SITE);
+        structure(level, young.west(), StructureKind.NEST_CHAMBER);
         TerrariumBlockEntity common = (TerrariumBlockEntity) level.getBlockEntity(young);
         common.colony().setQueen(Genetics.wildQueen(AntColonies.id("fire"), RandomSource.create(8)));
         common.colony().setPopulation(6, 4, 9, 0);
@@ -488,9 +501,15 @@ public class IngameShowcase {
         return (StructureBlockEntity) level.getBlockEntity(pos);
     }
 
-    /** A colony ring around a Terrarium: the chambers in the ring's places (north-west first, clockwise). */
+    /** The eight places around a Terrarium on its level, north-west first, clockwise. */
+    private static List<BlockPos> places(BlockPos center) {
+        return List.of(center.offset(-1, 0, -1), center.north(), center.offset(1, 0, -1), center.east(), center.offset(1, 0, 1), center.south(),
+                center.offset(-1, 0, 1), center.west());
+    }
+
+    /** Chambers all around a Terrarium (north-west first, clockwise). */
     private static void ring(ServerLevel level, BlockPos center, StructureKind[] kinds) {
-        List<BlockPos> places = com.antcolonies.colony.model.ColonyRing.places(center);
+        List<BlockPos> places = places(center);
         for (int i = 0; i < places.size(); i++) {
             structure(level, places.get(i), kinds[i % kinds.length]);
         }
@@ -569,10 +588,8 @@ public class IngameShowcase {
     }
 
     private void clickTab(Minecraft minecraft, int tab) {
-        if (minecraft.gui.screen() instanceof AbstractContainerScreen<?> screen) {
-            int x = screen.getLeftPos() + 48 + tab * 40 + 18;
-            int y = screen.getTopPos() + 10;
-            screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0)), false);
+        if (minecraft.gui.screen() instanceof com.antcolonies.client.screen.TerrariumScreen) {
+            com.antcolonies.client.screen.TerrariumScreen.showPage(tab);
         } else {
             result("FAIL no container screen: " + minecraft.gui.screen());
         }
@@ -684,11 +701,11 @@ public class IngameShowcase {
         int index = t / AUDIT_STEP;
         boolean shoot = t % AUDIT_STEP == AUDIT_STEP - 2;
         Object[][] screens = {
-                {"a01_housing", origin.offset(-1, 0, 5)},
+                {"a01_nest_chamber", origin.offset(-1, 0, 5)},
                 {"a02_queen_chamber", origin.offset(0, 0, 6)},
-                {"a03_brood_chamber", origin.offset(1, 0, 6)},
-                {"a04_hunting_chamber", origin.offset(-1, 0, 6)},
-                {"a05_fungus_garden", origin.offset(-5, 0, 6)},
+                {"a03_nest_chamber_corner", origin.offset(1, 0, 6)},
+                {"a04_foraging_site", origin.offset(-1, 0, 6)},
+                {"a05_harvesting_site", origin.offset(-6, 0, 6)},
                 {"a06_young_terrarium", origin.offset(-6, 0, 5)},
                 {"a07_young_storage", origin.offset(-6, 0, 4)},
                 {"a08_upgrade_station", origin.offset(6, 0, 3)},
@@ -842,22 +859,22 @@ public class IngameShowcase {
     private int fpsNoAnts;
     private int fpsFlat;
 
-    /** 25 stage-4 colonies, each a full ring, in a 5x5 grid south of the lab (or, with {@code build} false, the same spots cleared). */
+    /** 25 stage-4 colonies, each with eight chambers, in a 5x5 grid south of the lab (or, with {@code build} false, the same spots cleared). */
     private void benchmarkGrid(IntegratedServer server, boolean build) {
         ServerLevel level = server.overworld();
         for (int gx = 0; gx < 5; gx++) {
             for (int gz = 0; gz < 5; gz++) {
-                BlockPos pos = origin.offset(-6 + gx * 3, 0, 15 + gz * 3);
+                BlockPos pos = origin.offset(-8 + gx * 4, 0, 15 + gz * 4);
                 if (!build) {
                     place(level, pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
-                    for (BlockPos clear : com.antcolonies.colony.model.ColonyRing.places(pos)) {
+                    for (BlockPos clear : places(pos)) {
                         place(level, clear, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
                     }
                     continue;
                 }
                 place(level, pos, ModBlocks.TERRARIUM.get().defaultBlockState().setValue(ColonyEntityBlock.FACING, Direction.NORTH));
-                ring(level, pos, new StructureKind[] {StructureKind.BROOD_CHAMBER, StructureKind.STORAGE, StructureKind.FORAGING_CHAMBER,
-                        StructureKind.HOUSING});
+                ring(level, pos, new StructureKind[] {StructureKind.NEST_CHAMBER, StructureKind.STORAGE, StructureKind.FORAGING_SITE,
+                        StructureKind.NEST_CHAMBER});
                 TerrariumBlockEntity terrarium = (TerrariumBlockEntity) level.getBlockEntity(pos);
                 Colony colony = terrarium.colony();
                 colony.setQueen(Genetics.wildQueen(AntColonies.id(gx % 2 == 0 ? "diamond" : "fire"), RandomSource.create(gx * 5L + gz)));

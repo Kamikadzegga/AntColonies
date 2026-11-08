@@ -1,0 +1,39 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "#frame",
+    "frame": "antcolonies:block/terrarium_wood"
+  },
+  "elements": [
+    {
+      "from": [14.0, -0.05, -0.05],
+      "to": [16.05, 2.0, 16.05],
+      "faces": {
+        "down": {
+          "uv": [14.0, 0.0, 16.0, 16.0],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [14.0, 0.0, 16.0, 16.0],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [0.0, 14.0, 2.0, 16.0],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [14.0, 14.0, 16.0, 16.0],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [0.0, 14.0, 16.0, 16.0],
+          "texture": "#frame"
+        },
+        "east": {
+          "uv": [0.0, 14.0, 16.0, 16.0],
+          "texture": "#frame"
+        }
+      }
+    }
+  ]
+}

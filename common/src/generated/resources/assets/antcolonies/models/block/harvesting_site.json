@@ -1,0 +1,186 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "antcolonies:block/harvesting_site_top",
+    "side": "antcolonies:block/terrarium_wood",
+    "top": "antcolonies:block/harvesting_site_top",
+    "stem": "minecraft:block/mushroom_stem",
+    "cap": "minecraft:block/red_mushroom_block",
+    "cap2": "minecraft:block/brown_mushroom_block"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 4.0, 16],
+      "faces": {
+        "down": {
+          "texture": "#side",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#top"
+        },
+        "north": {
+          "texture": "#side",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#side",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#side",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#side",
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [3.5, 4.0, 3.5],
+      "to": [4.5, 7.0, 4.5],
+      "faces": {
+        "down": {
+          "texture": "#stem"
+        },
+        "up": {
+          "texture": "#stem"
+        },
+        "north": {
+          "texture": "#stem"
+        },
+        "south": {
+          "texture": "#stem"
+        },
+        "west": {
+          "texture": "#stem"
+        },
+        "east": {
+          "texture": "#stem"
+        }
+      }
+    },
+    {
+      "from": [2.5, 7.0, 2.5],
+      "to": [5.5, 8.0, 5.5],
+      "faces": {
+        "down": {
+          "texture": "#cap"
+        },
+        "up": {
+          "texture": "#cap"
+        },
+        "north": {
+          "texture": "#cap"
+        },
+        "south": {
+          "texture": "#cap"
+        },
+        "west": {
+          "texture": "#cap"
+        },
+        "east": {
+          "texture": "#cap"
+        }
+      }
+    },
+    {
+      "from": [11.5, 4.0, 10.5],
+      "to": [12.5, 8.0, 11.5],
+      "faces": {
+        "down": {
+          "texture": "#stem"
+        },
+        "up": {
+          "texture": "#stem"
+        },
+        "north": {
+          "texture": "#stem"
+        },
+        "south": {
+          "texture": "#stem"
+        },
+        "west": {
+          "texture": "#stem"
+        },
+        "east": {
+          "texture": "#stem"
+        }
+      }
+    },
+    {
+      "from": [10.0, 8.0, 9.0],
+      "to": [14.0, 9.0, 13.0],
+      "faces": {
+        "down": {
+          "texture": "#cap2"
+        },
+        "up": {
+          "texture": "#cap2"
+        },
+        "north": {
+          "texture": "#cap2"
+        },
+        "south": {
+          "texture": "#cap2"
+        },
+        "west": {
+          "texture": "#cap2"
+        },
+        "east": {
+          "texture": "#cap2"
+        }
+      }
+    },
+    {
+      "from": [11.0, 4.0, 4.0],
+      "to": [11.8, 5.2, 4.8],
+      "faces": {
+        "down": {
+          "texture": "#stem"
+        },
+        "up": {
+          "texture": "#stem"
+        },
+        "north": {
+          "texture": "#stem"
+        },
+        "south": {
+          "texture": "#stem"
+        },
+        "west": {
+          "texture": "#stem"
+        },
+        "east": {
+          "texture": "#stem"
+        }
+      }
+    },
+    {
+      "from": [10.4, 5.2, 3.4],
+      "to": [12.4, 5.9, 5.4],
+      "faces": {
+        "down": {
+          "texture": "#cap"
+        },
+        "up": {
+          "texture": "#cap"
+        },
+        "north": {
+          "texture": "#cap"
+        },
+        "south": {
+          "texture": "#cap"
+        },
+        "west": {
+          "texture": "#cap"
+        },
+        "east": {
+          "texture": "#cap"
+        }
+      }
+    }
+  ]
+}

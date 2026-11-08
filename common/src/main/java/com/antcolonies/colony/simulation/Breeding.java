@@ -8,8 +8,8 @@ import com.antcolonies.colony.genetics.Trait;
 import com.antcolonies.colony.upgrade.UpgradeType;
 
 /**
- * Eggs, larvae and adults. The Queen lays eggs (Brood Chambers, genetics, food and room permitting); eggs hatch into
- * larvae after a while; larvae eat and grow into adults, some of them soldiers when Housing have room. Adults die of
+ * Eggs, larvae and adults. The Queen lays eggs (faster with Nest Chambers; genetics, food and room permitting); eggs hatch
+ * into larvae after a while; larvae eat and grow into adults, some of them soldiers while there is soldier room. Adults die of
  * age, and of hunger once a colony has starved past the grace period.
  */
 final class Breeding {
@@ -26,11 +26,11 @@ final class Breeding {
         // Laying.
         double laid = 0;
         if (colony.queen() != null) {
-            int chambers = step.count(StructureKind.BROOD_CHAMBER);
-            double chamberFactor = chambers == 0 ? AntConfig.get(AntConfig.NO_BROOD_CHAMBER_FACTOR)
-                    : ProductionMath.diminishing(chambers - 1, AntConfig.get(AntConfig.BROOD_CHAMBER_BONUS));
-            int breedingTiers = step.terrarium.upgradeTier(UpgradeType.BREEDING) + step.tiers(StructureKind.BROOD_CHAMBER, UpgradeType.BREEDING);
-            int speedTiers = step.tiers(StructureKind.BROOD_CHAMBER, UpgradeType.SPEED);
+            int chambers = step.count(StructureKind.NEST_CHAMBER);
+            double chamberFactor = chambers == 0 ? AntConfig.get(AntConfig.NO_NEST_FACTOR)
+                    : ProductionMath.diminishing(chambers - 1, AntConfig.get(AntConfig.NEST_LAYING_BONUS));
+            int breedingTiers = step.terrarium.upgradeTier(UpgradeType.BREEDING) + step.tiers(StructureKind.NEST_CHAMBER, UpgradeType.BREEDING);
+            int speedTiers = step.tiers(StructureKind.NEST_CHAMBER, UpgradeType.SPEED);
             double rate = AntConfig.get(AntConfig.BASE_EGGS_PER_MINUTE) * step.species.breeding().eggs() * step.trait(Trait.EGG_PRODUCTION)
                     * step.effects.eggs() * chamberFactor * (1 + 0.25 * breedingTiers) * (1 + 0.1 * speedTiers) * step.healthFactor * step.foodFactor;
             double wanted = rate * step.dt;
@@ -64,11 +64,11 @@ final class Breeding {
         larvae += hatched;
 
         // Growth.
-        // Brood Chambers also tend the larvae: each one makes them grow faster (diminishing).
-        int broodChambers = step.count(StructureKind.BROOD_CHAMBER);
-        int nurserySpeed = step.tiers(StructureKind.BROOD_CHAMBER, UpgradeType.SPEED);
+        // Nest Chambers also tend the larvae: each one makes them grow faster (diminishing).
+        int nests = step.count(StructureKind.NEST_CHAMBER);
+        int nestSpeed = step.tiers(StructureKind.NEST_CHAMBER, UpgradeType.SPEED);
         double growthSpeed = step.species.breeding().growth() * step.trait(Trait.LARVAE_GROWTH) * step.effects.growth()
-                * ProductionMath.diminishing(broodChambers, AntConfig.get(AntConfig.BROOD_GROWTH_BONUS)) * ProductionMath.speed(nurserySpeed)
+                * ProductionMath.diminishing(nests, AntConfig.get(AntConfig.NEST_GROWTH_BONUS)) * ProductionMath.speed(nestSpeed)
                 * step.foodFactor * step.healthFactor;
         double growMinutes = AntConfig.get(AntConfig.LARVAE_GROW_MINUTES) / Math.max(0.01, growthSpeed);
         double matured = ProductionMath.flow(larvae, step.dt, growMinutes);

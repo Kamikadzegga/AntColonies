@@ -1,0 +1,210 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "antcolonies:block/nest_chamber_top",
+    "side": "antcolonies:block/terrarium_wood",
+    "top": "antcolonies:block/nest_chamber_top",
+    "mud": "minecraft:block/packed_mud",
+    "egg": "minecraft:block/white_concrete",
+    "larva": "minecraft:block/white_terracotta"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 4.0, 16],
+      "faces": {
+        "down": {
+          "texture": "#side",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#top"
+        },
+        "north": {
+          "texture": "#side",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#side",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#side",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#side",
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [3.0, 4.0, 3.0],
+      "to": [9.0, 6.5, 9.0],
+      "faces": {
+        "down": {
+          "texture": "#mud"
+        },
+        "up": {
+          "texture": "#mud"
+        },
+        "north": {
+          "texture": "#mud"
+        },
+        "south": {
+          "texture": "#mud"
+        },
+        "west": {
+          "texture": "#mud"
+        },
+        "east": {
+          "texture": "#mud"
+        }
+      }
+    },
+    {
+      "from": [4.5, 6.5, 4.5],
+      "to": [7.5, 7.5, 7.5],
+      "faces": {
+        "down": {
+          "texture": "#mud"
+        },
+        "up": {
+          "texture": "#mud"
+        },
+        "north": {
+          "texture": "#mud"
+        },
+        "south": {
+          "texture": "#mud"
+        },
+        "west": {
+          "texture": "#mud"
+        },
+        "east": {
+          "texture": "#mud"
+        }
+      }
+    },
+    {
+      "from": [10.5, 4.0, 4.0],
+      "to": [11.5, 5.5, 5.0],
+      "faces": {
+        "down": {
+          "texture": "#egg"
+        },
+        "up": {
+          "texture": "#egg"
+        },
+        "north": {
+          "texture": "#egg"
+        },
+        "south": {
+          "texture": "#egg"
+        },
+        "west": {
+          "texture": "#egg"
+        },
+        "east": {
+          "texture": "#egg"
+        }
+      }
+    },
+    {
+      "from": [12.0, 4.0, 4.5],
+      "to": [13.0, 5.5, 5.5],
+      "faces": {
+        "down": {
+          "texture": "#egg"
+        },
+        "up": {
+          "texture": "#egg"
+        },
+        "north": {
+          "texture": "#egg"
+        },
+        "south": {
+          "texture": "#egg"
+        },
+        "west": {
+          "texture": "#egg"
+        },
+        "east": {
+          "texture": "#egg"
+        }
+      }
+    },
+    {
+      "from": [11.0, 4.0, 6.0],
+      "to": [12.0, 5.5, 7.0],
+      "faces": {
+        "down": {
+          "texture": "#egg"
+        },
+        "up": {
+          "texture": "#egg"
+        },
+        "north": {
+          "texture": "#egg"
+        },
+        "south": {
+          "texture": "#egg"
+        },
+        "west": {
+          "texture": "#egg"
+        },
+        "east": {
+          "texture": "#egg"
+        }
+      }
+    },
+    {
+      "from": [4.0, 4.0, 11.0],
+      "to": [7.0, 5.0, 12.0],
+      "faces": {
+        "down": {
+          "texture": "#larva"
+        },
+        "up": {
+          "texture": "#larva"
+        },
+        "north": {
+          "texture": "#larva"
+        },
+        "south": {
+          "texture": "#larva"
+        },
+        "west": {
+          "texture": "#larva"
+        },
+        "east": {
+          "texture": "#larva"
+        }
+      }
+    },
+    {
+      "from": [9.0, 4.0, 11.5],
+      "to": [12.0, 5.0, 12.5],
+      "faces": {
+        "down": {
+          "texture": "#larva"
+        },
+        "up": {
+          "texture": "#larva"
+        },
+        "north": {
+          "texture": "#larva"
+        },
+        "south": {
+          "texture": "#larva"
+        },
+        "west": {
+          "texture": "#larva"
+        },
+        "east": {
+          "texture": "#larva"
+        }
+      }
+    }
+  ]
+}

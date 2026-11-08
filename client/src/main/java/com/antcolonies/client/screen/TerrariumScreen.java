@@ -27,11 +27,11 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * The colony overview: four pages (colony, genetics, jobs, production) over the Terrarium's slots. Everything shown is
+ * The colony overview: five pages (colony, genetics, jobs, production, species) over the Terrarium's slots. Everything shown is
  * the server's numbers, synced with the Terrarium.
  */
 public class TerrariumScreen extends AntScreen<TerrariumMenu> {
-    private static final String[] PAGES = {"overview", "genetics", "jobs", "production"};
+    private static final String[] PAGES = {"overview", "genetics", "jobs", "production", "species"};
     private static final int CONTENT_X = 48;
     private static final int CONTENT_Y = 20;
     private static final int CONTENT_W = 160;
@@ -40,6 +40,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     private static final int JOB_ROW_H = 27;
     private static int page;
     private int jobScroll;
+    private final InfoPanel info = new InfoPanel();
 
     public TerrariumScreen(TerrariumMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 214, 222);
@@ -75,8 +76,14 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             case 0 -> overview(graphics, colony);
             case 1 -> genetics(graphics, colony);
             case 2 -> jobs(graphics, colony);
-            default -> production(graphics, colony);
+            case 3 -> production(graphics, colony);
+            default -> species(graphics, colony);
         }
+    }
+
+    /** Opens a page (for the in-game showcase). */
+    public static void showPage(int index) {
+        page = Math.clamp(index, 0, PAGES.length - 1);
     }
 
     @Override
@@ -102,6 +109,14 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         if (kind != null && !slot.hasItem()) {
             drawGlyph(graphics, kind, x, y);
         }
+    }
+
+    // --- Species: what this colony's ants are, and whether the Terrarium suits them ---
+
+    private void species(GuiGraphicsExtractor graphics, Colony colony) {
+        boolean right = !ColonyStatus.CLIMATE.in(colony.status());
+        info.species(font, colony.species(), ClientSpecies.get(colony.species()), right, menu.terrarium().floor(), CONTENT_W - 8);
+        info.draw(graphics, font, leftPos + CONTENT_X + 4, topPos + CONTENT_Y + 4, CONTENT_H - 6);
     }
 
     // --- Overview ---
@@ -245,11 +260,14 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             graphics.fill(leftPos + CONTENT_X + 2, topPos + rowY - 1, leftPos + CONTENT_X + CONTENT_W - 2, topPos + rowY + JOB_ROW_H - 2, 0x40000000);
             graphics.item(new ItemStack(ModBlocks.STRUCTURES.get(job.kind()).get()), leftPos + x, topPos + rowY + 3);
             int color = job.status() != 0 && ColonyStatus.of(job.status()).stream().anyMatch(ColonyStatus::problem) ? BAD : LABEL;
-            label(graphics, Component.translatable("gui.antcolonies.job_workers", job.assigned(), job.capacity()), x + 19, rowY + 2, color);
+            Component workers = job.kind().job().soldiers()
+                    ? Component.translatable("gui.antcolonies.job_foraging", job.assigned(), job.soldiers(), job.capacity())
+                    : Component.translatable("gui.antcolonies.job_workers", job.assigned(), job.capacity());
+            label(graphics, workers, x + 19, rowY + 2, color);
             int right = CONTENT_X + CONTENT_W - 4;
             String perMinute = rate(job.rate()) + Component.translatable("gui.antcolonies.per_minute").getString();
             label(graphics, perMinute, right - font.width(perMinute) + 1, rowY + 2, DIM);
-            int base = TerrariumMenu.BUTTON_ASSIGNMENT + index * 10;
+            int base = TerrariumMenu.BUTTON_ASSIGNMENT + index * 20;
             String[] steps = {"less_10", "less_1", "more_1", "more_10"};
             int[] ids = {StructureMenu.LESS_10, StructureMenu.LESS, StructureMenu.MORE, StructureMenu.MORE_10};
             int bx = x + 19;
@@ -273,6 +291,10 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
         if (page == 2 && over(x, y, CONTENT_X, CONTENT_Y, CONTENT_W, CONTENT_H)) {
             jobScroll -= (int) Math.signum(scrollY);
+            return true;
+        }
+        if (page == 4 && over(x, y, CONTENT_X, CONTENT_Y, CONTENT_W, CONTENT_H)) {
+            info.scroll(scrollY);
             return true;
         }
         return super.mouseScrolled(x, y, scrollX, scrollY);
@@ -310,6 +332,13 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
 
     @Override
     protected void extractPageTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (page == 4 && hoveredSlot == null) {
+            List<Component> lines = info.hover(mouseX, mouseY);
+            if (lines != null) {
+                graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+                return;
+            }
+        }
         if (hoveredSlot != null && !hoveredSlot.hasItem() && slotKind(hoveredSlot) != null) {
             String key = "gui.antcolonies.slot." + slotKind(hoveredSlot);
             graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable(key),
@@ -336,7 +365,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                     for (ColonyStatus status : ColonyStatus.of(job.status())) {
                         lines.add(Component.translatable(status.translationKey()).withStyle(status.color()));
                     }
-                    if (job.kind() == StructureKind.FUNGUS_GARDEN) {
+                    if (job.kind() == StructureKind.HARVESTING_SITE) {
                         lines.add(Component.translatable("gui.antcolonies.farm.hint").withStyle(ChatFormatting.GRAY));
                     }
                     graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);

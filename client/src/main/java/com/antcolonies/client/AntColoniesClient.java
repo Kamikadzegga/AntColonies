@@ -34,11 +34,6 @@ import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 @EventBusSubscriber(modid = AntColonies.MODID, value = Dist.CLIENT)
 public final class AntColoniesClient {
     @SubscribeEvent
-    static void registerItemDecorations(net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent event) {
-        UpgradeTierDecorator.register(event);
-    }
-
-    @SubscribeEvent
     static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(AntModel.WORKER, () -> AntModel.create(Caste.WORKER));
         event.registerLayerDefinition(AntModel.SOLDIER, () -> AntModel.create(Caste.SOLDIER));

@@ -28,7 +28,7 @@ AntColonies/
 │       │   │   │   ├── breeding/         Queen rearing and hybrids
 │       │   │   │   ├── evolution/        species evolution
 │       │   │   │   ├── upgrade/          structure and species upgrades
-│       │   │   │   └── resource/         colony storage and Hunting Chamber loot
+│       │   │   │   └── resource/         colony storage and hunting loot
 │       │   │   ├── content/              what is in the world
 │       │   │   │   ├── block/            blockentity/  entity/  item/  menu/  worldgen/
 │       │   │   └── core/                 registry/  config/  advancement/
@@ -68,7 +68,7 @@ java tools/BrandGen.java
 
 - `./gradlew runGameTestServer` runs the game tests on a dedicated server: persistence, ant allocation, production and
   its limits, starvation, breeding, farming, fighting, evolution, Queen rearing, hybrids, the laboratory and its power,
-  the colony ring, offline catch-up, tweezers, world generation, advancements, redstone, Chitin gear, Guard Ants, the giant
+  joining chambers, offline catch-up, tweezers, world generation, advancements, redstone, Chitin gear, Guard Ants, the giant
   anthill, data loading, and the modpack guide's examples loaded as a data pack. All of them must pass.
 - `./gradlew runClient` with an empty file named `ingame-showcase` in `run/` builds a demo world, takes screenshots of
   the colonies, every screen, the recipe viewers, the anthill and the new items into `run/screenshots`, writes what it

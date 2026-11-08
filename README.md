@@ -18,16 +18,17 @@ soldiers to work, evolve mineral species and engineer their genes.
 
 </div>
 
-![A stage 4 Diamond Ant colony: a Terrarium and its ring of 8 chambers](docs/images/screenshots/overview.png)
+![A stage 4 Diamond Ant colony: a Terrarium and its chambers, joined into one build](docs/images/screenshots/overview.png)
 
 ## Features
 
 - **Living colonies.** A Terrarium holds a whole colony: Queen, eggs, larvae, workers, soldiers, food and health. You
   can watch the ants dig tunnels, carry food and work in the chambers. The simulation is plain numbers on the server,
   so even a colony of thousands costs almost nothing.
-- **One simple 3x3 build.** A colony is a Terrarium with 8 chambers around it, in any mix of seven kinds: Brood
-  Chamber, Housing, Storage, Foraging Chamber, Fungus Garden, Hunting Chamber and Queen Chamber. Workers find their
-  species' resources, farmers grow food, and soldiers hunt for mob drops without spawning a single mob.
+- **One build that grows.** A Terrarium works on its own. Chambers placed against it join the colony and merge into one
+  glass case: Nest Chambers for a bigger colony, Foraging Sites where workers find resources and soldiers hunt for mob
+  drops (no mob is ever spawned), Harvesting Sites for farmers, Storage and Queen Chambers. A block under the Terrarium
+  sets its climate.
 - **38 species.** Thirteen wild species live in their own biomes, with nests. Mineral species (iron, gold, diamond,
   emerald, netherite, ender and more) evolve from them, and eleven hybrids come from crossing Queens. Ten more species
   turn on when Mekanism, Create, Thermal, Immersive Engineering or AE2 add their ores.
@@ -42,7 +43,11 @@ soldiers to work, evolve mineral species and engineer their genes.
 - **Built for automation and modpacks.** Comparator outputs and redstone control. Items and FE move through any mod's
   pipes and cables. Species, evolutions, hybrids, mutations, lab costs, ant food and loot are all data packs, and a
   server config sets every number.
-- **Integrations.** JEI and EMI recipe categories for the whole progression, Jade tooltips, and 16 advancements.
+- **Explained in game.** The Terrarium's Info page shows what its ants find and hunt, the climate they need (and the
+  block that fixes it) and what they evolve into. Tube tooltips and the Ant Identification Book say the same, and the
+  book has how-to-play pages.
+- **Integrations.** JEI and EMI recipe categories for the whole progression, Jade tooltips (colonies, wild ants and
+  nests), and 16 advancements.
 
 ## Screenshots
 
@@ -56,6 +61,8 @@ soldiers to work, evolve mineral species and engineer their genes.
 | A giant anthill | The Queen's chamber below it |
 | ![Guard Ant and Chitin armor](docs/images/screenshots/guard-ant-and-chitin.png) | ![Jade tooltip](docs/images/screenshots/jade.png) |
 | A Guard Ant and a full set of Chitin armor | A Terrarium at a glance with Jade |
+| ![Ant Identification Book](docs/images/screenshots/identification-book.png) | |
+| The Ant Identification Book: how to play, and every species | |
 
 ## Installation
 

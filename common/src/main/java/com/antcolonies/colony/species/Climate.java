@@ -1,12 +1,20 @@
 package com.antcolonies.colony.species;
 
+import com.antcolonies.AntColonies;
 import com.mojang.serialization.Codec;
 
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Where a species thrives. A colony kept somewhere else (a Snow Ant Terrarium in a desert) loses health, less so the
- * better its Queen's Environmental Resistance, and not at all with a matching resistance mutation.
+ * better its Queen's Environmental Resistance, and not at all with a matching resistance mutation. A block of the
+ * climate under the Terrarium (block tag {@code antcolonies:climate/<name>}: snow or ice for cold, sand for hot...) makes
+ * any place right for species of that climate.
  */
 public enum Climate implements StringRepresentable {
     TEMPERATE("temperate"),
@@ -27,6 +35,21 @@ public enum Climate implements StringRepresentable {
     @Override
     public String getSerializedName() {
         return name;
+    }
+
+    /** The blocks that make a Terrarium standing on them this climate. */
+    public TagKey<Block> floorTag() {
+        return TagKey.create(Registries.BLOCK, AntColonies.id("climate/" + name));
+    }
+
+    /** The climate a block under a Terrarium gives it, if any. */
+    public static @Nullable Climate ofFloor(BlockState state) {
+        for (Climate climate : values()) {
+            if (climate != ANY && state.is(climate.floorTag())) {
+                return climate;
+            }
+        }
+        return null;
     }
 
     /**

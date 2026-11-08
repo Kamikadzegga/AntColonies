@@ -9,7 +9,6 @@ import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.colony.breeding.QueenRearing;
 import com.antcolonies.colony.model.Colony;
-import com.antcolonies.colony.model.ColonyRing;
 import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.colony.model.StructureKind;
 import com.antcolonies.core.config.AntConfig;
@@ -95,7 +94,7 @@ public class AntColoniesGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GUARDS = test("guard_ants", AntColoniesGameTests::guardAnts);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> ANTHILL = test("giant_anthill", AntColoniesGameTests::giantAnthill);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> RUNS_ALONE = test("colony_runs_by_itself", AntColoniesGameTests::colonyRunsByItself);
-    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> RING = test("ring_must_be_complete", AntColoniesGameTests::ringMustBeComplete);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> JOINING = test("chambers_join_by_touching", AntColoniesGameTests::chambersJoinByTouching);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> UPGRADE_SYNC = test("terrarium_update_keeps_upgrades", AntColoniesGameTests::terrariumUpdateKeepsUpgrades);
 
     public AntColoniesGameTests(IEventBus modEventBus) {
@@ -112,7 +111,7 @@ public class AntColoniesGameTests {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(AntColonies.id("default"), new TestEnvironmentDefinition.AllOf(List.of()));
         for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> test : List.of(SPECIES_DATA_LOADS, COLONY_PERSISTS, ALLOCATION, SCAVENGING,
                 MORE_WORKERS, STARVATION, BREEDING, FARMING, GARDEN_NEEDS_FARMERS, FIGHTING, EVOLUTION, REARING, HYBRIDS, TWO_COLONIES, OFFLINE,
-                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL, RUNS_ALONE, RING, UPGRADE_SYNC)) {
+                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL, RUNS_ALONE, JOINING, UPGRADE_SYNC)) {
             event.registerTest(test.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, test.getId()),
                     spaced(environment, 200)));
         }
@@ -147,18 +146,20 @@ public class AntColoniesGameTests {
     }
 
     /**
-     * A whole colony ring around the Terrarium at {@code center}: the given chambers in the ring's places (north-west
-     * first, clockwise), the other places filled with empty Queen Chambers, which change nothing. Returns the given
-     * chambers, in order.
+     * Places around a Terrarium on its level, in an order where each touches the Terrarium or one placed before it: the
+     * four sides (north, east, south, west), then the corners.
      */
+    private static List<BlockPos> places(BlockPos center) {
+        return List.of(center.north(), center.east(), center.south(), center.west(), center.north().east(), center.south().east(),
+                center.south().west(), center.north().west());
+    }
+
+    /** Chambers around the Terrarium at {@code center} (see {@link #places}), all joined to it. Returns them in order. */
     private static List<StructureBlockEntity> ring(GameTestHelper helper, BlockPos center, StructureKind... kinds) {
-        List<BlockPos> places = ColonyRing.places(center);
+        List<BlockPos> places = places(center);
         List<StructureBlockEntity> placed = new java.util.ArrayList<>();
-        for (int i = 0; i < places.size(); i++) {
-            StructureBlockEntity entity = structure(helper, places.get(i), i < kinds.length ? kinds[i] : StructureKind.QUEEN_CHAMBER);
-            if (i < kinds.length) {
-                placed.add(entity);
-            }
+        for (int i = 0; i < kinds.length; i++) {
+            placed.add(structure(helper, places.get(i), kinds[i]));
         }
         return placed;
     }
@@ -295,8 +296,8 @@ public class AntColoniesGameTests {
     private static void allocation(GameTestHelper helper) {
         BlockPos pos = new BlockPos(2, 1, 2);
         TerrariumBlockEntity terrarium = terrarium(helper, pos, COMMON, 600, 0, 5000);
-        List<StructureBlockEntity> sites = ring(helper, pos, StructureKind.FORAGING_CHAMBER, StructureKind.FORAGING_CHAMBER,
-                StructureKind.FORAGING_CHAMBER, StructureKind.STORAGE);
+        List<StructureBlockEntity> sites = ring(helper, pos, StructureKind.FORAGING_SITE, StructureKind.FORAGING_SITE,
+                StructureKind.FORAGING_SITE, StructureKind.STORAGE);
         StructureBlockEntity a = sites.get(0);
         StructureBlockEntity b = sites.get(1);
         StructureBlockEntity c = sites.get(2);
@@ -310,20 +311,28 @@ public class AntColoniesGameTests {
         helper.assertTrue(a.assigned() <= a.capacity() && c.assigned() <= c.capacity(), "A site went over its capacity");
         // Swapping a chamber for another kind: its ants go to the others.
         int before = c.assigned();
-        structure(helper, ColonyRing.places(pos).get(0), StructureKind.QUEEN_CHAMBER);
+        structure(helper, places(pos).get(0), StructureKind.QUEEN_CHAMBER);
         step(helper, terrarium, 0.05);
         helper.assertTrue(c.assigned() >= before, "Freed workers were not reassigned");
         helper.assertTrue(b.assigned() + c.assigned() + colony.maintenanceWorkers() <= colony.workers() + 1, "Reassignment counted ants twice");
         helper.succeed();
     }
 
-    /** Assigned workers find their species' resources and put them into the Storage. */
+    /** Assigned workers find their species' resources and keep them in their Foraging Site's store, then in the Storage. */
     private static void scavenging(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         TerrariumBlockEntity terrarium = terrarium(helper, pos, COMMON, 80, 0, 5000);
-        StructureBlockEntity pile = ring(helper, pos, StructureKind.FORAGING_CHAMBER, StructureKind.STORAGE).get(1);
+        List<StructureBlockEntity> built = ring(helper, pos, StructureKind.FORAGING_SITE, StructureKind.STORAGE);
+        StructureBlockEntity site = built.get(0);
+        StructureBlockEntity pile = built.get(1);
         step(helper, terrarium, 5);
-        helper.assertTrue(count(pile) > 0, "The Storage stayed empty");
+        helper.assertTrue(count(site) > 0, "The Foraging Site's store stayed empty");
+        // Fill the site's store: what comes next goes to the Storage.
+        for (int slot = 0; slot < site.getContainerSize(); slot++) {
+            site.setItem(slot, new ItemStack(Items.BEDROCK, 64));
+        }
+        step(helper, terrarium, 5);
+        helper.assertTrue(count(pile) > 0, "With the site's store full, finds should go to the Storage");
         AntSpecies common = ModRegistries.species(helper.getLevel().registryAccess(), COMMON);
         for (int slot = 0; slot < pile.getContainerSize(); slot++) {
             ItemStack stack = pile.getItem(slot);
@@ -344,8 +353,8 @@ public class AntColoniesGameTests {
         // Same Queen genes for both.
         many.colony().setQueen(null);
         many.colony().setQueen(few.colony().queen());
-        StructureBlockEntity siteA = ring(helper, small, StructureKind.FORAGING_CHAMBER, StructureKind.STORAGE).get(0);
-        StructureBlockEntity siteB = ring(helper, large, StructureKind.FORAGING_CHAMBER, StructureKind.STORAGE).get(0);
+        StructureBlockEntity siteA = ring(helper, small, StructureKind.FORAGING_SITE, StructureKind.STORAGE).get(0);
+        StructureBlockEntity siteB = ring(helper, large, StructureKind.FORAGING_SITE, StructureKind.STORAGE).get(0);
         step(helper, few, 0.05);
         step(helper, many, 0.05);
         helper.assertTrue(siteB.assigned() > siteA.assigned(), "More workers should be assigned: " + siteA.assigned() + " vs " + siteB.assigned());
@@ -373,7 +382,7 @@ public class AntColoniesGameTests {
     private static void breeding(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         TerrariumBlockEntity terrarium = terrarium(helper, pos, COMMON, 0, 0, 2000);
-        ring(helper, pos, StructureKind.BROOD_CHAMBER);
+        ring(helper, pos, StructureKind.NEST_CHAMBER);
         for (int i = 0; i < 30; i++) {
             step(helper, terrarium, 0.5);
         }
@@ -387,7 +396,7 @@ public class AntColoniesGameTests {
     private static void farming(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         TerrariumBlockEntity terrarium = terrarium(helper, pos, AntColonies.id("farmer"), 200, 0, 100);
-        ring(helper, pos, StructureKind.FUNGUS_GARDEN, StructureKind.STORAGE);
+        ring(helper, pos, StructureKind.HARVESTING_SITE, StructureKind.STORAGE);
         step(helper, terrarium, 3);
         Colony colony = terrarium.colony();
         helper.assertTrue(colony.stats().foodIn() > colony.stats().foodOut(), "The garden should feed more than the colony eats: in "
@@ -400,21 +409,24 @@ public class AntColoniesGameTests {
     private static void gardenNeedsFarmers(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         TerrariumBlockEntity terrarium = terrarium(helper, pos, COMMON, 200, 0, 1000);
-        StructureBlockEntity garden = ring(helper, pos, StructureKind.FUNGUS_GARDEN).get(0);
+        StructureBlockEntity garden = ring(helper, pos, StructureKind.HARVESTING_SITE).get(0);
         step(helper, terrarium, 0.1);
         helper.assertTrue(garden.assigned() == 0, "Common Ants should not farm");
         helper.assertTrue(ColonyStatus.INCOMPATIBLE_SPECIES.in(garden.siteStatus()), "The garden should say the species can't farm");
         helper.succeed();
     }
 
-    /** Soldiers in a Hunting Chamber bring mob drops (from loot tables, no mobs spawned). */
+    /** Soldiers at a Foraging Site bring mob drops (from loot tables, no mobs spawned) into its store. */
     private static void fighting(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         TerrariumBlockEntity terrarium = terrarium(helper, pos, COMMON, 100, 64, 5000);
-        StructureBlockEntity pile = ring(helper, pos, StructureKind.HUNTING_CHAMBER, StructureKind.HOUSING, StructureKind.STORAGE).get(2);
+        List<StructureBlockEntity> built = ring(helper, pos, StructureKind.FORAGING_SITE, StructureKind.NEST_CHAMBER);
+        StructureBlockEntity site = built.get(0);
+        site.setRequested(0);
         int mobsBefore = helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new net.minecraft.world.phys.AABB(helper.absolutePos(pos)).inflate(16)).size();
         step(helper, terrarium, 10);
-        helper.assertTrue(count(pile) > 0, "The hunts brought nothing");
+        helper.assertTrue(site.soldiers() > 0 && site.assigned() == 0, "The site should have soldiers and no workers");
+        helper.assertTrue(count(site) > 0, "The hunts brought nothing");
         int mobsAfter = helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new net.minecraft.world.phys.AABB(helper.absolutePos(pos)).inflate(16)).size();
         helper.assertTrue(mobsAfter == mobsBefore, "Hunting must not spawn mobs");
         helper.succeed();
@@ -424,7 +436,7 @@ public class AntColoniesGameTests {
     private static void evolution(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         TerrariumBlockEntity terrarium = terrarium(helper, pos, AntColonies.id("stone"), 400, 0, 5000);
-        ring(helper, pos, StructureKind.BROOD_CHAMBER, StructureKind.HOUSING);
+        ring(helper, pos, StructureKind.NEST_CHAMBER, StructureKind.NEST_CHAMBER);
         step(helper, terrarium, 0.05);
         Colony colony = terrarium.colony();
         helper.assertTrue(colony.stage() >= 2, "The colony should be stage 2, is " + colony.stage());
@@ -596,8 +608,8 @@ public class AntColoniesGameTests {
         ServerLevel level = helper.getLevel();
         BlockPos center = new BlockPos(2, 1, 2);
         TerrariumBlockEntity terrarium = terrarium(helper, center, AntColonies.id("stone"), 2000, 300, 1_000_000);
-        ring(helper, center, StructureKind.FORAGING_CHAMBER, StructureKind.FORAGING_CHAMBER, StructureKind.STORAGE, StructureKind.HOUSING,
-                StructureKind.HUNTING_CHAMBER, StructureKind.BROOD_CHAMBER, StructureKind.STORAGE, StructureKind.QUEEN_CHAMBER);
+        ring(helper, center, StructureKind.FORAGING_SITE, StructureKind.FORAGING_SITE, StructureKind.STORAGE, StructureKind.NEST_CHAMBER,
+                StructureKind.FORAGING_SITE, StructureKind.NEST_CHAMBER, StructureKind.STORAGE, StructureKind.QUEEN_CHAMBER);
         terrarium.rescan(level);
         int found = 0;
         for (StructureKind kind : StructureKind.values()) {
@@ -634,7 +646,7 @@ public class AntColoniesGameTests {
         com.mojang.logging.LogUtils.getLogger().info(String.format(java.util.Locale.ROOT,
                 "[Performance] %d chambers found; scan %.3f ms; step %.3f ms; 2-minute catch-up step %.3f ms; sync packet %d bytes; workers %d, found %d",
                 found, scanMs, stepMs, catchUpMs, bytes, (long) terrarium.colony().workers(), terrarium.colony().totalFound()));
-        helper.assertTrue(found == ColonyRing.SIZE, "The scan should find the eight chambers, found " + found);
+        helper.assertTrue(found == 8, "The scan should find the eight chambers, found " + found);
         helper.assertTrue(stepMs < 5, "A simulation step took " + stepMs + " ms on average");
         helper.succeed();
     }
@@ -646,12 +658,12 @@ public class AntColoniesGameTests {
      */
     private static void diminishingIsColonyWide(GameTestHelper helper) {
         TerrariumBlockEntity split = terrarium(helper, new BlockPos(1, 1, 1), AntColonies.id("stone"), 500, 0, 100_000);
-        List<StructureBlockEntity> two = ring(helper, new BlockPos(1, 1, 1), StructureKind.FORAGING_CHAMBER, StructureKind.FORAGING_CHAMBER,
+        List<StructureBlockEntity> two = ring(helper, new BlockPos(1, 1, 1), StructureKind.FORAGING_SITE, StructureKind.FORAGING_SITE,
                 StructureKind.STORAGE);
         StructureBlockEntity siteA = two.get(0);
         StructureBlockEntity siteB = two.get(1);
         TerrariumBlockEntity single = terrarium(helper, new BlockPos(6, 1, 1), AntColonies.id("stone"), 500, 0, 100_000);
-        StructureBlockEntity big = ring(helper, new BlockPos(6, 1, 1), StructureKind.FORAGING_CHAMBER, StructureKind.STORAGE).get(0);
+        StructureBlockEntity big = ring(helper, new BlockPos(6, 1, 1), StructureKind.FORAGING_SITE, StructureKind.STORAGE).get(0);
         big.upgrades().setItem(0, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.POPULATION, 1)));
         // The same Queen for both, so only the layout differs.
         single.colony().setQueen(split.colony().queen());
@@ -662,7 +674,7 @@ public class AntColoniesGameTests {
         double singleRate = big.rate();
         int singleAnts = big.assigned();
         helper.assertTrue(splitAnts == singleAnts && splitAnts > 400, "Both colonies should put the same ants to work: " + splitAnts + " / " + singleAnts + " (sites " + siteA.assigned() + "+" + siteB.assigned()
-                + ", found " + split.colony().layout().of(StructureKind.FORAGING_CHAMBER).size() + " and " + single.colony().layout().of(StructureKind.FORAGING_CHAMBER).size()
+                + ", found " + split.colony().layout().of(StructureKind.FORAGING_SITE).size() + " and " + single.colony().layout().of(StructureKind.FORAGING_SITE).size()
                 + ", big capacity " + big.capacity() + ", workers " + (long) split.colony().workers() + "/" + (long) single.colony().workers() + ")");
         helper.assertTrue(Math.abs(splitRate - singleRate) < 1e-6 * Math.max(1, singleRate),
                 "Two sites (" + splitRate + "/min) should find exactly as much as one (" + singleRate + "/min)");
@@ -766,11 +778,11 @@ public class AntColoniesGameTests {
     private static void redstoneControl(GameTestHelper helper) {
         BlockPos center = new BlockPos(2, 1, 2);
         TerrariumBlockEntity terrarium = terrarium(helper, center, COMMON, 50, 0, 1000);
-        List<StructureBlockEntity> sites = ring(helper, center, StructureKind.FORAGING_CHAMBER, StructureKind.FORAGING_CHAMBER, StructureKind.STORAGE);
+        List<StructureBlockEntity> sites = ring(helper, center, StructureKind.FORAGING_SITE, StructureKind.FORAGING_SITE, StructureKind.STORAGE);
         StructureBlockEntity powered = sites.get(0);
         StructureBlockEntity open = sites.get(1);
-        // Next to the north-west chamber, outside the ring.
-        helper.setBlock(ColonyRing.places(center).get(0).west(), net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK);
+        // West of the north chamber, where no chamber is.
+        helper.setBlock(places(center).get(0).west(), net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK);
         step(helper, terrarium, 1 / 60.0);
         helper.assertTrue(powered.assigned() == 0 && ColonyStatus.PAUSED.in(powered.siteStatus()), "The powered site should be paused, has "
                 + powered.assigned() + " ants");
@@ -918,7 +930,7 @@ public class AntColoniesGameTests {
     private static void colonyRunsByItself(GameTestHelper helper) {
         BlockPos pos = new BlockPos(2, 1, 2);
         TerrariumBlockEntity terrarium = terrarium(helper, pos, AntColonies.id("stone"), 400, 0, 5000);
-        StructureBlockEntity site = ring(helper, pos, StructureKind.BROOD_CHAMBER, StructureKind.HOUSING, StructureKind.FORAGING_CHAMBER,
+        StructureBlockEntity site = ring(helper, pos, StructureKind.NEST_CHAMBER, StructureKind.NEST_CHAMBER, StructureKind.FORAGING_SITE,
                 StructureKind.STORAGE).get(2);
         terrarium.setItem(TerrariumBlockEntity.SLOT_FEED, new ItemStack(Items.IRON_INGOT, 64));
         helper.succeedWhen(() -> {
@@ -932,23 +944,33 @@ public class AntColoniesGameTests {
     }
 
     /**
-     * A colony works only with a whole ring: with seven chambers it waits (nothing grows or works, it says why); the
-     * eighth chamber starts it.
+     * Chambers are additions: a Terrarium alone lays eggs and raises ants. A chamber joins when it touches the Terrarium
+     * or a joined chamber (above, below or beside it), and one that touches neither stays out.
      */
-    private static void ringMustBeComplete(GameTestHelper helper) {
+    private static void chambersJoinByTouching(GameTestHelper helper) {
         BlockPos pos = new BlockPos(2, 1, 2);
-        TerrariumBlockEntity terrarium = terrarium(helper, pos, COMMON, 100, 0, 5000);
-        StructureBlockEntity site = ring(helper, pos, StructureKind.FORAGING_CHAMBER, StructureKind.STORAGE).get(0);
-        BlockPos last = ColonyRing.places(pos).get(ColonyRing.SIZE - 1);
-        helper.setBlock(last, net.minecraft.world.level.block.Blocks.AIR);
-        step(helper, terrarium, 1);
+        TerrariumBlockEntity terrarium = terrarium(helper, pos, COMMON, 10, 0, 5000);
+        for (int i = 0; i < 10; i++) {
+            step(helper, terrarium, 0.5);
+        }
         Colony colony = terrarium.colony();
-        helper.assertTrue(colony.layout().missing() == 1, "One place should be empty: " + colony.layout().missing());
-        helper.assertTrue(ColonyStatus.INVALID_MULTIBLOCK.in(colony.status()), "The colony should say it is incomplete");
-        helper.assertTrue(site.assigned() == 0 && colony.workers() == 100, "An incomplete colony must not work or change");
-        structure(helper, last, StructureKind.HOUSING);
+        helper.assertTrue(colony.layout().size() == 0, "Nothing should have joined yet");
+        helper.assertTrue(colony.stats().eggsLaid() > 0 && colony.adults() > 10, "A Terrarium alone should lay eggs and raise ants: "
+                + colony.adults() + " adults");
+        // A Foraging Site against the Terrarium, a Storage on top of the site, a Nest Chamber against the Storage's side.
+        StructureBlockEntity site = structure(helper, pos.east(), StructureKind.FORAGING_SITE);
+        StructureBlockEntity storage = structure(helper, pos.east().above(), StructureKind.STORAGE);
+        StructureBlockEntity nest = structure(helper, pos.east().above().east(), StructureKind.NEST_CHAMBER);
+        // Two blocks from anything of the colony: it stays out.
+        StructureBlockEntity apart = structure(helper, pos.west().west(), StructureKind.FORAGING_SITE);
         step(helper, terrarium, 1 / 60.0);
-        helper.assertTrue(colony.layout().complete() && site.assigned() > 0, "The whole ring should put the workers to work");
+        helper.assertTrue(colony.layout().size() == 3, "The three touching chambers should join, found " + colony.layout().size());
+        helper.assertTrue(site.isLinked() && storage.isLinked() && nest.isLinked(), "The joined chambers should be linked");
+        helper.assertFalse(apart.isLinked(), "A chamber touching nothing of the colony should stay out");
+        helper.assertTrue(site.assigned() > 0, "The Foraging Site should get workers");
+        // The Terrarium's block state shows the joined side (its frame opens there).
+        helper.assertTrue(helper.getBlockState(pos).getValue(com.antcolonies.content.block.ColonyPartBlock.CONNECTED.get(net.minecraft.core.Direction.EAST)),
+                "The Terrarium should show it is joined on its east side");
         helper.succeed();
     }
 
@@ -974,23 +996,30 @@ public class AntColoniesGameTests {
     }
 
     /**
-     * Two Terrariums two blocks apart would share chambers: both colonies are flagged and stop; three blocks apart (two
-     * rings side by side) both work.
+     * Chambers between two Terrariums go to the nearer one; one exactly as near to both joins neither and says so. Both
+     * colonies keep working. With the second Terrarium gone, the first takes them all.
      */
     private static void twoColonies(GameTestHelper helper) {
         BlockPos a = new BlockPos(2, 1, 2);
+        BlockPos b = new BlockPos(6, 1, 2);
         TerrariumBlockEntity first = terrarium(helper, a, COMMON, 50, 0, 1000);
-        ring(helper, a, StructureKind.FORAGING_CHAMBER, StructureKind.STORAGE);
-        BlockPos b = new BlockPos(4, 1, 2);
-        helper.setBlock(new BlockPos(4, 1, 2), ModBlocks.TERRARIUM.get());
+        TerrariumBlockEntity second = terrarium(helper, b, COMMON, 50, 0, 1000);
+        StructureBlockEntity near = structure(helper, new BlockPos(3, 1, 2), StructureKind.FORAGING_SITE);
+        StructureBlockEntity middle = structure(helper, new BlockPos(4, 1, 2), StructureKind.FORAGING_SITE);
+        StructureBlockEntity far = structure(helper, new BlockPos(5, 1, 2), StructureKind.FORAGING_SITE);
         step(helper, first, 0.05);
-        helper.assertTrue(first.colony().layout().twoColonies(), "A chamber next to a second Terrarium should be flagged");
-        helper.assertTrue(ColonyStatus.TWO_COLONIES.in(first.colony().status()), "The status should say a chamber is shared");
+        step(helper, second, 0.05);
+        var layout = first.colony().layout();
+        helper.assertTrue(layout.size() == 1 && layout.of(StructureKind.FORAGING_SITE).contains(near.getBlockPos()),
+                "The first colony should take only the chamber next to it, took " + layout.all());
+        helper.assertTrue(layout.contested().contains(middle.getBlockPos()), "The middle chamber should be shared: " + layout.contested());
+        helper.assertTrue(second.colony().layout().of(StructureKind.FORAGING_SITE).contains(far.getBlockPos()), "The second colony should take the far chamber");
+        helper.assertTrue(middle.isContested() && !middle.isLinked(), "The middle chamber should say it joins neither");
+        helper.assertTrue(near.assigned() > 0 && far.assigned() > 0, "Both colonies should keep working");
         helper.setBlock(b, net.minecraft.world.level.block.Blocks.AIR);
-        helper.setBlock(new BlockPos(5, 1, 2), ModBlocks.TERRARIUM.get());
         step(helper, first, 0.05);
-        helper.assertFalse(first.colony().layout().twoColonies(), "Three blocks apart, the rings don't share a chamber");
-        helper.assertTrue(first.colony().layout().complete(), "The first ring should work again");
+        helper.assertTrue(first.colony().layout().size() == 3, "Without the second Terrarium the first should take all three: "
+                + first.colony().layout().all());
         helper.succeed();
     }
 

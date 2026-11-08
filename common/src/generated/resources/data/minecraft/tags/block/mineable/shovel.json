@@ -1,9 +1,8 @@
 {
   "values": [
-    "antcolonies:brood_chamber",
-    "antcolonies:housing",
-    "antcolonies:foraging_chamber",
-    "antcolonies:fungus_garden",
+    "antcolonies:nest_chamber",
+    "antcolonies:foraging_site",
+    "antcolonies:harvesting_site",
     "antcolonies:queen_chamber",
     "antcolonies:common_ant_nest",
     "antcolonies:wood_ant_nest",

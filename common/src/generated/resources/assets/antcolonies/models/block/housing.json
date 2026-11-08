@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "antcolonies:block/housing_front",
-    "side": "antcolonies:block/housing_side",
-    "top": "antcolonies:block/housing_top"
-  }
-}

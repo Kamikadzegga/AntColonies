@@ -1,8 +1,89 @@
 {
-  "parent": "minecraft:block/orientable",
+  "parent": "minecraft:block/block",
   "textures": {
-    "front": "antcolonies:block/queen_chamber_front",
-    "side": "antcolonies:block/queen_chamber_side",
-    "top": "antcolonies:block/queen_chamber_top"
-  }
+    "particle": "antcolonies:block/queen_chamber_top",
+    "side": "antcolonies:block/terrarium_wood",
+    "top": "antcolonies:block/queen_chamber_top",
+    "gold": "minecraft:block/gold_block",
+    "comb": "minecraft:block/honeycomb_block"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 4.0, 16],
+      "faces": {
+        "down": {
+          "texture": "#side",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#top"
+        },
+        "north": {
+          "texture": "#side",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#side",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#side",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#side",
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [4.0, 4.0, 4.0],
+      "to": [12.0, 5.0, 12.0],
+      "faces": {
+        "down": {
+          "texture": "#gold"
+        },
+        "up": {
+          "texture": "#gold"
+        },
+        "north": {
+          "texture": "#gold"
+        },
+        "south": {
+          "texture": "#gold"
+        },
+        "west": {
+          "texture": "#gold"
+        },
+        "east": {
+          "texture": "#gold"
+        }
+      }
+    },
+    {
+      "from": [6.0, 5.0, 6.0],
+      "to": [10.0, 7.5, 10.0],
+      "faces": {
+        "down": {
+          "texture": "#comb"
+        },
+        "up": {
+          "texture": "#comb"
+        },
+        "north": {
+          "texture": "#comb"
+        },
+        "south": {
+          "texture": "#comb"
+        },
+        "west": {
+          "texture": "#comb"
+        },
+        "east": {
+          "texture": "#comb"
+        }
+      }
+    }
+  ]
 }

@@ -1,0 +1,36 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "antcolonies:block/terrarium_glass",
+    "glass": {
+      "force_translucent": true,
+      "sprite": "antcolonies:block/terrarium_glass"
+    }
+  },
+  "elements": [
+    {
+      "from": [0.0, 0.0, 15.5],
+      "to": [16.0, 16.0, 15.75],
+      "faces": {
+        "down": {
+          "texture": "#glass"
+        },
+        "up": {
+          "texture": "#glass"
+        },
+        "north": {
+          "texture": "#glass"
+        },
+        "south": {
+          "texture": "#glass"
+        },
+        "west": {
+          "texture": "#glass"
+        },
+        "east": {
+          "texture": "#glass"
+        }
+      }
+    }
+  ]
+}

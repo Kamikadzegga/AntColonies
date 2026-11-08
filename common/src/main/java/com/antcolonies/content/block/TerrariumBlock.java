@@ -31,7 +31,7 @@ import org.jspecify.annotations.Nullable;
  * The Terrarium: a glass formicarium with a living colony inside. Right-click with a Queen Test Tube to put a Queen in,
  * with food, evolution materials, caught ants, eggs or larvae to feed them; empty-handed to open the colony's overview.
  */
-public class TerrariumBlock extends ColonyEntityBlock {
+public class TerrariumBlock extends ColonyPartBlock {
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 16, 16);
 
     public TerrariumBlock(Properties properties) {

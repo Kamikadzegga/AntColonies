@@ -38,9 +38,8 @@ public final class ModBlocks {
     private static BlockBehaviour.Properties structureProperties(StructureKind kind, BlockBehaviour.Properties p) {
         return switch (kind) {
             case STORAGE -> p.mapColor(MapColor.WOOD).strength(1.5F).sound(SoundType.WOOD).noOcclusion();
-            case FUNGUS_GARDEN -> p.mapColor(MapColor.COLOR_GREEN).strength(0.8F).sound(SoundType.ROOTED_DIRT).noOcclusion();
-            case HUNTING_CHAMBER -> p.mapColor(MapColor.STONE).strength(1.5F).sound(SoundType.BONE_BLOCK).noOcclusion();
-            case FORAGING_CHAMBER -> p.mapColor(MapColor.DIRT).strength(0.8F).sound(SoundType.ROOTED_DIRT).noOcclusion();
+            case HARVESTING_SITE -> p.mapColor(MapColor.COLOR_GREEN).strength(0.8F).sound(SoundType.ROOTED_DIRT).noOcclusion();
+            case FORAGING_SITE -> p.mapColor(MapColor.DIRT).strength(0.8F).sound(SoundType.ROOTED_DIRT).noOcclusion();
             default -> p.mapColor(MapColor.DIRT).strength(1.2F).sound(SoundType.PACKED_MUD).noOcclusion();
         };
     }

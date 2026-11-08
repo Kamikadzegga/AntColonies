@@ -1,7 +1,6 @@
 {
   "values": [
     "antcolonies:genetic_laboratory",
-    "antcolonies:generator",
-    "antcolonies:hunting_chamber"
+    "antcolonies:generator"
   ]
 }

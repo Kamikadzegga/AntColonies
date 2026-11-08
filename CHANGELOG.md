@@ -9,21 +9,32 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 ### Added
 
 - An in-game config screen: Mods → Ant Colonies → Config, with readable names and explanations for every option.
-- Upgrade items show their tier (I, II or III) on their icon in every slot and inventory.
+- An Info page in the Terrarium: what the colony's ants find (with chances) and hunt, the climate they need and the
+  blocks that fix it, and what they evolve into.
+- Climate blocks: a block under the Terrarium gives it a climate, whatever the biome (snow or ice cold, sand hot, grass
+  or dirt temperate, stone or deepslate underground, netherrack or magma nether). Block tags `antcolonies:climate/*`.
+- The Ant Identification Book has how-to-play pages, and its species pages show the same as the Info page.
+- Queen and ant tube tooltips show the species' climate, finds, best traits, and with Shift its evolutions.
+- Jade tooltips for wild ants and wild nests.
+- The creative tab shows the ant's head from the mod's logo.
 
 ### Changed
 
-- A colony is now one 3x3 build: the Terrarium in the middle and any 8 chambers around it (sides and corners, same
-  level). It works once all 8 places are filled. Glass Ant Tubes, Underground Tunnels and the Colony Connector are gone.
-- Twelve structures became seven chambers: Brood Chamber (was Breeding Chamber and Ant Nursery), Housing (was Worker
-  Housing and Soldier Barracks), Storage (was Resource Pile and Food Storage), Foraging Chamber (was Scavenging Site),
-  Fungus Garden (was Farmer Ant Garden), Hunting Chamber (was Fighting Site) and Queen Chamber. The Resource Processing
-  Chamber is gone; Processing species upgrades still turn finds into their processed form.
+- Chambers are additions, not requirements: a Terrarium works on its own. A chamber joins when it touches the Terrarium
+  or another chamber of the colony, on any side, in any shape (up to 32). Every block is the same glass case on a wooden
+  base; touching blocks open into each other, so the whole build is one closed glass case with one frame around it. A chamber exactly as near to two Terrariums joins neither.
+- Twelve structures became five chambers: Nest Chamber (was Breeding Chamber, Ant Nursery, Worker Housing and Soldier
+  Barracks), Foraging Site (was Scavenging Site and Fighting Site: workers find, soldiers hunt, and it keeps 9 stacks
+  of finds), Harvesting Site (was Farmer Ant Garden), Storage (was Resource Pile and Food Storage) and Queen Chamber.
+  Glass Ant Tubes, Underground Tunnels, the Colony Connector and the Resource Processing Chamber are gone; Processing
+  species upgrades still turn finds into their processed form.
 - The Genetic Laboratory is one block that takes FE from any side. Its five parts and the Genetic Energy Core are gone.
 - Food goes in only through the Terrarium. Storage adds food room.
+- Shift-clicking an upgrade puts it only into an upgrade slot, never into a store or the feed slot.
 - Ants inside chambers are drawn only up close (`antDetailDistance`) with 3D models on: a view of 25 colonies runs
   about 80% faster.
-- Worlds from 0.1.0: the removed and renamed blocks disappear. Rebuild colonies as rings.
+- Worlds from 0.1.0: the removed and renamed blocks disappear. Rebuild colonies by placing chambers against the
+  Terrarium.
 
 ### Fixed
 

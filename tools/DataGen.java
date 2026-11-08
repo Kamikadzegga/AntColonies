@@ -231,7 +231,7 @@ public class DataGen {
                         Out.of("melon_seeds", 5), Out.of("pumpkin_seeds", 5), Out.of("glow_berries", 5).atStage(3).asSpecial()),
                 0.8, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"brown_mushroom", "4"}), 2400, 1.0, 1.0,
                 "brown_mushroom", "Leaf Cutting", "Fungus Curing", "Garden Rotation",
-                "Leafcutters that grow fungus gardens. Their Fungus Gardens feed the whole colony."));
+                "Leafcutters that grow fungus gardens. Their Harvesting Sites feed the whole colony."));
         List<String[]> mineralRearing = List.of(new String[] {ac("royal_jelly"), "2"}, new String[] {ac("mineral_ant_food"), "4"});
         List<String[]> crystalRearing = List.of(new String[] {ac("royal_jelly"), "3"}, new String[] {ac("crystal_ant_food"), "6"},
                 new String[] {ac("nuptial_pheromone"), "1"});
@@ -419,7 +419,7 @@ public class DataGen {
                         Out.of("shroomlight", 4).atStage(3).asSpecial()),
                 1.0, List.of(), netherRearing, 4800, 1.0, 1.0, "nether_wart",
                 "Fungal Extraction", "Wart Curing", "Spore Efficiency",
-                "A hybrid of Farmer and Fire Ants that grows Nether fungus. Tends Fungus Gardens for food, wart and shroomlight."));
+                "A hybrid of Farmer and Fire Ants that grows Nether fungus. Tends Harvesting Sites for food, wart and shroomlight."));
         SPECIES.add(new Species("obsidian", "Obsidian Ant", 3, "hybrid", "hot", null, "14101E", "2A1E40", "8A4AE0", "faceted", "A060FF", true,
                 1.1, 1.6, "mineral", 0.6, 0.3,
                 List.of(Out.of("obsidian", 20), Out.of("basalt", 12), Out.of("magma_block", 10), Out.of("blackstone", 10), Out.of("cobblestone", 10),
@@ -447,7 +447,7 @@ public class DataGen {
                 1.6, List.of(Out.of("honey_bottle", 20), Out.of("sugar", 20), Out.of("sweet_berries", 16), Out.of("honeycomb", 10).atStage(2).asSpecial()),
                 0.8, List.of(), List.of(new String[] {ac("royal_jelly"), "2"}, new String[] {"honey_bottle", "2"}), 3600, 1.05, 1.0,
                 "honey_bottle", "Nectar Extraction", "Honey Thickening", "Sweet Thrift",
-                "A hybrid of Blossom and Farmer Ants. Some workers swell into living honey jars: honey, sugar and comb. Tends Fungus Gardens."));
+                "A hybrid of Blossom and Farmer Ants. Some workers swell into living honey jars: honey, sugar and comb. Tends Harvesting Sites."));
         SPECIES.add(new Species("harvester", "Harvester Ant", 2, "hybrid", "hot", null, "7A2A12", "A8461E", "D89A50", "plain", null, false,
                 1.1, 1.0, "", 0, 0.7,
                 List.of(Out.of("wheat_seeds", 16), Out.of("beetroot_seeds", 10), Out.of("pumpkin_seeds", 6), Out.of("melon_seeds", 6),
@@ -456,7 +456,7 @@ public class DataGen {
                         Out.of("sugar_cane", 8), Out.of("poisonous_potato", 2), Out.of("golden_carrot", 1).atStage(4).asSpecial()),
                 1.1, List.of(), List.of(new String[] {ac("royal_jelly"), "2"}, new String[] {"wheat", "16"}), 3600, 1.0, 1.0,
                 "wheat", "Granary Foraging", "Seed Husking", "Granary Thrift",
-                "A hybrid of Farmer and Savanna Ants, after the real seed-storing harvester ants. Tend Fungus Gardens for crops of every kind."));
+                "A hybrid of Farmer and Savanna Ants, after the real seed-storing harvester ants. Tend Harvesting Sites for crops of every kind."));
         SPECIES.add(new Species("reef", "Reef Ant", 2, "hybrid", "temperate", null, "1E4A6A", "E05A8A", "FFD040", "speckled", "60D8E8", false,
                 0.95, 1.1, "", 0, 0.55,
                 List.of(Out.of("tube_coral_block", 6), Out.of("brain_coral_block", 6), Out.of("bubble_coral_block", 6), Out.of("fire_coral_block", 6),
@@ -659,7 +659,17 @@ public class DataGen {
         // Jade: tooltip lines and the names of the toggles in its plugin config.
         LANG.put("jade." + NS + ".food", "Food %s%%");
         LANG.put("config.jade.plugin_" + NS + ".terrarium", "Terrarium colony");
-        LANG.put("config.jade.plugin_" + NS + ".structure", "Colony structure ants and output");
+        LANG.put("config.jade.plugin_" + NS + ".structure", "Colony chamber ants and output");
+        LANG.put("config.jade.plugin_" + NS + ".wild_ant", "Wild ant species");
+        LANG.put("config.jade.plugin_" + NS + ".wild_nest", "Wild nest species");
+        LANG.put("jade." + NS + ".catch", "Catch it with Tweezers (and an empty Test Tube)");
+        LANG.put("jade." + NS + ".nest", "Tweezers take workers out; now and then a Queen");
+        LANG.put("tooltip." + NS + ".species.climate", "Climate: %s");
+        LANG.put("tooltip." + NS + ".species.finds", "Finds: %s");
+        LANG.put("tooltip." + NS + ".species.grows", "Grows food and %s");
+        LANG.put("tooltip." + NS + ".species.more", " and %s more");
+        LANG.put("tooltip." + NS + ".species.evolves", "Evolves into %s: feed %s from stage %s");
+        LANG.put("tooltip." + NS + ".queen.best", "Best traits: %s");
         LANG.put("config.jade.plugin_" + NS + ".machine", "Generator and Genetic Laboratory");
         advancement("root", null, "terrarium", "task", "Ant Colonies", "Tiny workers, big colonies", hasItem("tweezers", "terrarium", "ant_test_tube"));
         advancement("catch_ants", "root", "ant_test_tube", "task", "Tiny Catch", "Catch wild ants with Tweezers and an empty Test Tube",
@@ -667,9 +677,9 @@ public class DataGen {
         advancement("catch_queen", "catch_ants", "queen_test_tube", "task", "Long Live the Queen", "Catch or raise a Queen", hasItem("queen_test_tube"));
         advancement("first_colony", "catch_queen", "terrarium", "task", "Home Sweet Home", "Start a colony: a Terrarium with a Queen",
                 colony("has_queen", true));
-        advancement("stage_2", "first_colony", structureItem("brood_chamber"), "task", "Growing Family",
-                "Reach colony stage 2 (a Brood Chamber and enough adults)", colony("stage", obj("min", 2)));
-        advancement("stage_4", "stage_2", structureItem("housing"), "goal", "Metropolis", "Reach colony stage 4", colony("stage", obj("min", 4)));
+        advancement("stage_2", "first_colony", structureItem("nest_chamber"), "task", "Growing Family",
+                "Reach colony stage 2 (100 adults)", colony("stage", obj("min", 2)));
+        advancement("stage_4", "stage_2", structureItem("foraging_site"), "goal", "Metropolis", "Reach colony stage 4", colony("stage", obj("min", 4)));
         advancement("evolution", "first_colony", "evolution_catalyst", "task", "Evolution", "Evolve a colony into a mineral species",
                 colony("category", "mineral"));
         advancement("hybrid", "evolution", "genetic_sample", "goal", "Hybrid Vigor", "Raise a hybrid colony from a Queen Chamber cross",
@@ -835,12 +845,12 @@ public class DataGen {
         // Blocks.
         shaped("terrarium", ac("terrarium"), 1, new String[] {"PGP", "GDG", "PPP"}, "P", "#minecraft:planks", "G", "glass", "D", "dirt");
         // The colony chambers: packed mud and what each one is for.
-        shaped("brood_chamber", ac("brood_chamber"), 1, new String[] {"MRM", "MWM", "MMM"}, "M", "packed_mud", "R", ac("royal_jelly"), "W", "#minecraft:wool");
-        shaped("housing", ac("housing"), 1, new String[] {"MMM", "M M", "MMM"}, "M", "packed_mud");
+        shaped("nest_chamber", ac("nest_chamber"), 1, new String[] {"MRM", "MWM", "MMM"}, "M", "packed_mud", "R", ac("royal_jelly"), "W", "#minecraft:wool");
         shaped("storage", ac("storage"), 1, new String[] {"P P", "PCP", "PPP"}, "P", "#minecraft:planks", "C", "chest");
-        shaped("foraging_chamber", ac("foraging_chamber"), 1, new String[] {"S S", "DMD", "DDD"}, "S", "stick", "D", "coarse_dirt", "M", "packed_mud");
-        shaped("fungus_garden", ac("fungus_garden"), 1, new String[] {"RBR", "DMD", "DDD"}, "R", "brown_mushroom", "B", "bone_meal", "D", "dirt", "M", "packed_mud");
-        shaped("hunting_chamber", ac("hunting_chamber"), 1, new String[] {"BWB", "SMS", "SSS"}, "B", "bone", "W", "iron_sword", "S", "cobblestone", "M", "packed_mud");
+        shaped("foraging_site", ac("foraging_site"), 1, new String[] {"SBS", "DMD", "DCD"}, "S", "stick", "B", "bone", "D", "coarse_dirt",
+                "M", "packed_mud", "C", "chest");
+        shaped("harvesting_site", ac("harvesting_site"), 1, new String[] {"RBR", "DMD", "DDD"}, "R", "brown_mushroom", "B", "bone_meal", "D", "dirt",
+                "M", "packed_mud");
         shaped("queen_chamber", ac("queen_chamber"), 1, new String[] {"MGM", "RMR", "MMM"}, "M", "packed_mud", "G", "gold_ingot", "R", ac("royal_jelly"));
         shaped("generator", ac("generator"), 1, new String[] {"III", "IFI", "CRC"}, "I", "iron_ingot", "F", "furnace", "C", "copper_ingot", "R", "redstone");
         shaped("upgrade_station", ac("upgrade_station"), 1, new String[] {"CCC", "PTP", "P P"}, "C", ac("chitin_plate"), "P", "#minecraft:planks", "T", "crafting_table");
@@ -866,7 +876,7 @@ public class DataGen {
 
     // ------------------------------------------------------------------ Blocks, items, loot, tags, worldgen, models
 
-    static final String[] STRUCTURES = {"brood_chamber", "housing", "storage", "foraging_chamber", "fungus_garden", "hunting_chamber", "queen_chamber"};
+    static final String[] STRUCTURES = {"nest_chamber", "foraging_site", "harvesting_site", "storage", "queen_chamber"};
     static final String[] NESTS = {"common", "wood", "stone", "snow", "desert", "farmer", "jungle", "swamp", "savanna", "shore", "blossom", "pale",
             "badlands"};
     static final String[] UPGRADE_TYPES = {"speed", "food_efficiency", "simulation", "storage", "breeding", "genetic", "soldier", "automation",
@@ -911,8 +921,7 @@ public class DataGen {
         List<Object> axe = new ArrayList<>();
         pickaxe.add(ac("genetic_laboratory"));
         pickaxe.add(ac("generator"));
-        pickaxe.add(ac("hunting_chamber"));
-        for (String s : new String[] {"brood_chamber", "housing", "foraging_chamber", "fungus_garden", "queen_chamber"}) {
+        for (String s : new String[] {"nest_chamber", "foraging_site", "harvesting_site", "queen_chamber"}) {
             shovel.add(ac(s));
         }
         for (String nest : NESTS) {
@@ -924,6 +933,20 @@ public class DataGen {
         write(RES.resolve("data/minecraft/tags/block/mineable/pickaxe.json"), obj("values", pickaxe));
         write(RES.resolve("data/minecraft/tags/block/mineable/shovel.json"), obj("values", shovel));
         write(RES.resolve("data/minecraft/tags/block/mineable/axe.json"), obj("values", axe));
+        // Blocks that give a Terrarium standing on them a climate (Climate#ofFloor).
+        Map<String, List<Object>> floors = new LinkedHashMap<>();
+        floors.put("cold", arr("minecraft:snow_block", "minecraft:ice", "minecraft:packed_ice", "minecraft:blue_ice", "minecraft:powder_snow"));
+        floors.put("hot", arr("minecraft:sand", "minecraft:red_sand", "minecraft:sandstone", "minecraft:red_sandstone", "minecraft:cut_sandstone",
+                "minecraft:smooth_sandstone", "minecraft:terracotta"));
+        floors.put("temperate", arr("minecraft:grass_block", "minecraft:dirt", "minecraft:coarse_dirt", "minecraft:podzol", "minecraft:rooted_dirt",
+                "minecraft:moss_block", "minecraft:mud"));
+        floors.put("underground", arr("minecraft:stone", "minecraft:deepslate", "minecraft:cobbled_deepslate", "minecraft:tuff", "minecraft:calcite",
+                "minecraft:dripstone_block"));
+        floors.put("nether", arr("minecraft:netherrack", "minecraft:magma_block", "minecraft:soul_sand", "minecraft:soul_soil", "minecraft:crimson_nylium",
+                "minecraft:warped_nylium", "minecraft:blackstone", "minecraft:basalt"));
+        for (Map.Entry<String, List<Object>> floor : floors.entrySet()) {
+            write(DATA.resolve("tags/block/climate/" + floor.getKey() + ".json"), obj("values", floor.getValue()));
+        }
         // Where each wild species lives.
         Map<String, List<Object>> biomes = new LinkedHashMap<>();
         biomes.put("common", arr("minecraft:plains", "minecraft:sunflower_plains", "minecraft:meadow", "minecraft:forest", "minecraft:flower_forest",
@@ -973,11 +996,12 @@ public class DataGen {
     static void blockstates() {
         Path states = ASSETS.resolve("blockstates");
         Path blockModels = ASSETS.resolve("models/block");
-        // Terrarium and the facing structures.
-        facing("terrarium");
+        // The Terrarium and the chambers: facing, with the colony frame on the edges that touch no other colony part.
+        colonyPart("terrarium");
         for (String s : STRUCTURES) {
-            facing(s);
+            colonyPart(s);
         }
+        frameModels();
         write(states.resolve("upgrade_station.json"), obj("variants", obj("", obj("model", ac("block/upgrade_station")))));
         // The Genetic Laboratory: facing, its windows lit while it works.
         for (String part : new String[] {"genetic_laboratory"}) {
@@ -1018,6 +1042,128 @@ public class DataGen {
         }
     }
 
+    // ------------------------------------------------------------------ The colony frame
+
+    /** How thick the colony frame is, and how far it stands out of the faces it lies on (so the two never share pixels). */
+    static final double FRAME = 2;
+    static final double PROUD = 0.05;
+    /** The twelve edges of a block, each named by the two sides it lies between: it shows when neither side touches another colony part. */
+    static final String[][] EDGES = {{"north", "west"}, {"north", "east"}, {"south", "west"}, {"south", "east"},
+            {"up", "north"}, {"up", "south"}, {"up", "west"}, {"up", "east"}, {"down", "north"}, {"down", "south"}, {"down", "west"},
+            {"down", "east"}};
+    static final String[] HORIZONTAL = {"north", "east", "south", "west"};
+
+    /**
+     * A box of the frame texture. Where it lies on the block's outside it stands {@link #PROUD} out, so it never fights the
+     * chamber's own faces; its UVs come from the box inside the block, so they never leave the texture.
+     */
+    static Map<String, Object> frameBox(double x1, double y1, double z1, double x2, double y2, double z2) {
+        double[] a = {x1, y1, z1};
+        double[] b = {x2, y2, z2};
+        List<Object> from = new ArrayList<>();
+        List<Object> to = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            from.add(a[i] <= 0 ? -PROUD : a[i]);
+            to.add(b[i] >= 16 ? 16 + PROUD : b[i]);
+        }
+        Map<String, Object> faces = obj(
+                "down", obj("uv", arr(a[0], 16 - b[2], b[0], 16 - a[2]), "texture", "#frame"),
+                "up", obj("uv", arr(a[0], a[2], b[0], b[2]), "texture", "#frame"),
+                "north", obj("uv", arr(16 - b[0], 16 - b[1], 16 - a[0], 16 - a[1]), "texture", "#frame"),
+                "south", obj("uv", arr(a[0], 16 - b[1], b[0], 16 - a[1]), "texture", "#frame"),
+                "west", obj("uv", arr(a[2], 16 - b[1], b[2], 16 - a[1]), "texture", "#frame"),
+                "east", obj("uv", arr(16 - b[2], 16 - b[1], 16 - a[2], 16 - a[1]), "texture", "#frame"));
+        return obj("from", from, "to", to, "faces", faces);
+    }
+
+    /** Height of the chambers' floor inside their glass, in pixels (the ants walk on it; StructureRenderer.FLOOR). */
+    static final double FLOOR = 4;
+
+    /** A chamber's floor: a wooden base up to {@link #FLOOR}, its own floor on top, its sides hidden against touching blocks. */
+    static Map<String, Object> floorBody() {
+        return obj("from", arr(0, 0, 0), "to", arr(16, FLOOR, 16), "faces", obj(
+                "down", obj("texture", "#side", "cullface", "down"), "up", obj("texture", "#top"),
+                "north", obj("texture", "#side", "cullface", "north"), "south", obj("texture", "#side", "cullface", "south"),
+                "west", obj("texture", "#side", "cullface", "west"), "east", obj("texture", "#side", "cullface", "east")));
+    }
+
+    /**
+     * The parts every colony block shares: a frame beam on each of the twelve edges, and a glass pane on each side and on
+     * top. A part shows only where the block touches no other part of a colony, so a whole build is one glass case with
+     * its frame on the outside.
+     */
+    static void frameModels() {
+        double f = FRAME;
+        double e = 16 - FRAME;
+        Map<String, double[]> beams = new LinkedHashMap<>();
+        beams.put("north_west", new double[] {0, 0, 0, f, 16, f});
+        beams.put("north_east", new double[] {e, 0, 0, 16, 16, f});
+        beams.put("south_west", new double[] {0, 0, e, f, 16, 16});
+        beams.put("south_east", new double[] {e, 0, e, 16, 16, 16});
+        beams.put("up_north", new double[] {0, e, 0, 16, 16, f});
+        beams.put("up_south", new double[] {0, e, e, 16, 16, 16});
+        beams.put("up_west", new double[] {0, e, 0, f, 16, 16});
+        beams.put("up_east", new double[] {e, e, 0, 16, 16, 16});
+        beams.put("down_north", new double[] {0, 0, 0, 16, f, f});
+        beams.put("down_south", new double[] {0, 0, e, 16, f, 16});
+        beams.put("down_west", new double[] {0, 0, 0, f, f, 16});
+        beams.put("down_east", new double[] {e, 0, 0, 16, f, 16});
+        for (Map.Entry<String, double[]> beam : beams.entrySet()) {
+            double[] c = beam.getValue();
+            write(ASSETS.resolve("models/block/frame/" + beam.getKey() + ".json"), obj("parent", "minecraft:block/block",
+                    "textures", obj("particle", "#frame", "frame", ac("block/terrarium_wood")),
+                    "elements", arr(frameBox(c[0], c[1], c[2], c[3], c[4], c[5]))));
+        }
+        // Glass, just inside the frame: the walls reach across the whole side, so neighbours' walls run on unbroken.
+        Map<String, double[]> panes = new LinkedHashMap<>();
+        panes.put("glass_north", new double[] {0, 0, 0.25, 16, 16, 0.5});
+        panes.put("glass_south", new double[] {0, 0, 15.5, 16, 16, 15.75});
+        panes.put("glass_west", new double[] {0.25, 0, 0, 0.5, 16, 16});
+        panes.put("glass_east", new double[] {15.5, 0, 0, 15.75, 16, 16});
+        panes.put("glass_up", new double[] {0, 15.25, 0, 16, 15.5, 16});
+        for (Map.Entry<String, double[]> pane : panes.entrySet()) {
+            double[] c = pane.getValue();
+            write(ASSETS.resolve("models/block/frame/" + pane.getKey() + ".json"), obj("parent", "minecraft:block/block",
+                    "textures", obj("particle", ac("block/terrarium_glass"), "glass", obj("force_translucent", true, "sprite", ac("block/terrarium_glass"))),
+                    "elements", arr(box(p(c[0], c[1], c[2]), p(c[3], c[4], c[5]), "#glass", "#glass"))));
+        }
+    }
+
+    /** The sides that get a glass pane when nothing of a colony is there. */
+    static final String[] GLASS = {"north", "east", "south", "west", "up"};
+
+    /**
+     * A colony part's blockstate: its own model turned to face the player, a frame beam on every edge whose two sides touch
+     * no other colony part, and glass on every side (and the top) that touches none.
+     */
+    static void colonyPart(String block) {
+        List<Object> parts = new ArrayList<>();
+        int[] rotations = {0, 90, 180, 270};
+        for (int f = 0; f < 4; f++) {
+            parts.add(obj("when", obj("facing", HORIZONTAL[f]), "apply", obj("model", ac("block/" + block), "y", rotations[f] == 0 ? null : rotations[f])));
+        }
+        for (String[] edge : EDGES) {
+            parts.add(obj("when", obj(edge[0], "false", edge[1], "false"), "apply", obj("model", ac("block/frame/" + edge[0] + "_" + edge[1]))));
+        }
+        for (String side : GLASS) {
+            parts.add(obj("when", obj(side, "false"), "apply", obj("model", ac("block/frame/glass_" + side))));
+        }
+        write(ASSETS.resolve("blockstates/" + block + ".json"), obj("multipart", parts));
+    }
+
+    /** The item of a colony part: its model in its whole frame and glass, as it looks standing alone. */
+    static Map<String, Object> framedItem(String block) {
+        List<Object> models = new ArrayList<>();
+        models.add(obj("type", "minecraft:model", "model", ac("block/" + block)));
+        for (String[] edge : EDGES) {
+            models.add(obj("type", "minecraft:model", "model", ac("block/frame/" + edge[0] + "_" + edge[1])));
+        }
+        for (String side : GLASS) {
+            models.add(obj("type", "minecraft:model", "model", ac("block/frame/glass_" + side)));
+        }
+        return obj("type", "minecraft:composite", "models", models);
+    }
+
     static void facing(String block) {
         Map<String, Object> variants = new LinkedHashMap<>();
         String[] facings = {"north", "east", "south", "west"};
@@ -1034,7 +1180,7 @@ public class DataGen {
         Path models = ASSETS.resolve("models/item");
         String[] flat = {"tweezers", "test_tube", "ant_food", "mineral_ant_food", "crystal_ant_food", "nether_ant_food", "royal_jelly", "nuptial_pheromone",
                 "evolution_catalyst", "reroll_serum", "chitin_plate", "upgrade_base", "genetic_circuit", "crystal_core", "ant_identification_book",
-                "colony_scanner", "genetic_analyzer", "diamond_fragment", "emerald_fragment", "wild_ant_spawn_egg"};
+                "colony_scanner", "genetic_analyzer", "diamond_fragment", "emerald_fragment", "wild_ant_spawn_egg", "ant_head"};
         for (String item : flat) {
             write(models.resolve(item + ".json"), obj("parent", item.equals("tweezers") ? "minecraft:item/handheld" : "minecraft:item/generated",
                     "textures", obj("layer0", ac("item/" + item))));
@@ -1066,7 +1212,9 @@ public class DataGen {
             blocks.add(nest + "_ant_nest");
         }
         for (String block : blocks) {
-            write(items.resolve(block + ".json"), obj("model", obj("type", "minecraft:model", "model", ac("block/" + block))));
+            boolean part = block.equals("terrarium") || Arrays.asList(STRUCTURES).contains(block);
+            write(items.resolve(block + ".json"), obj("model", part ? framedItem(block)
+                    : obj("type", "minecraft:model", "model", ac("block/" + block))));
         }
     }
 
@@ -1131,57 +1279,48 @@ public class DataGen {
     }
 
     static void customModels() {
-        String glass = "#glass";
-        // The Terrarium: a wooden base, corner posts and top frame, glass on every side and on top. The soil, tunnels and
-        // ants inside are drawn by its renderer.
-        List<Object> terrarium = arr(
-                box(p(0, 0, 0), p(16, 1, 16), "#wood", "#wood"),
-                box(p(0, 1, 0), p(1.5, 15, 1.5), "#wood", "#wood"), box(p(14.5, 1, 0), p(16, 15, 1.5), "#wood", "#wood"),
-                box(p(0, 1, 14.5), p(1.5, 15, 16), "#wood", "#wood"), box(p(14.5, 1, 14.5), p(16, 15, 16), "#wood", "#wood"),
-                box(p(0, 15, 0), p(16, 16, 1.5), "#wood", "#wood"), box(p(0, 15, 14.5), p(16, 16, 16), "#wood", "#wood"),
-                box(p(0, 15, 1.5), p(1.5, 16, 14.5), "#wood", "#wood"), box(p(14.5, 15, 1.5), p(16, 16, 14.5), "#wood", "#wood"),
-                box(p(1.5, 1, 0.25), p(14.5, 15, 0.5), glass, glass), box(p(1.5, 1, 15.5), p(14.5, 15, 15.75), glass, glass),
-                box(p(0.25, 1, 1.5), p(0.5, 15, 14.5), glass, glass), box(p(15.5, 1, 1.5), p(15.75, 15, 14.5), glass, glass),
-                box(p(1.5, 15.25, 1.5), p(14.5, 15.5, 14.5), glass, glass));
-        model("terrarium", obj("particle", ac("block/terrarium_wood"), "wood", ac("block/terrarium_wood"),
-                "glass", obj("force_translucent", true, "sprite", ac("block/terrarium_glass"))), terrarium);
+        // The Terrarium: a wooden base; its glass and frame come from the colony parts, so it opens into the chambers
+        // touching it. The soil, tunnels and ants inside are drawn by its renderer.
+        model("terrarium", obj("particle", ac("block/terrarium_wood"), "wood", ac("block/terrarium_wood")),
+                arr(box(p(0, 0, 0), p(16, 1, 16), "#wood", "#wood")));
         // Wild nests: a mound with an entrance on top.
         write(ASSETS.resolve("models/block/ant_nest.json"), obj("parent", "minecraft:block/block", "textures", obj("particle", "#side"), "elements", arr(
                 box(p(1, 0, 1), p(15, 4, 15), "#side", "#side"), box(p(3, 4, 3), p(13, 7, 13), "#side", "#side"),
                 obj("from", arr(5, 7, 5), "to", arr(11, 9, 11), "faces", obj("down", face("#side"), "up", face("#top"), "north", face("#side"),
                         "south", face("#side"), "west", face("#side"), "east", face("#side"))))));
-        // Structures.
+        // The chambers: the same wooden floor under the same glass, each with its own floor and what lies on it.
+        String wood = ac("block/terrarium_wood");
         for (String s : STRUCTURES) {
-            String side = ac("block/" + s + "_side");
-            String top = ac("block/" + s + "_top");
-            String front = ac("block/" + s + "_front");
+            String top = ac("block/" + (s.equals("storage") ? "storage_inside" : s + "_top"));
+            double y = FLOOR;
             switch (s) {
-                case "foraging_chamber" -> model(s, obj("particle", side, "side", side, "top", top, "stick", "minecraft:block/oak_log"), arr(
-                        box(p(0, 0, 0), p(16, 12, 16), "#side", "#top"),
-                        box(p(2, 12, 2), p(6, 13, 6), "#side", "#top"), box(p(10, 12, 9), p(14, 13.5, 13), "#side", "#top"),
-                        obj("from", arr(9, 12, 3), "to", arr(10, 13, 9), "rotation", obj("angle", 22.5, "axis", "y", "origin", arr(9.5, 12.5, 6)),
-                                "faces", obj("up", face("#stick"), "north", face("#stick"), "south", face("#stick"), "west", face("#stick"), "east", face("#stick")))));
-                case "hunting_chamber" -> model(s, obj("particle", side, "side", side, "top", top, "bone", "minecraft:block/bone_block_side"), arr(
-                        box(p(0, 0, 0), p(16, 10, 16), "#side", "#top"),
-                        box(p(0, 10, 0), p(2, 13, 2), "#bone", "#bone"), box(p(14, 10, 0), p(16, 13, 2), "#bone", "#bone"),
-                        box(p(0, 10, 14), p(2, 13, 16), "#bone", "#bone"), box(p(14, 10, 14), p(16, 13, 16), "#bone", "#bone")));
-                case "fungus_garden" -> model(s, obj("particle", side, "side", side, "top", top, "stem", "minecraft:block/mushroom_stem",
+                case "nest_chamber" -> model(s, obj("particle", top, "side", wood, "top", top, "mud", "minecraft:block/packed_mud",
+                        "egg", "minecraft:block/white_concrete", "larva", "minecraft:block/white_terracotta"), arr(
+                        floorBody(),
+                        // A mud mound with the brood beside it: eggs, and larvae curled up.
+                        box(p(3, y, 3), p(9, y + 2.5, 9), "#mud", "#mud"), box(p(4.5, y + 2.5, 4.5), p(7.5, y + 3.5, 7.5), "#mud", "#mud"),
+                        box(p(10.5, y, 4), p(11.5, y + 1.5, 5), "#egg", "#egg"), box(p(12, y, 4.5), p(13, y + 1.5, 5.5), "#egg", "#egg"),
+                        box(p(11, y, 6), p(12, y + 1.5, 7), "#egg", "#egg"), box(p(4, y, 11), p(7, y + 1, 12), "#larva", "#larva"),
+                        box(p(9, y, 11.5), p(12, y + 1, 12.5), "#larva", "#larva")));
+                case "queen_chamber" -> model(s, obj("particle", top, "side", wood, "top", top, "gold", "minecraft:block/gold_block",
+                        "comb", "minecraft:block/honeycomb_block"), arr(
+                        floorBody(),
+                        // A golden dais with a royal cell on it.
+                        box(p(4, y, 4), p(12, y + 1, 12), "#gold", "#gold"), box(p(6, y + 1, 6), p(10, y + 3.5, 10), "#comb", "#comb")));
+                case "foraging_site" -> model(s, obj("particle", top, "side", wood, "top", top, "stick", "minecraft:block/oak_log",
+                        "bone", "minecraft:block/bone_block_side", "dirt", "minecraft:block/coarse_dirt"), arr(
+                        floorBody(),
+                        box(p(3, y, 3), p(6, y + 1, 6), "#dirt", "#dirt"), box(p(10, y, 10), p(13, y + 1.5, 13), "#dirt", "#dirt"),
+                        obj("from", arr(9, y, 3), "to", arr(10, y + 1, 9), "rotation", obj("angle", 22.5, "axis", "y", "origin", arr(9.5, y + 0.5, 6)),
+                                "faces", obj("up", face("#stick"), "north", face("#stick"), "south", face("#stick"), "west", face("#stick"), "east", face("#stick"))),
+                        box(p(3, y, 11), p(6, y + 0.8, 12), "#bone", "#bone"), box(p(4, y, 10), p(5, y + 0.8, 13), "#bone", "#bone")));
+                case "harvesting_site" -> model(s, obj("particle", top, "side", wood, "top", top, "stem", "minecraft:block/mushroom_stem",
                         "cap", "minecraft:block/red_mushroom_block", "cap2", "minecraft:block/brown_mushroom_block"), arr(
-                        box(p(0, 0, 0), p(16, 12, 16), "#side", "#top"),
-                        box(p(2.5, 12, 2.5), p(3.5, 14, 3.5), "#stem", "#stem"), box(p(1.5, 14, 1.5), p(4.5, 15, 4.5), "#cap", "#cap"),
-                        box(p(12.5, 12, 11.5), p(13.5, 15, 12.5), "#stem", "#stem"), box(p(11, 15, 10), p(15, 16, 14), "#cap2", "#cap2"),
-                        box(p(12, 12, 3), p(12.8, 13.2, 3.8), "#stem", "#stem"), box(p(11.4, 13.2, 2.4), p(13.4, 13.9, 4.4), "#cap", "#cap")));
-                case "storage" -> model(s, obj("particle", side, "side", side, "top", top, "inside", ac("block/storage_inside")), arr(
-                        box(p(0, 0, 0), p(16, 2, 16), "#side", "#side"),
-                        obj("from", arr(1, 2, 1), "to", arr(15, 10, 2), "faces", obj("north", face("#side"), "south", face("#inside"), "up", face("#side"),
-                                "west", face("#side"), "east", face("#side"))),
-                        obj("from", arr(1, 2, 14), "to", arr(15, 10, 15), "faces", obj("south", face("#side"), "north", face("#inside"), "up", face("#side"),
-                                "west", face("#side"), "east", face("#side"))),
-                        obj("from", arr(1, 2, 2), "to", arr(2, 10, 14), "faces", obj("west", face("#side"), "east", face("#inside"), "up", face("#side"))),
-                        obj("from", arr(14, 2, 2), "to", arr(15, 10, 14), "faces", obj("east", face("#side"), "west", face("#inside"), "up", face("#side"))),
-                        obj("from", arr(2, 2, 2), "to", arr(14, 9.5, 14), "faces", obj("up", face("#top")))));
-                default -> write(ASSETS.resolve("models/block/" + s + ".json"), obj("parent", "minecraft:block/orientable",
-                        "textures", obj("front", front, "side", side, "top", top)));
+                        floorBody(),
+                        box(p(3.5, y, 3.5), p(4.5, y + 3, 4.5), "#stem", "#stem"), box(p(2.5, y + 3, 2.5), p(5.5, y + 4, 5.5), "#cap", "#cap"),
+                        box(p(11.5, y, 10.5), p(12.5, y + 4, 11.5), "#stem", "#stem"), box(p(10, y + 4, 9), p(14, y + 5, 13), "#cap2", "#cap2"),
+                        box(p(11, y, 4), p(11.8, y + 1.2, 4.8), "#stem", "#stem"), box(p(10.4, y + 1.2, 3.4), p(12.4, y + 1.9, 5.4), "#cap", "#cap")));
+                default -> model(s, obj("particle", top, "side", wood, "top", top), arr(floorBody()));
             }
         }
         model("upgrade_station", obj("particle", ac("block/upgrade_station_side"), "side", ac("block/upgrade_station_side"),
@@ -1314,6 +1453,61 @@ public class DataGen {
      * Names, tooltips and section titles for NeoForge's configuration screen (the Config button in the Mods list), read
      * from the options and their comments in AntConfig.java, so the screen always matches the config file.
      */
+    /** The info pages (the Terrarium's Species page, the book's species pages) and the book's how-to-play pages. */
+    static void guideLang() {
+        String[][] info = {{"climate.any", "Any climate suits it"}, {"climate.right", "The climate here suits it"},
+                {"climate.wrong", "Wrong climate here: the colony loses health"}, {"climate.floor", "The block under the Terrarium makes it %s"},
+                {"climate.fix", "A Terrarium on one of these suits it anywhere:"}, {"climate.under", "Place it under the Terrarium"},
+                {"finds", "Its workers find:"}, {"farms", "Its farmers grow food (x%s) and harvest:"}, {"hunts", "Its soldiers hunt: %s"},
+                {"evolution", "Evolution:"}, {"evolves_into", "Into %s"}, {"evolves_from", "From %s"},
+                {"evolution.feed", "Feed the Terrarium %s"}, {"evolution.needs", "From stage %s and %s adults; %s%% a try, sure after %s tries"},
+                {"chance", "%s%% of finds"}, {"from_stage", "From colony stage %s"}, {"signature", "Signature find (rare)"}};
+        for (String[] entry : info) {
+            LANG.put("info." + NS + "." + entry[0], entry[1]);
+        }
+        String[][] guide = {
+                {"start", "Getting Started", String.join("\n",
+                        "Craft Tweezers and some Test Tubes. Find wild ants or an Ant Nest and use the Tweezers on them: the ants go into an empty Test Tube in your inventory. Queens are rare; nests give one now and then.",
+                        "Place a Terrarium, put the Queen Test Tube in, then some Ant Food. The Queen starts laying eggs at once: a Terrarium works on its own.",
+                        "The Terrarium's screen shows the colony: its ants, genes, jobs and numbers, and on the Info page what its ants are like.")},
+                {"chambers", "The Colony Build", String.join("\n",
+                        "Chambers are additions. Put one against the Terrarium, or against a chamber already in the colony, on any side (above and below too): it joins, and the glass between them goes: the whole build becomes one glass case. A colony takes up to 32.",
+                        "Nest Chamber: eggs at full speed, faster larvae, room for 3,000 adults (1,000 of them soldiers) and 1,500 larvae. Without one the Queen lays at half speed and only 60 adults fit.",
+                        "Foraging Site: workers find the species' resources and soldiers hunt mobs for their drops. It keeps 9 stacks of finds.",
+                        "Harvesting Site: Farmer Ants grow food and harvest there.",
+                        "Storage: more room for finds, and food room.",
+                        "Queen Chamber: raises new Queens.",
+                        "A chamber exactly as near to two Terrariums joins neither.")},
+                {"climate", "Climate", String.join("\n",
+                        "Every species likes a climate: temperate, cold, hot, underground or nether. In the wrong one the colony loses health, less with good Environmental Resistance.",
+                        "A block under the Terrarium fixes it: snow or ice make it cold, sand or sandstone hot, grass or dirt temperate, stone or deepslate underground, netherrack or magma nether. The Terrarium's Info page shows the blocks for your colony.")},
+                {"food", "Food", String.join("\n",
+                        "Ants eat. Food goes in through the Terrarium's feed slot, by hand or from a hopper: Ant Food, Royal Jelly, sugar, sweet berries and other plain foods. The Terrarium holds 2,000 food; each Storage adds 25,000.",
+                        "Mineral and crystal species need their own food for their eggs. A starving colony works slowly, then loses ants.",
+                        "Farmer Ants at a Harvesting Site grow food themselves.")},
+                {"jobs", "Jobs", String.join("\n",
+                        "Workers go to Harvesting Sites first, then Foraging Sites; soldiers go to Foraging Sites to hunt. A twentieth of the adults stay home to look after the nest.",
+                        "Each site takes up to 256 workers and 256 soldiers, more with Population Upgrades. Its screen sets how many it wants; Auto takes all it can.",
+                        "The more ants on a job, the more they find, a little less for each extra ant. New adults become soldiers at the share set on the Terrarium's Colony page.")},
+                {"evolution", "Evolution", String.join("\n",
+                        "Queens evolve into new species: feed the Terrarium the right material once the colony is big enough (the Info page lists it). A try may fail, but one always works after enough tries. An Evolution Catalyst helps.",
+                        "A Queen Chamber raises daughter Queens from the colony's Queen; with a Genetic Sample of another species it can raise a hybrid.")},
+                {"genetics", "Genetics", String.join("\n",
+                        "Each Queen has ten traits from 1 to 10, and daughters inherit them with small changes. Mutations add strengths, or flaws.",
+                        "The Genetic Laboratory raises one trait at a time, rerolls, mutates and purges flaws. It runs on FE: put a Generator next to it, or any mod's cable.")},
+                {"upgrades", "Upgrades", String.join("\n",
+                        "Upgrades go in a screen's upgrade slots; shift-clicking one puts it there. Each block takes the kinds it can use: the slot's tooltip, and JEI or EMI, tell which.",
+                        "The Upgrade Station makes species upgrades from an Upgrade Base and a species' signature material. They work only for that species, in Foraging Sites.")},
+                {"automation", "Automation", String.join("\n",
+                        "Hoppers and pipes can feed the Terrarium and Queen Chambers, and empty Storage and Foraging Sites. A Storage with an Automation Upgrade pushes its finds into the container under it.",
+                        "Comparators read a Terrarium's food, a site's workforce, or how full a store is. A redstone signal pauses a site: its ants go elsewhere.")}};
+        for (String[] page : guide) {
+            LANG.put("guide." + NS + "." + page[0] + ".title", page[1]);
+            LANG.put("guide." + NS + "." + page[0] + ".text", page[2]);
+        }
+        LANG.put("gui." + NS + ".page.species", "Info");
+    }
+
     static void configLang() {
         Path source = Path.of("common/src/main/java/com/antcolonies/core/config/AntConfig.java");
         String text;
@@ -1369,7 +1563,8 @@ public class DataGen {
                 {"reroll_serum", "Genetic Reroll Serum"}, {"chitin_plate", "Chitin Plate"}, {"upgrade_base", "Upgrade Base"},
                 {"genetic_circuit", "Genetic Circuit"}, {"crystal_core", "Crystal Core"}, {"ant_identification_book", "Ant Identification Book"},
                 {"colony_scanner", "Colony Scanner"}, {"genetic_analyzer", "Genetic Analyzer"}, {"species_upgrade", "Species Upgrade"},
-                {"diamond_fragment", "Diamond Fragment"}, {"emerald_fragment", "Emerald Fragment"}, {"wild_ant_spawn_egg", "Wild Ant Spawn Egg"}};
+                {"diamond_fragment", "Diamond Fragment"}, {"emerald_fragment", "Emerald Fragment"}, {"wild_ant_spawn_egg", "Wild Ant Spawn Egg"},
+                {"ant_head", "Ant Colonies"}};
         for (String[] item : items) {
             l.put("item." + NS + "." + item[0], item[1]);
         }
@@ -1388,8 +1583,8 @@ public class DataGen {
                 l.put("item." + NS + "." + u[0] + "_upgrade_" + t, u[1] + " Upgrade " + numerals[t - 1]);
             }
         }
-        String[][] blocks = {{"terrarium", "Terrarium"}, {"brood_chamber", "Brood Chamber"}, {"housing", "Housing"}, {"storage", "Storage"},
-                {"foraging_chamber", "Foraging Chamber"}, {"fungus_garden", "Fungus Garden"}, {"hunting_chamber", "Hunting Chamber"},
+        String[][] blocks = {{"terrarium", "Terrarium"}, {"nest_chamber", "Nest Chamber"}, {"storage", "Storage"},
+                {"foraging_site", "Foraging Site"}, {"harvesting_site", "Harvesting Site"},
                 {"queen_chamber", "Queen Chamber"}, {"upgrade_station", "Upgrade Station"}, {"generator", "Generator"},
                 {"genetic_laboratory", "Genetic Laboratory"}};
         for (String[] b : blocks) {
@@ -1402,13 +1597,11 @@ public class DataGen {
         l.put("entity." + NS + ".wild_ant", "Wild Ant");
         // Tooltips of blocks and items.
         String[][] tips = {
-                {"terrarium", "The heart of a colony: surround it with 8 chambers (sides and corners, same level). Put a Queen in and feed her."},
-                {"brood_chamber", "Eggs at full speed, faster larvae and room for them. More Brood Chambers, faster still."},
-                {"housing", "Room for 3,000 adults, up to 1,000 of them soldiers. A colony needs one to raise soldiers."},
-                {"storage", "Holds what the colony finds, and food room. Hoppers can empty it; Storage Upgrades open more slots."},
-                {"foraging_chamber", "Workers here find their species' resources. More workers, faster finds."},
-                {"fungus_garden", "Farmer Ants grow food here, plus mushrooms, seeds and berries."},
-                {"hunting_chamber", "Soldiers hunt here: drops come from the hunted mobs' own loot tables, no mobs are spawned."},
+                {"terrarium", "The heart of a colony. Put a Queen in and feed her. Chambers placed against it, or against its chambers, join the colony."},
+                {"nest_chamber", "Brood and housing: eggs at full speed, faster larvae, room for 3,000 adults (1,000 soldiers) and 1,500 larvae."},
+                {"storage", "More room for what the colony finds, and food room. Hoppers can empty it; Storage Upgrades open more slots."},
+                {"foraging_site", "Workers find their species' resources and soldiers hunt mobs (from their loot tables; none spawn). Keeps 9 stacks of finds."},
+                {"harvesting_site", "Farmer Ants grow food here, plus mushrooms, seeds and berries."},
                 {"queen_chamber", "Raises new Queens from the colony's Queen."},
                 {"upgrade_station", "Makes species upgrades from an Upgrade Base and a species' signature material."},
                 {"generator", "Burns furnace fuel into FE and gives it to the machines next to it, such as the Genetic Laboratory."},
@@ -1455,7 +1648,7 @@ public class DataGen {
         }
         l.put("tooltip." + NS + ".species_upgrade.blank", "Made at the Upgrade Station.");
         l.put("tooltip." + NS + ".species_upgrade.for", "For %s colonies only");
-        l.put("tooltip." + NS + ".species_upgrade.extraction", "+%s%% finds in Foraging Chambers");
+        l.put("tooltip." + NS + ".species_upgrade.extraction", "+%s%% finds in Foraging Sites");
         l.put("tooltip." + NS + ".species_upgrade.processing", "Finds come processed (nuggets to ingots, fragments to gems), +%s%%");
         l.put("tooltip." + NS + ".species_upgrade.efficiency", "Foragers eat less; signature finds more often (%s%%)");
         // Castes, categories, climates, rarity, grades, traits.
@@ -1494,13 +1687,14 @@ public class DataGen {
         }
         // Statuses.
         String[][] statuses = {{"no_queen", "No Queen: no eggs are laid"}, {"no_food", "No food"}, {"no_workers", "No workers for the jobs"},
-                {"no_soldiers", "No soldiers for the Hunting Chambers"}, {"missing_connection", "Not part of a colony: put it next to a Terrarium"},
-                {"invalid_multiblock", "Incomplete colony: put a chamber in all 8 places around the Terrarium"}, {"storage_full", "Storage full"},
+                {"no_soldiers", "No soldiers to hunt"}, {"missing_connection", "Not part of a colony: put it against a Terrarium or its chambers"},
+                {"storage_full", "Storage full"},
                 {"incompatible_species", "Incompatible species"}, {"insufficient_materials", "Insufficient materials (or colony not ready)"},
-                {"two_colonies", "A chamber touches two Terrariums: keep Terrariums 3 blocks apart"}, {"unknown_species", "Unknown species (missing data)"},
-                {"no_storage", "No Storage in the colony: finds have nowhere to go"}, {"no_special_food", "Eggs lack their special food"}, {"climate", "Wrong climate for this species"},
-                {"low_health", "Colony health is low"}, {"no_brood_chamber", "No Brood Chamber: slow egg laying"},
-                {"no_housing", "No Housing: no soldiers are raised"}, {"population_full", "Housing full"}, {"starving", "Starving!"},
+                {"two_colonies", "As near to two Terrariums: it joins neither"}, {"unknown_species", "Unknown species (missing data)"},
+                {"no_storage", "No Storage or Foraging Site: the harvest has nowhere to go"}, {"no_special_food", "Eggs lack their special food"},
+                {"climate", "Wrong climate for this species"},
+                {"low_health", "Colony health is low"}, {"no_nest_chamber", "No Nest Chamber: slow eggs, little room"},
+                {"population_full", "No room for more adults"}, {"starving", "Starving!"},
                 {"working", "Working"}, {"paused", "Paused by a redstone signal"}};
         for (String[] s : statuses) {
             l.put("status." + NS + "." + s[0], s[1]);
@@ -1509,21 +1703,25 @@ public class DataGen {
         String[][] gui = {{"page.overview", "Colony"}, {"page.genetics", "Genes"}, {"page.jobs", "Jobs"}, {"page.production", "Stats"},
                 {"stage", "Stage %s"}, {"queen", "Queen %s"}, {"workers", "Workers: %s"}, {"soldiers", "Soldiers: %s"}, {"larvae", "Larvae: %s"},
                 {"eggs", "Eggs: %s"}, {"housing", "Adults %s / %s housed"}, {"food", "Food"}, {"health", "Health"},
-                {"soldier_share", "New soldiers: %s%%"}, {"soldier_share.hint", "Share of new adults raised as soldiers (needs a Housing)"},
+                {"soldier_share", "New soldiers: %s%%"}, {"soldier_share.hint", "Share of new adults raised as soldiers"},
                 {"remove_queen", "Take the Queen out"}, {"remove_queen.hint", "Needs an empty Test Tube in the Queen slot"},
                 {"slot.queen", "Queen slot"}, {"slot.queen.hint", "A Queen Test Tube starts the colony; an empty Test Tube takes the Queen out"},
                 {"slot.feed", "Feed slot"}, {"slot.feed.hint", "Food, ants in Test Tubes, eggs, larvae or an Evolution Catalyst"},
                 {"slot.output", "Output"}, {"slot.output.hint", "Empty Test Tubes and leftovers come out here"},
                 {"slot.upgrade", "Upgrade slot"}, {"slot.upgrade.hint", "Population, Simulation, Evolution, Food Efficiency or Breeding upgrades"}, {"slot.structure_upgrade.hint", "Upgrades this chamber accepts (see JEI or EMI, or the item tooltip)"},
                 {"transforming", "Transforming from %s: %s%%"}, {"genetics_of", "%s, generation %s"}, {"no_mutations", "No mutations"},
-                {"mutations", "Mutations:"}, {"jobs_header", "Working chambers - %s ants home"}, {"job_workers", "%s / %s ants"}, {"no_jobs", "No Foraging Chamber, Fungus Garden or Hunting Chamber"},
+                {"mutations", "Mutations:"}, {"jobs_header", "Working sites - %s ants home"}, {"job_workers", "%s / %s ants"},
+                {"job_foraging", "%s + %s soldiers / %s"}, {"no_jobs", "No Foraging Site or Harvesting Site"},
                 {"auto", "Auto"}, {"auto.hint", "Auto: as many ants as the chamber holds"}, {"per_minute", "/min"}, {"less_10", "-10"}, {"less_1", "-1"},
                 {"more_1", "+1"}, {"more_10", "+10"}, {"farm.hint", "Needs Farmer Ants (or a species that farms)"},
                 {"stat.eggs", "Eggs laid"}, {"stat.raised", "Adults raised"}, {"stat.food_in", "Food in"}, {"stat.food_out", "Food eaten"},
                 {"stat.finds", "Finds"}, {"stat.hunts", "Hunts"}, {"stat.deaths", "Deaths"}, {"stat.soldier_room", "Soldier room"},
-                {"stat.larvae_room", "Larvae room"}, {"stat.structures", "Structures"}, {"stat.found_total", "Found in total"},
-                {"evolution_attempts", "Evolution attempts: %s, catalysts: %s"}, {"upgrades", "Upgrades"}, {"linked", "Linked to a colony"}, {"not_linked", "Not linked to a Terrarium"},
-                {"site.workers", "Workers: %s / %s (wanted: %s)"}, {"site.soldiers", "Soldiers: %s / %s (wanted: %s)"}, {"site.rate", "%s per minute"},
+                {"stat.larvae_room", "Larvae room"}, {"stat.structures", "Chambers"}, {"stat.found_total", "Found in total"},
+                {"evolution_attempts", "Evolution attempts: %s, catalysts: %s"}, {"upgrades", "Upgrades"}, {"linked", "Part of a colony"}, {"not_linked", "Not joined to a Terrarium"},
+                {"contested", "As near to two Terrariums: joins neither"},
+                {"site.workers", "Workers %s/%s (want %s)"}, {"site.soldiers", "Soldiers %s/%s (want %s)"},
+                {"site.farmers", "Farmers %s/%s (want %s)"}, {"site.rate", "%s finds per minute"},
+                {"site.hunt_rate", "%s hunts per minute"}, {"site.food_rate", "%s food per minute"}, {"site.store", "Finds are kept here first, then in Storage"},
                 {"queen_chamber.slots", "Rears a new Queen"}, {"queen_chamber.time", "Takes %s s at full speed"},
                 {"slot.qc_tube", "Test Tube slot"}, {"slot.qc_tube.hint", "An empty Test Tube to hold the new Queen"},
                 {"slot.qc_sample", "Sample slot (optional)"}, {"slot.qc_sample.hint", "A Genetic Sample can cross a hybrid into the daughter"},
@@ -1556,8 +1754,8 @@ public class DataGen {
                 {"generator.hint", "Place it next to the Genetic Laboratory"},
                 {"lab.catalyst_hint", "Catalyst: Reroll Serum, a mutation catalyst, or an empty Test Tube"},
                 {"lab.upgrade_slot_hint", "Speed or Genetic Upgrade"},
-                {"effect.brood_chamber", "Eggs at full speed, faster larvae, room for 1,500 larvae."},
-                {"effect.housing", "Room for 3,000 adults (up to 1,000 soldiers)."}, {"effect.storage", ""}};
+                {"effect.nest_chamber", "Eggs at full speed and faster larvae. Room for 3,000 adults (1,000 of them soldiers) and 1,500 larvae."},
+                {"effect.storage", ""}};
         for (String[] g : gui) {
             if (!g[1].isEmpty()) {
                 l.put("gui." + NS + "." + g[0], g[1]);
@@ -1568,7 +1766,7 @@ public class DataGen {
                 {"message." + NS + ".tweezers.caught", "Caught: %s"}, {"message." + NS + ".tweezers.no_eggs", "Not enough eggs"},
                 {"message." + NS + ".tweezers.no_workers", "No spare workers"}, {"message." + NS + ".nest.recovering", "The nest is still recovering"},
                 {"scanner." + NS + ".colony", "%s colony, stage %s"}, {"scanner." + NS + ".population", "%s workers, %s soldiers, %s larvae, %s eggs"},
-                {"scanner." + NS + ".food", "Food %s / %s (+%s, -%s per minute)"}, {"scanner." + NS + ".health", "Health %s%%, %s chambers, %s places empty"},
+                {"scanner." + NS + ".food", "Food %s / %s (+%s, -%s per minute)"}, {"scanner." + NS + ".health", "Health %s%%, %s chambers"},
                 {"scanner." + NS + ".queen", "Queen %s (%s)"}, {"scanner." + NS + ".linked", "Linked to the Terrarium at %s, %s, %s"},
                 {"scanner." + NS + ".site", "%s / %s ants, %s per minute"}, {"analyzer." + NS + ".header", "Genetic analysis"},
                 {"analyzer." + NS + ".lineage", "Lineage: %s"}, {"book." + NS + ".kind", "%s, tier %s, %s"}, {"book." + NS + ".wild", "Wild in: %s"},
@@ -1581,7 +1779,7 @@ public class DataGen {
         // JEI.
         String[][] jei = {{"species", "Ant Species"}, {"breeding", "Queen Rearing"}, {"evolution", "Queen Evolution"}, {"mutation", "Genetic Mutation"},
                 {"hybrid", "Hybrid Species"}, {"eggs", "Egg Production"}, {"larvae", "Larvae Development"}, {"production", "Resource Production"},
-                {"farming", "Farmer Ant Production"}, {"fighting", "Hunting Chamber Loot"}, {"lab", "Genetic Laboratory"},
+                {"farming", "Farmer Ant Production"}, {"fighting", "Hunting Loot"}, {"lab", "Genetic Laboratory"},
                 {"trait", "Genetic Upgrades"}, {"species_upgrade", "Species Upgrades"}, {"hybrid_of", "%s x %s = %s"}, {"effect.production", "Production %s"}, {"effect.gathering", "Gathering %s"},
                 {"effect.food", "Food use %s"}, {"effect.eggs", "Eggs %s"}, {"effect.growth", "Growth %s"}, {"effect.soldiers", "Soldiers %s"},
                 {"effect.farming", "Farming %s"}, {"effect.special", "Signature finds %s"}, {"effect.cold_resistant", "Cold resistant"},
@@ -1620,6 +1818,7 @@ public class DataGen {
         items();
         newFeatures();
         configLang();
+        guideLang();
         particles();
         sounds();
         lang();

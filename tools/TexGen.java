@@ -510,89 +510,32 @@ public class TexGen {
                 glass.set(x, y, argb(28, 220, 240, 255));
             }
         }
-        border(glass, 0, 0, 16, 16, argb(90, 230, 245, 255));
         line(glass, 2, 12, 6, 8, argb(110, 255, 255, 255));
         line(glass, 3, 13, 8, 8, argb(70, 255, 255, 255));
         glass.save("block/terrarium_glass");
 
-        // Structures.
-        int mud = rgb(128, 98, 72);
-        int mortar = rgb(92, 68, 48);
-        Object[][] simple = {
-                {"brood_chamber", rgb(176, 120, 90)}, {"queen_chamber", rgb(196, 160, 72)}, {"housing", mud},
-        };
-        for (Object[] s : simple) {
-            String id = (String) s[0];
-            int color = (Integer) s[1];
-            Img side = new Img(16, 16);
-            {
-                bricks(side, color, random, shade(color, 0.72));
-            }
-            side.save("block/" + id + "_side");
-            Img top = new Img(16, 16);
-            noise(top, 0, 0, 16, 16, shade(color, 1.05), 9, random);
-            border(top, 0, 0, 16, 16, shade(color, 0.7));
-            disc(top, 8, 8, 2.2, rgb(40, 28, 20));
-            top.save("block/" + id + "_top");
-            Img front = new Img(16, 16);
-            for (int y = 0; y < 16; y++) {
-                for (int x = 0; x < 16; x++) {
-                    front.set(x, y, side.get(x, y));
-                }
-            }
-            switch (id) {
-                case "brood_chamber" -> {
-                    // A round chamber with eggs and larvae inside.
-                    disc(front, 8, 9, 5.2, rgb(52, 34, 24));
-                    for (int[] egg : new int[][] {{6, 10}, {8, 11}, {10, 10}, {7, 8}, {9, 8}}) {
-                        front.set(egg[0], egg[1], rgb(246, 242, 228));
-                        front.set(egg[0], egg[1] + 1, rgb(220, 214, 196));
-                    }
-                    line(front, 5, 12, 6, 12, rgb(238, 226, 196));
-                    line(front, 10, 12, 11, 12, rgb(238, 226, 196));
-                }
-                case "queen_chamber" -> {
-                    disc(front, 8, 9, 5.5, rgb(60, 40, 18));
-                    line(front, 5, 6, 11, 6, rgb(240, 200, 80));
-                    front.set(5, 5, rgb(240, 200, 80));
-                    front.set(8, 4, rgb(255, 220, 100));
-                    front.set(11, 5, rgb(240, 200, 80));
-                    disc(front, 8, 10, 2.5, rgb(140, 70, 30));
-                }
-                case "housing" -> {
-                    for (int[] hole : new int[][] {{4, 5}, {8, 4}, {12, 5}, {4, 11}, {8, 10}, {12, 11}}) {
-                        disc(front, hole[0], hole[1], 1.4, rgb(36, 24, 16));
-                    }
-                }
-                default -> {
-                }
-            }
-            front.save("block/" + id + "_front");
+        // Chambers: every chamber is the same glass case on the same wooden base; only its floor (and what its model puts
+        // on it) shows what it is. No borders: touching chambers' floors run into each other.
+        // Nest Chamber: soft earth with bits of bedding.
+        Img nestTop = block(rgb(150, 104, 76), 12, 31);
+        for (int i = 0; i < 14; i++) {
+            nestTop.set(random.nextInt(16), random.nextInt(16), rgb(200, 170, 110));
         }
-        // Foraging Chamber: loose soil with twigs and pebbles.
-        Img scavSide = block(rgb(118, 86, 58), 12, 21);
-        scavSide.fill(0, 0, 16, 2, rgb(96, 128, 64));
-        scavSide.save("block/foraging_chamber_side");
+        nestTop.save("block/nest_chamber_top");
+        // Queen Chamber: dark earth with golden flecks.
+        Img queenTop = block(rgb(120, 86, 50), 12, 32);
+        for (int i = 0; i < 10; i++) {
+            queenTop.set(random.nextInt(16), random.nextInt(16), rgb(232, 190, 80));
+        }
+        queenTop.save("block/queen_chamber_top");
+        // Foraging Site: loose soil with twigs and pebbles.
         Img scavTop = block(rgb(124, 92, 62), 14, 22);
         line(scavTop, 2, 3, 7, 6, rgb(150, 110, 60));
         line(scavTop, 9, 12, 14, 10, rgb(150, 110, 60));
         scavTop.set(11, 4, rgb(140, 140, 140));
         scavTop.set(4, 12, rgb(160, 160, 160));
-        disc(scavTop, 8, 8, 1.4, rgb(36, 24, 16));
-        scavTop.save("block/foraging_chamber_top");
-        // Hunting Chamber: a worn stone arena.
-        Img fightSide = new Img(16, 16);
-        bricks(fightSide, rgb(126, 122, 118), random, rgb(84, 80, 78));
-        fightSide.save("block/hunting_chamber_side");
-        Img fightTop = block(rgb(150, 138, 118), 10, 23);
-        border(fightTop, 0, 0, 16, 16, rgb(100, 94, 86));
-        line(fightTop, 3, 3, 12, 12, rgb(120, 40, 30));
-        line(fightTop, 12, 4, 5, 11, rgb(110, 36, 28));
-        fightTop.save("block/hunting_chamber_top");
-        // Fungus Garden: fungus-covered soil.
-        Img gardenSide = block(rgb(110, 80, 54), 12, 24);
-        gardenSide.fill(0, 0, 16, 3, rgb(186, 172, 140));
-        gardenSide.save("block/fungus_garden_side");
+        scavTop.save("block/foraging_site_top");
+        // Harvesting Site: fungus-covered soil.
         Img gardenTop = block(rgb(190, 176, 146), 12, 25);
         for (int i = 0; i < 18; i++) {
             gardenTop.set(random.nextInt(16), random.nextInt(16), rgb(232, 224, 204));
@@ -600,17 +543,11 @@ public class TexGen {
         for (int i = 0; i < 8; i++) {
             gardenTop.set(random.nextInt(16), random.nextInt(16), rgb(80, 140, 60));
         }
-        gardenTop.save("block/fungus_garden_top");
-        // Storage: a wooden crate holding a heap.
-        Img crate = new Img(16, 16);
-        planks(crate, rgb(160, 120, 74), random);
-        border(crate, 0, 0, 16, 16, rgb(96, 68, 40));
-        crate.save("block/storage_side");
+        gardenTop.save("block/harvesting_site_top");
+        // Storage: a plank floor for the heap.
         Img inside = new Img(16, 16);
         planks(inside, rgb(120, 88, 52), random);
         inside.save("block/storage_inside");
-        Img heap = block(rgb(120, 96, 70), 18, 26);
-        heap.save("block/storage_top");
         // Upgrade Station: a workbench with chitin plates and tools.
         Img stationSide = new Img(16, 16);
         planks(stationSide, rgb(170, 128, 80), random);

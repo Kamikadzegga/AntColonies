@@ -455,6 +455,8 @@ public class BrandGen {
         icon.stamp(head, 1, 0);
         // In the jar: the mod list's icon and banner.
         icon.save(RES.resolve("icon.png"), 4);
+        // The creative tab's icon: the head alone, as an item texture (32 x 32, drawn at item size in game).
+        head.save(RES.resolve("assets/antcolonies/textures/item/ant_head.png"), 1);
         logo.save(RES.resolve("logo.png"), 4);
         // For the repository.
         icon.save(DOCS.resolve("icon.png"), 8);

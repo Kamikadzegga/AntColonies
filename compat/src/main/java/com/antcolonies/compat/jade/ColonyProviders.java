@@ -17,7 +17,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import com.antcolonies.content.block.WildNestBlock;
+import com.antcolonies.content.entity.WildAnt;
 import snownee.jade.api.BlockAccessor;
+import snownee.jade.api.EntityAccessor;
+import snownee.jade.api.IEntityComponentProvider;
 import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.IServerDataProvider;
 import snownee.jade.api.ITooltip;
@@ -81,6 +85,9 @@ final class ColonyProviders {
             data.putBoolean("linked", structure.isLinked());
             data.putBoolean("job", structure.kind().job().any());
             data.putInt("assigned", structure.assigned());
+            data.putInt("soldiers", structure.soldiers());
+            data.putBoolean("forage", structure.kind().job().soldiers());
+            data.putBoolean("contested", structure.isContested());
             data.putInt("capacity", structure.capacity());
             data.putDouble("rate", structure.rate());
             data.putInt("status", structure.siteStatus() | structure.rearingStatus());
@@ -96,11 +103,14 @@ final class ColonyProviders {
                 return;
             }
             if (!data.getBooleanOr("linked", false)) {
-                tooltip.add(Component.translatable("status.antcolonies.missing_connection").withStyle(ChatFormatting.RED));
+                tooltip.add(Component.translatable(data.getBooleanOr("contested", false) ? "status.antcolonies.two_colonies"
+                        : "status.antcolonies.missing_connection").withStyle(ChatFormatting.RED));
                 return;
             }
             if (data.getBooleanOr("job", false)) {
-                tooltip.add(Component.translatable("gui.antcolonies.job_workers", data.getIntOr("assigned", 0), data.getIntOr("capacity", 0))
+                tooltip.add((data.getBooleanOr("forage", false)
+                        ? Component.translatable("gui.antcolonies.job_foraging", data.getIntOr("assigned", 0), data.getIntOr("soldiers", 0), data.getIntOr("capacity", 0))
+                        : Component.translatable("gui.antcolonies.job_workers", data.getIntOr("assigned", 0), data.getIntOr("capacity", 0)))
                         .withStyle(ChatFormatting.GRAY));
                 double rate = data.getDoubleOr("rate", 0);
                 if (rate > 0) {
@@ -153,6 +163,43 @@ final class ColonyProviders {
                 tooltip.add(Component.translatable("gui.antcolonies.lab.working." + operation, Component.translatable(traits[trait].translationKey()),
                         data.getIntOr("progress", 0)).withStyle(ChatFormatting.AQUA));
             }
+        }
+    };
+
+    /** A wild ant: its species, caste and what the species is like (all known on the client: no server half). */
+    static final IEntityComponentProvider WILD_ANT = new IEntityComponentProvider() {
+        @Override
+        public void appendTooltip(ITooltip tooltip, EntityAccessor accessor, IPluginConfig config) {
+            if (!(accessor.getEntity() instanceof WildAnt ant)) {
+                return;
+            }
+            tooltip.add(Tooltips.species(ant.species()).append(" · ")
+                    .append(Component.translatable("caste.antcolonies." + ant.caste().getSerializedName())));
+            Tooltips.speciesFacts(accessor.getLevel().registryAccess(), ant.species(), tooltip::add, false);
+            tooltip.add(Component.translatable("jade.antcolonies.catch").withStyle(ChatFormatting.DARK_GRAY));
+        }
+
+        @Override
+        public Identifier getUid() {
+            return AntColonies.id("wild_ant");
+        }
+    };
+
+    /** A wild nest: whose it is and how to take ants from it. */
+    static final IBlockComponentProvider WILD_NEST = new IBlockComponentProvider() {
+        @Override
+        public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+            if (!(accessor.getBlock() instanceof WildNestBlock nest)) {
+                return;
+            }
+            tooltip.add(Tooltips.species(nest.species()));
+            Tooltips.speciesFacts(accessor.getLevel().registryAccess(), nest.species(), tooltip::add, false);
+            tooltip.add(Component.translatable("jade.antcolonies.nest").withStyle(ChatFormatting.DARK_GRAY));
+        }
+
+        @Override
+        public Identifier getUid() {
+            return AntColonies.id("wild_nest");
         }
     };
 

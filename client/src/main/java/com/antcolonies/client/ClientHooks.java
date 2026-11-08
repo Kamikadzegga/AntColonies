@@ -142,17 +142,16 @@ public final class ClientHooks {
 
     public static void structureParticles(Level level, BlockPos pos, StructureKind kind, RandomSource random) {
         if (!AntConfig.client(AntConfig.PARTICLES) || !(level.getBlockEntity(pos) instanceof StructureBlockEntity structure)
-                || !structure.clientLinked() || structure.assigned() <= 0) {
+                || !structure.clientLinked() || structure.assigned() + structure.soldiers() <= 0) {
             return;
         }
         int color = switch (kind) {
-            case FUNGUS_GARDEN -> 0xFF5DAA3C;
-            case HUNTING_CHAMBER -> 0xFF8A1F1F;
+            case HARVESTING_SITE -> 0xFF5DAA3C;
             default -> 0xFF6B4A2E;
         };
         if (random.nextInt(2) == 0) {
-            level.addParticle(ColorParticleOption.create(kind == StructureKind.FUNGUS_GARDEN ? ModParticles.CRUMB.get() : ModParticles.SOIL.get(), color),
-                    pos.getX() + 0.15 + random.nextDouble() * 0.7, pos.getY() + 0.8, pos.getZ() + 0.15 + random.nextDouble() * 0.7, 0, 0.03, 0);
+            level.addParticle(ColorParticleOption.create(kind == StructureKind.HARVESTING_SITE ? ModParticles.CRUMB.get() : ModParticles.SOIL.get(), color),
+                    pos.getX() + 0.15 + random.nextDouble() * 0.7, pos.getY() + 0.3, pos.getZ() + 0.15 + random.nextDouble() * 0.7, 0, 0.03, 0);
         }
     }
 

@@ -54,11 +54,12 @@ public class AntTestTubeItem extends Item {
         if (ants != null) {
             tooltip.accept(Component.translatable("tooltip.antcolonies.ant_test_tube.count", ants.count(),
                     Component.translatable("caste.antcolonies." + ants.caste().getSerializedName())).withStyle(ChatFormatting.GRAY));
+            Tooltips.speciesFacts(context.registries(), ants.species(), tooltip, flag.hasShiftDown());
             tooltip.accept(Component.translatable("tooltip.antcolonies.ant_test_tube.use").withStyle(ChatFormatting.DARK_GRAY));
         }
         QueenData queen = stack.get(ModDataComponents.QUEEN.get());
         if (queen != null) {
-            Tooltips.queen(queen, tooltip, flag.hasShiftDown());
+            Tooltips.queen(queen, tooltip, flag.hasShiftDown(), context.registries());
             if (contents == Contents.SAMPLE) {
                 tooltip.accept(Component.translatable("tooltip.antcolonies.genetic_sample.use").withStyle(ChatFormatting.DARK_GRAY));
             }

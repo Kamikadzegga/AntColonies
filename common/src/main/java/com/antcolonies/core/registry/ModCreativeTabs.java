@@ -21,11 +21,11 @@ public final class ModCreativeTabs {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN = CREATIVE_MODE_TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.antcolonies"))
             .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
-            .icon(() -> ModItems.TERRARIUM.get().getDefaultInstance())
+            .icon(() -> ModItems.ANT_HEAD.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
                 ModItems.ITEMS.getEntries().forEach(item -> {
                     if (item.get() != ModItems.ANT_TEST_TUBE.get() && item.get() != ModItems.QUEEN_TEST_TUBE.get()
-                            && item.get() != ModItems.GENETIC_SAMPLE.get() && item.get() != ModItems.GUARD_ANT.get()) {
+                            && item.get() != ModItems.GENETIC_SAMPLE.get() && item.get() != ModItems.GUARD_ANT.get() && item.get() != ModItems.ANT_HEAD.get()) {
                         output.accept(item.get());
                     }
                 });

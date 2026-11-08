@@ -1,6 +1,79 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "antcolonies:block/terrarium"
+    "type": "minecraft:composite",
+    "models": [
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/terrarium"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/north_west"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/north_east"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/south_west"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/south_east"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/up_north"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/up_south"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/up_west"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/up_east"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/down_north"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/down_south"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/down_west"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/down_east"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/glass_north"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/glass_east"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/glass_south"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/glass_west"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "antcolonies:block/frame/glass_up"
+      }
+    ]
   }
 }

@@ -26,11 +26,12 @@ import org.jspecify.annotations.Nullable;
  */
 public final class Colony {
     /** One working chamber's ants, as the GUI lists them. */
-    public record Assignment(BlockPos pos, StructureKind kind, int assigned, int requested, int capacity, int status, double rate) {
+    public record Assignment(BlockPos pos, StructureKind kind, int assigned, int soldiers, int requested, int capacity, int status, double rate) {
         public static final Codec<Assignment> CODEC = RecordCodecBuilder.create(i -> i.group(
                 BlockPos.CODEC.fieldOf("pos").forGetter(Assignment::pos),
                 StructureKind.CODEC.fieldOf("kind").forGetter(Assignment::kind),
                 Codec.INT.fieldOf("assigned").forGetter(Assignment::assigned),
+                Codec.INT.optionalFieldOf("soldiers", 0).forGetter(Assignment::soldiers),
                 Codec.INT.fieldOf("requested").forGetter(Assignment::requested),
                 Codec.INT.fieldOf("capacity").forGetter(Assignment::capacity),
                 Codec.INT.fieldOf("status").forGetter(Assignment::status),

@@ -23,7 +23,7 @@ public class TerrariumMenu extends BaseMenu {
     public static final int BUTTON_SOLDIERS_LESS = 0;
     public static final int BUTTON_SOLDIERS_MORE = 1;
     public static final int BUTTON_REMOVE_QUEEN = 2;
-    /** Assignment buttons: base + site index * 10 + action (see {@link StructureMenu#adjust}). */
+    /** Assignment buttons: base + site index * 20 + action (see {@link StructureMenu#adjust}). */
     public static final int BUTTON_ASSIGNMENT = 1000;
     public static final int INVENTORY_X = 44;
     public static final int INVENTORY_Y = 140;
@@ -38,7 +38,7 @@ public class TerrariumMenu extends BaseMenu {
         addSlot(new FilteredSlot(terrarium, TerrariumBlockEntity.SLOT_FEED, 8, 44, stack -> true, 64));
         addSlot(new FilteredSlot(terrarium, TerrariumBlockEntity.SLOT_OUTPUT, 8, 68, stack -> false, 64));
         for (int i = 0; i < TerrariumBlockEntity.UPGRADE_SLOTS; i++) {
-            addSlot(new FilteredSlot(terrarium.upgrades(), i, 8 + (i % 2) * 18, 94 + (i / 2) * 18, TerrariumBlockEntity::acceptsUpgrade, 1));
+            addUpgradeSlot(new FilteredSlot(terrarium.upgrades(), i, 8 + (i % 2) * 18, 94 + (i / 2) * 18, TerrariumBlockEntity::acceptsUpgrade, 1));
         }
         addPlayerInventory(inventory, INVENTORY_X, INVENTORY_Y);
     }
@@ -72,8 +72,8 @@ public class TerrariumMenu extends BaseMenu {
                 if (id < BUTTON_ASSIGNMENT) {
                     return false;
                 }
-                int index = (id - BUTTON_ASSIGNMENT) / 10;
-                int action = (id - BUTTON_ASSIGNMENT) % 10;
+                int index = (id - BUTTON_ASSIGNMENT) / 20;
+                int action = (id - BUTTON_ASSIGNMENT) % 20;
                 List<Colony.Assignment> assignments = colony.assignments();
                 if (index >= assignments.size()) {
                     return false;

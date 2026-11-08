@@ -53,7 +53,7 @@ public class GeneticLabMenu extends BaseMenu {
         }
         addSlot(new FilteredSlot(lab, GeneticLabBlockEntity.SLOT_CATALYST, CATALYST_X, TOOLS_Y, stack -> true, 64));
         for (int i = 0; i < GeneticLabBlockEntity.UPGRADE_SLOTS; i++) {
-            addSlot(new FilteredSlot(lab.upgrades(), i, UPGRADE_X + i * 18, TOOLS_Y, stack -> lab.upgrades().canPlaceItem(0, stack), 1));
+            addUpgradeSlot(new FilteredSlot(lab.upgrades(), i, UPGRADE_X + i * 18, TOOLS_Y, stack -> lab.upgrades().canPlaceItem(0, stack), 1));
         }
         addPlayerInventory(inventory, INVENTORY_X, INVENTORY_Y);
         addDataSlots(WideData.slots(data));

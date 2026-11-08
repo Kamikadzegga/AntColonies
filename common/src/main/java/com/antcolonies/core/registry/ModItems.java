@@ -66,6 +66,8 @@ public final class ModItems {
             p -> p.rarity(Rarity.RARE));
     public static final DeferredItem<DescribedItem> CHITIN_PLATE = ITEMS.registerItem("chitin_plate", DescribedItem::new);
     public static final DeferredItem<DescribedItem> UPGRADE_BASE = ITEMS.registerItem("upgrade_base", DescribedItem::new);
+    /** Only the creative tab's icon: the ant's head from the mod's logo. Not in the tab, no recipe. */
+    public static final DeferredItem<Item> ANT_HEAD = ITEMS.registerSimpleItem("ant_head");
     public static final DeferredItem<DescribedItem> GENETIC_CIRCUIT = ITEMS.registerItem("genetic_circuit", DescribedItem::new);
     public static final DeferredItem<DescribedItem> CRYSTAL_CORE = ITEMS.registerItem("crystal_core", DescribedItem::new,
             p -> p.rarity(Rarity.UNCOMMON));

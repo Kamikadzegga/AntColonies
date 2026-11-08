@@ -37,12 +37,14 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Life on the colony structures: ants at work on the working chambers (as many as the site's real assignment calls for, up to
- * six), soldiers sparring on Hunting Chambers, and the Storage's heap, made of the items it really holds (the most
+ * Life on the colony chambers: ants at work on the working sites (as many as the site's real assignment calls for, up to
+ * six), soldiers sparring at Foraging Sites, and the Storage's heap, made of the items it really holds (the most
  * plentiful ones, piled higher the more there are).
  */
 public class StructureRenderer implements BlockEntityRenderer<StructureBlockEntity, StructureRenderer.State> {
     private static final float LENGTH = 3.2F / 16;
+    /** Height of every chamber's floor inside its glass, in pixels (DataGen.FLOOR). */
+    public static final float FLOOR = 4;
     private final AntDrawer drawer;
     private final AntPose pose = new AntPose();
     private final ItemModelResolver items;
@@ -50,6 +52,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
     public static class State extends BlockEntityRenderState {
         StructureKind kind = StructureKind.STORAGE;
         int ants;
+        int soldiers;
         AntLook look = AntLook.UNKNOWN;
         boolean farmers;
         float time;
@@ -80,13 +83,16 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         double distance = AntConfig.client(AntConfig.VISUAL_DISTANCE);
         state.near = Vec3.atCenterOf(structure.getBlockPos()).distanceToSqr(camera) < distance * distance;
         state.ants = 0;
+        state.soldiers = 0;
         // The working ants are 3D models, so (like the Terrarium's surface ants) only up close and with 3D ants on: further
         // away they would be a pixel or two, and a ring of busy chambers costs a lot of models.
         double detail = AntConfig.client(AntConfig.ANT_DETAIL_DISTANCE);
         boolean detailed = AntConfig.client(AntConfig.ANT_3D_MODELS)
                 && Vec3.atCenterOf(structure.getBlockPos()).distanceToSqr(camera) < detail * detail;
-        if (detailed && structure.kind().job().any() && structure.clientLinked() && structure.assigned() > 0 && AntConfig.client(AntConfig.STRUCTURE_ANTS)) {
-            state.ants = (int) Math.min(6, 1 + Math.floor(Math.log(structure.assigned()) / Math.log(2.5)));
+        if (detailed && structure.kind().job().any() && structure.clientLinked() && structure.assigned() + structure.soldiers() > 0
+                && AntConfig.client(AntConfig.STRUCTURE_ANTS)) {
+            state.ants = structure.assigned() <= 0 ? 0 : (int) Math.min(6, 1 + Math.floor(Math.log(structure.assigned()) / Math.log(2.5)));
+            state.soldiers = structure.soldiers() <= 0 ? 0 : structure.soldiers() < 20 ? 2 : 4;
             BlockPos terrarium = structure.terrarium() != null ? structure.terrarium() : null;
             AntSpecies species = null;
             if (structure.getLevel() != null) {
@@ -98,7 +104,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             }
             state.look = species == null ? AntLook.UNKNOWN : species.look();
             state.farmers = species != null && species.canFarm();
-            state.carry = state.kind == StructureKind.FUNGUS_GARDEN ? 0xFF5DAA3C
+            state.carry = state.kind == StructureKind.HARVESTING_SITE ? 0xFF5DAA3C
                     : state.look.crystal().map(c -> 0xFF000000 | c).orElse(0xFFD9B26A);
         }
         state.heap.clear();
@@ -133,14 +139,12 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         if (!state.heap.isEmpty()) {
             drawHeap(state, poseStack, collector);
         }
-        if (state.ants <= 0) {
+        if (state.ants + state.soldiers <= 0) {
             return;
         }
-        float top = switch (state.kind) {
-            case FORAGING_CHAMBER, FUNGUS_GARDEN, HUNTING_CHAMBER -> 12;
-            default -> 16;
-        };
-        for (int i = 0; i < state.ants; i++) {
+        float top = FLOOR;
+        for (int i = 0; i < state.ants + state.soldiers; i++) {
+            boolean soldier = i >= state.ants;
             pose.reset();
             pose.time = state.time;
             pose.seed = i * 1.7F;
@@ -148,10 +152,10 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             float z;
             float yaw;
             int carry = 0;
-            if (state.kind == StructureKind.HUNTING_CHAMBER) {
-                // Pairs of soldiers face off in the arena, lunging at each other.
-                int pair = i / 2;
-                boolean left = i % 2 == 0;
+            if (soldier) {
+                // Pairs of soldiers face off in a corner of the site, lunging at each other.
+                int pair = (i - state.ants) / 2;
+                boolean left = (i - state.ants) % 2 == 0;
                 float lunge = Math.max(0, Mth.sin(state.time * 0.25F + pair * 2)) * 0.8F;
                 float cx = 5 + (pair % 2) * 6;
                 float cz = 5 + (pair / 2) * 6;
@@ -164,7 +168,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             } else {
                 // Workers walk loops over the site, carrying their finds.
                 float speed = 0.03F + i * 0.004F;
-                float angle = state.time * speed + i * Mth.TWO_PI / state.ants + (state.seed & 7);
+                float angle = state.time * speed + i * Mth.TWO_PI / Math.max(1, state.ants) + (state.seed & 7);
                 float radius = 3.2F + (i % 3) * 1.1F;
                 x = 8 + Mth.cos(angle) * radius;
                 z = 8 + Mth.sin(angle) * radius * 0.8F;
@@ -176,7 +180,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             poseStack.pushPose();
             poseStack.translate(x / 16, top / 16, z / 16);
             poseStack.rotate(Axis.YP.rotation(yaw));
-            Caste caste = state.kind == StructureKind.HUNTING_CHAMBER ? Caste.SOLDIER : Caste.WORKER;
+            Caste caste = soldier ? Caste.SOLDIER : Caste.WORKER;
             drawer.draw(collector, poseStack, caste, state.look, pose, LENGTH * AntDrawer.casteScale(caste), state.lightCoords,
                     OverlayTexture.NO_OVERLAY, carry, 0);
             poseStack.popPose();
@@ -191,7 +195,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             int layers = Math.min(4, 1 + state.heapCounts.get(i) / 48);
             for (int layer = 0; layer < layers; layer++) {
                 poseStack.pushPose();
-                poseStack.translate(spots[i][0] / 16, (10.2F + layer * 0.9F + (i == 0 ? 0.8F : 0)) / 16, spots[i][1] / 16);
+                poseStack.translate(spots[i][0] / 16, (FLOOR + 0.2F + layer * 0.9F + (i == 0 ? 0.8F : 0)) / 16, spots[i][1] / 16);
                 poseStack.rotate(Axis.YP.rotationDegrees((i * 67 + layer * 41) % 360));
                 poseStack.rotate(Axis.XP.rotationDegrees(90));
                 poseStack.scale(0.42F, 0.42F, 0.42F);

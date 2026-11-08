@@ -181,15 +181,15 @@ required; every other field has a default.
 | `look.crystal` | none | A color adds crystal spikes. |
 | `look.glow` | `false` | Crystals glow in the dark. |
 | `look.size` | `1.0` | 0.25–4. |
-| `climate` | `temperate` | `temperate`, `cold`, `hot`, `underground`, `nether` or `any`. A Terrarium in the wrong climate works slower. |
+| `climate` | `temperate` | `temperate`, `cold`, `hot`, `underground`, `nether` or `any`. A Terrarium in the wrong climate loses health, unless it stands on a block of the block tag `antcolonies:climate/<climate>` (add your own blocks to those tags; snow and ice for cold, sand for hot...). |
 | `spawn_biomes` | none | A biome tag where wild ants of this species appear (section 11). Without it the species is never wild. |
 | `diet.consumption` | `1.0` | Food use multiplier. |
 | `diet.special_food`, `diet.special_per_egg` | none, `0` | Special food the eggs need (section 4). |
 | `production.rate` | `1.0` | Finds per worker multiplier at job sites. |
 | `production.outputs` | none | What workers find (output fields below). |
-| `farming.food`, `farming.harvest` | `0`, none | A `food` above 0 lets the species tend Fungus Gardens: food per minute per farmer, plus `harvest` outputs. |
-| `combat.strength` | `1.0` | Soldier strength in Hunting Chambers. |
-| `combat.targets` | zombie, skeleton, spider, creeper, slime | List of `{"entity": "minecraft:blaze", "weight": 10}`. Hunting Chambers roll that mob's own loot table (no mob is spawned). |
+| `farming.food`, `farming.harvest` | `0`, none | A `food` above 0 lets the species tend Harvesting Sites: food per minute per farmer, plus `harvest` outputs. |
+| `combat.strength` | `1.0` | Soldier strength when hunting at Foraging Sites. |
+| `combat.targets` | zombie, skeleton, spider, creeper, slime | List of `{"entity": "minecraft:blaze", "weight": 10}`. Hunting soldiers roll that mob's own loot table (no mob is spawned). |
 | `rearing.cost` | none | What a Queen Chamber uses to rear a new Queen of this species. |
 | `rearing.time` | `2400` | Rearing time in ticks (20 ticks = 1 second). |
 | `breeding.eggs`, `breeding.growth` | `1.0` | Egg laying and larvae growth speed. |

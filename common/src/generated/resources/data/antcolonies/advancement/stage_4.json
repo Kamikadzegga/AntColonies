@@ -12,7 +12,7 @@
   },
   "display": {
     "icon": {
-      "id": "antcolonies:housing"
+      "id": "antcolonies:foraging_site"
     },
     "title": {
       "translate": "advancements.antcolonies.stage_4.title"

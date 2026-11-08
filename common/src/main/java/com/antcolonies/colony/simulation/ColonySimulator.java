@@ -47,7 +47,7 @@ public final class ColonySimulator {
     /** At most this many finds per site and step, so a long catch-up can't stall the server. */
     private static final int MAX_ROLLS = 256;
     /** What soldiers of species without their own list hunt. */
-    private static final List<AntSpecies.Combat.Target> DEFAULT_TARGETS = List.of(
+    public static final List<AntSpecies.Combat.Target> DEFAULT_TARGETS = List.of(
             new AntSpecies.Combat.Target(EntityTypes.ZOMBIE.builtInRegistryHolder(), 30),
             new AntSpecies.Combat.Target(EntityTypes.SKELETON.builtInRegistryHolder(), 25),
             new AntSpecies.Combat.Target(EntityTypes.SPIDER.builtInRegistryHolder(), 25),
@@ -71,6 +71,8 @@ public final class ColonySimulator {
         double foodFactor = 1;
         /** Work per assigned ant, per kind of job: diminishing returns over all the colony's sites of that kind. */
         final Map<StructureKind, Double> perAnt = new EnumMap<>(StructureKind.class);
+        /** The same for soldiers (they hunt at Foraging Sites). */
+        final Map<StructureKind, Double> perSoldier = new EnumMap<>(StructureKind.class);
         @Nullable Allocation allocation;
 
         Step(ServerLevel level, TerrariumBlockEntity terrarium, AntSpecies species, @Nullable AntSpecies former, double dt) {
@@ -119,6 +121,20 @@ public final class ColonySimulator {
             });
             return site.assigned() * share;
         }
+
+        /** A site's soldiers as effective hunters, the same way. */
+        double effectiveSoldiers(Allocation.Site site) {
+            double share = perSoldier.computeIfAbsent(site.kind(), kind -> {
+                double total = 0;
+                if (allocation != null) {
+                    for (Allocation.Site other : allocation.of(kind)) {
+                        total += other.soldiers();
+                    }
+                }
+                return ProductionMath.perAnt(total);
+            });
+            return site.soldiers() * share;
+        }
     }
 
     public static void step(TerrariumBlockEntity terrarium, ServerLevel level, double dt) {
@@ -132,36 +148,27 @@ public final class ColonySimulator {
         Step step = new Step(level, terrarium, species, former, dt);
         ColonyLayout layout = colony.layout();
         collectSites(step, layout);
-        if (!layout.complete()) {
-            // The ring isn't whole (or shares a chamber with another colony): the colony waits, nothing grows or works.
-            int status = (layout.twoColonies() ? ColonyStatus.TWO_COLONIES.bit() : ColonyStatus.INVALID_MULTIBLOCK.bit())
-                    | (colony.queen() == null ? ColonyStatus.NO_QUEEN.bit() : 0);
-            ColonyAccess.finish(colony, colony.stage(), status, colony.stats(), Colony.Activity.NONE, List.of(), 0);
-            for (List<StructureBlockEntity> list : step.sites.values()) {
-                for (StructureBlockEntity site : list) {
-                    site.setAssignment(0, 0, 0, 0);
-                    site.linkTo(terrarium.getBlockPos(), status);
-                }
+        // Chambers exactly as near to another Terrarium join neither colony, and say so.
+        for (BlockPos pos : layout.contested()) {
+            if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof StructureBlockEntity shared) {
+                shared.markContested();
             }
-            return;
         }
 
         // --- Capacities ---
         int terrariumPopulation = terrarium.upgradeTier(UpgradeType.POPULATION);
         long maxPopulation = AntConfig.get(AntConfig.MAX_COLONY_POPULATION);
         double adultCapacity = AntConfig.get(AntConfig.TERRARIUM_CAPACITY) * (1 + terrariumPopulation);
-        // Housing: room for adults, of which a share may be soldiers (without Housing a colony raises no soldiers).
-        double soldierCapacity = 0;
-        for (StructureBlockEntity housing : step.of(StructureKind.HOUSING)) {
-            double room = 1 + 0.5 * housing.upgradeTier(UpgradeType.POPULATION);
-            adultCapacity += AntConfig.get(AntConfig.HOUSING_CAPACITY) * room;
-            soldierCapacity += AntConfig.get(AntConfig.HOUSING_SOLDIER_CAPACITY) * room;
+        double soldierCapacity = AntConfig.get(AntConfig.TERRARIUM_SOLDIER_CAPACITY) * (1 + terrariumPopulation);
+        double larvaeCapacity = Math.max(20, AntConfig.get(AntConfig.TERRARIUM_CAPACITY) / 2.0);
+        // Nest Chambers: room for adults (a share of it for soldiers) and for larvae.
+        for (StructureBlockEntity nest : step.of(StructureKind.NEST_CHAMBER)) {
+            double room = 1 + 0.5 * nest.upgradeTier(UpgradeType.POPULATION);
+            adultCapacity += AntConfig.get(AntConfig.NEST_ADULT_CAPACITY) * room;
+            soldierCapacity += AntConfig.get(AntConfig.NEST_SOLDIER_CAPACITY) * room;
+            larvaeCapacity += AntConfig.get(AntConfig.NEST_LARVAE_CAPACITY) * room;
         }
         adultCapacity = Math.min(maxPopulation, adultCapacity);
-        double larvaeCapacity = Math.max(20, AntConfig.get(AntConfig.TERRARIUM_CAPACITY) / 2.0);
-        for (StructureBlockEntity brood : step.of(StructureKind.BROOD_CHAMBER)) {
-            larvaeCapacity += AntConfig.get(AntConfig.BROOD_LARVAE_CAPACITY) * (1 + 0.5 * brood.upgradeTier(UpgradeType.POPULATION));
-        }
         double foodCapacity = AntConfig.get(AntConfig.TERRARIUM_FOOD_CAPACITY);
         for (StructureBlockEntity storage : step.of(StructureKind.STORAGE)) {
             foodCapacity += AntConfig.get(AntConfig.STORAGE_FOOD_CAPACITY) * (1 + storage.upgradeTier(UpgradeType.STORAGE));
@@ -205,7 +212,7 @@ public final class ColonySimulator {
 
         // --- Food in and out ---
         double farmed = 0;
-        for (Allocation.Site site : allocation.of(StructureKind.FUNGUS_GARDEN)) {
+        for (Allocation.Site site : allocation.of(StructureKind.HARVESTING_SITE)) {
             farmed += Farming.food(step, site);
         }
         double consumption = foodUse(step, allocation, maintenance);
@@ -240,16 +247,14 @@ public final class ColonySimulator {
         // --- Job sites ---
         double finds = 0;
         double hunts = 0;
-        for (Allocation.Site site : allocation.of(StructureKind.FORAGING_CHAMBER)) {
+        for (Allocation.Site site : allocation.of(StructureKind.FORAGING_SITE)) {
             Scavenging.run(step, site);
             finds += site.rate();
-        }
-        for (Allocation.Site site : allocation.of(StructureKind.FUNGUS_GARDEN)) {
-            Farming.harvest(step, site);
-        }
-        for (Allocation.Site site : allocation.of(StructureKind.HUNTING_CHAMBER)) {
             Fighting.run(step, site);
-            hunts += site.rate();
+            hunts += site.huntRate();
+        }
+        for (Allocation.Site site : allocation.of(StructureKind.HARVESTING_SITE)) {
+            Farming.harvest(step, site);
         }
         allocation.publish(step);
 
@@ -263,22 +268,17 @@ public final class ColonySimulator {
         if (colony.queen() == null) {
             step.status |= ColonyStatus.NO_QUEEN.bit();
         }
-        if (!step.of(StructureKind.FORAGING_CHAMBER).isEmpty() || !step.of(StructureKind.FUNGUS_GARDEN).isEmpty()) {
+        if (!step.of(StructureKind.FORAGING_SITE).isEmpty() || !step.of(StructureKind.HARVESTING_SITE).isEmpty()) {
             if (allocation.assignedWorkers() == 0) {
                 step.status |= ColonyStatus.NO_WORKERS.bit();
             }
         }
-        if (!step.of(StructureKind.HUNTING_CHAMBER).isEmpty() && allocation.assignedSoldiers() == 0) {
-            step.status |= ColonyStatus.NO_SOLDIERS.bit();
+        if (step.count(StructureKind.NEST_CHAMBER) == 0 && colony.queen() != null) {
+            step.status |= ColonyStatus.NO_NEST_CHAMBER.bit();
         }
-        if (step.count(StructureKind.BROOD_CHAMBER) == 0) {
-            step.status |= ColonyStatus.NO_BROOD_CHAMBER.bit();
-        }
-        if (step.count(StructureKind.HOUSING) == 0 && ColonyAccess.soldierShare(colony) > 0) {
-            step.status |= ColonyStatus.NO_HOUSING.bit();
-        }
-        if ((allocation.of(StructureKind.FORAGING_CHAMBER).size() + allocation.of(StructureKind.HUNTING_CHAMBER).size()) > 0
-                && step.of(StructureKind.STORAGE).isEmpty()) {
+        if (allocation.assigned(StructureKind.HARVESTING_SITE) > 0 && !step.species.farming().harvest().isEmpty()
+                && step.of(StructureKind.STORAGE).isEmpty() && step.of(StructureKind.FORAGING_SITE).isEmpty()) {
+            // The harvest needs somewhere to go: a Storage, or a Foraging Site's small store.
             step.status |= ColonyStatus.NO_STORAGE.bit();
         }
         if (bred.full()) {
@@ -292,9 +292,9 @@ public final class ColonySimulator {
         }
         double adultsNow = Math.max(1, colony.exactAdults());
         Colony.Activity activity = new Colony.Activity(
-                (float) (allocation.assigned(StructureKind.FORAGING_CHAMBER) / adultsNow),
-                (float) (allocation.assigned(StructureKind.HUNTING_CHAMBER) / adultsNow),
-                (float) (allocation.assigned(StructureKind.FUNGUS_GARDEN) / adultsNow),
+                (float) (allocation.assigned(StructureKind.FORAGING_SITE) / adultsNow),
+                (float) (allocation.soldiers(StructureKind.FORAGING_SITE) / adultsNow),
+                (float) (allocation.assigned(StructureKind.HARVESTING_SITE) / adultsNow),
                 0F,
                 (float) (maintenance / adultsNow),
                 (float) Math.max(0, 1 - (allocation.assignedWorkers() + allocation.assignedSoldiers() + maintenance) / adultsNow),
@@ -336,10 +336,9 @@ public final class ColonySimulator {
         double use = colony.queen() != null ? AntConfig.get(AntConfig.QUEEN_FOOD) : 0;
         use += maintenance * worker;
         for (Allocation.Site site : allocation.all()) {
-            double perAnt = site.kind().job() == StructureKind.Job.SOLDIERS ? soldier : worker;
             double saving = site.entity().upgradeTier(UpgradeType.FOOD_EFFICIENCY)
                     + site.entity().speciesUpgradeTier(colony.species(), SpeciesUpgradeKind.EFFICIENCY);
-            use += site.assigned() * perAnt * ProductionMath.foodSaving(saving);
+            use += (site.assigned() * worker + site.soldiers() * soldier) * ProductionMath.foodSaving(saving);
         }
         double idleWorkers = Math.max(0, ColonyAccess.workers(colony) - maintenance - allocation.assignedWorkers());
         double idleSoldiers = Math.max(0, ColonyAccess.soldiers(colony) - allocation.assignedSoldiers());
@@ -358,7 +357,7 @@ public final class ColonySimulator {
         int three = thresholds.size() > 1 ? thresholds.get(1) : 1000;
         int four = thresholds.size() > 2 ? thresholds.get(2) : 5000;
         int stage = 1;
-        if (adults >= two && step.count(StructureKind.BROOD_CHAMBER) > 0) {
+        if (adults >= two) {
             stage = 2;
             if (adults >= three) {
                 stage = 3;
@@ -390,7 +389,7 @@ public final class ColonySimulator {
     }
 
     static final class Farming {
-        /** Food per minute the garden grows. Gardens of species that can't farm grow nothing. */
+        /** Food per minute the site grows. Species that can't farm grow nothing. */
         static double food(Step step, Allocation.Site site) {
             if (site.assigned() <= 0 || !step.species.canFarm()) {
                 return 0;
@@ -402,7 +401,7 @@ public final class ColonySimulator {
             return rate;
         }
 
-        /** The garden's harvest (mushrooms, seeds, berries), into the Storage chambers. */
+        /** The site's harvest (mushrooms, seeds, berries), into the colony's stores. */
         static double harvest(Step step, Allocation.Site site) {
             if (site.assigned() <= 0 || !step.species.canFarm() || step.species.farming().harvest().isEmpty()) {
                 return 0;
@@ -416,32 +415,33 @@ public final class ColonySimulator {
 
     static final class Fighting {
         static double run(Step step, Allocation.Site site) {
-            if (site.assigned() <= 0) {
+            if (site.soldiers() <= 0) {
                 return 0;
             }
             StructureBlockEntity entity = site.entity();
             double strength = step.trait(Trait.SOLDIER_STRENGTH) * step.effects.soldiers() * step.species.combat().strength();
-            // The colony's Housing help every Hunting Chamber, but no more than one fully upgraded Housing would (two tier-3 upgrades).
-            int soldierTiers = entity.upgradeTier(UpgradeType.SOLDIER) + Math.min(6, step.tiers(StructureKind.HOUSING, UpgradeType.SOLDIER));
-            double rate = AntConfig.get(AntConfig.FIGHT_ROLLS) * step.effective(site)
+            // The colony's Nest Chambers help every site's soldiers, but no more than one fully upgraded Nest Chamber would
+            // (two tier-3 upgrades).
+            int soldierTiers = entity.upgradeTier(UpgradeType.SOLDIER) + Math.min(6, step.tiers(StructureKind.NEST_CHAMBER, UpgradeType.SOLDIER));
+            double rate = AntConfig.get(AntConfig.FIGHT_ROLLS) * step.effectiveSoldiers(site)
                     * ProductionMath.bonus(strength * (1 + 0.25 * soldierTiers) * ProductionMath.speed(entity.upgradeTier(UpgradeType.SPEED)))
                     * step.healthFactor * step.foodFactor;
-            site.setRate(rate);
+            site.setHuntRate(rate);
             List<AntSpecies.Combat.Target> targets = step.species.combat().targets().isEmpty() ? DEFAULT_TARGETS : step.species.combat().targets();
             int total = targets.stream().mapToInt(AntSpecies.Combat.Target::weight).sum();
-            double progress = entity.progress() + rate * step.dt;
+            double progress = entity.huntProgress() + rate * step.dt;
             int rolls = 0;
             double casualtyChance = AntConfig.get(AntConfig.SOLDIER_CASUALTY_CHANCE) / Math.max(0.1, strength * (1 + 0.25 * soldierTiers));
             while (progress >= 1 && rolls < MAX_ROLLS) {
                 Holder<EntityType<?>> target = pick(targets, total, step.random);
                 List<ItemStack> loot = MobLoot.roll(step.level, target.value(), entity.getBlockPos());
-                if (!ColonyStorage.canFit(step.level, step.colony, loot)) {
+                if (!ColonyStorage.canFit(step.level, step.colony, loot, entity)) {
                     site.addStatus(ColonyStatus.STORAGE_FULL);
                     progress = 1;
                     break;
                 }
                 for (ItemStack stack : loot) {
-                    ColonyStorage.insert(step.level, step.colony, stack);
+                    ColonyStorage.insert(step.level, step.colony, stack, entity);
                 }
                 if (step.random.nextDouble() < casualtyChance && ColonyAccess.soldiers(step.colony) >= 1) {
                     ColonyAccess.killSoldier(step.colony);
@@ -449,7 +449,7 @@ public final class ColonySimulator {
                 progress -= 1;
                 rolls++;
             }
-            entity.setProgress(Math.min(progress, MAX_ROLLS));
+            entity.setHuntProgress(Math.min(progress, MAX_ROLLS));
             return rolls;
         }
 
@@ -467,8 +467,8 @@ public final class ColonySimulator {
 
 
     /**
-     * Finds from a species' output list (or its garden harvest) at {@code rate} per minute, into the colony's Resource
-     * Piles. While the colony is still partly its former species, some finds come from the former species' list.
+     * Finds from a species' output list (or its harvest) at {@code rate} per minute, into the site's own store first, then
+     * the colony's Storage. While the colony is still partly its former species, some finds come from the former species' list.
      */
     private static double rollOutputs(Step step, StructureBlockEntity entity, double rate, Allocation.Site site, boolean harvest) {
         double progress = entity.progress() + rate * step.dt;
@@ -502,13 +502,13 @@ public final class ColonySimulator {
                 stack = count > 0 ? output.create(count) : ItemStack.EMPTY;
             }
             if (!stack.isEmpty()) {
-                if (!ColonyStorage.canFit(step.level, step.colony, List.of(stack))) {
+                if (!ColonyStorage.canFit(step.level, step.colony, List.of(stack), entity)) {
                     site.addStatus(ColonyStatus.STORAGE_FULL);
                     step.status |= ColonyStatus.STORAGE_FULL.bit();
                     progress = 1;
                     break;
                 }
-                ColonyStorage.insert(step.level, step.colony, stack);
+                ColonyStorage.insert(step.level, step.colony, stack, entity);
                 ColonyAccess.countFound(step.colony, stack.getCount());
             }
             progress -= 1;

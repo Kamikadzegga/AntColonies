@@ -9,12 +9,12 @@ import java.util.Map;
 import net.minecraft.core.BlockPos;
 
 /**
- * A colony's ring as its last scan found it: its chambers by kind (in a fixed order, so allocation never depends on
- * the scan order), how many of the eight places around the Terrarium have no chamber, and whether a chamber is also in
- * another Terrarium's ring (two colonies may never share one).
+ * A colony's build as its last scan found it: its chambers by kind (in a fixed order, so allocation never depends on
+ * the scan order), the chambers it shares with another colony (exactly as near to both, so they join neither), and how
+ * many touching chambers were left out over the colony's limit.
  */
-public record ColonyLayout(Map<StructureKind, List<BlockPos>> structures, int missing, boolean twoColonies) {
-    public static final ColonyLayout EMPTY = new ColonyLayout(new EnumMap<>(StructureKind.class), ColonyRing.SIZE, false);
+public record ColonyLayout(Map<StructureKind, List<BlockPos>> structures, List<BlockPos> contested, int overLimit) {
+    public static final ColonyLayout EMPTY = new ColonyLayout(new EnumMap<>(StructureKind.class), List.of(), 0);
 
     public List<BlockPos> of(StructureKind kind) {
         return structures.getOrDefault(kind, Collections.emptyList());
@@ -28,15 +28,14 @@ public record ColonyLayout(Map<StructureKind, List<BlockPos>> structures, int mi
         return !of(kind).isEmpty();
     }
 
-    /** All eight places hold a chamber, and none is shared: the colony works. */
-    public boolean complete() {
-        return missing == 0 && !twoColonies;
-    }
-
     public List<BlockPos> all() {
         List<BlockPos> all = new ArrayList<>();
         structures.values().forEach(all::addAll);
         return all;
+    }
+
+    public int size() {
+        return structures.values().stream().mapToInt(List::size).sum();
     }
 
     public int kinds() {

@@ -43,14 +43,14 @@ public class AntColoniesEmiPlugin implements EmiPlugin {
                 new Kind("evolution", ModItems.TERRARIUM.get(), 1, 3, AntRecipes::evolution, ModItems.TERRARIUM.get(), ModItems.EVOLUTION_CATALYST.get()),
                 new Kind("mutation", lab, 1, 4, AntRecipes::mutations, lab, structure(StructureKind.QUEEN_CHAMBER)),
                 new Kind("hybrid", ModItems.GENETIC_SAMPLE.get(), 1, 4, AntRecipes::hybrids, structure(StructureKind.QUEEN_CHAMBER)),
-                new Kind("eggs", structure(StructureKind.BROOD_CHAMBER), 1, 3, AntRecipes::eggs, ModItems.TERRARIUM.get(), structure(StructureKind.BROOD_CHAMBER)),
-                new Kind("larvae", structure(StructureKind.BROOD_CHAMBER), 1, 2, AntRecipes::larvae, structure(StructureKind.BROOD_CHAMBER)),
-                new Kind("production", structure(StructureKind.FORAGING_CHAMBER), 2, 1, AntRecipes::production, structure(StructureKind.FORAGING_CHAMBER),
+                new Kind("eggs", structure(StructureKind.NEST_CHAMBER), 1, 3, AntRecipes::eggs, ModItems.TERRARIUM.get(), structure(StructureKind.NEST_CHAMBER)),
+                new Kind("larvae", structure(StructureKind.NEST_CHAMBER), 1, 2, AntRecipes::larvae, structure(StructureKind.NEST_CHAMBER)),
+                new Kind("production", structure(StructureKind.FORAGING_SITE), 2, 1, AntRecipes::production, structure(StructureKind.FORAGING_SITE),
                         structure(StructureKind.STORAGE)),
-                new Kind("farming", structure(StructureKind.FUNGUS_GARDEN), 2, 1, AntRecipes::farming, structure(StructureKind.FUNGUS_GARDEN),
+                new Kind("farming", structure(StructureKind.HARVESTING_SITE), 2, 1, AntRecipes::farming, structure(StructureKind.HARVESTING_SITE),
                         structure(StructureKind.STORAGE)),
-                new Kind("fighting", structure(StructureKind.HUNTING_CHAMBER), 2, 2, AntRecipes::fighting, structure(StructureKind.HUNTING_CHAMBER),
-                        structure(StructureKind.HOUSING)),
+                new Kind("fighting", structure(StructureKind.FORAGING_SITE), 2, 2, AntRecipes::fighting, structure(StructureKind.FORAGING_SITE),
+                        structure(StructureKind.NEST_CHAMBER)),
                 new Kind("lab", ModItems.GENETIC_LAB.get(), 1, 4, AntRecipes::lab, lab),
                 new Kind("trait", ModItems.GENETIC_ANALYZER.get(), 1, 3, AntRecipes::traits, ModItems.GENETIC_LAB.get(), ModItems.GENETIC_ANALYZER.get()),
                 new Kind("species_upgrade", ModItems.UPGRADE_STATION.get(), 1, 2, AntRecipes::speciesUpgrades, ModItems.UPGRADE_STATION.get()));
@@ -62,6 +62,8 @@ public class AntColoniesEmiPlugin implements EmiPlugin {
 
     @Override
     public void register(EmiRegistry registry) {
+        // The creative tab's icon item is not an ingredient of anything.
+        registry.removeEmiStacks(dev.emi.emi.api.stack.EmiStack.of(ModItems.ANT_HEAD.get()));
         var level = Objects.requireNonNull(Minecraft.getInstance().level, "EMI registers recipes in a world");
         AntRecipes recipes = new AntRecipes(level.registryAccess());
         for (Kind kind : kinds()) {

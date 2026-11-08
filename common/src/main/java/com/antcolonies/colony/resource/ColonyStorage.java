@@ -1,48 +1,48 @@
 package com.antcolonies.colony.resource;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.antcolonies.content.blockentity.StructureBlockEntity;
-import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.colony.model.Colony;
 import com.antcolonies.colony.model.StructureKind;
-import com.antcolonies.core.config.AntConfig;
-import com.antcolonies.core.registry.ModRegistries;
-import com.antcolonies.colony.species.AntSpecies;
-import com.antcolonies.colony.species.SpeciesOutput;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 /**
- * A colony's Storage chambers as one store. Finds go into the first Storage with room.
+ * A colony's stores as one: the site that found something keeps it in its own small store first (Foraging Sites have
+ * one), then it goes to the first Storage with room, then to the colony's other Foraging Sites.
  */
 public final class ColonyStorage {
-    public static List<StructureBlockEntity> piles(ServerLevel level, Colony colony) {
+    /** The stores in the order finds go into them; {@code from} (the site that found it, or null) first. */
+    public static List<StructureBlockEntity> piles(ServerLevel level, Colony colony, @Nullable StructureBlockEntity from) {
         List<StructureBlockEntity> piles = new ArrayList<>();
-        if (!colony.layout().complete()) {
-            return piles;
+        if (from != null && from.kind().stores()) {
+            piles.add(from);
         }
-        for (BlockPos pos : colony.layout().of(StructureKind.STORAGE)) {
-            if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof StructureBlockEntity pile && pile.kind() == StructureKind.STORAGE) {
-                piles.add(pile);
+        for (StructureKind kind : new StructureKind[] {StructureKind.STORAGE, StructureKind.FORAGING_SITE}) {
+            for (BlockPos pos : colony.layout().of(kind)) {
+                if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof StructureBlockEntity pile && pile.kind() == kind && pile != from) {
+                    piles.add(pile);
+                }
             }
         }
         return piles;
     }
 
+    public static List<StructureBlockEntity> piles(ServerLevel level, Colony colony) {
+        return piles(level, colony, null);
+    }
+
     /** Whether all of the stacks would fit (checked before a find, so nothing is ever lost). */
-    public static boolean canFit(ServerLevel level, Colony colony, List<ItemStack> stacks) {
+    public static boolean canFit(ServerLevel level, Colony colony, List<ItemStack> stacks, @Nullable StructureBlockEntity from) {
         if (stacks.isEmpty()) {
             return true;
         }
-        List<StructureBlockEntity> piles = piles(level, colony);
+        List<StructureBlockEntity> piles = piles(level, colony, from);
         if (piles.isEmpty()) {
             return false;
         }
@@ -93,12 +93,12 @@ public final class ColonyStorage {
     }
 
     /**
-     * Puts the stack into the piles; returns what didn't fit. First it tops up partial stacks of the same item in every
-     * pile, then it uses empty slots, the same order canFit counts in, so a stack canFit allowed always goes in whole.
+     * Puts the stack into the stores; returns what didn't fit. First it tops up partial stacks of the same item in every
+     * store, then it uses empty slots, the same order canFit counts in, so a stack canFit allowed always goes in whole.
      */
-    public static ItemStack insert(ServerLevel level, Colony colony, ItemStack stack) {
+    public static ItemStack insert(ServerLevel level, Colony colony, ItemStack stack, @Nullable StructureBlockEntity from) {
         ItemStack left = stack.copy();
-        List<StructureBlockEntity> piles = piles(level, colony);
+        List<StructureBlockEntity> piles = piles(level, colony, from);
         for (boolean empties : new boolean[] {false, true}) {
             for (StructureBlockEntity pile : piles) {
                 int before = left.getCount();
@@ -125,7 +125,6 @@ public final class ColonyStorage {
         }
         return left;
     }
-
 
     private ColonyStorage() {}
 }

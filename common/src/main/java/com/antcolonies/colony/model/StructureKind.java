@@ -9,28 +9,24 @@ import com.mojang.serialization.Codec;
 import net.minecraft.util.StringRepresentable;
 
 /**
- * The colony chambers. A colony is a 3x3 ring: the Terrarium in the middle and eight chambers around it on the same
- * level, of any kinds in any mix. Each kind is one block; what it does is worked out by the colony's simulation.
+ * The colony chambers. A Terrarium works on its own; chambers are additions that join it when they touch it or another
+ * chamber of its colony, in any shape. Each kind is one block; what it does is worked out by the colony's simulation.
  *
  * @param job       which ants it puts to work, if any
  * @param slots     its own item slots
  * @param upgrades  its upgrade slots
- * @param allowed   the generic upgrades it takes (species upgrades go into Foraging Chambers)
+ * @param allowed   the generic upgrades it takes (species upgrades go into Foraging Sites)
  */
 public enum StructureKind implements StringRepresentable {
-    /** Egg laying at full speed, faster larvae, room for larvae. */
-    BROOD_CHAMBER("brood_chamber", Job.NONE, 0, 2, EnumSet.of(UpgradeType.BREEDING, UpgradeType.SPEED, UpgradeType.POPULATION)),
-    /** Houses adults, workers and soldiers; a colony needs one to raise soldiers. */
-    HOUSING("housing", Job.NONE, 0, 2, EnumSet.of(UpgradeType.POPULATION, UpgradeType.SOLDIER)),
-    /** Holds what the colony finds, and food room. */
-    STORAGE("storage", Job.NONE, 54, 2, EnumSet.of(UpgradeType.STORAGE, UpgradeType.AUTOMATION)),
-    /** Workers find the species' resources. */
-    FORAGING_CHAMBER("foraging_chamber", Job.WORKERS, 0, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
+    /** Brood and housing: eggs at full speed, faster larvae, room for larvae, adults and soldiers. */
+    NEST_CHAMBER("nest_chamber", Job.NONE, 0, 3, EnumSet.of(UpgradeType.BREEDING, UpgradeType.SPEED, UpgradeType.POPULATION, UpgradeType.SOLDIER)),
+    /** Workers find the species' resources and soldiers hunt; a small store for what they bring. */
+    FORAGING_SITE("foraging_site", Job.FORAGING, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION,
+            UpgradeType.SOLDIER)),
     /** Farmer Ants grow food and harvest. */
-    FUNGUS_GARDEN("fungus_garden", Job.FARMERS, 0, 3, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
-    /** Soldiers hunt for mob drops. */
-    HUNTING_CHAMBER("hunting_chamber", Job.SOLDIERS, 0, 3, EnumSet.of(UpgradeType.SPEED, UpgradeType.SOLDIER, UpgradeType.FOOD_EFFICIENCY,
-            UpgradeType.POPULATION)),
+    HARVESTING_SITE("harvesting_site", Job.FARMERS, 0, 3, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
+    /** More room for what the colony finds, and food room. */
+    STORAGE("storage", Job.NONE, 54, 2, EnumSet.of(UpgradeType.STORAGE, UpgradeType.AUTOMATION)),
     /** Raises new Queens, and hybrids when a Genetic Sample is crossed in. */
     QUEEN_CHAMBER("queen_chamber", Job.NONE, 7, 2, EnumSet.of(UpgradeType.BREEDING, UpgradeType.GENETIC, UpgradeType.SPEED));
 
@@ -43,10 +39,15 @@ public enum StructureKind implements StringRepresentable {
     public static final int QUEEN_CHAMBER_OUTPUT = 6;
 
     public enum Job {
-        NONE, WORKERS, SOLDIERS, FARMERS;
+        NONE, FORAGING, FARMERS;
 
         public boolean any() {
             return this != NONE;
+        }
+
+        /** Whether soldiers work here too (they hunt at Foraging Sites). */
+        public boolean soldiers() {
+            return this == FORAGING;
         }
     }
 
@@ -87,7 +88,12 @@ public enum StructureKind implements StringRepresentable {
 
     /** Whether species-specific upgrades fit (they change what workers find). */
     public boolean takesSpeciesUpgrades() {
-        return this == FORAGING_CHAMBER;
+        return this == FORAGING_SITE;
+    }
+
+    /** Whether finds can be kept here (Storage, and the Foraging Site's small store). */
+    public boolean stores() {
+        return this == STORAGE || this == FORAGING_SITE;
     }
 
     public String translationKey() {

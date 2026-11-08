@@ -6,7 +6,7 @@ import java.util.Set;
 import com.antcolonies.colony.model.Colony;
 import com.antcolonies.colony.model.ColonyAccess;
 import com.antcolonies.colony.model.ColonyLayout;
-import com.antcolonies.colony.model.ColonyRing;
+import com.antcolonies.colony.model.ColonyNetwork;
 import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.colony.evolution.EvolutionLogic;
@@ -117,6 +117,8 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
     private boolean caughtUp;
     // Climate, looked up now and then.
     private float temperature = 0.8F;
+    /** The climate the block under the Terrarium gives it (see {@link Climate#ofFloor}), if any. Synced for the screens. */
+    private @Nullable Climate floor;
     private boolean underground;
     private boolean nether;
     private long climateAt = Long.MIN_VALUE / 2;
@@ -168,7 +170,23 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         nether = level.environmentAttributes().getValue(net.minecraft.world.attribute.EnvironmentAttributes.WATER_EVAPORATES, worldPosition);
     }
 
+    /** Reads the block under the Terrarium (cheap: once a second). */
+    private void updateFloor(Level level) {
+        Climate now = Climate.ofFloor(level.getBlockState(worldPosition.below()));
+        if (now != floor) {
+            floor = now;
+            syncNow();
+        }
+    }
+
+    public @Nullable Climate floor() {
+        return floor;
+    }
+
     public double climateMismatch(Climate climate) {
+        if (floor == climate) {
+            return 0;
+        }
         return climate.mismatch(temperature, underground, nether);
     }
 
@@ -184,10 +202,13 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         }
         long time = level.getGameTime();
         be.updateClimate(level);
+        if (time % 20 == 0) {
+            be.updateFloor(level);
+        }
         if (time % FEED_INTERVAL == 0) {
             be.processSlots(serverLevel);
         }
-        long version = ColonyRing.version(level);
+        long version = ColonyNetwork.version(level);
         if (version != be.scannedVersion && time - be.scannedAt >= 10 || time - be.scannedAt >= RESCAN_INTERVAL) {
             be.rescan(serverLevel);
         }
@@ -256,9 +277,9 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
 
     /** Looks at the ring of chambers around the Terrarium again. */
     public void rescan(ServerLevel level) {
-        scannedVersion = ColonyRing.version(level);
+        scannedVersion = ColonyNetwork.version(level);
         scannedAt = level.getGameTime();
-        colony.setLayout(ColonyRing.scan(level, worldPosition));
+        colony.setLayout(ColonyNetwork.scan(level, worldPosition));
     }
 
     /** The Queen slot and the feed slot. */
@@ -593,6 +614,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         }
         input.child("colony").ifPresent(colony::load);
         feedStatus = input.getIntOr("feed_status", 0);
+        floor = input.getString("floor").flatMap(name -> java.util.Arrays.stream(Climate.values()).filter(c -> c.getSerializedName().equals(name)).findFirst()).orElse(null);
     }
 
     @Override
@@ -619,6 +641,9 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         saveUpgrades(output);
         colony.save(output.child("colony"), true);
         output.putInt("feed_status", feedStatus);
+        if (floor != null) {
+            output.putString("floor", floor.getSerializedName());
+        }
         return output.buildResult();
     }
 

@@ -1,6 +1,6 @@
 package com.antcolonies.content.block;
 
-import com.antcolonies.colony.model.ColonyRing;
+import com.antcolonies.colony.model.ColonyNetwork;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -57,14 +57,14 @@ public abstract class ColonyEntityBlock extends BaseEntityBlock {
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if (!oldState.is(state.getBlock())) {
-            ColonyRing.changed(level);
+            ColonyNetwork.changed(level);
         }
     }
 
     @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
-        ColonyRing.changed(level);
+        ColonyNetwork.changed(level);
     }
 
     @Override

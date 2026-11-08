@@ -20,7 +20,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-/** Any colony structure: its link and problems, its ants (working chambers), its slots, and its upgrades on the right. */
+/** Any colony chamber: its link and problems, its ants (working sites), its slots, and its upgrades on the right. */
 public class StructureScreen extends AntScreen<StructureMenu> {
     private final StructureKind kind;
     /** Status lines cut to fit this frame, with their full text for the hover tooltip. */
@@ -64,27 +64,10 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         label(graphics, linkLine(linked), x, y, linked ? GOOD : BAD);
         y += 10;
         if (kind.job().any()) {
-            int assigned = menu.data(StructureBlockEntity.DATA_ASSIGNED);
-            int requested = menu.data(StructureBlockEntity.DATA_REQUESTED);
-            int capacity = menu.data(StructureBlockEntity.DATA_CAPACITY);
-            String wanted = requested < 0 ? Component.translatable("gui.antcolonies.auto").getString() : String.valueOf(requested);
-            String key = kind.job() == StructureKind.Job.SOLDIERS ? "gui.antcolonies.site.soldiers" : "gui.antcolonies.site.workers";
-            label(graphics, Component.translatable(key, assigned, capacity, wanted), x, y, LABEL);
-            y += 11;
-            int bx = x;
-            Object[][] row = {{"-10", StructureMenu.LESS_10}, {"-1", StructureMenu.LESS}, {"+1", StructureMenu.MORE}, {"+10", StructureMenu.MORE_10}};
-            for (Object[] b : row) {
-                int width = buttonWidth((String) b[0]);
-                button(bx, y, width, 12, (String) b[0], (Integer) b[1], null, true);
-                bx += width + 2;
+            y = jobRow(graphics, x, y, false);
+            if (kind.job().soldiers()) {
+                y = jobRow(graphics, x, y, true);
             }
-            toggle(bx, y, buttonWidth(Component.translatable("gui.antcolonies.auto").getString()), 12, Component.translatable("gui.antcolonies.auto").getString(), StructureMenu.AUTO,
-                    List.of(Component.translatable("gui.antcolonies.auto.hint")), requested < 0);
-            y += 15;
-            double rate = menu.data(StructureBlockEntity.DATA_RATE) / 10_000.0;
-            label(graphics, Component.translatable("gui.antcolonies.site.rate", rate(rate)), x, y, DIM);
-            drawBar(graphics, leftPos + x + 110, topPos + y, 56, 8, menu.data(StructureBlockEntity.DATA_PROGRESS) / 1000.0, 0xFF3FD0A0);
-            y += 11;
         }
         int status = menu.data(StructureBlockEntity.DATA_STATUS) | (kind == StructureKind.QUEEN_CHAMBER ? menu.data(StructureBlockEntity.DATA_REARING_STATUS) : 0);
         boolean slotted = kind == StructureKind.QUEEN_CHAMBER;
@@ -92,6 +75,9 @@ public class StructureScreen extends AntScreen<StructureMenu> {
             drawQueenChamber(graphics, x);
         } else if (!kind.job().any()) {
             y = wrapped(graphics, Component.translatable("gui.antcolonies.effect." + kind.getSerializedName()), x, y, 170, 9, DIM);
+        } else if (kind == StructureKind.FORAGING_SITE) {
+            // Its store's slots come next (their tooltip says what they are); the problems go under them.
+            y = StructureMenu.STORE_Y + 20;
         }
         // Problems and work state: under the link line. Slotted structures have room for one line above their slots.
         int line = slotted ? 28 : y;
@@ -112,7 +98,44 @@ public class StructureScreen extends AntScreen<StructureMenu> {
 
     /** The first line: linked or not, short enough for the panel (the full status is in the colony's screens). */
     private String linkLine(boolean linked) {
-        return fit(Component.translatable(linked ? "gui.antcolonies.linked" : "gui.antcolonies.not_linked").getString(), 170);
+        String key = linked ? "gui.antcolonies.linked" : menu.data(StructureBlockEntity.DATA_CONTESTED) != 0 ? "gui.antcolonies.contested"
+                : "gui.antcolonies.not_linked";
+        String full = Component.translatable(key).getString();
+        String shown = fit(full, 170);
+        if (!shown.equals(full)) {
+            clipped.add(new Clipped(8, kind == StructureKind.STORAGE ? 130 : 18, 170, full));
+        }
+        return shown;
+    }
+
+    /** A working site's ants of one kind: how many it has and wants, the +/- buttons, and how fast they work. */
+    private int jobRow(GuiGraphicsExtractor graphics, int x, int y, boolean soldiers) {
+        int assigned = menu.data(soldiers ? StructureBlockEntity.DATA_SOLDIERS : StructureBlockEntity.DATA_ASSIGNED);
+        int requested = menu.data(soldiers ? StructureBlockEntity.DATA_REQUESTED_SOLDIERS : StructureBlockEntity.DATA_REQUESTED);
+        int capacity = menu.data(StructureBlockEntity.DATA_CAPACITY);
+        int offset = soldiers ? StructureMenu.SOLDIER_ROW : 0;
+        String wanted = requested < 0 ? Component.translatable("gui.antcolonies.auto").getString() : String.valueOf(requested);
+        String key = soldiers ? "gui.antcolonies.site.soldiers" : kind == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.farmers"
+                : "gui.antcolonies.site.workers";
+        label(graphics, fit(Component.translatable(key, assigned, capacity, wanted).getString(), 170), x, y, LABEL);
+        y += 11;
+        int bx = x;
+        Object[][] row = {{"-10", StructureMenu.LESS_10}, {"-1", StructureMenu.LESS}, {"+1", StructureMenu.MORE}, {"+10", StructureMenu.MORE_10}};
+        for (Object[] b : row) {
+            int width = buttonWidth((String) b[0]);
+            button(bx, y, width, 12, (String) b[0], (Integer) b[1] + offset, null, true);
+            bx += width + 2;
+        }
+        String auto = Component.translatable("gui.antcolonies.auto").getString();
+        toggle(bx, y, buttonWidth(auto), 12, auto, StructureMenu.AUTO + offset, List.of(Component.translatable("gui.antcolonies.auto.hint")), requested < 0);
+        y += 15;
+        double rate = menu.data(soldiers ? StructureBlockEntity.DATA_HUNT_RATE : StructureBlockEntity.DATA_RATE) / 10_000.0;
+        String rateKey = soldiers ? "gui.antcolonies.site.hunt_rate" : kind == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.food_rate"
+                : "gui.antcolonies.site.rate";
+        label(graphics, Component.translatable(rateKey, rate(rate)), x, y, DIM);
+        double progress = menu.data(soldiers ? StructureBlockEntity.DATA_HUNT_PROGRESS : StructureBlockEntity.DATA_PROGRESS) / 1000.0;
+        drawBar(graphics, leftPos + x + 110, topPos + y, 56, 8, progress, soldiers ? 0xFFD05A3F : 0xFF3FD0A0);
+        return y + 11;
     }
 
     /** Queen Chamber slot roles: materials, the tube, the sample, the output; null for any other slot. */
@@ -150,6 +173,10 @@ public class StructureScreen extends AntScreen<StructureMenu> {
                 graphics.setComponentTooltipForNextFrame(font, List.of(Component.literal(line.text())), mouseX, mouseY);
                 return;
             }
+        }
+        if (hoveredSlot != null && kind == StructureKind.FORAGING_SITE && hoveredSlot.container == menu.structure() && !hoveredSlot.hasItem()) {
+            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.site.store")), mouseX, mouseY);
+            return;
         }
         if (hoveredSlot != null && hoveredSlot.container == menu.structure().upgrades() && !hoveredSlot.hasItem()) {
             graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.slot.upgrade"),
