@@ -178,9 +178,11 @@ public class DataGen {
                        boolean glow, String metal, List<String> mods, String description) {
         // Common metals at the built-in metal ants' pace; tier 3 (uranium, which gates nuclear tech) much slower.
         double rate = tier == 1 ? 0.6 : tier == 2 ? 0.45 : 0.12;
+        // Uranium's raw ore from the start: MachinaOpus has no uranium nuggets or ingots, so stage 1 would find only stone.
+        int rawStage = tier == 3 ? 1 : 2;
         SPECIES.add(new Species(id, name, tier, "mineral", climate, null, body, gaster, accent, pattern, crystal, glow, 1.05, 1.2 + tier * 0.15,
                 "mineral", 0.3 + tier * 0.15, rate,
-                List.of(Out.of("c:nuggets/" + metal, 40).asTag(), Out.of("c:raw_materials/" + metal, 10).atStage(2).asTag(), Out.of("cobblestone", 15),
+                List.of(Out.of("c:nuggets/" + metal, 40).asTag(), Out.of("c:raw_materials/" + metal, 10).atStage(rawStage).asTag(), Out.of("cobblestone", 15),
                         Out.of("c:ingots/" + metal, 2).atStage(3).asSpecial().asTag()),
                 0, List.of(), 1.1, List.of(), List.of(new String[] {ac("royal_jelly"), "2"}, new String[] {ac("mineral_ant_food"), "4"}),
                 3600 + tier * 1200, 0.9, 0.9, null, title(metal) + " Extraction", "Metal Processing", title(metal) + " Efficiency", description));
@@ -305,7 +307,8 @@ public class DataGen {
                         Out.of("coal", 10), Out.of("quartz", 3).atStage(3).asSpecial(),
                         // Other mods' ores, when some mod adds them (skipped while their tags are empty).
                         Out.of("c:raw_materials/tin", 3).atStage(3).asTag(), Out.of("c:raw_materials/osmium", 3).atStage(3).asTag(),
-                        Out.of("c:raw_materials/zinc", 3).atStage(3).asTag(), Out.of("c:raw_materials/lead", 3).atStage(3).asTag()),
+                        Out.of("c:raw_materials/zinc", 3).atStage(3).asTag(), Out.of("c:raw_materials/lead", 3).atStage(3).asTag(),
+                        Out.of("c:raw_materials/molybdenum", 2).atStage(3).asTag()),
                 0, List.of(), 1.3, List.of(), mineralRearing, 4800, 0.9, 1.0, "piston",
                 "Drill Extraction", "Ore Processing", "Clockwork Efficiency",
                 "A hybrid of Stone and Redstone Ants: tireless miners that bring a bit of everything."));
@@ -533,12 +536,12 @@ public class DataGen {
         // upgrades), since the exact item ids differ between mods. ---
         compat("osmium", "Osmium Ant", 2, "any", "5A6E80", "A8C0D0", "D8E8F0", "metallic", "B0D0E8", false, "osmium", List.of("mekanism"),
                 "Stone Ants fed osmium. Bring osmium for Mekanism's machines.");
-        compat("tin", "Tin Ant", 1, "any", "6A6A70", "C8C8D0", "E8E8F0", "metallic", null, false, "tin", List.of("mekanism", "thermal"),
+        compat("tin", "Tin Ant", 1, "any", "6A6A70", "C8C8D0", "E8E8F0", "metallic", null, false, "tin", List.of("mekanism", "thermal", "machinaopus"),
                 "Copper Ants fed tin: together they make bronze. Bring tin.");
         compat("lead", "Lead Ant", 2, "underground", "2E2E3A", "5A5A78", "8A8AA8", "metallic", null, false, "lead",
-                List.of("mekanism", "thermal", "immersiveengineering"), "Heavy, slow Iron Ants fed lead. Bring lead.");
+                List.of("mekanism", "thermal", "immersiveengineering", "machinaopus"), "Heavy, slow Iron Ants fed lead. Bring lead.");
         compat("silver", "Silver Ant", 2, "any", "6A7078", "D8E0E8", "FFFFFF", "metallic", "E0E8F0", false, "silver",
-                List.of("thermal", "immersiveengineering"), "Lead Ants fed silver; they shine like mirrors. Bring silver.");
+                List.of("thermal", "immersiveengineering", "machinaopus"), "Lead Ants fed silver; they shine like mirrors. Bring silver.");
         compat("nickel", "Nickel Ant", 2, "any", "6A6A50", "C8C8A0", "E8E8C8", "metallic", null, false, "nickel",
                 List.of("thermal", "immersiveengineering"), "Iron Ants fed nickel. Bring nickel.");
         compat("aluminum", "Aluminum Ant", 1, "any", "8A8A90", "D8DCE0", "F0F4F8", "metallic", null, false, "aluminum",
@@ -546,7 +549,7 @@ public class DataGen {
         compat("zinc", "Zinc Ant", 1, "any", "5A6A60", "A8C0B0", "D0E8D8", "metallic", null, false, "zinc", List.of("create"),
                 "Copper Ants fed zinc, ready for Create's brass. Bring zinc.");
         compat("uranium", "Uranium Ant", 3, "underground", "2A3A1A", "5AE02A", "C8FF8A", "faceted", "7AFF3A", true, "uranium",
-                List.of("mekanism", "immersiveengineering"), "Lead Ants fed uranium. They glow green in the dark; bring uranium.");
+                List.of("mekanism", "immersiveengineering", "machinaopus"), "Lead Ants fed raw uranium. They glow green in the dark; bring uranium.");
         // Crystals rather than metals: their own outputs.
         SPECIES.add(new Species("fluorite", "Fluorite Ant", 2, "mineral", "underground", null, "3A2A60", "8A6AE8", "D0C0FF", "faceted", "A890FF", true,
                 1.0, 1.4, "crystal", 0.5, 0.45,
@@ -554,8 +557,8 @@ public class DataGen {
                         Out.of("calcite", 6).atStage(2)),
                 0, List.of(), 1.0, List.of(), List.of(new String[] {ac("royal_jelly"), "3"}, new String[] {ac("crystal_ant_food"), "6"}), 4800, 0.85, 0.9, null,
                 "Fluorite Extraction", "Crystal Purification", "Lattice Efficiency",
-                "Amethyst Ants fed fluorite. Bring fluorite for Mekanism's chemistry."));
-        NEEDS_MODS.put("fluorite", List.of("mekanism"));
+                "Amethyst Ants fed fluorite. Bring fluorite for Mekanism's or MachinaOpus's chemistry."));
+        NEEDS_MODS.put("fluorite", List.of("mekanism", "machinaopus"));
         SPECIES.add(new Species("certus", "Certus Ant", 2, "mineral", "underground", null, "2A3A5A", "8AB8F0", "E0F0FF", "faceted", "A0D0FF", true,
                 1.0, 1.4, "crystal", 0.5, 0.45,
                 List.of(Out.of("c:gems/certus_quartz", 40).asTag(), Out.of("c:dusts/certus_quartz", 12).asTag(), Out.of("quartz", 10),
@@ -564,6 +567,33 @@ public class DataGen {
                 "Certus Extraction", "Crystal Charging", "Resonance Efficiency",
                 "Amethyst Ants fed certus quartz. Bring certus quartz for Applied Energistics, and fluix at stage 3."));
         NEEDS_MODS.put("certus", List.of("ae2"));
+
+        // MachinaOpus's own materials. Only MachinaOpus adds them, so these name its items directly and have signature
+        // items (and with them species upgrades).
+        SPECIES.add(new Species("molybdenum", "Molybdenum Ant", 2, "mineral", "underground", null, "3A4048", "8A98A8", "C0CCD8", "metallic", "A8B8D0", false,
+                1.05, 1.5, "mineral", 0.6, 0.45,
+                List.of(Out.of("machinaopus:molybdenum_nugget", 40).processed("machinaopus:molybdenum_ingot", 9), Out.of("cobblestone", 15),
+                        Out.of("machinaopus:raw_molybdenum", 10).atStage(2), Out.of("machinaopus:molybdenum_ingot", 2).atStage(3).asSpecial()),
+                0, List.of(), 1.1, List.of(), mineralRearing, 6000, 0.9, 0.9, "machinaopus:molybdenum_ingot",
+                "Molybdenum Extraction", "Metal Processing", "Molybdenum Efficiency",
+                "Iron Ants fed molybdenum, the metal that hardens MachinaOpus's steel. Bring molybdenum."));
+        NEEDS_MODS.put("molybdenum", List.of("machinaopus"));
+        SPECIES.add(new Species("sulfur", "Sulfur Ant", 2, "mineral", "hot", null, "5A4A0A", "E0C820", "FFF080", "speckled", "F0E040", false,
+                1.0, 1.4, "nether", 0.4, 0.5,
+                List.of(Out.of("machinaopus:sulfur", 36), Out.of("netherrack", 14), Out.of("magma_block", 6), Out.of("basalt", 6),
+                        Out.of("gunpowder", 4).atStage(2), Out.of("machinaopus:petroleum_coke", 0.5).atStage(3).asSpecial()),
+                0, List.of(), 1.3, List.of(), netherRearing, 4800, 0.9, 1.0, "machinaopus:sulfur",
+                "Brimstone Extraction", "Sulfur Refining", "Vent Efficiency",
+                "Fire Ants fed sulfur that live around hot vents. Bring sulfur for MachinaOpus's acids without refining oil."));
+        NEEDS_MODS.put("sulfur", List.of("machinaopus"));
+        SPECIES.add(new Species("rubber", "Rubber Ant", 1, "farmer", "temperate", null, "4A3020", "2A1C14", "E8E0C8", "banded", null, false,
+                1.0, 0.85, "", 0, 0.8,
+                List.of(Out.of("machinaopus:rubber_log", 18), Out.of("stick", 14), Out.of("machinaopus:rubber_leaves", 8), Out.of("machinaopus:rubber_sapling", 5)),
+                0.6, List.of(Out.of("machinaopus:rubber_sheet", 24), Out.of("slime_ball", 4).atStage(2)),
+                0.9, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"machinaopus:rubber_sapling", "4"}), 3600, 1.0, 1.0,
+                "machinaopus:rubber_sheet", "Sap Tapping", "Latex Curing", "Tapper Efficiency",
+                "Wood Ants fed rubber that tap rubber trees. Bring rubber logs and saplings; at a Harvesting Site they bring rubber for MachinaOpus's cables."));
+        NEEDS_MODS.put("rubber", List.of("machinaopus"));
 
         for (Species s : SPECIES) {
             List<Object> outputs = new ArrayList<>();
@@ -630,9 +660,13 @@ public class DataGen {
                 {"iron_to_nickel", "iron", "nickel", "#c:ingots/nickel", 0.07, 24, 2, 400},
                 {"iron_to_aluminum", "iron", "aluminum", "#c:ingots/aluminum", 0.08, 24, 2, 300},
                 {"lead_to_silver", "lead", "silver", "#c:ingots/silver", 0.06, 32, 2, 600},
-                {"lead_to_uranium", "lead", "uranium", "#c:ingots/uranium", 0.04, 32, 3, 1500},
+                // Raw uranium, not ingots: MachinaOpus has none (it makes uranium into fuel, not metal).
+                {"lead_to_uranium", "lead", "uranium", "#c:raw_materials/uranium", 0.04, 32, 3, 1500},
                 {"amethyst_to_fluorite", "amethyst", "fluorite", "#c:gems/fluorite", 0.06, 24, 2, 400},
                 {"amethyst_to_certus", "amethyst", "certus", "#c:gems/certus_quartz", 0.06, 24, 2, 400},
+                {"iron_to_molybdenum", "iron", "molybdenum", "#c:ingots/molybdenum", 0.07, 24, 2, 400},
+                {"fire_to_sulfur", "fire", "sulfur", "#c:dusts/sulfur", 0.06, 24, 2, 400},
+                {"wood_to_rubber", "wood", "rubber", "#c:rubber", 0.08, 24, 1, 100},
         };
         for (Object[] e : list) {
             Map<String, Object> json = obj("from", ac((String) e[1]), "to", ac((String) e[2]),

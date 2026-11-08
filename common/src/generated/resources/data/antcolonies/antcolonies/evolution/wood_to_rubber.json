@@ -1,0 +1,15 @@
+{
+  "from": "antcolonies:wood",
+  "to": "antcolonies:rubber",
+  "item": "#c:rubber",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 1,
+  "min_population": 100,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "machinaopus"
+    }
+  ]
+}

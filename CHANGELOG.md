@@ -17,6 +17,10 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 - Queen and ant tube tooltips show the species' climate, finds, best traits, and with Shift its evolutions.
 - Jade tooltips for wild ants and wild nests.
 - The creative tab shows the ant's head from the mod's logo.
+- MachinaOpus support. The Tin, Lead, Silver, Uranium and Fluorite Ants also load with MachinaOpus and bring its
+  materials. Three new species load only with it: the Molybdenum Ant (from Iron Ants fed molybdenum), the Sulfur Ant
+  (from Fire Ants fed sulfur) and the Rubber Ant (from Wood Ants fed rubber), a farmer that taps rubber at a Harvesting
+  Site. The Mechanical Miner Ant turns up raw molybdenum at stage 3.
 
 ### Changed
 
@@ -41,6 +45,8 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
   Swamp and Fire Ants fed gunpowder, slime balls and blaze powder. The Soldier Upgrade is now the Hunting Upgrade, and
   Soldier Strength is Hunting Strength. Guard Ants come from hunter colonies, for 50 of their ants.
 - Foraging Sites send their finds to Storage, keeping them only while the Storage is full.
+- Lead Ants evolve into Uranium Ants when fed raw uranium (was a uranium ingot), and Uranium Ants find raw uranium
+  from stage 1.
 - Shift-clicking an upgrade puts it only into an upgrade slot, never into a store or the feed slot.
 - Ants inside chambers are drawn only up close (`antDetailDistance`) with 3D models on: a view of 25 colonies runs
   about 80% faster.

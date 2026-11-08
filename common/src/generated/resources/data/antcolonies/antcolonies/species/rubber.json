@@ -1,0 +1,76 @@
+{
+  "tier": 1,
+  "category": "farmer",
+  "look": {
+    "body": "#4A3020",
+    "gaster": "#2A1C14",
+    "accent": "#E8E0C8",
+    "pattern": "banded"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 0.85
+  },
+  "production": {
+    "rate": 0.8,
+    "outputs": [
+      {
+        "item": "machinaopus:rubber_log",
+        "weight": 18
+      },
+      {
+        "item": "minecraft:stick",
+        "weight": 14
+      },
+      {
+        "item": "machinaopus:rubber_leaves",
+        "weight": 8
+      },
+      {
+        "item": "machinaopus:rubber_sapling",
+        "weight": 5
+      }
+    ]
+  },
+  "farming": {
+    "food": 0.6,
+    "harvest": [
+      {
+        "item": "machinaopus:rubber_sheet",
+        "weight": 24
+      },
+      {
+        "item": "minecraft:slime_ball",
+        "weight": 4,
+        "min_stage": 2
+      }
+    ]
+  },
+  "combat": {
+    "strength": 0.9
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "machinaopus:rubber_sapling",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "machinaopus:rubber_sheet",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "machinaopus"
+    }
+  ]
+}

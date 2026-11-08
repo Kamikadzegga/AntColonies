@@ -30,8 +30,8 @@ hunters to work, evolve mineral species and engineer their genes.
   hunter species kill mobs for their drops and feed on them (no mob is ever spawned), Harvesting Sites for farmers, Storage and Queen Chambers. A block under the Terrarium
   sets its climate.
 - **42 species.** Fourteen wild species live in their own biomes, with nests, among them the Army Ant, a hunter. Mineral species (iron, gold, diamond,
-  emerald, netherite, ender and more) evolve from them, and eleven hybrids come from crossing Queens. Ten more species
-  turn on when Mekanism, Create, Thermal, Immersive Engineering or AE2 add their ores.
+  emerald, netherite, ender and more) evolve from them, and eleven hybrids come from crossing Queens. Thirteen more
+  species turn on when MachinaOpus, Mekanism, Create, Thermal, Immersive Engineering or AE2 add their ores.
 - **Genetics.** Each Queen has ten traits, and daughters inherit them with variation. There are 31 mutations, including
   flaws. The FE-powered **Genetic Laboratory** upgrades traits, rerolls, mutates and purges Queens and copies their
   genes.

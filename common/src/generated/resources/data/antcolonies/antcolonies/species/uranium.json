@@ -25,8 +25,7 @@
       },
       {
         "tag": "c:raw_materials/uranium",
-        "weight": 10,
-        "min_stage": 2
+        "weight": 10
       },
       {
         "item": "minecraft:cobblestone",
@@ -71,6 +70,10 @@
         {
           "type": "neoforge:mod_loaded",
           "modid": "immersiveengineering"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "machinaopus"
         }
       ]
     }

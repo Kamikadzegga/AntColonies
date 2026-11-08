@@ -47,6 +47,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -97,6 +98,7 @@ public class AntColoniesGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> JOINING = test("chambers_join_by_touching", AntColoniesGameTests::chambersJoinByTouching);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> MOVING = test("colony_moves_with_terrarium", AntColoniesGameTests::colonyMoves);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> UPGRADE_SYNC = test("terrarium_update_keeps_upgrades", AntColoniesGameTests::terrariumUpdateKeepsUpgrades);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> MACHINAOPUS = test("machinaopus_materials", AntColoniesGameTests::machinaOpus);
 
     public AntColoniesGameTests(IEventBus modEventBus) {
         TESTS.register(modEventBus);
@@ -112,7 +114,7 @@ public class AntColoniesGameTests {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(AntColonies.id("default"), new TestEnvironmentDefinition.AllOf(List.of()));
         for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> test : List.of(SPECIES_DATA_LOADS, COLONY_PERSISTS, ALLOCATION, SCAVENGING,
                 MORE_WORKERS, STARVATION, BREEDING, FARMING, GARDEN_NEEDS_FARMERS, FIGHTING, EVOLUTION, REARING, HYBRIDS, TWO_COLONIES, OFFLINE,
-                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL, RUNS_ALONE, JOINING, MOVING, UPGRADE_SYNC)) {
+                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL, RUNS_ALONE, JOINING, MOVING, UPGRADE_SYNC, MACHINAOPUS)) {
             event.registerTest(test.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, test.getId()),
                     spaced(environment, 200)));
         }
@@ -245,8 +247,25 @@ public class AntColoniesGameTests {
     private static void speciesDataLoads(GameTestHelper helper) {
         var registries = helper.getLevel().registryAccess();
         var species = registries.lookupOrThrow(ModRegistries.SPECIES);
+        // Species for other mods' materials load only with one of their mods (as in DataGen's NEEDS_MODS).
+        java.util.Map<String, List<String>> needs = java.util.Map.ofEntries(java.util.Map.entry("osmium", List.of("mekanism")),
+                java.util.Map.entry("tin", List.of("mekanism", "thermal", "machinaopus")),
+                java.util.Map.entry("lead", List.of("mekanism", "thermal", "immersiveengineering", "machinaopus")),
+                java.util.Map.entry("silver", List.of("thermal", "immersiveengineering", "machinaopus")),
+                java.util.Map.entry("nickel", List.of("thermal", "immersiveengineering")), java.util.Map.entry("aluminum", List.of("immersiveengineering")),
+                java.util.Map.entry("zinc", List.of("create")), java.util.Map.entry("uranium", List.of("mekanism", "immersiveengineering", "machinaopus")),
+                java.util.Map.entry("fluorite", List.of("mekanism", "machinaopus")), java.util.Map.entry("certus", List.of("ae2")),
+                java.util.Map.entry("molybdenum", List.of("machinaopus")), java.util.Map.entry("sulfur", List.of("machinaopus")),
+                java.util.Map.entry("rubber", List.of("machinaopus")));
+        long expected = 42;
+        for (var entry : needs.entrySet()) {
+            boolean modLoaded = entry.getValue().stream().anyMatch(ModList.get()::isLoaded);
+            boolean speciesLoaded = ModRegistries.species(registries, AntColonies.id(entry.getKey())) != null;
+            helper.assertTrue(modLoaded == speciesLoaded, entry.getKey() + (modLoaded ? " should load with " : " needs ") + entry.getValue());
+            expected += modLoaded ? 1 : 0;
+        }
         long own = species.listElements().filter(e -> e.key().identifier().getNamespace().equals(AntColonies.MODID)).count();
-        helper.assertTrue(own == 42, "Expected 42 species, got " + own);
+        helper.assertTrue(own == expected, "Expected " + expected + " species, got " + own);
         for (var entry : species.listElements().toList()) {
             for (SpeciesOutput output : entry.value().production().outputs()) {
                 helper.assertTrue(output.tag().isPresent() || output.available(), "Output of " + entry.key().identifier() + " missing: " + output);
@@ -261,9 +280,6 @@ public class AntColoniesGameTests {
         helper.assertTrue(registries.lookupOrThrow(ModRegistries.TRAIT_UPGRADE).listElements().count() == Trait.values().length,
                 "Every trait needs its Genetic Laboratory costs");
         helper.assertTrue(com.antcolonies.core.registry.ModDataMaps.food(new ItemStack(ModItems.ANT_FOOD.get())) != null, "Ant Food has no food value");
-        for (String other : List.of("osmium", "tin", "lead", "silver", "nickel", "aluminum", "zinc", "uranium", "fluorite", "certus")) {
-            helper.assertTrue(ModRegistries.species(registries, AntColonies.id(other)) == null, other + " needs another mod and should not load here");
-        }
         var catalysts = new java.util.HashSet<net.minecraft.world.item.Item>();
         registries.lookupOrThrow(ModRegistries.MUTATION).listElements().forEach(m -> m.value().catalyst().ifPresent(cost -> cost.ingredient().items()
                 .forEach(item -> helper.assertTrue(catalysts.add(item.value()), "Two mutations share the catalyst " + item.value()))));
@@ -415,6 +431,63 @@ public class AntColoniesGameTests {
         helper.assertTrue(colony.stats().foodIn() > colony.stats().foodOut(), "The garden should feed more than the colony eats: in "
                 + colony.stats().foodIn() + ", out " + colony.stats().foodOut());
         helper.assertTrue(colony.food() > 100, "Food did not grow: " + colony.food());
+        helper.succeed();
+    }
+
+    /**
+     * With MachinaOpus installed: the species for its metals and its own Molybdenum, Sulfur and Rubber Ants find its items,
+     * evolve when fed them, and a Rubber colony's Harvesting Site brings rubber. Without MachinaOpus there is nothing to test.
+     */
+    private static void machinaOpus(GameTestHelper helper) {
+        if (!ModList.get().isLoaded("machinaopus")) {
+            helper.succeed();
+            return;
+        }
+        var registries = helper.getLevel().registryAccess();
+        // species, stage, a MachinaOpus item it finds at that stage
+        String[][] finds = {{"tin", "1", "machinaopus:tin_nugget"}, {"lead", "1", "machinaopus:lead_nugget"}, {"silver", "1", "machinaopus:silver_nugget"},
+                {"uranium", "1", "machinaopus:raw_uranium"}, {"fluorite", "1", "machinaopus:fluorite"}, {"molybdenum", "1", "machinaopus:molybdenum_nugget"},
+                {"molybdenum", "3", "machinaopus:molybdenum_ingot"}, {"sulfur", "1", "machinaopus:sulfur"}, {"sulfur", "3", "machinaopus:petroleum_coke"},
+                {"rubber", "1", "machinaopus:rubber_log"}, {"mechanical_miner", "3", "machinaopus:raw_molybdenum"}};
+        for (String[] find : finds) {
+            var outputs = ModRegistries.species(registries, AntColonies.id(find[0])).production().outputs();
+            RandomSource random = RandomSource.create(3);
+            java.util.Set<String> seen = new java.util.HashSet<>();
+            for (int i = 0; i < 20_000; i++) {
+                SpeciesOutput picked = ColonySimulator.pickOutput(outputs, Integer.parseInt(find[1]), 1.0, random);
+                if (picked != null) {
+                    seen.add(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(picked.create(1).getItem()).toString());
+                }
+            }
+            helper.assertTrue(seen.contains(find[2]), find[0] + " at stage " + find[1] + " should find " + find[2] + ", found " + seen);
+        }
+        // Feeding MachinaOpus's materials starts the evolutions.
+        String[][] feeds = {{"wood_to_rubber", "machinaopus:rubber_sheet"}, {"iron_to_molybdenum", "machinaopus:molybdenum_ingot"},
+                {"fire_to_sulfur", "machinaopus:sulfur"}, {"lead_to_uranium", "machinaopus:raw_uranium"}, {"copper_to_tin", "machinaopus:tin_ingot"},
+                {"iron_to_lead", "machinaopus:lead_ingot"}, {"lead_to_silver", "machinaopus:silver_ingot"}, {"amethyst_to_fluorite", "machinaopus:fluorite"}};
+        var evolutions = registries.lookupOrThrow(ModRegistries.EVOLUTION).listElements().toList();
+        for (String[] feed : feeds) {
+            var evolution = evolutions.stream().filter(e -> e.key().identifier().equals(AntColonies.id(feed[0]))).findFirst();
+            helper.assertTrue(evolution.isPresent(), "Evolution " + feed[0] + " should load with MachinaOpus");
+            ItemStack food = new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(Identifier.parse(feed[1])));
+            helper.assertTrue(evolution.get().value().item().test(food), feed[0] + " should take " + feed[1]);
+        }
+        helper.assertTrue(ModRegistries.species(registries, AntColonies.id("molybdenum")).signature()
+                .filter(item -> item.value() == net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(Identifier.parse("machinaopus:molybdenum_ingot")))
+                .isPresent(), "Molybdenum Ant upgrades should be made from molybdenum ingots");
+        // A real Rubber colony taps rubber at its Harvesting Site.
+        BlockPos pos = new BlockPos(1, 1, 1);
+        TerrariumBlockEntity terrarium = terrarium(helper, pos, AntColonies.id("rubber"), 400, 0, 5000);
+        StructureBlockEntity storage = ring(helper, pos, StructureKind.HARVESTING_SITE, StructureKind.STORAGE).get(1);
+        step(helper, terrarium, 10);
+        int rubber = 0;
+        for (int slot = 0; slot < storage.getContainerSize(); slot++) {
+            ItemStack stack = storage.getItem(slot);
+            if (net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString().equals("machinaopus:rubber_sheet")) {
+                rubber += stack.getCount();
+            }
+        }
+        helper.assertTrue(rubber > 0, "A Rubber colony's Harvesting Site should bring rubber sheets");
         helper.succeed();
     }
 

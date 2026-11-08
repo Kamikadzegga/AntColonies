@@ -15,9 +15,9 @@ Ant Colonies needs nothing but NeoForge. Everything below is optional.
 
 ## Other mods
 
-Nothing here needs another mod, and nothing was tested with one: none of the mods below had a build for Minecraft 26.3
-when this was written (AE2, Refined Storage 3 and Ender IO had 26.1.2 builds; Create and Mekanism only unofficial
-ports). Everything goes through NeoForge's shared systems, which those mods use:
+Nothing here needs another mod. Only MachinaOpus (below) was tested with Ant Colonies: none of the other mods had a
+build for Minecraft 26.3 when this was written (AE2, Refined Storage 3 and Ender IO had 26.1.2 builds; Create and
+Mekanism only unofficial ports). Everything goes through NeoForge's shared systems, which those mods use:
 
 - **Items** (Create funnels, chutes and arms; Mekanism transporters; Ender IO conduits; AE2 and Refined Storage
   import, export and storage buses; hoppers): Storage chambers can be emptied, Queen Chamber Queens taken out, and the
@@ -31,16 +31,39 @@ ports). Everything goes through NeoForge's shared systems, which those mods use:
 | Species | Comes from | Loads with |
 |---|---|---|
 | Osmium Ant | Stone (osmium ingot) | Mekanism |
-| Tin Ant | Copper (tin ingot) | Mekanism, Thermal |
+| Tin Ant | Copper (tin ingot) | Mekanism, Thermal, MachinaOpus |
 | Zinc Ant | Copper (zinc ingot) | Create |
-| Lead Ant | Iron (lead ingot) | Mekanism, Thermal, Immersive Engineering |
+| Lead Ant | Iron (lead ingot) | Mekanism, Thermal, Immersive Engineering, MachinaOpus |
 | Nickel Ant | Iron (nickel ingot) | Thermal, Immersive Engineering |
 | Aluminum Ant | Iron (aluminum ingot) | Immersive Engineering |
-| Silver Ant | Lead (silver ingot) | Thermal, Immersive Engineering |
-| Uranium Ant | Lead (uranium ingot) | Mekanism, Immersive Engineering |
-| Fluorite Ant | Amethyst (fluorite) | Mekanism |
+| Silver Ant | Lead (silver ingot) | Thermal, Immersive Engineering, MachinaOpus |
+| Uranium Ant | Lead (raw uranium) | Mekanism, Immersive Engineering, MachinaOpus |
+| Fluorite Ant | Amethyst (fluorite) | Mekanism, MachinaOpus |
 | Certus Ant | Amethyst (certus quartz) | Applied Energistics 2 |
+| Molybdenum Ant | Iron (molybdenum ingot) | MachinaOpus |
+| Sulfur Ant | Fire (sulfur) | MachinaOpus |
+| Rubber Ant | Wood (rubber sheet) | MachinaOpus |
 
-  The Mechanical Miner Ant also turns up raw tin, osmium, zinc and lead at stage 3 when a mod adds them. Ender IO and
-  Refined Storage add no ores of their own; the vanilla materials they use (quartz, redstone, gold, ender pearls) come
-  from Fire, Redstone, Gold and Ender Ants.
+  The Mechanical Miner Ant also turns up raw tin, osmium, zinc, lead and molybdenum at stage 3 when a mod adds them.
+  Ender IO and Refined Storage add no ores of their own; the vanilla materials they use (quartz, redstone, gold, ender
+  pearls) come from Fire, Redstone, Gold and Ender Ants.
+
+### MachinaOpus
+
+Tested together (MachinaOpus 0.0.6): the `machinaopus_materials` game test runs when MachinaOpus is in `run/mods`, and
+passes at once without it. With MachinaOpus installed, eight species bring its materials:
+
+- **Tin, Lead and Silver Ants**: its nuggets from the start, raw ore from stage 2, ingots as rare finds at stage 3.
+- **Uranium Ant**: MachinaOpus's raw uranium from the start (it has no uranium nuggets or ingots). Lead Ants evolve into
+  it when fed raw uranium.
+- **Fluorite Ant**: fluorite, for hydrofluoric acid and uranium enrichment.
+- **Molybdenum Ant** (Iron Ants fed a molybdenum ingot): molybdenum nuggets (a Processing upgrade turns them into
+  ingots), raw molybdenum from stage 2, ingots at stage 3.
+- **Sulfur Ant** (Fire Ants fed sulfur; hot climate): sulfur without an Oil Refinery, plus netherrack, magma, basalt,
+  gunpowder from stage 2 and the odd petroleum coke at stage 3.
+- **Rubber Ant** (Wood Ants fed a rubber sheet; a farmer): forages rubber logs, leaves and saplings, and at a Harvesting
+  Site taps rubber sheets (and slime balls from stage 2).
+
+Molybdenum, Sulfur and Rubber Ants name MachinaOpus's items directly, so they have species upgrades made from a
+molybdenum ingot, sulfur and a rubber sheet. MachinaOpus's item pipes and energy cables use the same NeoForge
+capabilities as other mods, but have not been tried against Ant Colonies' blocks in game.

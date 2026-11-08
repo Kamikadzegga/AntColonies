@@ -63,6 +63,11 @@
         "tag": "c:raw_materials/lead",
         "weight": 3,
         "min_stage": 3
+      },
+      {
+        "tag": "c:raw_materials/molybdenum",
+        "weight": 2,
+        "min_stage": 3
       }
     ]
   },
