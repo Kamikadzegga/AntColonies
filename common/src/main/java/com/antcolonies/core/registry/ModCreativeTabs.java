@@ -36,7 +36,7 @@ public final class ModCreativeTabs {
                 RandomSource random = RandomSource.create(42);
                 parameters.holders().lookup(ModRegistries.SPECIES).ifPresent(lookup -> lookup.listElements().forEach(species -> {
                     output.accept(TweezersItem.queenTube(Genetics.wildQueen(species.key().identifier(), random)));
-                    output.accept(TweezersItem.antTube(new AntSample(species.key().identifier(), Caste.WORKER, AntSample.MAX)));
+                    output.accept(TweezersItem.antTube(new AntSample(species.key().identifier(), Caste.WORKER, AntSample.PINCH)));
                 }));
             })
             .build());

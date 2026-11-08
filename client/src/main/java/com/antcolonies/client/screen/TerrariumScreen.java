@@ -165,6 +165,19 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         button(x + 116, y - 2, 12, 11, "-", TerrariumMenu.BUTTON_SOLDIERS_LESS, List.of(Component.translatable("gui.antcolonies.soldier_share.hint")), true);
         button(x + 130, y - 2, 12, 11, "+", TerrariumMenu.BUTTON_SOLDIERS_MORE, List.of(Component.translatable("gui.antcolonies.soldier_share.hint")), true);
         y += 11;
+        // Ants into a tube, to move them to another colony (the whole colony moves with the Terrarium when it is broken).
+        label(graphics, Component.translatable("gui.antcolonies.take"), x, y, LABEL);
+        List<Component> takeHint = List.of(Component.translatable("gui.antcolonies.take.hint", com.antcolonies.content.item.AntSample.MAX),
+                Component.translatable("gui.antcolonies.take.move").withStyle(ChatFormatting.GRAY),
+                Component.translatable("gui.antcolonies.take.whole").withStyle(ChatFormatting.GRAY));
+        String soldiersText = Component.translatable("gui.antcolonies.take.soldiers").getString();
+        String workersText = Component.translatable("gui.antcolonies.take.workers").getString();
+        int soldiersW = buttonWidth(soldiersText);
+        int workersW = buttonWidth(workersText);
+        int bx = CONTENT_X + CONTENT_W - 4 - soldiersW;
+        button(bx, y - 2, soldiersW, 11, soldiersText, TerrariumMenu.BUTTON_TAKE_SOLDIERS, takeHint, colony.soldiers() > 0);
+        button(bx - 2 - workersW, y - 2, workersW, 11, workersText, TerrariumMenu.BUTTON_TAKE_WORKERS, takeHint, colony.workers() > colony.maintenanceWorkers());
+        y += 11;
         if (colony.formerSpecies() != null) {
             label(graphics, Component.translatable("gui.antcolonies.transforming", Tooltips.species(colony.formerSpecies()),
                     Math.round(colony.conversion() * 100)), x, y, ACCENT);

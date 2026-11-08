@@ -95,6 +95,7 @@ public class AntColoniesGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> ANTHILL = test("giant_anthill", AntColoniesGameTests::giantAnthill);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> RUNS_ALONE = test("colony_runs_by_itself", AntColoniesGameTests::colonyRunsByItself);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> JOINING = test("chambers_join_by_touching", AntColoniesGameTests::chambersJoinByTouching);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> MOVING = test("colony_moves_with_terrarium", AntColoniesGameTests::colonyMoves);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> UPGRADE_SYNC = test("terrarium_update_keeps_upgrades", AntColoniesGameTests::terrariumUpdateKeepsUpgrades);
 
     public AntColoniesGameTests(IEventBus modEventBus) {
@@ -111,7 +112,7 @@ public class AntColoniesGameTests {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(AntColonies.id("default"), new TestEnvironmentDefinition.AllOf(List.of()));
         for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> test : List.of(SPECIES_DATA_LOADS, COLONY_PERSISTS, ALLOCATION, SCAVENGING,
                 MORE_WORKERS, STARVATION, BREEDING, FARMING, GARDEN_NEEDS_FARMERS, FIGHTING, EVOLUTION, REARING, HYBRIDS, TWO_COLONIES, OFFLINE,
-                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL, RUNS_ALONE, JOINING, UPGRADE_SYNC)) {
+                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL, RUNS_ALONE, JOINING, MOVING, UPGRADE_SYNC)) {
             event.registerTest(test.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, test.getId()),
                     spaced(environment, 200)));
         }
@@ -318,7 +319,10 @@ public class AntColoniesGameTests {
         helper.succeed();
     }
 
-    /** Assigned workers find their species' resources and keep them in their Foraging Site's store, then in the Storage. */
+    /**
+     * Assigned workers find their species' resources and put them in the Storage; with the Storage full they keep them in
+     * their Foraging Site's store, which empties into the Storage again once it has room.
+     */
     private static void scavenging(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         TerrariumBlockEntity terrarium = terrarium(helper, pos, COMMON, 80, 0, 5000);
@@ -326,13 +330,21 @@ public class AntColoniesGameTests {
         StructureBlockEntity site = built.get(0);
         StructureBlockEntity pile = built.get(1);
         step(helper, terrarium, 5);
-        helper.assertTrue(count(site) > 0, "The Foraging Site's store stayed empty");
-        // Fill the site's store: what comes next goes to the Storage.
-        for (int slot = 0; slot < site.getContainerSize(); slot++) {
-            site.setItem(slot, new ItemStack(Items.BEDROCK, 64));
+        helper.assertTrue(count(pile) > 0 && count(site) == 0, "Finds should go to the Storage: storage " + count(pile) + ", site " + count(site));
+        // Storage full: finds wait in the site.
+        java.util.List<ItemStack> kept = new java.util.ArrayList<>();
+        for (int slot = 0; slot < pile.getContainerSize(); slot++) {
+            kept.add(pile.getItem(slot).copy());
+            pile.setItem(slot, new ItemStack(Items.BEDROCK, 64));
         }
         step(helper, terrarium, 5);
-        helper.assertTrue(count(pile) > 0, "With the site's store full, finds should go to the Storage");
+        helper.assertTrue(count(site) > 0, "With the Storage full, finds should wait in the site's store");
+        // Room again: the site's store moves on to the Storage.
+        for (int slot = 0; slot < pile.getContainerSize(); slot++) {
+            pile.setItem(slot, kept.get(slot));
+        }
+        step(helper, terrarium, 1 / 60.0);
+        helper.assertTrue(count(site) == 0, "The site's store should empty into the Storage, still " + count(site));
         AntSpecies common = ModRegistries.species(helper.getLevel().registryAccess(), COMMON);
         for (int slot = 0; slot < pile.getContainerSize(); slot++) {
             ItemStack stack = pile.getItem(slot);
@@ -974,6 +986,42 @@ public class AntColoniesGameTests {
         helper.succeed();
     }
 
+
+    /**
+     * Moving ants: a broken Terrarium keeps its colony (Queen, workers, soldiers, food) and brings it wherever it is
+     * placed; the Colony page's buttons take soldiers or workers into an empty Test Tube.
+     */
+    private static void colonyMoves(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos from = new BlockPos(1, 1, 1);
+        TerrariumBlockEntity terrarium = terrarium(helper, from, COMMON, 300, 40, 900);
+        BlockPos fromAbs = helper.absolutePos(from);
+        List<ItemStack> drops = net.minecraft.world.level.block.Block.getDrops(level.getBlockState(fromAbs), level, fromAbs, terrarium);
+        ItemStack item = drops.stream().filter(stack -> stack.is(ModItems.TERRARIUM.get())).findFirst().orElse(ItemStack.EMPTY);
+        helper.assertTrue(item.has(ModDataComponents.COLONY.get()), "A broken Terrarium should drop with its colony: " + drops);
+        helper.setBlock(from, net.minecraft.world.level.block.Blocks.AIR);
+        BlockPos to = new BlockPos(6, 1, 1);
+        helper.setBlock(to, ModBlocks.TERRARIUM.get());
+        TerrariumBlockEntity moved = helper.getBlockEntity(to, TerrariumBlockEntity.class);
+        moved.applyComponentsFromItemStack(item);
+        Colony colony = moved.colony();
+        helper.assertTrue(colony.queen() != null && colony.workers() == 300 && colony.soldiers() == 40 && Math.abs(colony.food() - 900) < 1e-6,
+                "The placed Terrarium should hold the same colony: queen " + colony.queen() + ", " + colony.workers() + " workers, "
+                        + colony.soldiers() + " soldiers, food " + colony.food());
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        player.getInventory().add(new ItemStack(ModItems.TEST_TUBE.get(), 2));
+        helper.assertTrue(com.antcolonies.content.item.TweezersItem.takeFromColony(player, moved, Caste.SOLDIER), "Taking soldiers failed");
+        helper.assertTrue(colony.soldiers() == 0, "The soldiers should be in the tube, the colony still has " + colony.soldiers());
+        int inTube = 0;
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            var ants = player.getInventory().getItem(slot).get(ModDataComponents.ANTS.get());
+            if (ants != null && ants.caste() == Caste.SOLDIER) {
+                inTube += ants.count();
+            }
+        }
+        helper.assertTrue(inTube == 40, "The tube should hold the 40 soldiers, holds " + inTube);
+        helper.succeed();
+    }
 
     /**
      * A Terrarium's upgrades must survive the updates sent to players: loading an update clears the upgrade slots, so

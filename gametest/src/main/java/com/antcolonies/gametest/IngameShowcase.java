@@ -179,6 +179,8 @@ public class IngameShowcase {
         siteUpgrades.setItem(2, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.POPULATION, 3)));
         ((StructureBlockEntity) level.getBlockEntity(origin.offset(1, 0, 6))).upgrades()
                 .setItem(0, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.BREEDING, 2)));
+        ((StructureBlockEntity) level.getBlockEntity(origin.offset(1, 0, 6))).upgrades()
+                .setItem(1, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.POPULATION, 2)));
         // Three chambers with no Terrarium, apart from each other: their screens say they aren't part of a colony.
         structure(level, origin.offset(3, 0, -4), StructureKind.NEST_CHAMBER);
         structure(level, origin.offset(5, 0, -4), StructureKind.QUEEN_CHAMBER);

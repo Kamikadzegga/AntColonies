@@ -23,6 +23,8 @@ public class TerrariumMenu extends BaseMenu {
     public static final int BUTTON_SOLDIERS_LESS = 0;
     public static final int BUTTON_SOLDIERS_MORE = 1;
     public static final int BUTTON_REMOVE_QUEEN = 2;
+    public static final int BUTTON_TAKE_WORKERS = 3;
+    public static final int BUTTON_TAKE_SOLDIERS = 4;
     /** Assignment buttons: base + site index * 20 + action (see {@link StructureMenu#adjust}). */
     public static final int BUTTON_ASSIGNMENT = 1000;
     public static final int INVENTORY_X = 44;
@@ -67,6 +69,12 @@ public class TerrariumMenu extends BaseMenu {
             case BUTTON_SOLDIERS_MORE -> colony.setSoldierShare(colony.soldierShare() + 0.05);
             case BUTTON_REMOVE_QUEEN -> {
                 return terrarium.removeQueen();
+            }
+            case BUTTON_TAKE_WORKERS -> {
+                return com.antcolonies.content.item.TweezersItem.takeFromColony(player, terrarium, com.antcolonies.colony.species.Caste.WORKER);
+            }
+            case BUTTON_TAKE_SOLDIERS -> {
+                return com.antcolonies.content.item.TweezersItem.takeFromColony(player, terrarium, com.antcolonies.colony.species.Caste.SOLDIER);
             }
             default -> {
                 if (id < BUTTON_ASSIGNMENT) {

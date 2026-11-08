@@ -8,6 +8,7 @@ import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.client.ClientSpecies;
 import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.colony.model.StructureKind;
+import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.content.menu.StructureMenu;
 import com.antcolonies.colony.species.AntSpecies;
 import com.antcolonies.colony.species.Cost;
@@ -73,6 +74,8 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         boolean slotted = kind == StructureKind.QUEEN_CHAMBER;
         if (kind == StructureKind.QUEEN_CHAMBER) {
             drawQueenChamber(graphics, x);
+        } else if (kind == StructureKind.NEST_CHAMBER) {
+            y = nestRoom(graphics, x, y);
         } else if (!kind.job().any()) {
             y = wrapped(graphics, Component.translatable("gui.antcolonies.effect." + kind.getSerializedName()), x, y, 170, 9, DIM);
         } else if (kind == StructureKind.FORAGING_SITE) {
@@ -106,6 +109,30 @@ public class StructureScreen extends AntScreen<StructureMenu> {
             clipped.add(new Clipped(8, kind == StructureKind.STORAGE ? 130 : 18, 170, full));
         }
         return shown;
+    }
+
+    /**
+     * What this Nest Chamber adds to its colony, with the Population Upgrades in it (each tier adds half again): room for
+     * adults (some of them soldiers) and larvae. Updates as upgrades go in and out.
+     */
+    private int nestRoom(GuiGraphicsExtractor graphics, int x, int y) {
+        int tier = menu.structure().upgradeTier(com.antcolonies.colony.upgrade.UpgradeType.POPULATION);
+        double room = 1 + 0.5 * tier;
+        long adults = Math.round(AntConfig.get(AntConfig.NEST_ADULT_CAPACITY) * room);
+        long soldiers = Math.round(AntConfig.get(AntConfig.NEST_SOLDIER_CAPACITY) * room);
+        long larvae = Math.round(AntConfig.get(AntConfig.NEST_LARVAE_CAPACITY) * room);
+        label(graphics, fit(Component.translatable("gui.antcolonies.nest.adults", number(adults)).getString(), 170), x, y, LABEL);
+        y += 10;
+        label(graphics, fit(Component.translatable("gui.antcolonies.nest.soldiers", number(soldiers)).getString(), 170), x, y, LABEL);
+        y += 10;
+        label(graphics, fit(Component.translatable("gui.antcolonies.nest.larvae", number(larvae)).getString(), 170), x, y, LABEL);
+        y += 10;
+        if (tier > 0) {
+            label(graphics, fit(Component.translatable("gui.antcolonies.nest.upgraded", tier * 50).getString(), 170), x, y, GOOD);
+        } else {
+            label(graphics, fit(Component.translatable("gui.antcolonies.nest.upgrade_hint").getString(), 170), x, y, DIM);
+        }
+        return y + 11;
     }
 
     /** A working site's ants of one kind: how many it has and wants, the +/- buttons, and how fast they work. */

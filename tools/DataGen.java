@@ -662,6 +662,7 @@ public class DataGen {
         LANG.put("config.jade.plugin_" + NS + ".structure", "Colony chamber ants and output");
         LANG.put("config.jade.plugin_" + NS + ".wild_ant", "Wild ant species");
         LANG.put("config.jade.plugin_" + NS + ".wild_nest", "Wild nest species");
+        LANG.put("message." + NS + ".take.no_soldiers", "The colony has no soldiers");
         LANG.put("jade." + NS + ".catch", "Catch it with Tweezers (and an empty Test Tube)");
         LANG.put("jade." + NS + ".nest", "Tweezers take workers out; now and then a Queen");
         LANG.put("tooltip." + NS + ".species.climate", "Climate: %s");
@@ -1469,11 +1470,12 @@ public class DataGen {
                 {"start", "Getting Started", String.join("\n",
                         "Craft Tweezers and some Test Tubes. Find wild ants or an Ant Nest and use the Tweezers on them: the ants go into an empty Test Tube in your inventory. Queens are rare; nests give one now and then.",
                         "Place a Terrarium, put the Queen Test Tube in, then some Ant Food. The Queen starts laying eggs at once: a Terrarium works on its own.",
-                        "The Terrarium's screen shows the colony: its ants, genes, jobs and numbers, and on the Info page what its ants are like.")},
+                        "The Terrarium's screen shows the colony: its ants, genes, jobs and numbers, and on the Info page what its ants are like.",
+                        "To move a colony, break its Terrarium: it keeps the Queen, the ants and the food, and they go on wherever you place it. The Colony page's buttons take workers or soldiers into a Test Tube, to add to another colony.")},
                 {"chambers", "The Colony Build", String.join("\n",
                         "Chambers are additions. Put one against the Terrarium, or against a chamber already in the colony, on any side (above and below too): it joins, and the glass between them goes: the whole build becomes one glass case. A colony takes up to 32.",
                         "Nest Chamber: eggs at full speed, faster larvae, room for 3,000 adults (1,000 of them soldiers) and 1,500 larvae. Without one the Queen lays at half speed and only 60 adults fit.",
-                        "Foraging Site: workers find the species' resources and soldiers hunt mobs for their drops. It keeps 9 stacks of finds.",
+                        "Foraging Site: workers find the species' resources and soldiers hunt mobs for their drops. It sends its finds to the Storage, and holds 9 stacks while the Storage is full.",
                         "Harvesting Site: Farmer Ants grow food and harvest there.",
                         "Storage: more room for finds, and food room.",
                         "Queen Chamber: raises new Queens.",
@@ -1597,10 +1599,10 @@ public class DataGen {
         l.put("entity." + NS + ".wild_ant", "Wild Ant");
         // Tooltips of blocks and items.
         String[][] tips = {
-                {"terrarium", "The heart of a colony. Put a Queen in and feed her. Chambers placed against it, or against its chambers, join the colony."},
+                {"terrarium", "The heart of a colony. Put a Queen in and feed her. Chambers placed against it, or against its chambers, join the colony. Broken, it keeps its colony: place it anywhere to move it."},
                 {"nest_chamber", "Brood and housing: eggs at full speed, faster larvae, room for 3,000 adults (1,000 soldiers) and 1,500 larvae."},
                 {"storage", "More room for what the colony finds, and food room. Hoppers can empty it; Storage Upgrades open more slots."},
-                {"foraging_site", "Workers find their species' resources and soldiers hunt mobs (from their loot tables; none spawn). Keeps 9 stacks of finds."},
+                {"foraging_site", "Workers find their species' resources and soldiers hunt mobs (from their loot tables; none spawn). Sends finds to Storage; holds 9 stacks when it is full."},
                 {"harvesting_site", "Farmer Ants grow food here, plus mushrooms, seeds and berries."},
                 {"queen_chamber", "Raises new Queens from the colony's Queen."},
                 {"upgrade_station", "Makes species upgrades from an Upgrade Base and a species' signature material."},
@@ -1721,7 +1723,7 @@ public class DataGen {
                 {"contested", "As near to two Terrariums: joins neither"},
                 {"site.workers", "Workers %s/%s (want %s)"}, {"site.soldiers", "Soldiers %s/%s (want %s)"},
                 {"site.farmers", "Farmers %s/%s (want %s)"}, {"site.rate", "%s finds per minute"},
-                {"site.hunt_rate", "%s hunts per minute"}, {"site.food_rate", "%s food per minute"}, {"site.store", "Finds are kept here first, then in Storage"},
+                {"site.hunt_rate", "%s hunts per minute"}, {"site.food_rate", "%s food per minute"}, {"site.store", "Finds wait here while the Storage is full"},
                 {"queen_chamber.slots", "Rears a new Queen"}, {"queen_chamber.time", "Takes %s s at full speed"},
                 {"slot.qc_tube", "Test Tube slot"}, {"slot.qc_tube.hint", "An empty Test Tube to hold the new Queen"},
                 {"slot.qc_sample", "Sample slot (optional)"}, {"slot.qc_sample.hint", "A Genetic Sample can cross a hybrid into the daughter"},
@@ -1755,6 +1757,12 @@ public class DataGen {
                 {"lab.catalyst_hint", "Catalyst: Reroll Serum, a mutation catalyst, or an empty Test Tube"},
                 {"lab.upgrade_slot_hint", "Speed or Genetic Upgrade"},
                 {"effect.nest_chamber", "Eggs at full speed and faster larvae. Room for 3,000 adults (1,000 of them soldiers) and 1,500 larvae."},
+                {"nest.adults", "Room for %s adults"}, {"nest.soldiers", "(%s of them soldiers)"}, {"nest.larvae", "Room for %s larvae"},
+                {"take", "Take out:"}, {"take.workers", "Workers"}, {"take.soldiers", "Soldiers"},
+                {"take.hint", "Takes up to %s ants into an empty Test Tube from your inventory"},
+                {"take.move", "Use the tube on another Terrarium to add them."},
+                {"take.whole", "To move the whole colony, break the Terrarium."},
+                {"nest.upgraded", "+%s%% from Population Upgrades"}, {"nest.upgrade_hint", "Population Upgrades: +50%% room per tier"},
                 {"effect.storage", ""}};
         for (String[] g : gui) {
             if (!g[1].isEmpty()) {

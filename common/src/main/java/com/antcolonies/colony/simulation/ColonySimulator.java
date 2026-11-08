@@ -258,6 +258,11 @@ public final class ColonySimulator {
         }
         allocation.publish(step);
 
+        // What waits in the Foraging Sites' stores moves on to Storage.
+        for (StructureBlockEntity site : step.of(StructureKind.FORAGING_SITE)) {
+            ColonyStorage.moveToStorage(level, colony, site);
+        }
+
         // --- Queen Chambers ---
         for (StructureBlockEntity chamber : step.of(StructureKind.QUEEN_CHAMBER)) {
             QueenRearing.tick(step.level, colony, step.species, chamber, step.dt, step.foodFactor);

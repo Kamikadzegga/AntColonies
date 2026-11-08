@@ -121,7 +121,7 @@ public class TweezersItem extends Item {
             caught.set(ModDataComponents.SPECIES.get(), colony.species());
             give(player, caught);
         } else {
-            int count = (int) Math.min(AntSample.MAX, colony.workers() - colony.maintenanceWorkers());
+            int count = (int) Math.min(AntSample.PINCH, colony.workers() - colony.maintenanceWorkers());
             if (count <= 0) {
                 player.sendOverlayMessage(Component.translatable("message.antcolonies.tweezers.no_workers").withStyle(ChatFormatting.RED));
                 return InteractionResult.FAIL;
@@ -153,6 +153,39 @@ public class TweezersItem extends Item {
         ItemStack tube = new ItemStack(ModItems.ANT_TEST_TUBE.get());
         tube.set(ModDataComponents.ANTS.get(), sample);
         return tube;
+    }
+
+    /**
+     * The Terrarium's take buttons: up to a tube's worth ({@link AntSample#MAX}) of the colony's workers (never those it
+     * needs at home) or soldiers, into an empty Test Tube from the player's inventory. Using the tube on another Terrarium
+     * adds them to that colony.
+     */
+    public static boolean takeFromColony(Player player, TerrariumBlockEntity terrarium, Caste caste) {
+        if (!hasEmptyTube(player)) {
+            player.sendOverlayMessage(Component.translatable("message.antcolonies.tweezers.no_tube").withStyle(ChatFormatting.RED));
+            return false;
+        }
+        Colony colony = terrarium.colony();
+        boolean soldiers = caste == Caste.SOLDIER;
+        int count = (int) Math.min(AntSample.MAX, soldiers ? colony.soldiers() : colony.workers() - colony.maintenanceWorkers());
+        if (count <= 0) {
+            player.sendOverlayMessage(Component.translatable(soldiers ? "message.antcolonies.take.no_soldiers" : "message.antcolonies.tweezers.no_workers")
+                    .withStyle(ChatFormatting.RED));
+            return false;
+        }
+        if (soldiers) {
+            colony.takeSoldiers(count);
+        } else {
+            colony.addWorkers(-count);
+        }
+        ItemStack caught = antTube(new AntSample(colony.species(), caste, count));
+        takeEmptyTube(player);
+        give(player, caught);
+        player.level().playSound(null, player.blockPosition(), ModSounds.CAPTURE.get(), SoundSource.PLAYERS, 0.6F, 1.3F);
+        player.sendOverlayMessage(Component.translatable("message.antcolonies.tweezers.caught", caught.getHoverName()).withStyle(ChatFormatting.GREEN));
+        terrarium.setChanged();
+        terrarium.syncNow();
+        return true;
     }
 
     private static boolean hasEmptyTube(Player player) {

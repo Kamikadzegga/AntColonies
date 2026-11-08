@@ -11,7 +11,9 @@ import net.minecraft.resources.Identifier;
 
 /** Ants caught in a Test Tube: their species, caste and how many (a tube holds up to {@link #MAX}). */
 public record AntSample(Identifier species, Caste caste, int count) {
-    public static final int MAX = 16;
+    public static final int MAX = 1000;
+    /** How many a pinch of the Tweezers takes from a Terrarium (the Terrarium's buttons take a whole tube). */
+    public static final int PINCH = 16;
     public static final Codec<AntSample> CODEC = RecordCodecBuilder.create(i -> i.group(
             Identifier.CODEC.fieldOf("species").forGetter(AntSample::species),
             Caste.CODEC.optionalFieldOf("caste", Caste.WORKER).forGetter(AntSample::caste),

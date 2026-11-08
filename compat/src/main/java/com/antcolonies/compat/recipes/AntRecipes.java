@@ -58,7 +58,7 @@ public final class AntRecipes {
     }
 
     private static ItemStack ants(Identifier species, Caste caste) {
-        return TweezersItem.antTube(new AntSample(species, caste, AntSample.MAX));
+        return TweezersItem.antTube(new AntSample(species, caste, AntSample.PINCH));
     }
 
     private static ItemStack brood(Identifier species, boolean larva) {

@@ -41,8 +41,8 @@ Every simulation step (1 second by default) a colony:
 4. produces: `rate = base x species x (ants on that kind of job)^0.85 x bonus^0.6 x health`, where `bonus` is
    genetics x mutations x upgrades. The ants are counted over all of a colony's sites, so many small sites find no
    more than one big one; the bonus is softened so stacked bonuses can't multiply without end. Rare finds (diamonds,
-   netherite scrap, shells, sponges...) are one item each: Gathering only multiplies common finds. A site keeps its finds
-   in its own store first, then in the colony's Storage,
+   netherite scrap, shells, sponges...) are one item each: Gathering only multiplies common finds. Finds go into the
+   colony's Storage; while it is full they wait in the Foraging Site's own store and move on when there is room,
 5. raises Queens in Queen Chambers.
 
 While a Terrarium is unloaded its colony stands still. When it loads again it catches up on at most 5 minutes (more
@@ -62,6 +62,9 @@ with Simulation Upgrades), never on the whole time away.
 5. Grow: stage 2 needs 100 adults; stage 3 1,000 adults; stage 4 5,000 adults and a mineral species or good genetics.
    Stages unlock outputs and change the Terrarium's look.
 
+To move a colony, break its Terrarium: it keeps the Queen, the ants and the food. The Colony page's **Take out**
+buttons put workers or soldiers into a Test Tube (up to 1,000), to add to another colony.
+
 The **Ant Identification Book** has how-to-play pages and a page for every species.
 
 ## Structures
@@ -70,7 +73,7 @@ The **Ant Identification Book** has how-to-play pages and a page for every speci
 |---|---|
 | Terrarium | The colony: Queen, food, evolution feeding, overview GUI (Colony, Genes, Jobs, Stats, Info). Houses 60 adults and lays eggs at half speed on its own. Keeps the colony when broken. |
 | Nest Chamber | Brood and housing: eggs at full speed, faster larvae, room for 3,000 adults (1,000 of them soldiers) and 1,500 larvae. More chambers lay faster (diminishing). |
-| Foraging Site | Workers find the species' outputs; soldiers hunt, with drops from the hunted mobs' own loot tables (vanilla or modded; no mobs spawn). Keeps 9 stacks of finds. Takes species upgrades. |
+| Foraging Site | Workers find the species' outputs; soldiers hunt, with drops from the hunted mobs' own loot tables (vanilla or modded; no mobs spawn). Sends its finds to Storage; holds 9 stacks while the Storage is full. Takes species upgrades. |
 | Harvesting Site | Farmer Ants grow food and harvest mushrooms, seeds, berries. Other species can't farm. |
 | Storage | More room for finds, 9 to 54 slots (Storage Upgrades), and 25,000 food room. Hoppers can empty it; Automation pushes it down. |
 | Queen Chamber | Raises daughter Queens; a Genetic Sample crossed in can make hybrids. |

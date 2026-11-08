@@ -328,6 +328,11 @@
   "gui.antcolonies.more_1": "+1",
   "gui.antcolonies.more_10": "+10",
   "gui.antcolonies.mutations": "Mutations:",
+  "gui.antcolonies.nest.adults": "Room for %s adults",
+  "gui.antcolonies.nest.larvae": "Room for %s larvae",
+  "gui.antcolonies.nest.soldiers": "(%s of them soldiers)",
+  "gui.antcolonies.nest.upgrade_hint": "Population Upgrades: +50%% room per tier",
+  "gui.antcolonies.nest.upgraded": "+%s%% from Population Upgrades",
   "gui.antcolonies.no_jobs": "No Foraging Site or Harvesting Site",
   "gui.antcolonies.no_mutations": "No mutations",
   "gui.antcolonies.not_linked": "Not joined to a Terrarium",
@@ -348,7 +353,7 @@
   "gui.antcolonies.site.hunt_rate": "%s hunts per minute",
   "gui.antcolonies.site.rate": "%s finds per minute",
   "gui.antcolonies.site.soldiers": "Soldiers %s/%s (want %s)",
-  "gui.antcolonies.site.store": "Finds are kept here first, then in Storage",
+  "gui.antcolonies.site.store": "Finds wait here while the Storage is full",
   "gui.antcolonies.site.workers": "Workers %s/%s (want %s)",
   "gui.antcolonies.slot.feed": "Feed slot",
   "gui.antcolonies.slot.feed.hint": "Food, ants in Test Tubes, eggs, larvae or an Evolution Catalyst",
@@ -387,6 +392,12 @@
   "gui.antcolonies.station.hint": "Base or upgrade + 4/8/16 signature items",
   "gui.antcolonies.station.processing": "Process",
   "gui.antcolonies.station.processing.hint": "Finds come processed",
+  "gui.antcolonies.take": "Take out:",
+  "gui.antcolonies.take.hint": "Takes up to %s ants into an empty Test Tube from your inventory",
+  "gui.antcolonies.take.move": "Use the tube on another Terrarium to add them.",
+  "gui.antcolonies.take.soldiers": "Soldiers",
+  "gui.antcolonies.take.whole": "To move the whole colony, break the Terrarium.",
+  "gui.antcolonies.take.workers": "Workers",
   "gui.antcolonies.transforming": "Transforming from %s: %s%%",
   "gui.antcolonies.upgrades": "Upgrades",
   "gui.antcolonies.workers": "Workers: %s",
@@ -395,7 +406,7 @@ Comparators read a Terrarium's food, a site's workforce, or how full a store is.
   "guide.antcolonies.automation.title": "Automation",
   "guide.antcolonies.chambers.text": "Chambers are additions. Put one against the Terrarium, or against a chamber already in the colony, on any side (above and below too): it joins, and the glass between them goes: the whole build becomes one glass case. A colony takes up to 32.
 Nest Chamber: eggs at full speed, faster larvae, room for 3,000 adults (1,000 of them soldiers) and 1,500 larvae. Without one the Queen lays at half speed and only 60 adults fit.
-Foraging Site: workers find the species' resources and soldiers hunt mobs for their drops. It keeps 9 stacks of finds.
+Foraging Site: workers find the species' resources and soldiers hunt mobs for their drops. It sends its finds to the Storage, and holds 9 stacks while the Storage is full.
 Harvesting Site: Farmer Ants grow food and harvest there.
 Storage: more room for finds, and food room.
 Queen Chamber: raises new Queens.
@@ -420,7 +431,8 @@ The more ants on a job, the more they find, a little less for each extra ant. Ne
   "guide.antcolonies.jobs.title": "Jobs",
   "guide.antcolonies.start.text": "Craft Tweezers and some Test Tubes. Find wild ants or an Ant Nest and use the Tweezers on them: the ants go into an empty Test Tube in your inventory. Queens are rare; nests give one now and then.
 Place a Terrarium, put the Queen Test Tube in, then some Ant Food. The Queen starts laying eggs at once: a Terrarium works on its own.
-The Terrarium's screen shows the colony: its ants, genes, jobs and numbers, and on the Info page what its ants are like.",
+The Terrarium's screen shows the colony: its ants, genes, jobs and numbers, and on the Info page what its ants are like.
+To move a colony, break its Terrarium: it keeps the Queen, the ants and the food, and they go on wherever you place it. The Colony page's buttons take workers or soldiers into a Test Tube, to add to another colony.",
   "guide.antcolonies.start.title": "Getting Started",
   "guide.antcolonies.upgrades.text": "Upgrades go in a screen's upgrade slots; shift-clicking one puts it there. Each block takes the kinds it can use: the slot's tooltip, and JEI or EMI, tell which.
 The Upgrade Station makes species upgrades from an Upgrade Base and a species' signature material. They work only for that species, in Foraging Sites.",
@@ -575,6 +587,7 @@ The Upgrade Station makes species upgrades from an Upgrade Base and a species' s
   "message.antcolonies.guard.soldiers": "A Guard Ant takes %s soldiers; this colony has %s",
   "message.antcolonies.guard.stay": "Your Guard Ant stays here",
   "message.antcolonies.nest.recovering": "The nest is still recovering",
+  "message.antcolonies.take.no_soldiers": "The colony has no soldiers",
   "message.antcolonies.tweezers.caught": "Caught: %s",
   "message.antcolonies.tweezers.no_eggs": "Not enough eggs",
   "message.antcolonies.tweezers.no_tube": "You need an empty Test Tube",
@@ -771,7 +784,7 @@ The Upgrade Station makes species upgrades from an Upgrade Base and a species' s
   "tooltip.antcolonies.emerald_fragment": "Nine make an emerald.",
   "tooltip.antcolonies.evolution_catalyst": "Feed to a Terrarium: doubles the chance of the next evolution attempt.",
   "tooltip.antcolonies.farmer_ant_nest": "A wild nest. Use Tweezers (with an empty Test Tube) to take ants; it fights back.",
-  "tooltip.antcolonies.foraging_site": "Workers find their species' resources and soldiers hunt mobs (from their loot tables; none spawn). Keeps 9 stacks of finds.",
+  "tooltip.antcolonies.foraging_site": "Workers find their species' resources and soldiers hunt mobs (from their loot tables; none spawn). Sends finds to Storage; holds 9 stacks when it is full.",
   "tooltip.antcolonies.generator": "Burns furnace fuel into FE and gives it to the machines next to it, such as the Genetic Laboratory.",
   "tooltip.antcolonies.genetic_analyzer": "Right-click a Terrarium, or use with a Queen in the other hand.",
   "tooltip.antcolonies.genetic_circuit": "Genetic Laboratory material.",
@@ -814,7 +827,7 @@ The Upgrade Station makes species upgrades from an Upgrade Base and a species' s
   "tooltip.antcolonies.stone_ant_nest": "A wild nest. Use Tweezers (with an empty Test Tube) to take ants; it fights back.",
   "tooltip.antcolonies.storage": "More room for what the colony finds, and food room. Hoppers can empty it; Storage Upgrades open more slots.",
   "tooltip.antcolonies.swamp_ant_nest": "A wild nest. Use Tweezers (with an empty Test Tube) to take ants; it fights back.",
-  "tooltip.antcolonies.terrarium": "The heart of a colony. Put a Queen in and feed her. Chambers placed against it, or against its chambers, join the colony.",
+  "tooltip.antcolonies.terrarium": "The heart of a colony. Put a Queen in and feed her. Chambers placed against it, or against its chambers, join the colony. Broken, it keeps its colony: place it anywhere to move it.",
   "tooltip.antcolonies.terrarium.colony": "Colony: %s",
   "tooltip.antcolonies.terrarium.no_queen": "No Queen",
   "tooltip.antcolonies.terrarium.population": "%s workers, %s soldiers",

@@ -24,12 +24,16 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
   or another chamber of the colony, on any side, in any shape (up to 32). Every block is the same glass case on a wooden
   base; touching blocks open into each other, so the whole build is one closed glass case with one frame around it. A chamber exactly as near to two Terrariums joins neither.
 - Twelve structures became five chambers: Nest Chamber (was Breeding Chamber, Ant Nursery, Worker Housing and Soldier
-  Barracks), Foraging Site (was Scavenging Site and Fighting Site: workers find, soldiers hunt, and it keeps 9 stacks
-  of finds), Harvesting Site (was Farmer Ant Garden), Storage (was Resource Pile and Food Storage) and Queen Chamber.
+  Barracks), Foraging Site (was Scavenging Site and Fighting Site: workers find, soldiers hunt, and it holds 9
+  stacks of finds while the Storage is full), Harvesting Site (was Farmer Ant Garden), Storage (was Resource Pile and Food Storage) and Queen Chamber.
   Glass Ant Tubes, Underground Tunnels, the Colony Connector and the Resource Processing Chamber are gone; Processing
   species upgrades still turn finds into their processed form.
 - The Genetic Laboratory is one block that takes FE from any side. Its five parts and the Genetic Energy Core are gone.
 - Food goes in only through the Terrarium. Storage adds food room.
+- A Nest Chamber's screen shows the room it adds, with its Population Upgrades.
+- The Terrarium's Colony page takes workers or soldiers into a Test Tube (up to 1,000 a tube) to add to another colony.
+  A broken Terrarium keeps its whole colony; its tooltip and the book now say so.
+- Foraging Sites send their finds to Storage, keeping them only while the Storage is full.
 - Shift-clicking an upgrade puts it only into an upgrade slot, never into a store or the feed slot.
 - Ants inside chambers are drawn only up close (`antDetailDistance`) with 3D models on: a view of 25 colonies runs
   about 80% faster.
