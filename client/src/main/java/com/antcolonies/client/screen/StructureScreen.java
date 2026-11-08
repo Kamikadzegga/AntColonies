@@ -58,12 +58,10 @@ public class StructureScreen extends AntScreen<StructureMenu> {
                 graphics.fill(sx + 6, sy + 7, sx + 12, sy + 12, 0xFF2B3B48);
                 graphics.fill(sx + 7, sy + 4, sx + 11, sy + 7, 0xFF2B3B48);
             }
-            label(graphics, linked ? Component.translatable("gui.antcolonies.linked") : Component.translatable(ColonyStatus.MISSING_CONNECTION.translationKey()),
-                    x, y, linked ? GOOD : BAD);
+            label(graphics, linkLine(linked), x, y, linked ? GOOD : BAD);
             return;
         }
-        label(graphics, linked ? Component.translatable("gui.antcolonies.linked") : Component.translatable(ColonyStatus.MISSING_CONNECTION.translationKey()),
-                x, y, linked ? GOOD : BAD);
+        label(graphics, linkLine(linked), x, y, linked ? GOOD : BAD);
         y += 10;
         if (kind.job().any()) {
             int assigned = menu.data(StructureBlockEntity.DATA_ASSIGNED);
@@ -112,6 +110,11 @@ public class StructureScreen extends AntScreen<StructureMenu> {
             label(graphics, shown, x, line, flag == ColonyStatus.WORKING ? GOOD : flag.problem() ? BAD : WARN);
             line += 9;
         }
+    }
+
+    /** The first line: linked or not, short enough for the panel (the full status is in the colony's screens). */
+    private String linkLine(boolean linked) {
+        return fit(Component.translatable(linked ? "gui.antcolonies.linked" : "gui.antcolonies.not_linked").getString(), 170);
     }
 
     /** Queen Chamber slot roles: materials, the tube, the sample, the output; null for any other slot. */

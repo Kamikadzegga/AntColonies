@@ -10,6 +10,13 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 - An in-game config screen: Mods → Ant Colonies → Config, with readable names and explanations for every option.
 
+### Fixed
+
+- Terrariums never scanned for their structures in a real game, so nothing linked to them; climate was never read and
+  evolution was never attempted. A timer started at the lowest possible value and "now - then" overflowed.
+- The Genetic Laboratory never checked for its parts (the same timer bug), so it stayed incomplete.
+- The "not linked" line on colony structure screens ran past the edge of the panel.
+
 ## [0.1.0] - 2026-11-08
 
 The first version, for Minecraft 26.3 and NeoForge 26.3.0.101.

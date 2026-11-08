@@ -75,7 +75,7 @@ public class IngameShowcase {
     private BlockPos origin;
 
     public IngameShowcase(IEventBus modEventBus) {
-        if (Files.exists(MARKER)) {
+        if (Files.exists(MARKER) || Files.exists(GUI_MARKER)) {
             LOGGER.info("[Showcase] marker found");
             NeoForge.EVENT_BUS.addListener(this::onClientTick);
         } else if (Files.exists(CONFIG_MARKER)) {
@@ -123,6 +123,99 @@ public class IngameShowcase {
         }
     }
 
+    /** A file named {@code gui-check} in the run folder: build the demo, screenshot every colony screen and the lab, quit. */
+    private static final Path GUI_MARKER = FMLPaths.GAMEDIR.get().resolve("gui-check");
+    private final boolean guiCheck = Files.exists(GUI_MARKER);
+    /** Screens to open in the GUI check: a name for the picture and the block's offset from the origin. */
+    private static final Object[][] GUI_TARGETS = {
+            {"user_lab", -6, 0, -4}, {"lonely_scavenging_site", 3, 0, -6}, {"breeding_chamber", 0, 0, 6}, {"nursery", -1, 0, 6}, {"worker_housing", 1, 0, 6}, {"soldier_barracks", -2, 0, 6},
+            {"fighting_site", -3, 0, 6}, {"scavenging_site", 2, 0, 6}, {"resource_pile", 4, 0, 6}, {"food_storage", 0, 0, 7},
+            {"queen_chamber", -4, 0, 6}, {"processing_chamber", -5, 0, 6}, {"farmer_garden", 5, 0, 6}, {"genetic_lab", 0, 0, 9},
+            {"lonely_breeding_chamber", 3, 0, -4}, {"lonely_queen_chamber", 5, 0, -4}};
+    /** Where the copy of the player's lab is: like theirs, two Genetic Storages and no Energy Core, a Generator below. */
+    private static final int[] USER_LAB = {-6, 0, -4};
+
+    private void guiStep(Minecraft minecraft, IntegratedServer server) {
+        if (ticks == 60) {
+            origin = minecraft.player.blockPosition();
+            minecraft.options.pauseOnLostFocus = false;
+            server.execute(() -> {
+                command(server, "difficulty peaceful");
+                build(server);
+                buildUserLab(server);
+            });
+            return;
+        }
+        if (ticks < 140 || origin == null) {
+            return;
+        }
+        int index = (ticks - 140) / 30;
+        int phase = (ticks - 140) % 30;
+        if (ticks >= 140 && index < GUI_TARGETS.length) {
+            Object[] target = GUI_TARGETS[index];
+            BlockPos pos = origin.offset((int) target[1], (int) target[2], (int) target[3]);
+            if (phase == 0) {
+                server.execute(() -> open(server, pos));
+            } else if (phase == 25) {
+                screenshot(minecraft, "g_" + target[0]);
+                if (target[0].equals("user_lab")) {
+                    server.execute(() -> reportUserLab(server, "as built"));
+                }
+            }
+            return;
+        }
+        int after = ticks - 140 - GUI_TARGETS.length * 30;
+        BlockPos userLab = origin.offset(USER_LAB[0], USER_LAB[1], USER_LAB[2]);
+        switch (after) {
+            // The fix the player needs: swap the second Genetic Storage for a Genetic Energy Core.
+            case 0 -> server.execute(() -> {
+                place(server.overworld(), userLab.south(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.GENETIC_ENERGY_CORE).get().defaultBlockState());
+                result("user lab: replaced the second Genetic Storage with a Genetic Energy Core");
+            });
+            case 100 -> server.execute(() -> open(server, userLab));
+            case 125 -> {
+                screenshot(minecraft, "g_user_lab_completed");
+                server.execute(() -> reportUserLab(server, "completed"));
+            }
+            case 130 -> finish(minecraft);
+            default -> { }
+        }
+    }
+
+    /** The player's lab as they built it: controller, DNA Analyzer east, Mutation Chamber west, Queen Enhancement Chamber
+     * south-west, Genetic Storage south and south-east, and a Generator with coal under the controller. */
+    private void buildUserLab(IntegratedServer server) {
+        ServerLevel level = server.overworld();
+        BlockPos lab = origin.offset(USER_LAB[0], USER_LAB[1], USER_LAB[2]);
+        place(level, lab.below(), ModBlocks.GENERATOR.get().defaultBlockState());
+        ((com.antcolonies.content.blockentity.GeneratorBlockEntity) level.getBlockEntity(lab.below())).setItem(0, new ItemStack(Items.COAL, 16));
+        place(level, lab, ModBlocks.GENETIC_LAB_CONTROLLER.get().defaultBlockState());
+        place(level, lab.east(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.DNA_ANALYZER).get().defaultBlockState());
+        place(level, lab.west(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.MUTATION_CHAMBER).get().defaultBlockState());
+        place(level, lab.west().south(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.QUEEN_ENHANCEMENT_CHAMBER).get().defaultBlockState());
+        place(level, lab.south(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.GENETIC_STORAGE).get().defaultBlockState());
+        place(level, lab.east().south(), ModBlocks.LAB_PARTS.get(LabPartBlock.Part.GENETIC_STORAGE).get().defaultBlockState());
+        // Three structures with no Terrarium, apart from each other: their screens say they aren't linked.
+        structure(level, origin.offset(3, 0, -4), StructureKind.BREEDING_CHAMBER);
+        structure(level, origin.offset(5, 0, -4), StructureKind.QUEEN_CHAMBER);
+        structure(level, origin.offset(3, 0, -6), StructureKind.SCAVENGING_SITE);
+    }
+
+    private void reportUserLab(IntegratedServer server, String when) {
+        BlockPos pos = origin.offset(USER_LAB[0], USER_LAB[1], USER_LAB[2]);
+        if (server.overworld().getBlockEntity(pos) instanceof GeneticLabBlockEntity lab) {
+            List<String> missing = new java.util.ArrayList<>();
+            for (LabPartBlock.Part part : LabPartBlock.Part.values()) {
+                if ((lab.missing() & (1 << part.ordinal())) != 0) {
+                    missing.add(part.name());
+                }
+            }
+            result("user lab " + when + ": formed " + lab.formed() + ", missing " + missing + ", energy " + lab.energy() + " FE");
+        } else {
+            result("FAIL user lab: no controller at " + pos);
+        }
+    }
+
     private void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         try {
@@ -131,7 +224,11 @@ public class IngameShowcase {
                 return;
             }
             ticks++;
-            step(minecraft, minecraft.getSingleplayerServer());
+            if (guiCheck) {
+                guiStep(minecraft, minecraft.getSingleplayerServer());
+            } else {
+                step(minecraft, minecraft.getSingleplayerServer());
+            }
         } catch (Exception e) {
             LOGGER.error("[Showcase] failed", e);
             result("ERROR " + e);

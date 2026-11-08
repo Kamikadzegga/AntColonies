@@ -142,7 +142,9 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
     private int status;
     /** Bits of the parts the laboratory still lacks (see {@link LabPartBlock.Part}). */
     private int missing = (1 << LabPartBlock.Part.values().length) - 1;
-    private long checkedAt = Long.MIN_VALUE;
+    /** When the parts were last looked for. Starts long ago (but not Long.MIN_VALUE: "now - then" would overflow and the
+     * lab would never look). */
+    private long checkedAt = Long.MIN_VALUE / 2;
 
     private final ContainerData data = new ContainerData() {
         @Override

@@ -109,17 +109,19 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         }
     };
     private long scannedVersion = -1;
-    private long scannedAt = Long.MIN_VALUE;
+    // Timers start long ago, never at Long.MIN_VALUE: "now - then" would overflow to a negative number, and the network
+    // scan, the climate check and evolution attempts would never come due.
+    private long scannedAt = Long.MIN_VALUE / 2;
     private Set<BlockPos> activeTubes = new HashSet<>();
     private int feedStatus;
-    private long lastEvolutionAttempt = Long.MIN_VALUE;
+    private long lastEvolutionAttempt = Long.MIN_VALUE / 2;
     private int lastSyncHash;
     private boolean caughtUp;
     // Climate, looked up now and then.
     private float temperature = 0.8F;
     private boolean underground;
     private boolean nether;
-    private long climateAt = Long.MIN_VALUE;
+    private long climateAt = Long.MIN_VALUE / 2;
     /** The client's animation state (TerrariumVisuals); untyped so the server never loads client classes. */
     public @Nullable Object clientVisuals;
 

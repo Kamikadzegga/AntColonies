@@ -1582,7 +1582,7 @@ public class DataGen {
                 {"stat.eggs", "Eggs laid"}, {"stat.raised", "Adults raised"}, {"stat.food_in", "Food in"}, {"stat.food_out", "Food eaten"},
                 {"stat.finds", "Finds"}, {"stat.hunts", "Hunts"}, {"stat.deaths", "Deaths"}, {"stat.soldier_room", "Soldier room"},
                 {"stat.larvae_room", "Larvae room"}, {"stat.structures", "Structures"}, {"stat.found_total", "Found in total"},
-                {"evolution_attempts", "Evolution attempts: %s, catalysts: %s"}, {"upgrades", "Upgrades"}, {"linked", "Linked to a colony"},
+                {"evolution_attempts", "Evolution attempts: %s, catalysts: %s"}, {"upgrades", "Upgrades"}, {"linked", "Linked to a colony"}, {"not_linked", "Not linked to a Terrarium"},
                 {"site.workers", "Workers: %s / %s (wanted: %s)"}, {"site.soldiers", "Soldiers: %s / %s (wanted: %s)"}, {"site.rate", "%s per minute"},
                 {"food_storage.hint", "Ant food here feeds the colony"}, {"queen_chamber.slots", "Rears a new Queen"}, {"queen_chamber.time", "Takes %s s at full speed"},
                 {"slot.qc_tube", "Test Tube slot"}, {"slot.qc_tube.hint", "An empty Test Tube to hold the new Queen"},

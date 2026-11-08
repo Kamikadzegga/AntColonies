@@ -355,6 +355,7 @@
   "gui.antcolonies.mutations": "Mutations:",
   "gui.antcolonies.no_jobs": "No job sites connected",
   "gui.antcolonies.no_mutations": "No mutations",
+  "gui.antcolonies.not_linked": "Not linked to a Terrarium",
   "gui.antcolonies.page.genetics": "Genes",
   "gui.antcolonies.page.jobs": "Jobs",
   "gui.antcolonies.page.overview": "Colony",

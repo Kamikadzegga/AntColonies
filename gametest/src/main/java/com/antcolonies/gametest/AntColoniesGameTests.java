@@ -95,6 +95,8 @@ public class AntColoniesGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CHITIN = test("chitin_gear", AntColoniesGameTests::chitinGear);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GUARDS = test("guard_ants", AntColoniesGameTests::guardAnts);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> ANTHILL = test("giant_anthill", AntColoniesGameTests::giantAnthill);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> RUNS_ALONE = test("colony_runs_by_itself", AntColoniesGameTests::colonyRunsByItself);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> LAB_FORMS = test("lab_forms_by_itself", AntColoniesGameTests::labFormsByItself);
 
     public AntColoniesGameTests(IEventBus modEventBus) {
         TESTS.register(modEventBus);
@@ -110,7 +112,7 @@ public class AntColoniesGameTests {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(AntColonies.id("default"), new TestEnvironmentDefinition.AllOf(List.of()));
         for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> test : List.of(SPECIES_DATA_LOADS, COLONY_PERSISTS, ALLOCATION, SCAVENGING,
                 MORE_WORKERS, STARVATION, BREEDING, FARMING, GARDEN_NEEDS_FARMERS, FIGHTING, EVOLUTION, REARING, HYBRIDS, TWO_COLONIES, CONNECTOR, OFFLINE,
-                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL)) {
+                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL, RUNS_ALONE, LAB_FORMS)) {
             event.registerTest(test.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, test.getId()),
                     spaced(environment, 200)));
         }
@@ -912,6 +914,41 @@ public class AntColoniesGameTests {
             ants.forEach(net.minecraft.world.entity.Entity::discard);
             helper.succeed();
         });
+    }
+
+
+    /**
+     * A colony left to the game's own ticking (no rescan or step by hand, as in a real world): it must find its
+     * structures, link them, grow to stage 2 and try evolving with the iron in its feed slot.
+     */
+    private static void colonyRunsByItself(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(2, 1, 2);
+        TerrariumBlockEntity terrarium = terrarium(helper, pos, AntColonies.id("stone"), 400, 0, 5000);
+        structure(helper, pos.east(), StructureKind.BREEDING_CHAMBER);
+        structure(helper, pos.west(), StructureKind.WORKER_HOUSING);
+        StructureBlockEntity site = structure(helper, pos.north(), StructureKind.SCAVENGING_SITE);
+        structure(helper, pos.south(), StructureKind.RESOURCE_PILE);
+        terrarium.setItem(TerrariumBlockEntity.SLOT_FEED, new ItemStack(Items.IRON_INGOT, 64));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(site.isLinked(), "The Scavenging Site was never linked: the Terrarium didn't scan its network");
+            helper.assertTrue(site.assigned() > 0, "The linked Scavenging Site has no workers");
+            helper.assertTrue(terrarium.colony().stage() >= 2, "The colony didn't reach stage 2: " + terrarium.colony().stage());
+            ItemStack feed = terrarium.getItem(TerrariumBlockEntity.SLOT_FEED);
+            helper.assertTrue(feed.getCount() < 64 || !feed.is(Items.IRON_INGOT),
+                    "No evolution attempt used any iron: the Terrarium never tried");
+        });
+    }
+
+    /** A Genetic Laboratory built block by block (no checkStructure by hand) must notice its parts and form. */
+    private static void labFormsByItself(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        helper.setBlock(pos, ModBlocks.GENETIC_LAB_CONTROLLER.get());
+        BlockPos[] spots = {pos.east(), pos.west(), pos.south(), pos.east().south(), pos.west().south()};
+        for (int i = 0; i < LabPartBlock.Part.values().length; i++) {
+            helper.setBlock(spots[i], ModBlocks.LAB_PARTS.get(LabPartBlock.Part.values()[i]).get());
+        }
+        GeneticLabBlockEntity lab = helper.getBlockEntity(pos, GeneticLabBlockEntity.class);
+        helper.succeedWhen(() -> helper.assertTrue(lab.formed(), "The laboratory never noticed its five parts"));
     }
 
     /** Two Terrariums joined by a tube are flagged and work no structures; a Connector keeps them apart but linked. */
