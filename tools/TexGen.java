@@ -1316,7 +1316,13 @@ public class TexGen {
     static final int STICK = rgb(112, 82, 48);
     static final int STICK_DARK = rgb(74, 52, 28);
 
-    /** A sprite from rows of letters: O outline, D dark, C chitin, L light, W shine, S/s stick; anything else is clear. */
+    static final int CH_EYE = rgb(26, 16, 12);
+    static final int CH_EYE_SHINE = rgb(150, 112, 88);
+
+    /**
+     * A sprite from rows of letters: O outline, D dark, C chitin, L light, W shine, S/s stick, E/e compound eye and its
+     * glint; anything else is clear.
+     */
     static Img sprite(String... rows) {
         Img img = item();
         for (int y = 0; y < rows.length; y++) {
@@ -1329,6 +1335,8 @@ public class TexGen {
                     case 'W' -> CH_SHINE;
                     case 'S' -> STICK;
                     case 's' -> STICK_DARK;
+                    case 'E' -> CH_EYE;
+                    case 'e' -> CH_EYE_SHINE;
                     default -> 0;
                 };
                 if (color != 0) {
@@ -1340,153 +1348,153 @@ public class TexGen {
     }
 
     static void chitinGear() {
-        sprite("................",
-               "................",
+        // Armor, drawn like vanilla's icons. The helmet is an ant's head: elbowed antennae, compound eyes, closed jaws.
+        sprite("..OO........OO..",
+               "..OD........DO..",
+               "...D........D...",
+               "...D........D...",
+               "....D......D....",
+               ".....O....O.....",
                "....OOOOOOOO....",
-               "...OLWWLCCCCO...",
+               "...OLWWLCCCDO...",
                "..OLWLCCCCCCDO..",
-               "..OLCDDDDDDCDO..",
-               "..OCCCCCCCCCDO..",
-               "..OLCODDDDOCDO..",
-               "..OCDO....OCDO..",
-               "..OCDO....ODDO..",
-               "..OOOO....OOOO..",
-               "................",
-               "................",
-               "................",
-               "................",
-               "................").save("item/chitin_helmet");
+               "..OEeCCDDCCEeO..",
+               "..OEEECDDCEEEO..",
+               "..ODEECDDCEEDO..",
+               "...OCCDDDDCCO...",
+               "...OCDO..ODCO...",
+               "....ODCOOCDO....",
+               ".....OO..OO.....").save("item/chitin_helmet");
         sprite("................",
                "..OOOO....OOOO..",
-               ".OLLCO....OCDDO.",
+               ".OLWCO....OCCDO.",
                ".OLCCOOOOOOCCDO.",
-               ".OCCCLWWLCCCCDO.",
-               "..OOCLCCCCCCOO..",
-               "...OCDDDDDDDO...",
-               "...OCLCCCCCDO...",
-               "...OCLCCCCCDO...",
-               "...OCDDDDDDDO...",
-               "...OCLCCCCCDO...",
-               "...OCCCCCCDDO...",
-               "...OOOOOOOOOO...",
+               ".OCCLWWLCCCCCDO.",
+               "..OOCCCCCCCCOO..",
+               "...OLDDDDDDDO...",
+               "...OLCCCCCCDO...",
+               "...OCCCCCCCDO...",
+               "...ODDDDDDDDO...",
+               "...OLCCCCCCDO...",
+               "....OCCCCCDO....",
+               ".....OOOOOO.....",
                "................",
                "................",
                "................").save("item/chitin_chestplate");
         sprite("................",
                "................",
                "...OOOOOOOOOO...",
-               "...OLWLCCCCDO...",
+               "...OLWWLCCCDO...",
                "...ODDDDDDDDO...",
                "...OLCCOOCCDO...",
                "...OLCO..OCDO...",
-               "...ODDO..ODDO...",
-               "...OLCO..OCDO...",
-               "...OLCO..OCDO...",
-               "...ODDO..ODDO...",
                "...OCCO..OCDO...",
+               "...ODDO..ODDO...",
+               "...OLCO..OCDO...",
+               "...OCCO..OCDO...",
+               "...ODDO..ODDO...",
+               "...OLCO..OCDO...",
                "...OOOO..OOOO...",
-               "................",
                "................",
                "................").save("item/chitin_leggings");
         sprite("................",
                "................",
                "................",
                "................",
-               "..OOOO....OOOO..",
-               "..OLCO....OCDO..",
-               "..ODDO....ODDO..",
-               "..OLCO....OCDO..",
-               "..OLCO....OCDO..",
-               ".OLCCO....OCCDO.",
-               ".OLWCO....OCCDO.",
-               ".ODDDO....ODDDO.",
-               ".OOOOO....OOOOO.",
+               "...OOOO..OOOO...",
+               "...OLCO..OCDO...",
+               "...ODDO..ODDO...",
+               "...OLCO..OCDO...",
+               "..OLCCO..OCCDO..",
+               ".OLWCCO..OCCCDO.",
+               ".ODDDDO..ODDDDO.",
+               ".OOOOOO..OOOOOO.",
+               "................",
                "................",
                "................",
                "................").save("item/chitin_boots");
 
-        // Tools: a stick handle and a curved chitin head, like a mandible.
-        sprite("............OOO.",
-               "...........OWLO.",
+        // Tools, drawn like vanilla's: a straight three-pixel stick from the bottom left and a chitin head with grooves
+        // between its plates.
+        sprite(".............OOO",
+               "............OWLO",
+               "...........OWLCO",
                "..........OWLCO.",
-               ".........OWLCO..",
+               ".........OWDCO..",
                "........OWLCO...",
                ".......OWLCO....",
-               "......OWLCO.....",
-               ".....OWLCO......",
-               "..OO.OLCO.......",
-               "..ODOOCO........",
-               "...ODDO.........",
-               "...OSDDO........",
-               "..OSsO.ODO......",
-               ".OSsO...OO......",
-               ".OOO............",
-               "................").save("item/chitin_sword");
+               "..OO..OWDCO.....",
+               "..OCO.OLCO......",
+               "...OCOLCO.......",
+               "...OCCDO........",
+               "...sSOCCO.......",
+               "..sSs.OOCO......",
+               "OOSs....OO......",
+               "OCO.............",
+               "OOO.............").save("item/chitin_sword");
         sprite("................",
-               "....OOOOOO......",
-               "...OWLLLCCOO....",
-               "..OLCDDDDCCDO...",
-               "..OOO...OSCCDO..",
-               ".......OSsOCDO..",
-               "......OSsO.OCDO.",
-               ".....OSsO...OCO.",
-               "....OSsO....OCO.",
-               "...OSsO......OO.",
-               "..OSsO..........",
-               ".OSsO...........",
-               ".OsO............",
-               ".OO.............",
                "................",
+               "......OOOOO.....",
+               ".....OWWLDCOsS..",
+               "......OOOOLCSs..",
+               "..........sLCO..",
+               ".........sSsCDO.",
+               "........sSs.OCO.",
+               ".......sSs..ODO.",
+               "......sSs...OLO.",
+               ".....sSs....OCO.",
+               "....sSs......O..",
+               "...sSs..........",
+               "..sSs...........",
+               "..ss............",
                "................").save("item/chitin_pickaxe");
-        // The axe: a wedge of chitin with a straight cutting edge on the left, narrowing to the handle.
-        Img axe = item();
-        line(axe, 2, 13, 10, 5, STICK);
-        line(axe, 3, 13, 10, 6, STICK_DARK);
-        for (int x = 3; x <= 9; x++) {
-            for (int y = 0; y < 16; y++) {
-                double top = 1 + (x - 3) / 3.0;
-                double bottom = 8 - (x - 3) / 2.0;
-                if (y >= Math.ceil(top) && y <= bottom) {
-                    axe.set(x, y, x == 3 ? CH_SHINE : x == 4 ? CH_LIGHT : y >= bottom - 1 ? CH_DARK : CH_BASE);
-                }
-            }
-        }
-        outline(axe, CH_OUT);
-        axe.save("item/chitin_axe");
-
-
         sprite("................",
-               "..........OOO...",
-               ".........OWLCO..",
-               "........OWLCCCO.",
-               "........OLCCCDO.",
-               ".........OCCDDO.",
-               "........OSOCDO..",
-               ".......OSsOO....",
-               "......OSsO......",
-               ".....OSsO.......",
-               "....OSsO........",
-               "...OSsO.........",
-               "..OSsO..........",
-               ".OSsO...........",
-               ".OOO............",
+               ".........OO.....",
+               "........OWLO....",
+               ".......OWLCO....",
+               "......OWLCDOsS..",
+               ".....OWLCDCDSs..",
+               ".....OLCDCCDDO..",
+               "......OOsSsDDO..",
+               ".......sSs.OO...",
+               "......sSs.......",
+               ".....sSs........",
+               "....sSs.........",
+               "...sSs..........",
+               "..sSs...........",
+               "..ss............",
+               "................").save("item/chitin_axe");
+        sprite("................",
+               "................",
+               "...........OOO..",
+               "..........OWLCO.",
+               ".........OWLCDO.",
+               "........OWLCDDO.",
+               ".........OLCDO..",
+               "........sOCDO...",
+               ".......sSsOO....",
+               "......sSs.......",
+               ".....sSs........",
+               "....sSs.........",
+               "...sSs..........",
+               "..sSs...........",
+               "..ss............",
                "................").save("item/chitin_shovel");
-
         sprite("................",
-               ".....OOOOO......",
-               "....OWLLCCO.....",
-               "....OOOOSCDO....",
-               ".......OSsODO...",
-               "......OSsO.OO...",
-               ".....OSsO.......",
-               "....OSsO........",
-               "...OSsO.........",
-               "..OSsO..........",
-               ".OSsO...........",
-               ".OOO............",
-               "................",
-               "................",
-               "................",
+               "......OOOO......",
+               ".....OWLCDO.....",
+               "......OOOLCOsS..",
+               ".........OCDSs..",
+               "..........sOO...",
+               ".........sSs....",
+               "........sSs.....",
+               ".......sSs......",
+               "......sSs.......",
+               ".....sSs........",
+               "....sSs.........",
+               "...sSs..........",
+               "..sSs...........",
+               "..ss............",
                "................").save("item/chitin_hoe");
         chitinArmorLayers();
         // Rally Pheromone: a tube of glowing orange-red scent.
@@ -1524,6 +1532,7 @@ public class TexGen {
         Img outer = new Img(64, 32);
         Random random = new Random(41);
         plates(outer, 0, 0, 8, 8, 8, 0, 8, random);      // head
+        antHead(outer);
         plates(outer, 16, 16, 8, 12, 4, 0, 12, random);  // body
         plates(outer, 40, 16, 4, 12, 4, 0, 12, random);  // arm
         plates(outer, 0, 16, 4, 12, 4, 8, 12, random);   // leg: boots, the lowest 4 rows
@@ -1532,6 +1541,53 @@ public class TexGen {
         plates(inner, 16, 16, 8, 12, 4, 7, 12, random);  // body: the hips
         plates(inner, 0, 16, 4, 12, 4, 0, 10, random);   // leg
         inner.save("entity/equipment/humanoid_leggings/chitin");
+    }
+
+    /**
+     * The helmet as an ant's head: compound eyes wrapping round the front corners, a ridge down the middle, jaws with a
+     * gap between them at the bottom of the face. Also the skins of the antennae, which take the place of the hat layer
+     * (32,0 to 64,16; the helmet model has no hat): see {@code ChitinHelmetModel} for the boxes.
+     */
+    static void antHead(Img img) {
+        // The front face is 8..16 x 8..16; the right side's front edge is column 7, the left side's column 16.
+        for (int y = 10; y <= 12; y++) {
+            for (int x = 0; x < 2; x++) {
+                img.set(8 + x, y, CH_EYE);
+                img.set(15 - x, y, CH_EYE);
+                img.set(6 + x, y, CH_EYE);
+                img.set(16 + x, y, CH_EYE);
+            }
+        }
+        for (int x : new int[] {7, 9, 14, 16}) {
+            img.set(x, 10, CH_EYE_SHINE);
+        }
+        for (int y = 10; y <= 13; y++) {
+            img.set(11, y, CH_DARK);
+            img.set(12, y, CH_DARK);
+        }
+        // Jaws: the bottom two rows, light on top, dark tips pointing in, nothing between them.
+        for (int x = 0; x < 3; x++) {
+            img.set(8 + x, 14, x == 2 ? CH_DARK : CH_LIGHT);
+            img.set(15 - x, 14, x == 2 ? CH_DARK : CH_BASE);
+        }
+        img.set(11, 14, 0);
+        img.set(12, 14, 0);
+        for (int x = 8; x < 16; x++) {
+            img.set(x, 15, x == 10 || x == 13 ? CH_OUT : 0);
+        }
+        img.set(9, 15, CH_DARK);
+        img.set(14, 15, CH_DARK);
+        // Antennae: dark segments with a lighter club at the tip.
+        for (int y = 0; y < 7; y++) {
+            for (int x = 32; x < 50; x++) {
+                img.set(x, y, (x + y) % 2 == 0 ? CH_OUT : CH_DARK);
+            }
+        }
+        for (int y = 0; y < 4; y++) {
+            for (int x = 50; x < 58; x++) {
+                img.set(x, y, y == 0 ? CH_LIGHT : CH_BASE);
+            }
+        }
     }
 
     /**

@@ -3,6 +3,7 @@ package com.antcolonies.client;
 import com.antcolonies.AntColonies;
 import com.antcolonies.client.model.AntModel;
 import com.antcolonies.client.model.CarryModel;
+import com.antcolonies.client.model.ChitinHelmetModel;
 import com.antcolonies.client.renderer.GeneticLabRenderer;
 import com.antcolonies.client.renderer.StructureRenderer;
 import com.antcolonies.client.renderer.TerrariumRenderer;
@@ -13,6 +14,7 @@ import com.antcolonies.client.screen.TerrariumScreen;
 import com.antcolonies.client.screen.UpgradeStationScreen;
 import com.antcolonies.core.registry.ModBlockEntities;
 import com.antcolonies.core.registry.ModEntities;
+import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModMenus;
 import com.antcolonies.core.registry.ModParticles;
 import com.antcolonies.colony.species.Caste;
@@ -26,6 +28,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 
@@ -39,6 +42,18 @@ public final class AntColoniesClient {
         event.registerLayerDefinition(AntModel.SOLDIER, () -> AntModel.create(Caste.SOLDIER));
         event.registerLayerDefinition(AntModel.QUEEN, () -> AntModel.create(Caste.QUEEN));
         event.registerLayerDefinition(CarryModel.LAYER, CarryModel::create);
+        event.registerLayerDefinition(ChitinHelmetModel.LAYER, ChitinHelmetModel::create);
+    }
+
+    /** Fires on every resource reload, after the model layers are baked. */
+    @SubscribeEvent
+    static void addLayers(EntityRenderersEvent.AddLayers event) {
+        ChitinHelmetModel.bake(event.getEntityModels());
+    }
+
+    @SubscribeEvent
+    static void registerItemExtensions(RegisterClientExtensionsEvent event) {
+        event.registerItem(ChitinHelmetModel.EXTENSIONS, ModItems.CHITIN_HELMET.get());
     }
 
     @SubscribeEvent

@@ -371,6 +371,9 @@ public class IngameShowcase {
                 camera(server, -7.5, 0.6, -6.5, 0, 22);
             }
             case 1250 -> screenshot(minecraft, "30_guard_ant_and_chitin");
+            // Close to the stand's head, from the front and a little to the side: the helmet's antennae and eyes.
+            case 1251 -> camera(server, -6.0, 0.15, -4.2, 41, 5);
+            case 1254 -> screenshot(minecraft, "30b_chitin_helmet");
             case 1255 -> {
                 if (minecraft.gui.hud.isHidden()) {
                     minecraft.gui.hud.toggle();
@@ -640,6 +643,9 @@ public class IngameShowcase {
         BlockPos spot = origin.offset(-8, 0, -3);
         var stand = net.minecraft.world.entity.EntityTypes.ARMOR_STAND.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
         stand.snapTo(spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, 180, 0);
+        // snapTo turns only the stand's yaw; armor stands are drawn by their body's, which would face away from the camera.
+        stand.setYBodyRot(180);
+        stand.setYHeadRot(180);
         stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(ModItems.CHITIN_HELMET.get()));
         stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new ItemStack(ModItems.CHITIN_CHESTPLATE.get()));
         stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS, new ItemStack(ModItems.CHITIN_LEGGINGS.get()));

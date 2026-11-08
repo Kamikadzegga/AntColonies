@@ -44,6 +44,8 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
   the catch: the Army Ant lives wild in plains and savannas; the Bullet, Trap-Jaw and Inferno Ants evolve from Jungle,
   Swamp and Fire Ants fed gunpowder, slime balls and blaze powder. The Soldier Upgrade is now the Hunting Upgrade, and
   Soldier Strength is Hunting Strength. Guard Ants come from hunter colonies, for 50 of their ants.
+- Chitin gear redrawn. The Chitin Helmet is an ant's head with compound eyes, jaws and two elbowed antennae that
+  stand out from the helmet in 3D when worn. The tools are drawn like vanilla's, with straight handles.
 - Foraging Sites send their finds to Storage, keeping them only while the Storage is full.
 - Lead Ants evolve into Uranium Ants when fed raw uranium (was a uranium ingot), and Uranium Ants find raw uranium
   from stage 1.
