@@ -263,10 +263,15 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             Component workers = job.kind().job().soldiers()
                     ? Component.translatable("gui.antcolonies.job_foraging", job.assigned(), job.soldiers(), job.capacity())
                     : Component.translatable("gui.antcolonies.job_workers", job.assigned(), job.capacity());
-            label(graphics, workers, x + 19, rowY + 2, color);
             int right = CONTENT_X + CONTENT_W - 4;
+            // The ants, then the rate on the right if both fit; otherwise the ants alone (the tooltip has the rate).
             String perMinute = rate(job.rate()) + Component.translatable("gui.antcolonies.per_minute").getString();
-            label(graphics, perMinute, right - font.width(perMinute) + 1, rowY + 2, DIM);
+            int room = right - (x + 19);
+            boolean rateFits = font.width(workers) + 6 + font.width(perMinute) <= room;
+            label(graphics, fit(workers.getString(), room), x + 19, rowY + 2, color);
+            if (rateFits) {
+                label(graphics, perMinute, right - font.width(perMinute) + 1, rowY + 2, DIM);
+            }
             int base = TerrariumMenu.BUTTON_ASSIGNMENT + index * 20;
             String[] steps = {"less_10", "less_1", "more_1", "more_10"};
             int[] ids = {StructureMenu.LESS_10, StructureMenu.LESS, StructureMenu.MORE, StructureMenu.MORE_10};
@@ -362,6 +367,16 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                     List<Component> lines = new ArrayList<>();
                     lines.add(Component.translatable(job.kind().translationKey()));
                     lines.add(Component.literal(job.pos().getX() + ", " + job.pos().getY() + ", " + job.pos().getZ()).withStyle(ChatFormatting.DARK_GRAY));
+                    // The full numbers: the card may have no room for the rate.
+                    lines.add(Component.translatable(job.kind() == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.farmers"
+                            : "gui.antcolonies.site.workers", job.assigned(), job.capacity(), job.requested() < 0
+                            ? Component.translatable("gui.antcolonies.auto") : Component.literal(String.valueOf(job.requested())))
+                            .withStyle(ChatFormatting.GRAY));
+                    if (job.kind().job().soldiers()) {
+                        lines.add(Component.translatable("gui.antcolonies.job_soldiers", job.soldiers(), job.capacity()).withStyle(ChatFormatting.GRAY));
+                    }
+                    lines.add(Component.translatable(job.kind() == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.food_rate"
+                            : "gui.antcolonies.site.rate", rate(job.rate())).withStyle(ChatFormatting.GRAY));
                     for (ColonyStatus status : ColonyStatus.of(job.status())) {
                         lines.add(Component.translatable(status.translationKey()).withStyle(status.color()));
                     }
