@@ -1,0 +1,10 @@
+{
+  "effects": {
+    "cold_resistant": true
+  },
+  "random_weight": 6,
+  "catalyst": {
+    "ingredient": "minecraft:packed_ice",
+    "count": 8
+  }
+}

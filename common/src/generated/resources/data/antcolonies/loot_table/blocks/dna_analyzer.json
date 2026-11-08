@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "antcolonies:dna_analyzer"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "antcolonies:blocks/dna_analyzer"
+}

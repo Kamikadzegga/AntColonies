@@ -1,0 +1,8 @@
+{
+  "effects": {
+    "eggs": 1.25,
+    "growth": 1.1
+  },
+  "random_weight": 3,
+  "rare": true
+}

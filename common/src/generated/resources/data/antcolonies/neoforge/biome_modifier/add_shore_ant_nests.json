@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#antcolonies:spawns/shore",
+  "features": "antcolonies:shore_ant_nest",
+  "step": "vegetal_decoration"
+}

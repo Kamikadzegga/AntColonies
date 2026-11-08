@@ -1,0 +1,84 @@
+{
+  "tier": 4,
+  "category": "endgame",
+  "look": {
+    "body": "#1E181A",
+    "gaster": "#4A3E40",
+    "accent": "#8A6A5A",
+    "pattern": "metallic",
+    "crystal": "#6A4A4A",
+    "size": 1.2
+  },
+  "climate": "nether",
+  "diet": {
+    "consumption": 2.6,
+    "special_food": "nether",
+    "special_per_egg": 2.0
+  },
+  "production": {
+    "rate": 0.0025,
+    "outputs": [
+      {
+        "item": "minecraft:quartz",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:gold_nugget",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:netherrack",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:netherite_scrap",
+        "weight": 2,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 2.0,
+    "targets": [
+      {
+        "entity": "minecraft:blaze",
+        "weight": 20
+      },
+      {
+        "entity": "minecraft:magma_cube",
+        "weight": 20
+      },
+      {
+        "entity": "minecraft:wither_skeleton",
+        "weight": 10
+      },
+      {
+        "entity": "minecraft:piglin",
+        "weight": 15
+      }
+    ]
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 6
+      },
+      {
+        "ingredient": "antcolonies:nether_ant_food",
+        "count": 12
+      },
+      {
+        "ingredient": "antcolonies:nuptial_pheromone",
+        "count": 4
+      }
+    ],
+    "time": 12000
+  },
+  "breeding": {
+    "eggs": 0.6,
+    "growth": 0.7
+  },
+  "signature_item": "minecraft:netherite_scrap"
+}

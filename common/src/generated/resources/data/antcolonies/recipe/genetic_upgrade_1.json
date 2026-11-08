@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": "antcolonies:genetic_circuit",
+    "B": "antcolonies:upgrade_base"
+  },
+  "pattern": [" X ", "XBX", " X "],
+  "result": {
+    "id": "antcolonies:genetic_upgrade_1"
+  }
+}

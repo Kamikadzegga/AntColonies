@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "X": "minecraft:egg",
+    "U": "antcolonies:breeding_upgrade_1"
+  },
+  "pattern": ["GXG", "XUX", "GXG"],
+  "result": {
+    "id": "antcolonies:breeding_upgrade_2"
+  }
+}

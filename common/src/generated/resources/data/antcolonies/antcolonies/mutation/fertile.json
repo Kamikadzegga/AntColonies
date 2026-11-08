@@ -1,0 +1,11 @@
+{
+  "effects": {
+    "eggs": 1.3,
+    "food": 1.05
+  },
+  "random_weight": 6,
+  "catalyst": {
+    "ingredient": "minecraft:golden_carrot",
+    "count": 8
+  }
+}

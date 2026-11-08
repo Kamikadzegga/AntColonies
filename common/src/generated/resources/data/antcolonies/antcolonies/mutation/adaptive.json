@@ -1,0 +1,8 @@
+{
+  "effects": {
+    "cold_resistant": true,
+    "heat_resistant": true
+  },
+  "random_weight": 2,
+  "rare": true
+}

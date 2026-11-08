@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "antcolonies:item/upgrade_board_2",
+    "layer1": "antcolonies:item/upgrade_icon_breeding"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "tier": 2,
+  "category": "hybrid",
+  "look": {
+    "body": "#1E4A6A",
+    "gaster": "#E05A8A",
+    "accent": "#FFD040",
+    "pattern": "speckled",
+    "crystal": "#60D8E8",
+    "size": 0.95
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.1
+  },
+  "production": {
+    "rate": 0.55,
+    "outputs": [
+      {
+        "item": "minecraft:tube_coral_block",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:brain_coral_block",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:bubble_coral_block",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:fire_coral_block",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:horn_coral_block",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:tube_coral_fan",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:brain_coral_fan",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:bubble_coral_fan",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:fire_coral_fan",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:horn_coral_fan",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:sea_pickle",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:kelp",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:tube_coral",
+        "weight": 3,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:brain_coral",
+        "weight": 3,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:bubble_coral",
+        "weight": 3,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:fire_coral",
+        "weight": 3,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:horn_coral",
+        "weight": 3,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:turtle_scute",
+        "weight": 0.02,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0,
+    "targets": [
+      {
+        "entity": "minecraft:drowned",
+        "weight": 40
+      },
+      {
+        "entity": "minecraft:guardian",
+        "weight": 15
+      }
+    ]
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "minecraft:sea_pickle",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:tube_coral_block"
+}

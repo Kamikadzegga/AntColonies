@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "antcolonies:royal_jelly",
+    "minecraft:glowstone_dust",
+    "minecraft:redstone",
+    "minecraft:amethyst_shard"
+  ],
+  "result": {
+    "id": "antcolonies:evolution_catalyst"
+  }
+}

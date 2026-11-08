@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:gold",
+  "to": "antcolonies:diamond",
+  "item": "minecraft:diamond",
+  "chance": 0.04,
+  "guaranteed_after": 32,
+  "min_stage": 3,
+  "min_population": 1500
+}

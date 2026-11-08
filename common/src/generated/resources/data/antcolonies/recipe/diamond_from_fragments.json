@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "antcolonies:diamond_fragment",
+    "antcolonies:diamond_fragment",
+    "antcolonies:diamond_fragment",
+    "antcolonies:diamond_fragment",
+    "antcolonies:diamond_fragment",
+    "antcolonies:diamond_fragment",
+    "antcolonies:diamond_fragment",
+    "antcolonies:diamond_fragment",
+    "antcolonies:diamond_fragment"
+  ],
+  "result": {
+    "id": "minecraft:diamond"
+  }
+}

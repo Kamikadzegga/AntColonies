@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "M": "minecraft:packed_mud",
+    "W": "#minecraft:wool",
+    "T": "antcolonies:ant_tunnel"
+  },
+  "pattern": ["MWM", "MTM", "MMM"],
+  "result": {
+    "id": "antcolonies:nursery"
+  }
+}

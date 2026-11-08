@@ -1,0 +1,94 @@
+{
+  "tier": 2,
+  "category": "hybrid",
+  "look": {
+    "body": "#6A3A12",
+    "gaster": "#F0B030",
+    "accent": "#FFE08A",
+    "pattern": "banded"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.0
+  },
+  "production": {
+    "rate": 0.7,
+    "outputs": [
+      {
+        "item": "minecraft:honeycomb",
+        "weight": 18,
+        "processed": "minecraft:honeycomb_block",
+        "ratio": 4
+      },
+      {
+        "item": "minecraft:sugar",
+        "weight": 16
+      },
+      {
+        "item": "minecraft:sweet_berries",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:pink_petals",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:honey_bottle",
+        "weight": 6,
+        "min_stage": 2,
+        "processed": "minecraft:honey_block",
+        "ratio": 4
+      },
+      {
+        "item": "minecraft:honey_block",
+        "weight": 1,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "farming": {
+    "food": 1.6,
+    "harvest": [
+      {
+        "item": "minecraft:honey_bottle",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:sugar",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:sweet_berries",
+        "weight": 16
+      },
+      {
+        "item": "minecraft:honeycomb",
+        "weight": 10,
+        "min_stage": 2,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 0.8
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "minecraft:honey_bottle",
+        "count": 2
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 1.05,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:honey_bottle"
+}

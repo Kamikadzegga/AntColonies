@@ -1,0 +1,11 @@
+{
+  "effects": {
+    "special": 1.4,
+    "production": 0.95
+  },
+  "random_weight": 4,
+  "catalyst": {
+    "ingredient": "minecraft:rabbit_foot",
+    "count": 1
+  }
+}

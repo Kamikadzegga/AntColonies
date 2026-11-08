@@ -1,0 +1,108 @@
+{
+  "tier": 2,
+  "category": "hybrid",
+  "look": {
+    "body": "#8A7A5A",
+    "gaster": "#B8A070",
+    "accent": "#E0D0A0",
+    "pattern": "banded"
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.2,
+    "special_food": "mineral",
+    "special_per_egg": 0.3
+  },
+  "production": {
+    "rate": 0.15,
+    "outputs": [
+      {
+        "item": "minecraft:gravel",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:bone",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:flint",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:bone_block",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:clay_ball",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:torchflower_seeds",
+        "weight": 3,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:pitcher_pod",
+        "weight": 3,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:angler_pottery_sherd",
+        "weight": 0.03,
+        "min_stage": 2,
+        "special": true
+      },
+      {
+        "item": "minecraft:archer_pottery_sherd",
+        "weight": 0.03,
+        "min_stage": 2,
+        "special": true
+      },
+      {
+        "item": "minecraft:prize_pottery_sherd",
+        "weight": 0.03,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:skull_pottery_sherd",
+        "weight": 0.03,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:miner_pottery_sherd",
+        "weight": 0.03,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:sniffer_egg",
+        "weight": 0.006,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.2
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 4800
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "signature_item": "minecraft:bone_block"
+}

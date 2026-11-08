@@ -1,0 +1,12 @@
+{
+  "look": { "body": "#3A3A3A", "gaster": "#6A6A6A" },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        { "type": "neoforge:mod_loaded", "modid": "no_such_mod" },
+        { "type": "neoforge:mod_loaded", "modid": "antcolonies" }
+      ]
+    }
+  ]
+}

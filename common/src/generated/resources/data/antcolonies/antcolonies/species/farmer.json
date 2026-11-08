@@ -1,0 +1,88 @@
+{
+  "tier": 0,
+  "category": "farmer",
+  "look": {
+    "body": "#9A4A22",
+    "gaster": "#7A3A1A",
+    "accent": "#C87A3A",
+    "pattern": "plain"
+  },
+  "climate": "temperate",
+  "spawn_biomes": "antcolonies:spawns/farmer",
+  "diet": {
+    "consumption": 0.8
+  },
+  "production": {
+    "rate": 0.8,
+    "outputs": [
+      {
+        "item": "minecraft:oak_leaves",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:moss_block",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:bone_meal",
+        "weight": 10
+      }
+    ]
+  },
+  "farming": {
+    "food": 1.0,
+    "harvest": [
+      {
+        "item": "minecraft:brown_mushroom",
+        "weight": 25
+      },
+      {
+        "item": "minecraft:red_mushroom",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:wheat_seeds",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:sweet_berries",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:melon_seeds",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:pumpkin_seeds",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:glow_berries",
+        "weight": 5,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 0.8
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:brown_mushroom",
+        "count": 4
+      }
+    ],
+    "time": 2400
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:brown_mushroom"
+}

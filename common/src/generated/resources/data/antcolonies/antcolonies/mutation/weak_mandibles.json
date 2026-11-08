@@ -1,0 +1,7 @@
+{
+  "effects": {
+    "gathering": 0.85
+  },
+  "random_weight": 5,
+  "negative": true
+}

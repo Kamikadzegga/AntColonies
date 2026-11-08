@@ -1,0 +1,90 @@
+{
+  "tier": 2,
+  "category": "hybrid",
+  "look": {
+    "body": "#3E3E42",
+    "gaster": "#A82020",
+    "accent": "#D0D0D0",
+    "pattern": "metallic",
+    "crystal": "#FF4A2A"
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.3,
+    "special_food": "mineral",
+    "special_per_egg": 0.3
+  },
+  "production": {
+    "rate": 0.75,
+    "outputs": [
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 25
+      },
+      {
+        "item": "minecraft:redstone",
+        "weight": 18
+      },
+      {
+        "item": "minecraft:iron_nugget",
+        "weight": 15,
+        "processed": "minecraft:iron_ingot"
+      },
+      {
+        "item": "minecraft:raw_copper",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:coal",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:quartz",
+        "weight": 3,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "tag": "c:raw_materials/tin",
+        "weight": 3,
+        "min_stage": 3
+      },
+      {
+        "tag": "c:raw_materials/osmium",
+        "weight": 3,
+        "min_stage": 3
+      },
+      {
+        "tag": "c:raw_materials/zinc",
+        "weight": 3,
+        "min_stage": 3
+      },
+      {
+        "tag": "c:raw_materials/lead",
+        "weight": 3,
+        "min_stage": 3
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.3
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 4800
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:piston"
+}

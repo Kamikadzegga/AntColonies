@@ -1,0 +1,83 @@
+{
+  "tier": 0,
+  "category": "base",
+  "look": {
+    "body": "#A0522D",
+    "gaster": "#C8643A",
+    "accent": "#E0A060",
+    "pattern": "striped"
+  },
+  "climate": "hot",
+  "spawn_biomes": "antcolonies:spawns/badlands",
+  "diet": {
+    "consumption": 0.9
+  },
+  "production": {
+    "rate": 0.95,
+    "outputs": [
+      {
+        "item": "minecraft:red_sand",
+        "weight": 22
+      },
+      {
+        "item": "minecraft:terracotta",
+        "weight": 18
+      },
+      {
+        "item": "minecraft:orange_terracotta",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:yellow_terracotta",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:red_terracotta",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:brown_terracotta",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:white_terracotta",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:light_gray_terracotta",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:dead_bush",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:gold_nugget",
+        "weight": 3,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:terracotta",
+        "count": 8
+      }
+    ],
+    "time": 2400
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.05
+  },
+  "signature_item": "minecraft:terracotta"
+}

@@ -1,0 +1,11 @@
+{
+  "effects": {
+    "growth": 1.2,
+    "eggs": 1.05
+  },
+  "random_weight": 8,
+  "catalyst": {
+    "ingredient": "minecraft:redstone",
+    "count": 16
+  }
+}

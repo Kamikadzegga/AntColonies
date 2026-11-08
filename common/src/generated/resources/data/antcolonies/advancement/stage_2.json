@@ -1,0 +1,27 @@
+{
+  "parent": "antcolonies:first_colony",
+  "criteria": {
+    "stage_2": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "stage": {
+          "min": 2
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:breeding_chamber"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.stage_2.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.stage_2.description"
+    }
+  },
+  "requirements": [
+    ["stage_2"]
+  ]
+}

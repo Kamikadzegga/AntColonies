@@ -1,0 +1,24 @@
+{
+  "from": "antcolonies:lead",
+  "to": "antcolonies:uranium",
+  "item": "#c:ingots/uranium",
+  "chance": 0.04,
+  "guaranteed_after": 32,
+  "min_stage": 3,
+  "min_population": 1500,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mekanism"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "immersiveengineering"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "antcolonies:emerald_fragment",
+    "antcolonies:emerald_fragment",
+    "antcolonies:emerald_fragment",
+    "antcolonies:emerald_fragment",
+    "antcolonies:emerald_fragment",
+    "antcolonies:emerald_fragment",
+    "antcolonies:emerald_fragment",
+    "antcolonies:emerald_fragment",
+    "antcolonies:emerald_fragment"
+  ],
+  "result": {
+    "id": "minecraft:emerald"
+  }
+}

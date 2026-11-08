@@ -1,0 +1,58 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#4A0E0E",
+    "gaster": "#C81E1E",
+    "accent": "#FF5A3A",
+    "pattern": "faceted",
+    "crystal": "#FF2A1A",
+    "glow": true
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.55,
+    "outputs": [
+      {
+        "item": "minecraft:redstone",
+        "weight": 45
+      },
+      {
+        "item": "minecraft:glowstone_dust",
+        "weight": 8,
+        "min_stage": 2,
+        "special": true
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 10
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:redstone"
+}

@@ -1,0 +1,29 @@
+{
+  "parent": "antcolonies:root",
+  "criteria": {
+    "catch_ants": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:ant_test_tube"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:ant_test_tube"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.catch_ants.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.catch_ants.description"
+    }
+  },
+  "requirements": [
+    ["catch_ants"]
+  ]
+}

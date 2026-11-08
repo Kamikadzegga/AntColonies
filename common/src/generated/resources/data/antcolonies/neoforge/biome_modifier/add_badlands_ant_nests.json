@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#antcolonies:spawns/badlands",
+  "features": "antcolonies:badlands_ant_nest",
+  "step": "vegetal_decoration"
+}

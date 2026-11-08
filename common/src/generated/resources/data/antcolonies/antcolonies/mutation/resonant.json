@@ -1,0 +1,12 @@
+{
+  "effects": {
+    "production": 1.1,
+    "special": 1.15
+  },
+  "random_weight": 3,
+  "catalyst": {
+    "ingredient": "minecraft:echo_shard",
+    "count": 1
+  },
+  "categories": ["mineral", "hybrid", "endgame"]
+}

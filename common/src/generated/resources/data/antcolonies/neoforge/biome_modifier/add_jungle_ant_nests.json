@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#antcolonies:spawns/jungle",
+  "features": "antcolonies:jungle_ant_nest",
+  "step": "vegetal_decoration"
+}

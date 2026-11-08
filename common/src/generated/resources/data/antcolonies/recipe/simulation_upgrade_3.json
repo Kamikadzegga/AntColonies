@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": "minecraft:diamond",
+    "X": "minecraft:comparator",
+    "U": "antcolonies:simulation_upgrade_2"
+  },
+  "pattern": ["DXD", "XUX", "DXD"],
+  "result": {
+    "id": "antcolonies:simulation_upgrade_3"
+  }
+}

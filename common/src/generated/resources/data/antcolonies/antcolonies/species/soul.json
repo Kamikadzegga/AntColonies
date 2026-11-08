@@ -1,0 +1,99 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#3A2A20",
+    "gaster": "#5A4030",
+    "accent": "#4AE0E8",
+    "pattern": "banded",
+    "crystal": "#6AF0FF",
+    "glow": true,
+    "size": 1.05
+  },
+  "climate": "nether",
+  "diet": {
+    "consumption": 1.8,
+    "special_food": "nether",
+    "special_per_egg": 0.8
+  },
+  "production": {
+    "rate": 0.3,
+    "outputs": [
+      {
+        "item": "minecraft:soul_sand",
+        "weight": 22
+      },
+      {
+        "item": "minecraft:soul_soil",
+        "weight": 16
+      },
+      {
+        "item": "minecraft:bone",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:basalt",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:blackstone",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:quartz",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:ghast_tear",
+        "weight": 0.05,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:gilded_blackstone",
+        "weight": 0.05,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.6,
+    "targets": [
+      {
+        "entity": "minecraft:skeleton",
+        "weight": 25
+      },
+      {
+        "entity": "minecraft:ghast",
+        "weight": 1
+      },
+      {
+        "entity": "minecraft:wither_skeleton",
+        "weight": 10
+      },
+      {
+        "entity": "minecraft:magma_cube",
+        "weight": 15
+      }
+    ]
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:nether_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.8,
+    "growth": 0.85
+  },
+  "signature_item": "minecraft:soul_sand"
+}

@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#antcolonies:spawns/snow",
+  "features": "antcolonies:snow_ant_nest",
+  "step": "vegetal_decoration"
+}

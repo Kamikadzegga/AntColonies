@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "antcolonies:item/species_upgrade",
+    "layer1": "antcolonies:item/species_upgrade_overlay"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "tier": 1,
+  "category": "mineral",
+  "look": { "body": "#4A2E22", "gaster": "#C8743A", "accent": "#F0A060", "pattern": "metallic" },
+  "climate": "underground",
+  "spawn_biomes": "mypack:spawns/copper",
+  "diet": { "consumption": 1.2 },
+  "production": {
+    "rate": 0.5,
+    "outputs": [
+      { "item": "minecraft:raw_copper", "weight": 70, "processed": "minecraft:copper_ingot", "ratio": 1 },
+      { "item": "minecraft:cobblestone", "weight": 25 },
+      { "item": "minecraft:copper_block", "weight": 3, "min_stage": 3, "special": true }
+    ]
+  },
+  "rearing": {
+    "cost": [{ "ingredient": "antcolonies:royal_jelly", "count": 2 }, { "ingredient": "minecraft:copper_ingot", "count": 8 }],
+    "time": 3600
+  },
+  "signature_item": "minecraft:copper_ingot"
+}

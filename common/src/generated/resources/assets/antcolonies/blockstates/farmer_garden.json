@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "antcolonies:block/farmer_garden"
+    },
+    "facing=east": {
+      "model": "antcolonies:block/farmer_garden",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "antcolonies:block/farmer_garden",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "antcolonies:block/farmer_garden",
+      "y": 270
+    }
+  }
+}

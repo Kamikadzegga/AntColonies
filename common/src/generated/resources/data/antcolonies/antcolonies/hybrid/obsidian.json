@@ -1,0 +1,7 @@
+{
+  "first": "antcolonies:stone",
+  "second": "antcolonies:fire",
+  "result": "antcolonies:obsidian",
+  "chance": 0.25,
+  "min_average_level": 3.0
+}

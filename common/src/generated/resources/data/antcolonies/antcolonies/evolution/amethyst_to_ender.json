@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:amethyst",
+  "to": "antcolonies:ender",
+  "item": "minecraft:ender_eye",
+  "chance": 0.03,
+  "guaranteed_after": 40,
+  "min_stage": 4,
+  "min_population": 3000
+}

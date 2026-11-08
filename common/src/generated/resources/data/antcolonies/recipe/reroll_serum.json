@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "antcolonies:evolution_catalyst",
+    "minecraft:nether_wart",
+    "minecraft:ender_pearl",
+    "antcolonies:genetic_circuit"
+  ],
+  "result": {
+    "id": "antcolonies:reroll_serum"
+  }
+}

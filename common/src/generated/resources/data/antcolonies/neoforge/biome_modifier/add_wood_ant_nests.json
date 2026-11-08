@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#antcolonies:spawns/wood",
+  "features": "antcolonies:wood_ant_nest",
+  "step": "vegetal_decoration"
+}

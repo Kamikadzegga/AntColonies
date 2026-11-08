@@ -1,0 +1,91 @@
+{
+  "tier": 4,
+  "category": "endgame",
+  "look": {
+    "body": "#0E0E14",
+    "gaster": "#2A1A3A",
+    "accent": "#C870FF",
+    "pattern": "faceted",
+    "crystal": "#D090FF",
+    "glow": true,
+    "size": 1.15
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 2.2,
+    "special_food": "crystal",
+    "special_per_egg": 1.5
+  },
+  "production": {
+    "rate": 0.03,
+    "outputs": [
+      {
+        "item": "minecraft:end_stone",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:chorus_fruit",
+        "weight": 18
+      },
+      {
+        "item": "minecraft:purpur_block",
+        "weight": 6,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:ender_pearl",
+        "weight": 8,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:shulker_shell",
+        "weight": 0.2,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.8,
+    "targets": [
+      {
+        "entity": "minecraft:enderman",
+        "weight": 40
+      },
+      {
+        "entity": "minecraft:endermite",
+        "weight": 20
+      },
+      {
+        "entity": "minecraft:shulker",
+        "weight": 1
+      }
+    ]
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 6
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 12
+      },
+      {
+        "ingredient": "antcolonies:nuptial_pheromone",
+        "count": 4
+      },
+      {
+        "ingredient": "minecraft:ender_pearl",
+        "count": 4
+      }
+    ],
+    "time": 12000
+  },
+  "breeding": {
+    "eggs": 0.6,
+    "growth": 0.7
+  },
+  "signature_item": "minecraft:ender_pearl"
+}

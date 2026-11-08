@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "X": "antcolonies:genetic_circuit",
+    "U": "antcolonies:genetic_upgrade_1"
+  },
+  "pattern": ["GXG", "XUX", "GXG"],
+  "result": {
+    "id": "antcolonies:genetic_upgrade_2"
+  }
+}

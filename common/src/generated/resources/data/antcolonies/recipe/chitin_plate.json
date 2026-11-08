@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:bone_meal",
+    "minecraft:bone_meal",
+    "minecraft:slime_ball"
+  ],
+  "result": {
+    "count": 4,
+    "id": "antcolonies:chitin_plate"
+  }
+}

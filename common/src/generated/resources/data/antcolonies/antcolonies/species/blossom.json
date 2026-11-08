@@ -1,0 +1,98 @@
+{
+  "tier": 0,
+  "category": "base",
+  "look": {
+    "body": "#E8A0C0",
+    "gaster": "#FFC8DC",
+    "accent": "#FFFFFF",
+    "pattern": "speckled",
+    "size": 0.9
+  },
+  "climate": "temperate",
+  "spawn_biomes": "antcolonies:spawns/blossom",
+  "diet": {
+    "consumption": 0.9
+  },
+  "production": {
+    "rate": 0.95,
+    "outputs": [
+      {
+        "item": "minecraft:pink_petals",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:cherry_log",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:dandelion",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:poppy",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:cornflower",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:allium",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:azure_bluet",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:oxeye_daisy",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:lily_of_the_valley",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:wildflowers",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:cherry_sapling",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:honeycomb",
+        "weight": 4,
+        "min_stage": 2,
+        "special": true
+      },
+      {
+        "item": "minecraft:honey_bottle",
+        "weight": 2,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 0.8
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "#minecraft:flowers",
+        "count": 8
+      }
+    ],
+    "time": 2400
+  },
+  "breeding": {
+    "eggs": 1.1,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:honeycomb"
+}

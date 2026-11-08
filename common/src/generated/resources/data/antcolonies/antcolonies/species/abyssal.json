@@ -1,0 +1,94 @@
+{
+  "tier": 3,
+  "category": "hybrid",
+  "look": {
+    "body": "#0E2A3A",
+    "gaster": "#2A6A7A",
+    "accent": "#8AF0E0",
+    "pattern": "faceted",
+    "crystal": "#7AF0E0",
+    "glow": true,
+    "size": 1.05
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "crystal",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.05,
+    "outputs": [
+      {
+        "item": "minecraft:prismarine_shard",
+        "weight": 20,
+        "processed": "minecraft:prismarine",
+        "ratio": 4
+      },
+      {
+        "item": "minecraft:prismarine_crystals",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:dark_prismarine",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:prismarine",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:sea_lantern",
+        "weight": 3,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:wet_sponge",
+        "weight": 0.1,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:sponge",
+        "weight": 0.05,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.4,
+    "targets": [
+      {
+        "entity": "minecraft:guardian",
+        "weight": 40
+      },
+      {
+        "entity": "minecraft:drowned",
+        "weight": 30
+      }
+    ]
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      },
+      {
+        "ingredient": "antcolonies:nuptial_pheromone",
+        "count": 1
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.8,
+    "growth": 0.85
+  },
+  "signature_item": "minecraft:prismarine_crystals"
+}

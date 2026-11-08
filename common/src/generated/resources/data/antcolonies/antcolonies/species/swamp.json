@@ -1,0 +1,96 @@
+{
+  "tier": 0,
+  "category": "base",
+  "look": {
+    "body": "#3B4A2A",
+    "gaster": "#5E6B3A",
+    "accent": "#8BA05A",
+    "pattern": "speckled"
+  },
+  "climate": "temperate",
+  "spawn_biomes": "antcolonies:spawns/swamp",
+  "diet": {
+    "consumption": 1.0
+  },
+  "production": {
+    "rate": 0.95,
+    "outputs": [
+      {
+        "item": "minecraft:clay_ball",
+        "weight": 20,
+        "processed": "minecraft:clay",
+        "ratio": 4
+      },
+      {
+        "item": "minecraft:mud",
+        "weight": 16
+      },
+      {
+        "item": "minecraft:sugar_cane",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:lily_pad",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:mangrove_log",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:vine",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:mangrove_propagule",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:slime_ball",
+        "weight": 4,
+        "min_stage": 3,
+        "special": true,
+        "processed": "minecraft:slime_block"
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0,
+    "targets": [
+      {
+        "entity": "minecraft:slime",
+        "weight": 30
+      },
+      {
+        "entity": "minecraft:witch",
+        "weight": 10
+      },
+      {
+        "entity": "minecraft:zombie",
+        "weight": 25
+      },
+      {
+        "entity": "minecraft:drowned",
+        "weight": 15
+      }
+    ]
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:lily_pad",
+        "count": 4
+      }
+    ],
+    "time": 2400
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:slime_ball"
+}

@@ -1,0 +1,108 @@
+{
+  "tier": 2,
+  "category": "hybrid",
+  "look": {
+    "body": "#7A2A12",
+    "gaster": "#A8461E",
+    "accent": "#D89A50",
+    "pattern": "plain",
+    "size": 1.1
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.0
+  },
+  "production": {
+    "rate": 0.7,
+    "outputs": [
+      {
+        "item": "minecraft:wheat_seeds",
+        "weight": 16
+      },
+      {
+        "item": "minecraft:beetroot_seeds",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:pumpkin_seeds",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:melon_seeds",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:wheat",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:dead_bush",
+        "weight": 4
+      }
+    ]
+  },
+  "farming": {
+    "food": 1.4,
+    "harvest": [
+      {
+        "item": "minecraft:wheat",
+        "weight": 18
+      },
+      {
+        "item": "minecraft:carrot",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:potato",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:beetroot",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:pumpkin",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:melon",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:sugar_cane",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:poisonous_potato",
+        "weight": 2
+      },
+      {
+        "item": "minecraft:golden_carrot",
+        "weight": 1,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "minecraft:wheat",
+        "count": 16
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:wheat"
+}

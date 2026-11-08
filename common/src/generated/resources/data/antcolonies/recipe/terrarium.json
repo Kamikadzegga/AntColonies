@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#minecraft:planks",
+    "G": "minecraft:glass",
+    "D": "minecraft:dirt"
+  },
+  "pattern": ["PGP", "GDG", "PPP"],
+  "result": {
+    "id": "antcolonies:terrarium"
+  }
+}

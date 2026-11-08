@@ -1,0 +1,144 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+    id 'idea'
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+version = mod_version
+group = mod_group_id
+
+// The sources live in part folders at the root, all compiled into one mod:
+//   common/   colony logic, blocks, items, entities, registries, config, resources
+//   client/   rendering, models and screens (client only)
+//   compat/   JEI, EMI and Jade plugins (loaded only with those mods)
+//   gametest/ game tests and the screenshot showcase: on every dev run's classpath, never in the built jar
+sourceSets {
+    main {
+        java.srcDirs = ['common/src/main/java', 'client/src/main/java', 'compat/src/main/java']
+        // The icon and logo, and everything tools/DataGen.java and tools/TexGen.java write.
+        resources.srcDirs = ['common/src/main/resources', 'common/src/generated/resources']
+    }
+    gametest {
+        java.srcDirs = ['gametest/src/main/java']
+        resources.srcDirs = ['gametest/src/main/resources']
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+configurations {
+    gametestImplementation.extendsFrom implementation
+    gametestCompileOnly.extendsFrom compileOnly
+    gametestRuntimeOnly.extendsFrom runtimeOnly
+}
+
+repositories {
+    maven {
+        name = 'BlameJared (JEI)'
+        url = 'https://maven.blamejared.com/'
+        content { includeGroup 'mezz.jei' }
+    }
+    maven {
+        name = 'CurseMaven (Jade)'
+        url = 'https://cursemaven.com'
+        content { includeGroup 'curse.maven' }
+    }
+    maven {
+        name = 'Modrinth (EMI)'
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
+}
+
+base {
+    archivesName = mod_id
+}
+
+// Jar naming: <mod_id>-<minecraft_version>.<mod_version>.jar (e.g. antcolonies-26.3.0.1.0.jar)
+tasks.withType(Jar).configureEach {
+    archiveVersion = "${minecraft_version}.${mod_version}"
+}
+
+// Minecraft 26.3 ships Java 25.
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+neoForge {
+    version = project.neo_version
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+        configureEach {
+            sourceSet = sourceSets.gametest
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.INFO
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+            sourceSet(sourceSets.gametest)
+        }
+    }
+}
+neoForge.addModdingDependenciesTo(sourceSets.gametest)
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+    gametestRuntimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+    // JEI integration: optional at runtime (the plugin class is only loaded when JEI is installed).
+    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
+    // Jade (look-at tooltips): optional, the plugin only loads when Jade is installed.
+    compileOnly "curse.maven:jade-324717:9042207"
+    // EMI: compiled against PF-EMI 1.1 ("EMI - Port Forward", the 26.3 port of EMI; Modrinth version xwDayqWe = 1.1+26.3+neoforge).
+    // Optional at runtime.
+    compileOnly "maven.modrinth:pf-emi:xwDayqWe"
+}
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "common/src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

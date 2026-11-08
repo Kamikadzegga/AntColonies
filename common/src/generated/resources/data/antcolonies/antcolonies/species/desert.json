@@ -1,0 +1,67 @@
+{
+  "tier": 0,
+  "category": "base",
+  "look": {
+    "body": "#C8963E",
+    "gaster": "#A86A2A",
+    "accent": "#5A3A18",
+    "pattern": "striped"
+  },
+  "climate": "hot",
+  "spawn_biomes": "antcolonies:spawns/desert",
+  "diet": {
+    "consumption": 0.85
+  },
+  "production": {
+    "rate": 0.95,
+    "outputs": [
+      {
+        "item": "minecraft:sand",
+        "weight": 34
+      },
+      {
+        "item": "minecraft:red_sand",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:sandstone",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:cactus",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:dead_bush",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:gold_nugget",
+        "weight": 2,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:cactus",
+        "count": 4
+      }
+    ],
+    "time": 2400
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.1
+  },
+  "signature_item": "minecraft:sand"
+}

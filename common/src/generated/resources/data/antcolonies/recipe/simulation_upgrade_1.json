@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": "minecraft:comparator",
+    "B": "antcolonies:upgrade_base"
+  },
+  "pattern": [" X ", "XBX", " X "],
+  "result": {
+    "id": "antcolonies:simulation_upgrade_1"
+  }
+}

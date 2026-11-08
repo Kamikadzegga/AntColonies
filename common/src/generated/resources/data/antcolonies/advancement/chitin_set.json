@@ -1,0 +1,38 @@
+{
+  "parent": "antcolonies:root",
+  "criteria": {
+    "chitin_set": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:chitin_helmet"
+          },
+          {
+            "items": "antcolonies:chitin_chestplate"
+          },
+          {
+            "items": "antcolonies:chitin_leggings"
+          },
+          {
+            "items": "antcolonies:chitin_boots"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:chitin_chestplate"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.chitin_set.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.chitin_set.description"
+    }
+  },
+  "requirements": [
+    ["chitin_set"]
+  ]
+}

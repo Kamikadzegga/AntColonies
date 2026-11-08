@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#antcolonies:spawns/pale",
+  "features": "antcolonies:pale_ant_nest",
+  "step": "vegetal_decoration"
+}

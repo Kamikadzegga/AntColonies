@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": "minecraft:diamond",
+    "X": "antcolonies:evolution_catalyst",
+    "U": "antcolonies:evolution_upgrade_2"
+  },
+  "pattern": ["DXD", "XUX", "DXD"],
+  "result": {
+    "id": "antcolonies:evolution_upgrade_3"
+  }
+}

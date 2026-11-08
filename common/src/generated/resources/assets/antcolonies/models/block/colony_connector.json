@@ -1,0 +1,61 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "antcolonies:block/colony_connector_side",
+    "glass": {
+      "force_translucent": true,
+      "sprite": "antcolonies:block/colony_connector_side"
+    },
+    "core": "antcolonies:block/colony_connector_top"
+  },
+  "elements": [
+    {
+      "from": [5.0, 5.0, 5.0],
+      "to": [11.0, 11.0, 11.0],
+      "faces": {
+        "down": {
+          "texture": "#core"
+        },
+        "up": {
+          "texture": "#core"
+        },
+        "north": {
+          "texture": "#core"
+        },
+        "south": {
+          "texture": "#core"
+        },
+        "west": {
+          "texture": "#core"
+        },
+        "east": {
+          "texture": "#core"
+        }
+      }
+    },
+    {
+      "from": [2.0, 2.0, 2.0],
+      "to": [14.0, 14.0, 14.0],
+      "faces": {
+        "down": {
+          "texture": "#glass"
+        },
+        "up": {
+          "texture": "#glass"
+        },
+        "north": {
+          "texture": "#glass"
+        },
+        "south": {
+          "texture": "#glass"
+        },
+        "west": {
+          "texture": "#glass"
+        },
+        "east": {
+          "texture": "#glass"
+        }
+      }
+    }
+  ]
+}

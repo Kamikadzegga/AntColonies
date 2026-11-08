@@ -1,0 +1,30 @@
+{
+  "parent": "antcolonies:lab",
+  "criteria": {
+    "perfect_trait": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "best_trait": {
+          "min": 10
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:genetic_analyzer"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.perfect_trait.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.perfect_trait.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "perfect_trait"
+    ]
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "tier": 0,
+  "category": "base",
+  "look": {
+    "body": "#5C5A58",
+    "gaster": "#3E3C3B",
+    "accent": "#8A8784",
+    "pattern": "speckled"
+  },
+  "climate": "temperate",
+  "spawn_biomes": "antcolonies:spawns/stone",
+  "diet": {
+    "consumption": 1.1
+  },
+  "production": {
+    "rate": 0.9,
+    "outputs": [
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:gravel",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:flint",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:andesite",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:diorite",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:granite",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:stone",
+        "weight": 10,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:coal",
+        "weight": 5,
+        "min_stage": 2,
+        "special": true
+      },
+      {
+        "item": "minecraft:raw_copper",
+        "weight": 2,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.2
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:cobblestone",
+        "count": 16
+      }
+    ],
+    "time": 2400
+  },
+  "breeding": {
+    "eggs": 0.95,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:cobblestone"
+}

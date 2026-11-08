@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": "minecraft:packed_mud"
+  },
+  "pattern": ["DDD", "D D", "DDD"],
+  "result": {
+    "count": 8,
+    "id": "antcolonies:ant_tunnel"
+  }
+}

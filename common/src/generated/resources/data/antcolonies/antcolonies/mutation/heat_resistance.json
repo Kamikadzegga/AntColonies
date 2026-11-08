@@ -1,0 +1,10 @@
+{
+  "effects": {
+    "heat_resistant": true
+  },
+  "random_weight": 6,
+  "catalyst": {
+    "ingredient": "minecraft:blaze_powder",
+    "count": 4
+  }
+}

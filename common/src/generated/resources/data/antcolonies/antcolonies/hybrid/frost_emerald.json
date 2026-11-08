@@ -1,0 +1,7 @@
+{
+  "first": "antcolonies:snow",
+  "second": "antcolonies:emerald",
+  "result": "antcolonies:frost_emerald",
+  "chance": 0.2,
+  "min_average_level": 4.0
+}

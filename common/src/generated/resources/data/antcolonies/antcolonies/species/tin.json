@@ -1,0 +1,76 @@
+{
+  "tier": 1,
+  "category": "mineral",
+  "look": {
+    "body": "#6A6A70",
+    "gaster": "#C8C8D0",
+    "accent": "#E8E8F0",
+    "pattern": "metallic",
+    "size": 1.05
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.3499999999999999,
+    "special_food": "mineral",
+    "special_per_egg": 0.44999999999999996
+  },
+  "production": {
+    "rate": 0.6,
+    "outputs": [
+      {
+        "tag": "c:nuggets/tin",
+        "weight": 40
+      },
+      {
+        "tag": "c:raw_materials/tin",
+        "weight": 10,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 15
+      },
+      {
+        "tag": "c:ingots/tin",
+        "weight": 2,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 4800
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mekanism"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "thermal"
+        }
+      ]
+    }
+  ]
+}

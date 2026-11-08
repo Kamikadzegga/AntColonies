@@ -1,0 +1,98 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#8A1A0A",
+    "gaster": "#E04A1A",
+    "accent": "#FFB040",
+    "pattern": "striped",
+    "crystal": "#FF7A1A",
+    "glow": true
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "nether",
+    "special_per_egg": 0.4
+  },
+  "production": {
+    "rate": 0.5,
+    "outputs": [
+      {
+        "item": "minecraft:netherrack",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:blaze_powder",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:magma_cream",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:glowstone_dust",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:quartz",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:nether_wart",
+        "weight": 8,
+        "min_stage": 2,
+        "processed": "minecraft:nether_wart_block"
+      },
+      {
+        "item": "minecraft:magma_block",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:blaze_rod",
+        "weight": 0.1,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.5,
+    "targets": [
+      {
+        "entity": "minecraft:blaze",
+        "weight": 25
+      },
+      {
+        "entity": "minecraft:magma_cube",
+        "weight": 25
+      },
+      {
+        "entity": "minecraft:zombified_piglin",
+        "weight": 20
+      },
+      {
+        "entity": "minecraft:husk",
+        "weight": 15
+      }
+    ]
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:nether_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 4800
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:blaze_powder"
+}

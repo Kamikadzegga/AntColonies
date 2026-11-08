@@ -1,0 +1,7 @@
+{
+  "first": "antcolonies:wood",
+  "second": "antcolonies:diamond",
+  "result": "antcolonies:crystal_wood",
+  "chance": 0.25,
+  "min_average_level": 3.0
+}

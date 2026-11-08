@@ -1,0 +1,64 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#1E3A48",
+    "gaster": "#6AE0E8",
+    "accent": "#C8FFFF",
+    "pattern": "faceted",
+    "crystal": "#7AF0FF",
+    "glow": true,
+    "size": 1.1
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.7,
+    "special_food": "crystal",
+    "special_per_egg": 1.0
+  },
+  "production": {
+    "rate": 0.008,
+    "outputs": [
+      {
+        "item": "antcolonies:diamond_fragment",
+        "weight": 60,
+        "processed": "minecraft:diamond"
+      },
+      {
+        "item": "minecraft:coal",
+        "weight": 25
+      },
+      {
+        "item": "minecraft:diamond",
+        "weight": 3,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.4
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      },
+      {
+        "ingredient": "antcolonies:nuptial_pheromone",
+        "count": 1
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.75,
+    "growth": 0.8
+  },
+  "signature_item": "minecraft:diamond"
+}

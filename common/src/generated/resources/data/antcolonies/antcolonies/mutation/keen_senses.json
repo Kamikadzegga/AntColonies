@@ -1,0 +1,10 @@
+{
+  "effects": {
+    "gathering": 1.25
+  },
+  "random_weight": 6,
+  "catalyst": {
+    "ingredient": "minecraft:spyglass",
+    "count": 1
+  }
+}

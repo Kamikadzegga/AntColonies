@@ -1,0 +1,45 @@
+name: Bug report
+description: Something doesn't work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting! Please fill in as much as you can, it makes the bug much faster to find.
+  - type: input
+    id: version
+    attributes:
+      label: Ant Colonies version
+      description: The jar's name, for example `antcolonies-26.3.0.1.0.jar`.
+    validations:
+      required: true
+  - type: input
+    id: neoforge
+    attributes:
+      label: NeoForge version
+      placeholder: 26.3.0.101
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Place a Terrarium
+        2. ...
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or crash report
+      description: Upload `logs/latest.log` or the crash report (from `crash-reports/`), or paste a link to them.
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other mods
+      description: Other mods installed, especially JEI, EMI, Jade and tech mods.

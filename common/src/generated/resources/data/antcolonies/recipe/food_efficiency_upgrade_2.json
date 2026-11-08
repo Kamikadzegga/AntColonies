@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "X": "minecraft:golden_carrot",
+    "U": "antcolonies:food_efficiency_upgrade_1"
+  },
+  "pattern": ["GXG", "XUX", "GXG"],
+  "result": {
+    "id": "antcolonies:food_efficiency_upgrade_2"
+  }
+}

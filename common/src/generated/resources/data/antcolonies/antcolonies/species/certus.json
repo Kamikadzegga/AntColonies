@@ -1,0 +1,67 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#2A3A5A",
+    "gaster": "#8AB8F0",
+    "accent": "#E0F0FF",
+    "pattern": "faceted",
+    "crystal": "#A0D0FF",
+    "glow": true
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "crystal",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.45,
+    "outputs": [
+      {
+        "tag": "c:gems/certus_quartz",
+        "weight": 40
+      },
+      {
+        "tag": "c:dusts/certus_quartz",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:quartz",
+        "weight": 10
+      },
+      {
+        "tag": "c:gems/fluix",
+        "weight": 0.5,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 4800
+  },
+  "breeding": {
+    "eggs": 0.85,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "ae2"
+    }
+  ]
+}

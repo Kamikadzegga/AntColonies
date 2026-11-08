@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:sugar",
+    "minecraft:sweet_berries",
+    "minecraft:bone_meal"
+  ],
+  "result": {
+    "count": 4,
+    "id": "antcolonies:ant_food"
+  }
+}

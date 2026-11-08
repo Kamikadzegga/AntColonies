@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": "minecraft:hopper",
+    "B": "antcolonies:upgrade_base"
+  },
+  "pattern": [" X ", "XBX", " X "],
+  "result": {
+    "id": "antcolonies:automation_upgrade_1"
+  }
+}

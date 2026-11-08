@@ -1,0 +1,15 @@
+{
+  "from": "antcolonies:amethyst",
+  "to": "antcolonies:certus",
+  "item": "#c:gems/certus_quartz",
+  "chance": 0.06,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 400,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "ae2"
+    }
+  ]
+}

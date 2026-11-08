@@ -1,0 +1,17 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "antcolonies:item/species_upgrade",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -1
+      },
+      {
+        "type": "antcolonies:species",
+        "part": "crystal",
+        "default": -6250336
+      }
+    ]
+  }
+}

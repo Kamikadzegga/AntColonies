@@ -1,0 +1,40 @@
+# Mod metadata. The placeholder values are filled in from gradle.properties by the generateModMetadata task.
+license="${mod_license}"
+issueTrackerURL="https://github.com/Kamikadzegga/AntColonies/issues"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="Kamikadzegga"
+displayURL="https://github.com/Kamikadzegga/AntColonies"
+# The mod list's square icon and the banner over the mod's description (pixel art, kept sharp).
+iconFile="icon.png"
+iconBlur=false
+bannerFile="logo.png"
+description='''
+Build a civilization, one ant at a time. Catch wild ants, raise Queens in living Terrariums,
+assign workers to Scavenging Sites, Farmer Gardens and Fighting Sites, evolve your Queens into
+mineral species and perfect their genetics in the Genetic Laboratory.
+'''
+
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    versionRange="[${neo_version},)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="jei"
+    type="optional"
+    versionRange="[31.17,)"
+    ordering="NONE"
+    side="CLIENT"

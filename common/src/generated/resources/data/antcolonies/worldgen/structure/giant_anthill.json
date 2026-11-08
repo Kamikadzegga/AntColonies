@@ -1,0 +1,7 @@
+{
+  "type": "antcolonies:giant_anthill",
+  "biomes": "#antcolonies:has_structure/giant_anthill",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "none"
+}

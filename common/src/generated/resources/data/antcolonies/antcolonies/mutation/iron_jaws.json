@@ -1,0 +1,10 @@
+{
+  "effects": {
+    "soldiers": 1.25
+  },
+  "random_weight": 6,
+  "catalyst": {
+    "ingredient": "minecraft:iron_block",
+    "count": 1
+  }
+}

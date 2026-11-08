@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "antcolonies:ant_food",
+    "antcolonies:ant_food",
+    "minecraft:amethyst_shard",
+    "minecraft:quartz",
+    "minecraft:glowstone_dust"
+  ],
+  "result": {
+    "count": 2,
+    "id": "antcolonies:crystal_ant_food"
+  }
+}

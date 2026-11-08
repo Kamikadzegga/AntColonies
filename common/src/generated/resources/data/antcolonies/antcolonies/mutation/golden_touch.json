@@ -1,0 +1,11 @@
+{
+  "effects": {
+    "gathering": 1.15,
+    "production": 1.05
+  },
+  "random_weight": 6,
+  "catalyst": {
+    "ingredient": "minecraft:gold_ingot",
+    "count": 8
+  }
+}

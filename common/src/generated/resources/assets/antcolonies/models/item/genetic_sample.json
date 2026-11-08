@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "antcolonies:item/genetic_sample",
+    "layer1": "antcolonies:item/genetic_sample_overlay"
+  }
+}

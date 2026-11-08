@@ -1,0 +1,35 @@
+{
+  "parent": "antcolonies:catch_ants",
+  "criteria": {
+    "giant_anthill": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "player": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:location": {
+              "structures": "antcolonies:giant_anthill"
+            }
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:coarse_dirt"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.giant_anthill.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.giant_anthill.description"
+    }
+  },
+  "requirements": [
+    [
+      "giant_anthill"
+    ]
+  ]
+}

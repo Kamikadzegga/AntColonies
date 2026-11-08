@@ -1,0 +1,7 @@
+{
+  "effects": {
+    "growth": 0.85
+  },
+  "random_weight": 4,
+  "negative": true
+}

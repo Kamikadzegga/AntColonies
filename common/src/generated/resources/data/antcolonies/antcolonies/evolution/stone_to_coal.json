@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:stone",
+  "to": "antcolonies:coal",
+  "item": "minecraft:coal_block",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 200
+}

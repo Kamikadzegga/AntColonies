@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "antcolonies:block/terrarium"
+    },
+    "facing=east": {
+      "model": "antcolonies:block/terrarium",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "antcolonies:block/terrarium",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "antcolonies:block/terrarium",
+      "y": 270
+    }
+  }
+}

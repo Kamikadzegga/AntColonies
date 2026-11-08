@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#minecraft:planks",
+    "F": "antcolonies:ant_food",
+    "C": "minecraft:chest"
+  },
+  "pattern": ["PFP", "PCP", "PPP"],
+  "result": {
+    "id": "antcolonies:food_storage"
+  }
+}

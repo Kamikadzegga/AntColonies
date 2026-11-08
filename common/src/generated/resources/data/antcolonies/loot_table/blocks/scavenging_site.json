@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "antcolonies:scavenging_site"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "antcolonies:blocks/scavenging_site"
+}

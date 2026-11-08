@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,formed=false": {
+      "model": "antcolonies:block/genetic_lab_controller"
+    },
+    "facing=north,formed=true": {
+      "model": "antcolonies:block/genetic_lab_controller_formed"
+    },
+    "facing=east,formed=false": {
+      "model": "antcolonies:block/genetic_lab_controller",
+      "y": 90
+    },
+    "facing=east,formed=true": {
+      "model": "antcolonies:block/genetic_lab_controller_formed",
+      "y": 90
+    },
+    "facing=south,formed=false": {
+      "model": "antcolonies:block/genetic_lab_controller",
+      "y": 180
+    },
+    "facing=south,formed=true": {
+      "model": "antcolonies:block/genetic_lab_controller_formed",
+      "y": 180
+    },
+    "facing=west,formed=false": {
+      "model": "antcolonies:block/genetic_lab_controller",
+      "y": 270
+    },
+    "facing=west,formed=true": {
+      "model": "antcolonies:block/genetic_lab_controller_formed",
+      "y": 270
+    }
+  }
+}

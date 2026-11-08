@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": "minecraft:egg",
+    "B": "antcolonies:upgrade_base"
+  },
+  "pattern": [" X ", "XBX", " X "],
+  "result": {
+    "id": "antcolonies:breeding_upgrade_1"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "antcolonies:test_tube",
+    "antcolonies:chitin_plate",
+    "minecraft:sugar",
+    "minecraft:redstone"
+  ],
+  "result": {
+    "id": "antcolonies:rally_pheromone"
+  }
+}

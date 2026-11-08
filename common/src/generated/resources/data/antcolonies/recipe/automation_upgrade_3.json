@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": "minecraft:diamond",
+    "X": "minecraft:hopper",
+    "U": "antcolonies:automation_upgrade_2"
+  },
+  "pattern": ["DXD", "XUX", "DXD"],
+  "result": {
+    "id": "antcolonies:automation_upgrade_3"
+  }
+}

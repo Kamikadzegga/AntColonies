@@ -1,0 +1,10 @@
+{
+  "effects": {
+    "food": 0.85
+  },
+  "random_weight": 8,
+  "catalyst": {
+    "ingredient": "minecraft:emerald",
+    "count": 4
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "values": [
+    "antcolonies:breeding_chamber",
+    "antcolonies:scavenging_site",
+    "antcolonies:farmer_garden",
+    "antcolonies:nursery",
+    "antcolonies:queen_chamber",
+    "antcolonies:worker_housing",
+    "antcolonies:ant_tunnel",
+    "antcolonies:common_ant_nest",
+    "antcolonies:wood_ant_nest",
+    "antcolonies:stone_ant_nest",
+    "antcolonies:snow_ant_nest",
+    "antcolonies:desert_ant_nest",
+    "antcolonies:farmer_ant_nest",
+    "antcolonies:jungle_ant_nest",
+    "antcolonies:swamp_ant_nest",
+    "antcolonies:savanna_ant_nest",
+    "antcolonies:shore_ant_nest",
+    "antcolonies:blossom_ant_nest",
+    "antcolonies:pale_ant_nest",
+    "antcolonies:badlands_ant_nest"
+  ]
+}

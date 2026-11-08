@@ -1,0 +1,71 @@
+{
+  "tier": 3,
+  "category": "hybrid",
+  "look": {
+    "body": "#14101E",
+    "gaster": "#2A1E40",
+    "accent": "#8A4AE0",
+    "pattern": "faceted",
+    "crystal": "#A060FF",
+    "glow": true,
+    "size": 1.1
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.6,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.3,
+    "outputs": [
+      {
+        "item": "minecraft:obsidian",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:basalt",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:magma_block",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:blackstone",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:crying_obsidian",
+        "weight": 0.13,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.8
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.8,
+    "growth": 0.85
+  },
+  "signature_item": "minecraft:obsidian"
+}

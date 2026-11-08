@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": "minecraft:iron_sword",
+    "B": "antcolonies:upgrade_base"
+  },
+  "pattern": [" X ", "XBX", " X "],
+  "result": {
+    "id": "antcolonies:soldier_upgrade_1"
+  }
+}

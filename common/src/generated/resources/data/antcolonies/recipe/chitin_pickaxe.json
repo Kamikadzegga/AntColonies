@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "antcolonies:chitin_plate",
+    "S": "minecraft:stick"
+  },
+  "pattern": ["CCC", " S ", " S "],
+  "result": {
+    "id": "antcolonies:chitin_pickaxe"
+  }
+}

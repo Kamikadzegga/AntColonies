@@ -1,0 +1,26 @@
+{
+  "parent": "antcolonies:evolution",
+  "criteria": {
+    "netherite": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "species": "antcolonies:netherite"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:netherite_scrap"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.netherite.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.netherite.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    ["netherite"]
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "first": "antcolonies:desert",
+  "second": "antcolonies:deepslate",
+  "result": "antcolonies:excavator",
+  "chance": 0.25,
+  "min_average_level": 3.0
+}

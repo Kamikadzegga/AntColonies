@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:diamond",
+  "to": "antcolonies:emerald",
+  "item": "minecraft:emerald",
+  "chance": 0.04,
+  "guaranteed_after": 32,
+  "min_stage": 3,
+  "min_population": 2000
+}

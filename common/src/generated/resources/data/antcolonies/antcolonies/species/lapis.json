@@ -1,0 +1,57 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#1A2460",
+    "gaster": "#2A4AC8",
+    "accent": "#6A8AFF",
+    "pattern": "faceted",
+    "crystal": "#3A5AF0"
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.55,
+    "outputs": [
+      {
+        "item": "minecraft:lapis_lazuli",
+        "weight": 45
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:calcite",
+        "weight": 4,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:lapis_lazuli"
+}

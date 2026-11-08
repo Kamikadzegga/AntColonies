@@ -1,0 +1,73 @@
+{
+  "tier": 0,
+  "category": "base",
+  "look": {
+    "body": "#3A2A20",
+    "gaster": "#2B1F18",
+    "accent": "#6B4A30",
+    "pattern": "banded"
+  },
+  "climate": "temperate",
+  "spawn_biomes": "antcolonies:spawns/common",
+  "diet": {
+    "consumption": 1.0
+  },
+  "production": {
+    "rate": 1.0,
+    "outputs": [
+      {
+        "item": "minecraft:dirt",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:wheat_seeds",
+        "weight": 22
+      },
+      {
+        "item": "minecraft:stick",
+        "weight": 16
+      },
+      {
+        "item": "minecraft:bone_meal",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:flint",
+        "weight": 5,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:clay_ball",
+        "weight": 5,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:string",
+        "weight": 3,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "#minecraft:flowers",
+        "count": 4
+      }
+    ],
+    "time": 2400
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:wheat_seeds"
+}

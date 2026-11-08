@@ -1,0 +1,131 @@
+{
+  "trait": "food_efficiency",
+  "steps": [
+    {
+      "cost": [
+        {
+          "ingredient": "antcolonies:royal_jelly",
+          "count": 1
+        },
+        {
+          "ingredient": "minecraft:redstone",
+          "count": 8
+        }
+      ],
+      "energy": 10000,
+      "time": 200
+    },
+    {
+      "cost": [
+        {
+          "ingredient": "antcolonies:royal_jelly",
+          "count": 2
+        },
+        {
+          "ingredient": "minecraft:glowstone_dust",
+          "count": 8
+        }
+      ],
+      "energy": 20000,
+      "time": 300
+    },
+    {
+      "cost": [
+        {
+          "ingredient": "antcolonies:genetic_circuit",
+          "count": 1
+        },
+        {
+          "ingredient": "minecraft:golden_carrot",
+          "count": 4
+        }
+      ],
+      "energy": 30000,
+      "time": 400
+    },
+    {
+      "cost": [
+        {
+          "ingredient": "antcolonies:genetic_circuit",
+          "count": 2
+        },
+        {
+          "ingredient": "minecraft:gold_ingot",
+          "count": 4
+        }
+      ],
+      "energy": 50000,
+      "time": 500
+    },
+    {
+      "cost": [
+        {
+          "ingredient": "antcolonies:genetic_circuit",
+          "count": 2
+        },
+        {
+          "ingredient": "minecraft:golden_carrot",
+          "count": 12
+        }
+      ],
+      "energy": 80000,
+      "time": 600
+    },
+    {
+      "cost": [
+        {
+          "ingredient": "antcolonies:crystal_core",
+          "count": 1
+        },
+        {
+          "ingredient": "minecraft:diamond",
+          "count": 2
+        }
+      ],
+      "energy": 120000,
+      "time": 800
+    },
+    {
+      "cost": [
+        {
+          "ingredient": "antcolonies:crystal_core",
+          "count": 2
+        },
+        {
+          "ingredient": "minecraft:emerald",
+          "count": 4
+        }
+      ],
+      "energy": 180000,
+      "time": 1000
+    },
+    {
+      "cost": [
+        {
+          "ingredient": "antcolonies:crystal_core",
+          "count": 3
+        },
+        {
+          "ingredient": "minecraft:netherite_scrap",
+          "count": 1
+        }
+      ],
+      "energy": 260000,
+      "time": 1200
+    },
+    {
+      "cost": [
+        {
+          "ingredient": "antcolonies:crystal_core",
+          "count": 4
+        },
+        {
+          "ingredient": "minecraft:nether_star",
+          "count": 1
+        }
+      ],
+      "energy": 400000,
+      "time": 1600
+    }
+  ]
+}

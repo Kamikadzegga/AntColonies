@@ -1,0 +1,66 @@
+{
+  "tier": 0,
+  "category": "base",
+  "look": {
+    "body": "#CFE3F0",
+    "gaster": "#9FB8CC",
+    "accent": "#FFFFFF",
+    "pattern": "speckled",
+    "size": 0.95
+  },
+  "climate": "cold",
+  "spawn_biomes": "antcolonies:spawns/snow",
+  "diet": {
+    "consumption": 0.9
+  },
+  "production": {
+    "rate": 0.9,
+    "outputs": [
+      {
+        "item": "minecraft:snowball",
+        "weight": 36
+      },
+      {
+        "item": "minecraft:ice",
+        "weight": 10,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:spruce_sapling",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:packed_ice",
+        "weight": 4,
+        "min_stage": 3
+      },
+      {
+        "item": "minecraft:blue_ice",
+        "weight": 1,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 0.9
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:snowball",
+        "count": 16
+      }
+    ],
+    "time": 2400
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 0.9
+  },
+  "signature_item": "minecraft:snowball"
+}

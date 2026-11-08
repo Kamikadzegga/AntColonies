@@ -1,0 +1,11 @@
+{
+  "effects": {
+    "growth": 1.3,
+    "soldiers": 0.9
+  },
+  "random_weight": 6,
+  "catalyst": {
+    "ingredient": "minecraft:glow_berries",
+    "count": 16
+  }
+}

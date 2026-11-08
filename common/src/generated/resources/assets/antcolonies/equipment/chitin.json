@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "antcolonies:chitin"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "antcolonies:chitin"
+      }
+    ]
+  }
+}

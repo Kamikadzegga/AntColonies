@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:iron",
+  "to": "antcolonies:redstone",
+  "item": "minecraft:redstone_block",
+  "chance": 0.07,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 400
+}

@@ -1,0 +1,77 @@
+{
+  "tier": 0,
+  "category": "base",
+  "look": {
+    "body": "#8E3B1F",
+    "gaster": "#2A1C16",
+    "accent": "#A0522D",
+    "pattern": "plain",
+    "size": 1.05
+  },
+  "climate": "temperate",
+  "spawn_biomes": "antcolonies:spawns/wood",
+  "diet": {
+    "consumption": 1.0
+  },
+  "production": {
+    "rate": 0.9,
+    "outputs": [
+      {
+        "item": "minecraft:oak_log",
+        "weight": 18
+      },
+      {
+        "item": "minecraft:spruce_log",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:birch_log",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:stick",
+        "weight": 22
+      },
+      {
+        "item": "minecraft:oak_sapling",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:spruce_sapling",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:apple",
+        "weight": 3,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:dark_oak_log",
+        "weight": 4,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "#minecraft:saplings",
+        "count": 4
+      }
+    ],
+    "time": 2400
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:oak_log"
+}

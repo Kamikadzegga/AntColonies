@@ -1,0 +1,73 @@
+{
+  "tier": 0,
+  "category": "base",
+  "look": {
+    "body": "#B8B8B0",
+    "gaster": "#E0E0D8",
+    "accent": "#FF8A3A",
+    "pattern": "plain"
+  },
+  "climate": "temperate",
+  "spawn_biomes": "antcolonies:spawns/pale",
+  "diet": {
+    "consumption": 1.0
+  },
+  "production": {
+    "rate": 0.85,
+    "outputs": [
+      {
+        "item": "minecraft:pale_oak_log",
+        "weight": 22
+      },
+      {
+        "item": "minecraft:pale_moss_block",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:pale_hanging_moss",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:stick",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:pale_oak_sapling",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:resin_clump",
+        "weight": 6,
+        "min_stage": 2,
+        "special": true
+      },
+      {
+        "item": "minecraft:open_eyeblossom",
+        "weight": 3,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:pale_moss_block",
+        "count": 4
+      }
+    ],
+    "time": 2400
+  },
+  "breeding": {
+    "eggs": 0.95,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:resin_clump"
+}

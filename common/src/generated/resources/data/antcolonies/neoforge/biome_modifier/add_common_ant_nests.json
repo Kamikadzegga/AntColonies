@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#antcolonies:spawns/common",
+  "features": "antcolonies:common_ant_nest",
+  "step": "vegetal_decoration"
+}

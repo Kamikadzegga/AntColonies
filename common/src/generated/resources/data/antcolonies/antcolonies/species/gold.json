@@ -1,0 +1,60 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#7A5A12",
+    "gaster": "#F2C94C",
+    "accent": "#FFF0A0",
+    "pattern": "metallic",
+    "crystal": "#FFD84A",
+    "size": 1.05
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.5,
+    "outputs": [
+      {
+        "item": "minecraft:gold_nugget",
+        "weight": 40,
+        "processed": "minecraft:gold_ingot"
+      },
+      {
+        "item": "minecraft:raw_gold",
+        "weight": 5,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:gold_ingot",
+        "weight": 2,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.85,
+    "growth": 0.9
+  },
+  "signature_item": "minecraft:gold_ingot"
+}

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "antcolonies:chitin_plate",
+    "P": "#minecraft:planks",
+    "T": "minecraft:crafting_table"
+  },
+  "pattern": ["CCC", "PTP", "P P"],
+  "result": {
+    "id": "antcolonies:upgrade_station"
+  }
+}

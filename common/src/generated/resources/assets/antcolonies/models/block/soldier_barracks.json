@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "antcolonies:block/soldier_barracks_front",
+    "side": "antcolonies:block/soldier_barracks_side",
+    "top": "antcolonies:block/soldier_barracks_top"
+  }
+}

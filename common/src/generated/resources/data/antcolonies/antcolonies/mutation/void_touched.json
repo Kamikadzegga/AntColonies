@@ -1,0 +1,13 @@
+{
+  "effects": {
+    "special": 1.5,
+    "eggs": 0.85
+  },
+  "random_weight": 2,
+  "rare": true,
+  "catalyst": {
+    "ingredient": "minecraft:shulker_shell",
+    "count": 1
+  },
+  "categories": ["mineral", "hybrid", "endgame"]
+}

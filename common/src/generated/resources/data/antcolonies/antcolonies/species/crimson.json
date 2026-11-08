@@ -1,0 +1,88 @@
+{
+  "tier": 2,
+  "category": "hybrid",
+  "look": {
+    "body": "#6A1020",
+    "gaster": "#A02030",
+    "accent": "#2AA8A0",
+    "pattern": "plain"
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.3,
+    "special_food": "nether",
+    "special_per_egg": 0.3
+  },
+  "production": {
+    "rate": 0.6,
+    "outputs": [
+      {
+        "item": "minecraft:crimson_stem",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:warped_stem",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:weeping_vines",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:twisting_vines",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:shroomlight",
+        "weight": 3,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "farming": {
+    "food": 1.2,
+    "harvest": [
+      {
+        "item": "minecraft:crimson_fungus",
+        "weight": 22
+      },
+      {
+        "item": "minecraft:warped_fungus",
+        "weight": 22
+      },
+      {
+        "item": "minecraft:nether_wart",
+        "weight": 18,
+        "processed": "minecraft:nether_wart_block"
+      },
+      {
+        "item": "minecraft:shroomlight",
+        "weight": 4,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:nether_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 4800
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:nether_wart"
+}

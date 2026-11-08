@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:diamond",
+  "to": "antcolonies:netherite",
+  "item": "minecraft:netherite_scrap",
+  "chance": 0.02,
+  "guaranteed_after": 48,
+  "min_stage": 4,
+  "min_population": 5000
+}

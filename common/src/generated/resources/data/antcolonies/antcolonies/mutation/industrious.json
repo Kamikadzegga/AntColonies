@@ -1,0 +1,11 @@
+{
+  "effects": {
+    "production": 1.2,
+    "food": 1.1
+  },
+  "random_weight": 6,
+  "catalyst": {
+    "ingredient": "minecraft:redstone_block",
+    "count": 2
+  }
+}

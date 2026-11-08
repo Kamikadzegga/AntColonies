@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "antcolonies:block/food_storage"
+    },
+    "facing=east": {
+      "model": "antcolonies:block/food_storage",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "antcolonies:block/food_storage",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "antcolonies:block/food_storage",
+      "y": 270
+    }
+  }
+}

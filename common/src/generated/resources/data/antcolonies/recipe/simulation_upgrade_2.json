@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "X": "minecraft:comparator",
+    "U": "antcolonies:simulation_upgrade_1"
+  },
+  "pattern": ["GXG", "XUX", "GXG"],
+  "result": {
+    "id": "antcolonies:simulation_upgrade_2"
+  }
+}

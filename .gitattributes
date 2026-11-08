@@ -1,0 +1,11 @@
+# Text files use LF in the repository; Windows scripts keep CRLF.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.ogg binary
+*.jar binary
+*.nbt binary

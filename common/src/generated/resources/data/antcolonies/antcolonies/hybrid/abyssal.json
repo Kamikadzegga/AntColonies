@@ -1,0 +1,7 @@
+{
+  "first": "antcolonies:shore",
+  "second": "antcolonies:lapis",
+  "result": "antcolonies:abyssal",
+  "chance": 0.2,
+  "min_average_level": 4.0
+}

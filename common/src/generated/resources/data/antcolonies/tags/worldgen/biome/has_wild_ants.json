@@ -1,0 +1,17 @@
+{
+  "values": [
+    "#antcolonies:spawns/common",
+    "#antcolonies:spawns/wood",
+    "#antcolonies:spawns/stone",
+    "#antcolonies:spawns/snow",
+    "#antcolonies:spawns/desert",
+    "#antcolonies:spawns/farmer",
+    "#antcolonies:spawns/jungle",
+    "#antcolonies:spawns/swamp",
+    "#antcolonies:spawns/savanna",
+    "#antcolonies:spawns/shore",
+    "#antcolonies:spawns/blossom",
+    "#antcolonies:spawns/pale",
+    "#antcolonies:spawns/badlands"
+  ]
+}

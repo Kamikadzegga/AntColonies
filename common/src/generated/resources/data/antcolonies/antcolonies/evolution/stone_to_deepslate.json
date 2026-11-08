@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:stone",
+  "to": "antcolonies:deepslate",
+  "item": "minecraft:cobbled_deepslate",
+  "chance": 0.1,
+  "guaranteed_after": 16,
+  "min_stage": 2,
+  "min_population": 150
+}

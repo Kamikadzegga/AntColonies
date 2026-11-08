@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:glass_pane",
+    "I": "minecraft:iron_ingot",
+    "C": "antcolonies:genetic_circuit"
+  },
+  "pattern": [" G ", "ICI", " I "],
+  "result": {
+    "id": "antcolonies:genetic_analyzer"
+  }
+}

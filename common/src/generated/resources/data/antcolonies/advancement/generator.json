@@ -1,0 +1,29 @@
+{
+  "parent": "antcolonies:root",
+  "criteria": {
+    "generator": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:generator"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:generator"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.generator.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.generator.description"
+    }
+  },
+  "requirements": [
+    ["generator"]
+  ]
+}

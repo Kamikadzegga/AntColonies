@@ -1,0 +1,27 @@
+{
+  "parent": "antcolonies:catch_queen",
+  "criteria": {
+    "first_colony": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "has_queen": true
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:terrarium"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.first_colony.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.first_colony.description"
+    }
+  },
+  "requirements": [
+    [
+      "first_colony"
+    ]
+  ]
+}

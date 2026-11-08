@@ -1,0 +1,26 @@
+{
+  "parent": "antcolonies:evolution",
+  "criteria": {
+    "ender": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "species": "antcolonies:ender"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:ender_pearl"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.ender.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.ender.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    ["ender"]
+  ]
+}

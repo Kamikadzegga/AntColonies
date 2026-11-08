@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "M": "minecraft:packed_mud",
+    "G": "minecraft:gold_ingot",
+    "R": "antcolonies:royal_jelly",
+    "T": "antcolonies:ant_tunnel"
+  },
+  "pattern": ["MGM", "RTR", "MMM"],
+  "result": {
+    "id": "antcolonies:queen_chamber"
+  }
+}

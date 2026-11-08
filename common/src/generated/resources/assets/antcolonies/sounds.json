@@ -1,0 +1,145 @@
+{
+  "entity.ant.step": {
+    "subtitle": "subtitles.antcolonies.entity.ant.step",
+    "sounds": [
+      {
+        "name": "minecraft:entity.silverfish.step",
+        "type": "event",
+        "volume": 0.3,
+        "pitch": 1.8
+      }
+    ]
+  },
+  "entity.ant.hurt": {
+    "subtitle": "subtitles.antcolonies.entity.ant.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.silverfish.hurt",
+        "type": "event",
+        "volume": 0.6,
+        "pitch": 1.7
+      }
+    ]
+  },
+  "entity.ant.bite": {
+    "subtitle": "subtitles.antcolonies.entity.ant.bite",
+    "sounds": [
+      {
+        "name": "minecraft:entity.spider.step",
+        "type": "event",
+        "volume": 0.6,
+        "pitch": 1.9
+      }
+    ]
+  },
+  "block.terrarium.ambience": {
+    "subtitle": "subtitles.antcolonies.block.terrarium.ambience",
+    "sounds": [
+      {
+        "name": "minecraft:block.rooted_dirt.step",
+        "type": "event",
+        "volume": 0.4,
+        "pitch": 1.6
+      }
+    ]
+  },
+  "block.colony.food": {
+    "subtitle": "subtitles.antcolonies.block.colony.food",
+    "sounds": [
+      {
+        "name": "minecraft:entity.item.pickup",
+        "type": "event",
+        "volume": 0.4,
+        "pitch": 1.6
+      }
+    ]
+  },
+  "block.terrarium.queen": {
+    "subtitle": "subtitles.antcolonies.block.terrarium.queen",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.chime",
+        "type": "event",
+        "volume": 0.8,
+        "pitch": 0.8
+      }
+    ]
+  },
+  "block.terrarium.egg": {
+    "subtitle": "subtitles.antcolonies.block.terrarium.egg",
+    "sounds": [
+      {
+        "name": "minecraft:entity.turtle.lay_egg",
+        "type": "event",
+        "volume": 0.5,
+        "pitch": 1.6
+      }
+    ]
+  },
+  "block.colony.activate": {
+    "subtitle": "subtitles.antcolonies.block.colony.activate",
+    "sounds": [
+      {
+        "name": "minecraft:block.beehive.work",
+        "type": "event",
+        "volume": 0.6,
+        "pitch": 1.2
+      }
+    ]
+  },
+  "block.fighting_site.battle": {
+    "subtitle": "subtitles.antcolonies.block.fighting_site.battle",
+    "sounds": [
+      {
+        "name": "minecraft:entity.spider.ambient",
+        "type": "event",
+        "volume": 0.4,
+        "pitch": 1.8
+      }
+    ]
+  },
+  "block.terrarium.evolution": {
+    "subtitle": "subtitles.antcolonies.block.terrarium.evolution",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.power_select",
+        "type": "event",
+        "volume": 1.0,
+        "pitch": 1.4
+      }
+    ]
+  },
+  "block.genetic_lab.hum": {
+    "subtitle": "subtitles.antcolonies.block.genetic_lab.hum",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.ambient",
+        "type": "event",
+        "volume": 0.5,
+        "pitch": 1.6
+      }
+    ]
+  },
+  "block.genetic_lab.complete": {
+    "subtitle": "subtitles.antcolonies.block.genetic_lab.complete",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.resonate",
+        "type": "event",
+        "volume": 1.0,
+        "pitch": 1.2
+      }
+    ]
+  },
+  "item.tweezers.capture": {
+    "subtitle": "subtitles.antcolonies.item.tweezers.capture",
+    "sounds": [
+      {
+        "name": "minecraft:block.glass.hit",
+        "type": "event",
+        "volume": 0.6,
+        "pitch": 1.8
+      }
+    ]
+  }
+}

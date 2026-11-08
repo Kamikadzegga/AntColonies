@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "antcolonies:ant_food",
+    "antcolonies:ant_food",
+    "minecraft:blaze_powder",
+    "minecraft:nether_wart",
+    "minecraft:magma_cream"
+  ],
+  "result": {
+    "count": 2,
+    "id": "antcolonies:nether_ant_food"
+  }
+}

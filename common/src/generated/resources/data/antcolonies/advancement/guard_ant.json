@@ -1,0 +1,29 @@
+{
+  "parent": "antcolonies:first_colony",
+  "criteria": {
+    "guard_ant": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:guard_ant"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:guard_ant"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.guard_ant.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.guard_ant.description"
+    }
+  },
+  "requirements": [
+    ["guard_ant"]
+  ]
+}

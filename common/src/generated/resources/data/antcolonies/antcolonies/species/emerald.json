@@ -1,0 +1,64 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#16481F",
+    "gaster": "#3AD86A",
+    "accent": "#B0FFC8",
+    "pattern": "faceted",
+    "crystal": "#4AF08A",
+    "glow": true,
+    "size": 1.1
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.7,
+    "special_food": "crystal",
+    "special_per_egg": 1.0
+  },
+  "production": {
+    "rate": 0.008,
+    "outputs": [
+      {
+        "item": "antcolonies:emerald_fragment",
+        "weight": 60,
+        "processed": "minecraft:emerald"
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:emerald",
+        "weight": 3,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.2
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      },
+      {
+        "ingredient": "antcolonies:nuptial_pheromone",
+        "count": 1
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.75,
+    "growth": 0.8
+  },
+  "signature_item": "minecraft:emerald"
+}

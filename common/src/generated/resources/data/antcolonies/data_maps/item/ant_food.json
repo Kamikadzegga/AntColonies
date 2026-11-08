@@ -1,0 +1,100 @@
+{
+  "values": {
+    "antcolonies:ant_food": {
+      "food": 200.0
+    },
+    "antcolonies:mineral_ant_food": {
+      "food": 100.0,
+      "special_kind": "mineral",
+      "special": 100.0
+    },
+    "antcolonies:crystal_ant_food": {
+      "food": 100.0,
+      "special_kind": "crystal",
+      "special": 100.0
+    },
+    "antcolonies:nether_ant_food": {
+      "food": 150.0,
+      "special_kind": "nether",
+      "special": 100.0
+    },
+    "antcolonies:royal_jelly": {
+      "food": 400.0
+    },
+    "minecraft:sugar": {
+      "food": 20.0
+    },
+    "minecraft:sweet_berries": {
+      "food": 30.0
+    },
+    "minecraft:glow_berries": {
+      "food": 40.0
+    },
+    "minecraft:apple": {
+      "food": 50.0
+    },
+    "minecraft:wheat_seeds": {
+      "food": 4.0
+    },
+    "minecraft:wheat": {
+      "food": 15.0
+    },
+    "minecraft:bread": {
+      "food": 80.0
+    },
+    "minecraft:honey_bottle": {
+      "food": 150.0
+    },
+    "minecraft:brown_mushroom": {
+      "food": 25.0
+    },
+    "minecraft:red_mushroom": {
+      "food": 25.0
+    },
+    "minecraft:melon_slice": {
+      "food": 25.0
+    },
+    "minecraft:carrot": {
+      "food": 25.0
+    },
+    "minecraft:potato": {
+      "food": 25.0
+    },
+    "minecraft:beetroot": {
+      "food": 20.0
+    },
+    "minecraft:rotten_flesh": {
+      "food": 30.0
+    },
+    "minecraft:spider_eye": {
+      "food": 25.0
+    },
+    "minecraft:beef": {
+      "food": 40.0
+    },
+    "minecraft:porkchop": {
+      "food": 40.0
+    },
+    "minecraft:chicken": {
+      "food": 40.0
+    },
+    "minecraft:mutton": {
+      "food": 40.0
+    },
+    "minecraft:rabbit": {
+      "food": 40.0
+    },
+    "minecraft:cod": {
+      "food": 30.0
+    },
+    "minecraft:salmon": {
+      "food": 30.0
+    },
+    "minecraft:egg": {
+      "food": 30.0
+    },
+    "minecraft:cookie": {
+      "food": 40.0
+    }
+  }
+}

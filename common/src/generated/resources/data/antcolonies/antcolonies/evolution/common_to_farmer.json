@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:common",
+  "to": "antcolonies:farmer",
+  "item": "minecraft:brown_mushroom",
+  "chance": 0.15,
+  "guaranteed_after": 12,
+  "min_stage": 1,
+  "min_population": 0
+}

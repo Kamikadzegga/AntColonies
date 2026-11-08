@@ -1,0 +1,35 @@
+{
+  "criteria": {
+    "root": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "antcolonies:tweezers",
+              "antcolonies:terrarium",
+              "antcolonies:ant_test_tube"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:terrarium"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.root.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.root.description"
+    },
+    "background": "minecraft:gui/advancements/backgrounds/husbandry",
+    "show_toast": false,
+    "announce_to_chat": false
+  },
+  "requirements": [
+    ["root"]
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": "minecraft:amethyst_shard",
+    "D": "minecraft:diamond",
+    "G": "antcolonies:genetic_circuit"
+  },
+  "pattern": ["ADA", "AGA", "ADA"],
+  "result": {
+    "id": "antcolonies:crystal_core"
+  }
+}

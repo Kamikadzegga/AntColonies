@@ -1,0 +1,209 @@
+package com.antcolonies.client.screen;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.antcolonies.content.blockentity.StructureBlockEntity;
+import com.antcolonies.content.blockentity.TerrariumBlockEntity;
+import com.antcolonies.client.ClientSpecies;
+import com.antcolonies.colony.model.ColonyStatus;
+import com.antcolonies.colony.model.StructureKind;
+import com.antcolonies.content.menu.StructureMenu;
+import com.antcolonies.colony.species.AntSpecies;
+import com.antcolonies.colony.species.Cost;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
+
+/** Any colony structure: its link and problems, its ants (job sites), its slots, and its upgrades on the right. */
+public class StructureScreen extends AntScreen<StructureMenu> {
+    private final StructureKind kind;
+    /** Status lines cut to fit this frame, with their full text for the hover tooltip. */
+    private final List<Clipped> clipped = new ArrayList<>();
+
+    private record Clipped(int x, int y, int w, String text) {
+    }
+
+    public StructureScreen(StructureMenu menu, Inventory inventory, Component title) {
+        super(menu, inventory, title, 206, StructureMenu.inventoryY(menu.structure().kind()) + 82);
+        this.kind = menu.structure().kind();
+        inventoryLabelY = StructureMenu.inventoryY(kind) - 11;
+        titleLabelY = 6;
+    }
+
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int xm, int ym) {
+        graphics.text(font, title, 8, 6, LABEL, false);
+        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, LABEL, false);
+    }
+
+    @Override
+    protected void extractPage(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        clipped.clear();
+        boolean linked = menu.data(StructureBlockEntity.DATA_LINKED) != 0;
+        int x = 8;
+        int y = kind == StructureKind.RESOURCE_PILE ? 130 : 18;
+        // The locked Resource Pile slots, darkened.
+        if (kind == StructureKind.RESOURCE_PILE) {
+            int unlocked = menu.data(StructureBlockEntity.DATA_UNLOCKED);
+            for (int slot = unlocked; slot < kind.slots(); slot++) {
+                int sx = leftPos + 8 + (slot % 9) * 18 - 1;
+                int sy = topPos + 18 + (slot / 9) * 18 - 1;
+                graphics.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF141B22);
+                graphics.fill(sx + 6, sy + 7, sx + 12, sy + 12, 0xFF2B3B48);
+                graphics.fill(sx + 7, sy + 4, sx + 11, sy + 7, 0xFF2B3B48);
+            }
+            label(graphics, linked ? Component.translatable("gui.antcolonies.linked") : Component.translatable(ColonyStatus.MISSING_CONNECTION.translationKey()),
+                    x, y, linked ? GOOD : BAD);
+            return;
+        }
+        label(graphics, linked ? Component.translatable("gui.antcolonies.linked") : Component.translatable(ColonyStatus.MISSING_CONNECTION.translationKey()),
+                x, y, linked ? GOOD : BAD);
+        y += 10;
+        if (kind.job().any()) {
+            int assigned = menu.data(StructureBlockEntity.DATA_ASSIGNED);
+            int requested = menu.data(StructureBlockEntity.DATA_REQUESTED);
+            int capacity = menu.data(StructureBlockEntity.DATA_CAPACITY);
+            String wanted = requested < 0 ? Component.translatable("gui.antcolonies.auto").getString() : String.valueOf(requested);
+            String key = kind.job() == StructureKind.Job.SOLDIERS ? "gui.antcolonies.site.soldiers" : "gui.antcolonies.site.workers";
+            label(graphics, Component.translatable(key, assigned, capacity, wanted), x, y, LABEL);
+            y += 11;
+            int bx = x;
+            Object[][] row = {{"-10", StructureMenu.LESS_10}, {"-1", StructureMenu.LESS}, {"+1", StructureMenu.MORE}, {"+10", StructureMenu.MORE_10}};
+            for (Object[] b : row) {
+                int width = buttonWidth((String) b[0]);
+                button(bx, y, width, 12, (String) b[0], (Integer) b[1], null, true);
+                bx += width + 2;
+            }
+            toggle(bx, y, buttonWidth(Component.translatable("gui.antcolonies.auto").getString()), 12, Component.translatable("gui.antcolonies.auto").getString(), StructureMenu.AUTO,
+                    List.of(Component.translatable("gui.antcolonies.auto.hint")), requested < 0);
+            y += 15;
+            double rate = menu.data(StructureBlockEntity.DATA_RATE) / 10_000.0;
+            label(graphics, Component.translatable("gui.antcolonies.site.rate", rate(rate)), x, y, DIM);
+            drawBar(graphics, leftPos + x + 110, topPos + y, 56, 8, menu.data(StructureBlockEntity.DATA_PROGRESS) / 1000.0, 0xFF3FD0A0);
+            y += 11;
+        }
+        int status = menu.data(StructureBlockEntity.DATA_STATUS) | (kind == StructureKind.QUEEN_CHAMBER ? menu.data(StructureBlockEntity.DATA_REARING_STATUS) : 0);
+        boolean slotted = kind == StructureKind.QUEEN_CHAMBER || kind == StructureKind.FOOD_STORAGE;
+        if (kind == StructureKind.QUEEN_CHAMBER) {
+            drawQueenChamber(graphics, x);
+        } else if (kind == StructureKind.FOOD_STORAGE) {
+            label(graphics, fit(Component.translatable("gui.antcolonies.food_storage.hint").getString(), 170), x, 40, DIM);
+        } else if (!kind.job().any()) {
+            y = wrapped(graphics, Component.translatable("gui.antcolonies.effect." + kind.getSerializedName()), x, y, 170, 9, DIM);
+        }
+        // Problems and work state: under the link line. Slotted structures have room for one line above their slots.
+        int line = slotted ? 28 : y;
+        int last = slotted ? 28 : StructureMenu.inventoryY(kind) - 20;
+        for (ColonyStatus flag : ColonyStatus.of(status)) {
+            if (line > last) {
+                break;
+            }
+            String full = Component.translatable(flag.translationKey()).getString();
+            String shown = fit(full, 170);
+            if (!shown.equals(full)) {
+                clipped.add(new Clipped(x, line, 170, full));
+            }
+            label(graphics, shown, x, line, flag == ColonyStatus.WORKING ? GOOD : flag.problem() ? BAD : WARN);
+            line += 9;
+        }
+    }
+
+    /** Queen Chamber slot roles: materials, the tube, the sample, the output; null for any other slot. */
+    private @Nullable String chamberSlot(net.minecraft.world.inventory.Slot slot) {
+        if (kind != StructureKind.QUEEN_CHAMBER || slot.container != menu.structure()) {
+            return null;
+        }
+        int index = slot.getContainerSlot();
+        return index < StructureKind.QUEEN_CHAMBER_MATERIALS ? "qc_materials" : index == StructureKind.QUEEN_CHAMBER_TUBE ? "qc_tube"
+                : index == StructureKind.QUEEN_CHAMBER_SAMPLE ? "qc_sample" : "qc_output";
+    }
+
+    @Override
+    protected void drawSlotBackground(GuiGraphicsExtractor graphics, net.minecraft.world.inventory.Slot slot, int x, int y) {
+        super.drawSlotBackground(graphics, slot, x, y);
+        if (slot.hasItem()) {
+            return;
+        }
+        String role = chamberSlot(slot);
+        if (slot.container == menu.structure().upgrades()) {
+            drawGlyph(graphics, "upgrade", x, y);
+        } else if ("qc_tube".equals(role) || "qc_sample".equals(role)) {
+            drawGlyph(graphics, "queen", x, y);
+        } else if ("qc_output".equals(role)) {
+            drawGlyph(graphics, "output", x, y);
+        } else if (kind == StructureKind.FOOD_STORAGE && slot.container == menu.structure() || "qc_materials".equals(role)) {
+            drawGlyph(graphics, "feed", x, y);
+        }
+    }
+
+    @Override
+    protected void extractPageTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        for (Clipped line : clipped) {
+            if (hoveredSlot == null && over(mouseX, mouseY, line.x(), line.y() - 1, line.w(), 9)) {
+                graphics.setComponentTooltipForNextFrame(font, List.of(Component.literal(line.text())), mouseX, mouseY);
+                return;
+            }
+        }
+        if (hoveredSlot != null && hoveredSlot.container == menu.structure().upgrades() && !hoveredSlot.hasItem()) {
+            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.slot.upgrade"),
+                    Component.translatable("gui.antcolonies.slot.structure_upgrade.hint").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
+            return;
+        }
+        String role = hoveredSlot == null || hoveredSlot.hasItem() ? null : chamberSlot(hoveredSlot);
+        if (role != null && !role.equals("qc_materials")) {
+            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.slot." + role),
+                    Component.translatable("gui.antcolonies.slot." + role + ".hint").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
+            return;
+        }
+        if (kind == StructureKind.QUEEN_CHAMBER && ("qc_materials".equals(role) || hoveredSlot == null && over(mouseX, mouseY, 134, 52, 18, 16))) {
+            graphics.setComponentTooltipForNextFrame(font, rearingNeeds(), mouseX, mouseY);
+        }
+    }
+
+    /** The rearing progress as an arrow from the sample slot to the output, filling gold. */
+    private void drawQueenChamber(GuiGraphicsExtractor graphics, int x) {
+        AntSpecies species = colonySpecies();
+        int time = species == null ? 2400 : species.rearing().time();
+        double progress = Math.clamp(menu.data(StructureBlockEntity.DATA_REARING) / (double) time, 0, 1);
+        int ax = leftPos + 135;
+        int ay = topPos + 60;
+        int length = 15;
+        int filled = (int) Math.round(length * progress);
+        for (int i = 0; i < length; i++) {
+            // Shaft for the first 10 columns, then a head narrowing to a point.
+            int half = i < 10 ? 1 : 4 - (i - 10);
+            int color = i < filled ? 0xFFE0B040 : 0xFF1E2E3A;
+            graphics.fill(ax + i, ay - half, ax + i + 1, ay + half + 1, color);
+        }
+        label(graphics, fit(Component.translatable("gui.antcolonies.queen_chamber.slots").getString(), 170), x, 40, DIM);
+    }
+
+    private List<Component> rearingNeeds() {
+        AntSpecies species = colonySpecies();
+        List<Component> lines = new ArrayList<>();
+        lines.add(Component.translatable("gui.antcolonies.queen_chamber.needs"));
+        if (species != null) {
+            for (Cost cost : species.rearing().cost()) {
+                ItemStack shown = cost.ingredient().items().findFirst().map(ItemStack::new).orElse(ItemStack.EMPTY);
+                lines.add(Component.literal(cost.count() + " x ").append(shown.getHoverName()).withStyle(ChatFormatting.GRAY));
+            }
+            AntSpecies.Rearing rearing = species.rearing();
+            lines.add(Component.translatable("gui.antcolonies.queen_chamber.time", Math.round(rearing.time() / 20.0)).withStyle(ChatFormatting.DARK_GRAY));
+        }
+        return lines;
+    }
+
+    private @Nullable AntSpecies colonySpecies() {
+        BlockPos terrarium = menu.structure().terrarium();
+        if (terrarium == null || minecraft.level == null || !(minecraft.level.getBlockEntity(terrarium) instanceof TerrariumBlockEntity be)) {
+            return null;
+        }
+        return ClientSpecies.get(be.colony().species());
+    }
+}

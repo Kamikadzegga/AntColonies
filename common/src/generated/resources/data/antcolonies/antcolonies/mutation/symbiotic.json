@@ -1,0 +1,12 @@
+{
+  "effects": {
+    "food": 0.8,
+    "farming": 1.1,
+    "production": 0.95
+  },
+  "random_weight": 5,
+  "catalyst": {
+    "ingredient": "minecraft:honeycomb",
+    "count": 4
+  }
+}

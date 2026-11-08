@@ -1,0 +1,7 @@
+{
+  "first": "antcolonies:blossom",
+  "second": "antcolonies:farmer",
+  "result": "antcolonies:honeypot",
+  "chance": 0.3,
+  "min_average_level": 2.5
+}

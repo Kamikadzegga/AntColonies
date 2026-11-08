@@ -1,0 +1,15 @@
+{
+  "from": "antcolonies:copper",
+  "to": "antcolonies:zinc",
+  "item": "#c:ingots/zinc",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "create"
+    }
+  ]
+}

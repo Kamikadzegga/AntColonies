@@ -1,0 +1,7 @@
+{
+  "first": "antcolonies:stone",
+  "second": "antcolonies:redstone",
+  "result": "antcolonies:mechanical_miner",
+  "chance": 0.3,
+  "min_average_level": 2.5
+}

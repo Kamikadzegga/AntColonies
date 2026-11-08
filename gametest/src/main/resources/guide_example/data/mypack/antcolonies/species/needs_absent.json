@@ -1,0 +1,7 @@
+{
+  "look": { "body": "#3A3A3A", "gaster": "#6A6A6A" },
+  "production": { "outputs": [{ "tag": "c:raw_materials/osmium", "weight": 10 }] },
+  "neoforge:conditions": [
+    { "type": "neoforge:mod_loaded", "modid": "mekanism" }
+  ]
+}

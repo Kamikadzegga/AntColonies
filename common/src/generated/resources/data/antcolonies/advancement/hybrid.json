@@ -1,0 +1,26 @@
+{
+  "parent": "antcolonies:evolution",
+  "criteria": {
+    "hybrid": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "category": "hybrid"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:genetic_sample"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.hybrid.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.hybrid.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    ["hybrid"]
+  ]
+}

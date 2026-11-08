@@ -1,0 +1,64 @@
+{
+  "tier": 1,
+  "category": "mineral",
+  "look": {
+    "body": "#5E5E62",
+    "gaster": "#D0D0D4",
+    "accent": "#A8A8AC",
+    "pattern": "metallic",
+    "crystal": "#C8C8D0",
+    "size": 1.05
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.3,
+    "special_food": "mineral",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.6,
+    "outputs": [
+      {
+        "item": "minecraft:iron_nugget",
+        "weight": 40,
+        "processed": "minecraft:iron_ingot"
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 18
+      },
+      {
+        "item": "minecraft:raw_iron",
+        "weight": 6,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:iron_ingot",
+        "weight": 2,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.3
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "signature_item": "minecraft:iron_ingot"
+}

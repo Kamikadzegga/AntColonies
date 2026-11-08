@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "X": "minecraft:chest",
+    "U": "antcolonies:storage_upgrade_1"
+  },
+  "pattern": ["GXG", "XUX", "GXG"],
+  "result": {
+    "id": "antcolonies:storage_upgrade_2"
+  }
+}

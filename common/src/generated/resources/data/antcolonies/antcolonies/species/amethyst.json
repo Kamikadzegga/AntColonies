@@ -1,0 +1,60 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#3E2460",
+    "gaster": "#9A5AD8",
+    "accent": "#D8B0FF",
+    "pattern": "faceted",
+    "crystal": "#B07AF0",
+    "glow": true
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "crystal",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.5,
+    "outputs": [
+      {
+        "item": "minecraft:amethyst_shard",
+        "weight": 45
+      },
+      {
+        "item": "minecraft:calcite",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:smooth_basalt",
+        "weight": 5
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      },
+      {
+        "ingredient": "antcolonies:nuptial_pheromone",
+        "count": 1
+      }
+    ],
+    "time": 4800
+  },
+  "breeding": {
+    "eggs": 0.85,
+    "growth": 0.9
+  },
+  "signature_item": "minecraft:amethyst_shard"
+}

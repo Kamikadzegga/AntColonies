@@ -1,0 +1,11 @@
+{
+  "effects": {
+    "farming": 1.2
+  },
+  "random_weight": 6,
+  "catalyst": {
+    "ingredient": "minecraft:bone_block",
+    "count": 4
+  },
+  "categories": ["farmer", "base", "hybrid"]
+}

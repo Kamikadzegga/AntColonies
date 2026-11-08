@@ -1,0 +1,21 @@
+name: Feature request
+description: An idea for a new species, structure, mechanic or integration.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What should be added or changed, and what it would give players.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: The problem it solves, or the play it makes possible.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Other ways it could work, if you thought of any.

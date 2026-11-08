@@ -1,0 +1,29 @@
+{
+  "parent": "antcolonies:generator",
+  "criteria": {
+    "lab": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:genetic_lab_controller"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:genetic_lab_controller"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.lab.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.lab.description"
+    }
+  },
+  "requirements": [
+    ["lab"]
+  ]
+}

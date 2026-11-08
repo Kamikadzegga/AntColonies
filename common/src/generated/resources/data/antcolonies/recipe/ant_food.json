@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:sugar",
+    "minecraft:wheat_seeds",
+    "minecraft:wheat_seeds",
+    "#minecraft:flowers"
+  ],
+  "result": {
+    "count": 4,
+    "id": "antcolonies:ant_food"
+  }
+}

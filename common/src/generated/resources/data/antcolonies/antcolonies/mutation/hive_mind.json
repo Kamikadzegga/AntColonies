@@ -1,0 +1,10 @@
+{
+  "effects": {
+    "production": 1.1,
+    "gathering": 1.1,
+    "farming": 1.1,
+    "soldiers": 1.1
+  },
+  "random_weight": 2,
+  "rare": true
+}

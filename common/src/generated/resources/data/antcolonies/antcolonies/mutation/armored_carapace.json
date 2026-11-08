@@ -1,0 +1,11 @@
+{
+  "effects": {
+    "soldiers": 1.35,
+    "eggs": 0.9
+  },
+  "random_weight": 5,
+  "catalyst": {
+    "ingredient": "minecraft:armadillo_scute",
+    "count": 4
+  }
+}

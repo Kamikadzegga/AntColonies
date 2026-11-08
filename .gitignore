@@ -1,0 +1,28 @@
+# Gradle
+.gradle/
+build/
+out/
+
+# Development runs: game files, worlds, logs, screenshots, extra mods
+run/
+runs/
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+bin/
+
+# Operating systems
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and local files
+*.log
+repo/

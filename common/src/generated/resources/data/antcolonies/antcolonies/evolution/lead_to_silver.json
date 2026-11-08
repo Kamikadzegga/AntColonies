@@ -1,0 +1,24 @@
+{
+  "from": "antcolonies:lead",
+  "to": "antcolonies:silver",
+  "item": "#c:ingots/silver",
+  "chance": 0.06,
+  "guaranteed_after": 32,
+  "min_stage": 2,
+  "min_population": 600,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "thermal"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "immersiveengineering"
+        }
+      ]
+    }
+  ]
+}

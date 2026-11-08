@@ -1,0 +1,8 @@
+{
+  "effects": {
+    "special": 0.8,
+    "production": 0.95
+  },
+  "random_weight": 4,
+  "negative": true
+}

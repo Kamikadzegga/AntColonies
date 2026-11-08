@@ -1,0 +1,29 @@
+{
+  "parent": "antcolonies:catch_ants",
+  "criteria": {
+    "catch_queen": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:queen_test_tube"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:queen_test_tube"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.catch_queen.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.catch_queen.description"
+    }
+  },
+  "requirements": [
+    ["catch_queen"]
+  ]
+}

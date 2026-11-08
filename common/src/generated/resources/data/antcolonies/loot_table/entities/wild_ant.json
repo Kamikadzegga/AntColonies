@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "antcolonies:chitin_plate"
+        }
+      ],
+      "condition": {
+        "type": "minecraft:random_chance",
+        "chance": 0.35
+      },
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "antcolonies:entities/wild_ant"
+}

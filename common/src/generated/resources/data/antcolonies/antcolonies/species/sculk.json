@@ -1,0 +1,78 @@
+{
+  "tier": 3,
+  "category": "hybrid",
+  "look": {
+    "body": "#0A1A22",
+    "gaster": "#0E3A48",
+    "accent": "#2AE0E8",
+    "pattern": "speckled",
+    "crystal": "#30E8F0",
+    "glow": true,
+    "size": 1.05
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.6,
+    "special_food": "nether",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.06,
+    "outputs": [
+      {
+        "item": "minecraft:sculk",
+        "weight": 26
+      },
+      {
+        "item": "minecraft:sculk_vein",
+        "weight": 16
+      },
+      {
+        "item": "minecraft:bone",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:cobbled_deepslate",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:sculk_sensor",
+        "weight": 3,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:sculk_catalyst",
+        "weight": 0.05,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:echo_shard",
+        "weight": 0.04,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.5
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:nether_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.8,
+    "growth": 0.85
+  },
+  "signature_item": "minecraft:sculk"
+}

@@ -1,0 +1,63 @@
+{
+  "tier": 1,
+  "category": "mineral",
+  "look": {
+    "body": "#1A1A1A",
+    "gaster": "#2E2E2E",
+    "accent": "#5A5A5A",
+    "pattern": "speckled"
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.2
+  },
+  "production": {
+    "rate": 0.7,
+    "outputs": [
+      {
+        "item": "minecraft:coal",
+        "weight": 34,
+        "processed": "minecraft:coal_block"
+      },
+      {
+        "item": "minecraft:charcoal",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:flint",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:coal_block",
+        "weight": 2,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:coal",
+        "count": 16
+      }
+    ],
+    "time": 3000
+  },
+  "breeding": {
+    "eggs": 0.95,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:coal"
+}

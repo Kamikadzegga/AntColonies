@@ -1,0 +1,11 @@
+{
+  "effects": {
+    "heat_resistant": true,
+    "production": 1.05
+  },
+  "random_weight": 5,
+  "catalyst": {
+    "ingredient": "minecraft:magma_cream",
+    "count": 4
+  }
+}

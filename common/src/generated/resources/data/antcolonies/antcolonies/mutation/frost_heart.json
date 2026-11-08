@@ -1,0 +1,11 @@
+{
+  "effects": {
+    "cold_resistant": true,
+    "growth": 1.05
+  },
+  "random_weight": 5,
+  "catalyst": {
+    "ingredient": "minecraft:blue_ice",
+    "count": 2
+  }
+}

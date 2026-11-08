@@ -1,0 +1,25 @@
+{
+  "parent": "antcolonies:first_colony",
+  "criteria": {
+    "evolution": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "category": "mineral"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:evolution_catalyst"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.evolution.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.evolution.description"
+    }
+  },
+  "requirements": [
+    ["evolution"]
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,formed=false": {
+      "model": "antcolonies:block/mutation_chamber"
+    },
+    "facing=north,formed=true": {
+      "model": "antcolonies:block/mutation_chamber_formed"
+    },
+    "facing=east,formed=false": {
+      "model": "antcolonies:block/mutation_chamber",
+      "y": 90
+    },
+    "facing=east,formed=true": {
+      "model": "antcolonies:block/mutation_chamber_formed",
+      "y": 90
+    },
+    "facing=south,formed=false": {
+      "model": "antcolonies:block/mutation_chamber",
+      "y": 180
+    },
+    "facing=south,formed=true": {
+      "model": "antcolonies:block/mutation_chamber_formed",
+      "y": 180
+    },
+    "facing=west,formed=false": {
+      "model": "antcolonies:block/mutation_chamber",
+      "y": 270
+    },
+    "facing=west,formed=true": {
+      "model": "antcolonies:block/mutation_chamber_formed",
+      "y": 270
+    }
+  }
+}

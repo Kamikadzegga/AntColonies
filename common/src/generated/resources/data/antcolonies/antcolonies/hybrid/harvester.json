@@ -1,0 +1,7 @@
+{
+  "first": "antcolonies:farmer",
+  "second": "antcolonies:savanna",
+  "result": "antcolonies:harvester",
+  "chance": 0.3,
+  "min_average_level": 2.5
+}

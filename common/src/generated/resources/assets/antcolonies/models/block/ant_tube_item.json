@@ -1,0 +1,40 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "antcolonies:block/ant_tube",
+    "glass": {
+      "force_translucent": true,
+      "sprite": "antcolonies:block/ant_tube"
+    },
+    "rim": {
+      "force_translucent": true,
+      "sprite": "antcolonies:block/ant_tube_rim"
+    }
+  },
+  "elements": [
+    {
+      "from": [5.0, 5.0, 0.0],
+      "to": [11.0, 11.0, 16.0],
+      "faces": {
+        "down": {
+          "texture": "#glass"
+        },
+        "up": {
+          "texture": "#glass"
+        },
+        "north": {
+          "texture": "#glass"
+        },
+        "south": {
+          "texture": "#glass"
+        },
+        "west": {
+          "texture": "#glass"
+        },
+        "east": {
+          "texture": "#glass"
+        }
+      }
+    }
+  ]
+}

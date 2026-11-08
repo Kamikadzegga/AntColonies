@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:copy_components",
+            "include": [
+              "minecraft:custom_name",
+              "antcolonies:colony"
+            ],
+            "source": "block_entity"
+          },
+          "name": "antcolonies:terrarium"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "antcolonies:blocks/terrarium"
+}

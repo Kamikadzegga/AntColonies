@@ -1,0 +1,78 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#2A3A1A",
+    "gaster": "#5AE02A",
+    "accent": "#C8FF8A",
+    "pattern": "faceted",
+    "crystal": "#7AFF3A",
+    "glow": true,
+    "size": 1.05
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.65,
+    "special_food": "mineral",
+    "special_per_egg": 0.75
+  },
+  "production": {
+    "rate": 0.12,
+    "outputs": [
+      {
+        "tag": "c:nuggets/uranium",
+        "weight": 40
+      },
+      {
+        "tag": "c:raw_materials/uranium",
+        "weight": 10,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 15
+      },
+      {
+        "tag": "c:ingots/uranium",
+        "weight": 2,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mekanism"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "immersiveengineering"
+        }
+      ]
+    }
+  ]
+}

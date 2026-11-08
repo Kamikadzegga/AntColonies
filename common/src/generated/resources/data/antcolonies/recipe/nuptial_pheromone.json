@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "antcolonies:royal_jelly",
+    "minecraft:fermented_spider_eye",
+    "minecraft:glowstone_dust"
+  ],
+  "result": {
+    "id": "antcolonies:nuptial_pheromone"
+  }
+}

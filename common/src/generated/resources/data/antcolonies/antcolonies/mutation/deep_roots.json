@@ -1,0 +1,11 @@
+{
+  "effects": {
+    "farming": 1.3
+  },
+  "random_weight": 6,
+  "catalyst": {
+    "ingredient": "minecraft:moss_block",
+    "count": 16
+  },
+  "categories": ["farmer", "base", "hybrid"]
+}
