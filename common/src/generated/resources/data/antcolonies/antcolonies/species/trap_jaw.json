@@ -1,0 +1,72 @@
+{
+  "tier": 1,
+  "category": "hunter",
+  "look": {
+    "body": "#3A3020",
+    "gaster": "#6A5A2A",
+    "accent": "#B0A050",
+    "pattern": "speckled",
+    "size": 1.1
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.2
+  },
+  "production": {
+    "rate": 0.5,
+    "outputs": [
+      {
+        "item": "minecraft:slime_ball",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:kelp",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:prismarine_shard",
+        "weight": 3,
+        "min_stage": 3
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.4,
+    "targets": [
+      {
+        "entity": "minecraft:slime",
+        "weight": 35
+      },
+      {
+        "entity": "minecraft:drowned",
+        "weight": 30
+      },
+      {
+        "entity": "minecraft:zombie",
+        "weight": 15
+      },
+      {
+        "entity": "minecraft:guardian",
+        "weight": 5
+      }
+    ]
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:slime_ball",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:slime_ball"
+}

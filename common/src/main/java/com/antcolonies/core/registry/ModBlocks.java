@@ -64,7 +64,7 @@ public final class ModBlocks {
 
     static {
         for (String species : new String[] {"common", "wood", "stone", "snow", "desert", "farmer", "jungle", "swamp", "savanna", "shore", "blossom",
-                "pale", "badlands"}) {
+                "pale", "badlands", "army"}) {
             NESTS.put(species, BLOCKS.registerBlock(species + "_ant_nest", p -> new WildNestBlock(species, p),
                     p -> p.mapColor(MapColor.DIRT).strength(0.5F).sound(SoundType.ROOTED_DIRT).randomTicks()));
         }

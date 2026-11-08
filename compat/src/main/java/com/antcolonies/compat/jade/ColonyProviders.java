@@ -85,8 +85,6 @@ final class ColonyProviders {
             data.putBoolean("linked", structure.isLinked());
             data.putBoolean("job", structure.kind().job().any());
             data.putInt("assigned", structure.assigned());
-            data.putInt("soldiers", structure.soldiers());
-            data.putBoolean("forage", structure.kind().job().soldiers());
             data.putBoolean("contested", structure.isContested());
             data.putInt("capacity", structure.capacity());
             data.putDouble("rate", structure.rate());
@@ -108,9 +106,7 @@ final class ColonyProviders {
                 return;
             }
             if (data.getBooleanOr("job", false)) {
-                tooltip.add((data.getBooleanOr("forage", false)
-                        ? Component.translatable("gui.antcolonies.job_foraging", data.getIntOr("assigned", 0), data.getIntOr("soldiers", 0), data.getIntOr("capacity", 0))
-                        : Component.translatable("gui.antcolonies.job_workers", data.getIntOr("assigned", 0), data.getIntOr("capacity", 0)))
+                tooltip.add(Component.translatable("gui.antcolonies.job_workers", data.getIntOr("assigned", 0), data.getIntOr("capacity", 0))
                         .withStyle(ChatFormatting.GRAY));
                 double rate = data.getDoubleOr("rate", 0);
                 if (rate > 0) {

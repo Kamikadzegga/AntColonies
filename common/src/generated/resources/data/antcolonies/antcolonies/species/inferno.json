@@ -1,0 +1,74 @@
+{
+  "tier": 2,
+  "category": "hunter",
+  "look": {
+    "body": "#6A1A0A",
+    "gaster": "#C03010",
+    "accent": "#FFA020",
+    "pattern": "striped",
+    "glow": true,
+    "size": 1.2
+  },
+  "climate": "nether",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "nether",
+    "special_per_egg": 0.4
+  },
+  "production": {
+    "rate": 0.4,
+    "outputs": [
+      {
+        "item": "minecraft:blaze_powder",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:magma_cream",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:coal",
+        "weight": 10
+      }
+    ]
+  },
+  "combat": {
+    "strength": 2.0,
+    "targets": [
+      {
+        "entity": "minecraft:blaze",
+        "weight": 35
+      },
+      {
+        "entity": "minecraft:magma_cube",
+        "weight": 35
+      },
+      {
+        "entity": "minecraft:wither_skeleton",
+        "weight": 10
+      },
+      {
+        "entity": "minecraft:ghast",
+        "weight": 10
+      }
+    ]
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:nether_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 4800
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:blaze_powder"
+}

@@ -110,7 +110,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
                 new AntCategory(LARVAE, "larvae", structure(StructureKind.NEST_CHAMBER), gui, 1, 2),
                 new AntCategory(PRODUCTION, "production", structure(StructureKind.FORAGING_SITE), gui, 2, 1),
                 new AntCategory(FARMING, "farming", structure(StructureKind.HARVESTING_SITE), gui, 2, 1),
-                new AntCategory(FIGHTING, "fighting", structure(StructureKind.FORAGING_SITE), gui, 2, 2),
+                new AntCategory(FIGHTING, "fighting", structure(StructureKind.HUNTING_GROUND), gui, 2, 2),
                 new AntCategory(LAB, "lab", ModItems.GENETIC_LAB.get(), gui, 1, 4),
                 new AntCategory(TRAIT, "trait", ModItems.GENETIC_ANALYZER.get(), gui, 1, 3),
                 new AntCategory(SPECIES_UPGRADE, "species_upgrade", ModItems.UPGRADE_STATION.get(), gui, 1, 2));
@@ -150,7 +150,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
         registration.addCraftingStation(LARVAE, structure(StructureKind.NEST_CHAMBER));
         registration.addCraftingStation(PRODUCTION, structure(StructureKind.FORAGING_SITE), structure(StructureKind.STORAGE));
         registration.addCraftingStation(FARMING, structure(StructureKind.HARVESTING_SITE), structure(StructureKind.STORAGE));
-        registration.addCraftingStation(FIGHTING, structure(StructureKind.FORAGING_SITE), structure(StructureKind.NEST_CHAMBER));
+        registration.addCraftingStation(FIGHTING, structure(StructureKind.HUNTING_GROUND));
         registration.addCraftingStation(LAB, ModItems.GENETIC_LAB.get());
         registration.addCraftingStation(TRAIT, ModItems.GENETIC_LAB.get(), ModItems.GENETIC_ANALYZER.get());
         registration.addCraftingStation(SPECIES_UPGRADE, ModItems.UPGRADE_STATION.get());

@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:swamp",
+  "to": "antcolonies:trap_jaw",
+  "item": "minecraft:slime_ball",
+  "chance": 0.06,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300
+}

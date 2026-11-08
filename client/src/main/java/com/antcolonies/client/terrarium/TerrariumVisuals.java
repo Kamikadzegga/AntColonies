@@ -151,10 +151,9 @@ public final class TerrariumVisuals {
         int max = AntConfig.client(AntConfig.MAX_VISUAL_ANTS);
         int count = adults <= 0 ? 0 : (int) Math.min(max, Math.round(3 + 7 * Math.log10(1 + adults)));
         count = (int) Math.min(count, adults);
-        int soldiers = adults <= 0 ? 0 : (int) Math.min(count / 3, Math.round(count * colony.soldiers() / (double) adults));
-        if (colony.soldiers() > 0 && soldiers == 0 && count > 4) {
-            soldiers = 1;
-        }
+        // Hunter species: a third of the ants drawn with the big-jawed look; colonies have no soldiers otherwise.
+        AntSpecies kind = ClientSpecies.get(colony.species());
+        int soldiers = kind != null && kind.canHunt() ? count / 3 : 0;
         Colony.Activity activity = colony.activity();
         float conversion = (float) colony.conversion();
         int hash = count * 31 + soldiers;

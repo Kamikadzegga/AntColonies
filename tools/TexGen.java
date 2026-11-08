@@ -544,6 +544,13 @@ public class TexGen {
             gardenTop.set(random.nextInt(16), random.nextInt(16), rgb(80, 140, 60));
         }
         gardenTop.save("block/harvesting_site_top");
+        // Hunting Ground: trampled earth with dark stains of the catch.
+        Img huntTop = block(rgb(112, 86, 64), 14, 33);
+        for (int i = 0; i < 6; i++) {
+            huntTop.set(random.nextInt(16), random.nextInt(16), rgb(110, 34, 28));
+        }
+        line(huntTop, 3, 12, 7, 12, rgb(210, 204, 186));
+        huntTop.save("block/hunting_ground_top");
         // Storage: a plank floor for the heap.
         Img inside = new Img(16, 16);
         planks(inside, rgb(120, 88, 52), random);
@@ -601,7 +608,7 @@ public class TexGen {
                 {"jungle", rgb(84, 62, 40), rgb(70, 122, 42)}, {"swamp", rgb(72, 62, 50), rgb(88, 98, 58)},
                 {"savanna", rgb(150, 100, 60), rgb(172, 160, 88)}, {"shore", rgb(222, 208, 160), rgb(234, 222, 178)},
                 {"blossom", rgb(118, 86, 58), rgb(108, 150, 70)}, {"pale", rgb(122, 112, 102), rgb(200, 205, 195)},
-                {"badlands", rgb(172, 92, 50), rgb(190, 102, 52)}};
+                {"badlands", rgb(172, 92, 50), rgb(190, 102, 52)}, {"army", rgb(96, 60, 36), rgb(120, 104, 70)}};
         for (Object[] nest : nests) {
             String id = (String) nest[0];
             Img side = block((Integer) nest[1], 14, id.hashCode());
@@ -948,7 +955,7 @@ public class TexGen {
 
     /** A small symbol per upgrade type, drawn over the tier's board. */
     static void upgradeIcons() {
-        String[] types = {"speed", "food_efficiency", "simulation", "storage", "breeding", "genetic", "soldier", "automation", "population", "evolution"};
+        String[] types = {"speed", "food_efficiency", "simulation", "storage", "breeding", "genetic", "hunting", "automation", "population", "evolution"};
         for (String type : types) {
             Img img = item();
             switch (type) {
@@ -983,7 +990,7 @@ public class TexGen {
                         img.set(8 - (int) Math.round(Math.sin(y) * 2), y, rgb(230, 90, 255));
                     }
                 }
-                case "soldier" -> {
+                case "hunting" -> {
                     line(img, 5, 11, 11, 5, rgb(220, 224, 232));
                     line(img, 6, 9, 7, 10, rgb(150, 100, 50));
                     img.set(11, 4, rgb(255, 255, 255));

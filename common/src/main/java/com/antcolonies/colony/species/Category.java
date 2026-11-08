@@ -10,7 +10,9 @@ public enum Category implements StringRepresentable {
     FARMER("farmer"),
     MINERAL("mineral"),
     HYBRID("hybrid"),
-    ENDGAME("endgame");
+    ENDGAME("endgame"),
+    /** Hunters: their workers hunt mobs at a Hunting Ground. */
+    HUNTER("hunter");
 
     public static final Codec<Category> CODEC = StringRepresentable.fromEnum(Category::values);
 

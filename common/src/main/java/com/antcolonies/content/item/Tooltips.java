@@ -101,6 +101,14 @@ public final class Tooltips {
             tooltip.accept(Component.translatable(data.canFarm() ? "tooltip.antcolonies.species.grows" : "tooltip.antcolonies.species.finds", list)
                     .withStyle(ChatFormatting.DARK_AQUA));
         }
+        if (data.canHunt()) {
+            MutableComponent mobs = Component.empty();
+            List<AntSpecies.Combat.Target> targets = data.combat().targets();
+            for (int i = 0; i < targets.size(); i++) {
+                mobs.append(i == 0 ? Component.empty() : Component.literal(", ")).append(targets.get(i).entity().value().getDescription());
+            }
+            tooltip.accept(Component.translatable("tooltip.antcolonies.species.hunts", mobs).withStyle(ChatFormatting.RED));
+        }
         if (!detailed) {
             return;
         }

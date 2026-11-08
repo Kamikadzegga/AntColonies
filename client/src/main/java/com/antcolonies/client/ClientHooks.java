@@ -142,11 +142,12 @@ public final class ClientHooks {
 
     public static void structureParticles(Level level, BlockPos pos, StructureKind kind, RandomSource random) {
         if (!AntConfig.client(AntConfig.PARTICLES) || !(level.getBlockEntity(pos) instanceof StructureBlockEntity structure)
-                || !structure.clientLinked() || structure.assigned() + structure.soldiers() <= 0) {
+                || !structure.clientLinked() || structure.assigned() <= 0) {
             return;
         }
         int color = switch (kind) {
             case HARVESTING_SITE -> 0xFF5DAA3C;
+            case HUNTING_GROUND -> 0xFF8A1F1F;
             default -> 0xFF6B4A2E;
         };
         if (random.nextInt(2) == 0) {

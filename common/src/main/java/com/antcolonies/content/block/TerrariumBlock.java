@@ -110,19 +110,25 @@ public class TerrariumBlock extends ColonyPartBlock {
     }
 
     /**
-     * A Rally Pheromone used on a Terrarium: the colony gives up {@link com.antcolonies.core.config.AntConfig#GUARD_SOLDIER_COST}
-     * soldiers for one Guard Ant, as strong as its Queen's Soldier Strength.
+     * A Rally Pheromone used on a Terrarium: a hunter colony gives up {@link com.antcolonies.core.config.AntConfig#GUARD_COST}
+     * ants for one Guard Ant, as strong as its Queen's Hunting Strength.
      */
     public static boolean recruitGuard(TerrariumBlockEntity terrarium, Player player, ItemStack pheromone) {
         com.antcolonies.colony.model.Colony colony = terrarium.colony();
-        int cost = com.antcolonies.core.config.AntConfig.get(com.antcolonies.core.config.AntConfig.GUARD_SOLDIER_COST);
+        int cost = com.antcolonies.core.config.AntConfig.get(com.antcolonies.core.config.AntConfig.GUARD_COST);
         if (colony.queen() == null) {
             player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable("message.antcolonies.guard.no_queen")
                     .withStyle(net.minecraft.ChatFormatting.RED));
             return false;
         }
-        if (!colony.takeSoldiers(cost)) {
-            player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable("message.antcolonies.guard.soldiers", cost, colony.soldiers())
+        var species = com.antcolonies.core.registry.ModRegistries.species(terrarium.getLevel() == null ? null : terrarium.getLevel().registryAccess(), colony.species());
+        if (species == null || !species.canHunt()) {
+            player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable("message.antcolonies.guard.not_hunters")
+                    .withStyle(net.minecraft.ChatFormatting.RED));
+            return false;
+        }
+        if (!colony.takeWorkers(cost)) {
+            player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable("message.antcolonies.guard.ants", cost, colony.workers())
                     .withStyle(net.minecraft.ChatFormatting.RED));
             return false;
         }
@@ -141,16 +147,5 @@ public class TerrariumBlock extends ColonyPartBlock {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         ClientHooks.terrariumParticles(level, pos, random);
-    }
-
-    /** Broken with ants in it: they are lost, so say how to take them out next time. */
-    @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TerrariumBlockEntity terrarium
-                && (terrarium.colony().queen() != null || terrarium.colony().exactAdults() >= 1)) {
-            player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.antcolonies.terrarium.lost")
-                    .withStyle(net.minecraft.ChatFormatting.GOLD));
-        }
-        return super.playerWillDestroy(level, pos, state, player);
     }
 }

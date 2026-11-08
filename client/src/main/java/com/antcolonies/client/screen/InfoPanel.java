@@ -181,14 +181,16 @@ public final class InfoPanel {
             text(font, Component.translatable("info.antcolonies.farms", String.format(Locale.ROOT, "%.1f", data.farming().foodPerMinute())), TEXT);
             outputs(font, data.farming().harvest(), null);
         }
-        // What its soldiers hunt.
-        List<AntSpecies.Combat.Target> targets = data.combat().targets().isEmpty() ? ColonySimulator.DEFAULT_TARGETS : data.combat().targets();
-        MutableComponent mobs = Component.empty();
-        for (int i = 0; i < targets.size(); i++) {
-            mobs.append(i == 0 ? Component.empty() : Component.literal(", ")).append(targets.get(i).entity().value().getDescription());
+        // What hunters hunt at a Hunting Ground.
+        if (data.canHunt()) {
+            List<AntSpecies.Combat.Target> targets = data.combat().targets().isEmpty() ? ColonySimulator.DEFAULT_TARGETS : data.combat().targets();
+            MutableComponent mobs = Component.empty();
+            for (int i = 0; i < targets.size(); i++) {
+                mobs.append(i == 0 ? Component.empty() : Component.literal(", ")).append(targets.get(i).entity().value().getDescription());
+            }
+            rows.add(new Gap(3));
+            text(font, Component.translatable("info.antcolonies.hunts", mobs), TEXT);
         }
-        rows.add(new Gap(3));
-        text(font, Component.translatable("info.antcolonies.hunts", mobs), TEXT);
         // Evolutions into and out of it.
         var registries = ClientSpecies.registries();
         if (registries != null) {

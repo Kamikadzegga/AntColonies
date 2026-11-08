@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:jungle",
+  "to": "antcolonies:bullet",
+  "item": "minecraft:gunpowder",
+  "chance": 0.06,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300
+}

@@ -14,8 +14,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 
 /**
- * Any colony chamber's GUI: its status and link, for working sites the ants it has and wants (+/- buttons; a Foraging
- * Site has a row for its workers and one for its soldiers), its own slots (Storage, a Foraging Site's store, Queen
+ * Any colony chamber's GUI: its status and link, for working sites the ants it has and wants (+/- buttons), its own slots (Storage, a Foraging Site's store, Queen
  * Chamber) and its upgrade slots on the right.
  */
 public class StructureMenu extends BaseMenu {
@@ -26,11 +25,9 @@ public class StructureMenu extends BaseMenu {
     public static final int AUTO = 4;
     public static final int LESS_100 = 5;
     public static final int MORE_100 = 6;
-    /** Added to an action for the soldier row (Foraging Sites). */
-    public static final int SOLDIER_ROW = 10;
     public static final int UPGRADE_X = 184;
     /** Where a Foraging Site's store slots are. */
-    public static final int STORE_Y = 106;
+    public static final int STORE_Y = 72;
 
     private final StructureBlockEntity structure;
     private final ContainerData data;
@@ -76,7 +73,7 @@ public class StructureMenu extends BaseMenu {
     }
 
     public static int inventoryY(StructureKind kind) {
-        return kind == StructureKind.STORAGE || kind == StructureKind.FORAGING_SITE ? 152 : 84;
+        return kind == StructureKind.STORAGE ? 152 : kind == StructureKind.FORAGING_SITE ? 116 : 84;
     }
 
     public static StructureMenu fromNetwork(int containerId, Inventory inventory, RegistryFriendlyByteBuf buffer) {
@@ -94,15 +91,11 @@ public class StructureMenu extends BaseMenu {
         return data.get(id);
     }
 
-    /** One of the assignment buttons, for this GUI and the Terrarium's job list (soldier row: action + SOLDIER_ROW). */
+    /** One of the assignment buttons, for this GUI and the Terrarium's job list. */
     public static void adjust(StructureBlockEntity site, int action) {
-        boolean soldiers = action >= SOLDIER_ROW;
-        if (soldiers && !site.kind().job().soldiers()) {
-            return;
-        }
-        int current = soldiers ? site.requestedSoldiers() : site.requested();
+        int current = site.requested();
         int requested = current < 0 ? site.capacity() : current;
-        int wanted = switch (action % SOLDIER_ROW) {
+        int wanted = switch (action) {
             case LESS -> Math.max(0, requested - 1);
             case MORE -> requested + 1;
             case LESS_10 -> Math.max(0, requested - 10);
@@ -112,17 +105,13 @@ public class StructureMenu extends BaseMenu {
             case AUTO -> current < 0 ? site.capacity() : -1;
             default -> current;
         };
-        if (soldiers) {
-            site.setRequestedSoldiers(wanted);
-        } else {
-            site.setRequested(wanted);
-        }
+        site.setRequested(wanted);
         site.contentsChanged();
     }
 
     @Override
     public boolean clickMenuButton(Player player, int id) {
-        if (!structure.kind().job().any() || id < 0 || id >= SOLDIER_ROW * 2) {
+        if (!structure.kind().job().any() || id < 0 || id > MORE_100) {
             return false;
         }
         adjust(structure, id);

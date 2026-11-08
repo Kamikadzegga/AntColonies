@@ -7,6 +7,6 @@
   },
   "pattern": [" X ", "XBX", " X "],
   "result": {
-    "id": "antcolonies:soldier_upgrade_1"
+    "id": "antcolonies:hunting_upgrade_1"
   }
 }

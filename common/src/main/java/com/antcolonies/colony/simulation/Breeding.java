@@ -9,13 +9,13 @@ import com.antcolonies.colony.upgrade.UpgradeType;
 
 /**
  * Eggs, larvae and adults. The Queen lays eggs (faster with Nest Chambers; genetics, food and room permitting); eggs hatch
- * into larvae after a while; larvae eat and grow into adults, some of them soldiers while there is soldier room. Adults die of
+ * into larvae after a while; larvae eat and grow into adults. Adults die of
  * age, and of hunger once a colony has starved past the grace period.
  */
 final class Breeding {
     record Result(double eggs, double raised, boolean full, boolean specialShort) {}
 
-    static Result run(ColonySimulator.Step step, double adultCapacity, double soldierCapacity, double larvaeCapacity) {
+    static Result run(ColonySimulator.Step step, double adultCapacity, double larvaeCapacity) {
         Colony colony = step.colony;
         double eggs = ColonyAccess.eggs(colony);
         double larvae = ColonyAccess.larvae(colony);
@@ -78,12 +78,8 @@ final class Breeding {
             full = true;
         }
         larvae -= matured;
-        double newSoldiers = 0;
-        if (soldierCapacity > 0) {
-            newSoldiers = Math.min(matured * ColonyAccess.soldierShare(colony), Math.max(0, soldierCapacity - ColonyAccess.soldiers(colony)));
-        }
-        ColonyAccess.setPopulation(colony, eggs, larvae, ColonyAccess.workers(colony), ColonyAccess.soldiers(colony));
-        ColonyAccess.addAdults(colony, matured - newSoldiers, newSoldiers);
+        ColonyAccess.setPopulation(colony, eggs, larvae, ColonyAccess.workers(colony));
+        ColonyAccess.addAdults(colony, matured);
         return new Result(laid, matured, full, specialShort);
     }
 
@@ -93,11 +89,9 @@ final class Breeding {
         double eggs = ColonyAccess.eggs(colony);
         double larvae = ColonyAccess.larvae(colony);
         double workers = ColonyAccess.workers(colony);
-        double soldiers = ColonyAccess.soldiers(colony);
-        double before = eggs + larvae + workers + soldiers;
+        double before = eggs + larvae + workers;
         double age = 1 - Math.exp(-step.dt / AntConfig.get(AntConfig.ADULT_LIFESPAN_MINUTES));
         workers -= workers * age;
-        soldiers -= soldiers * age;
         double starved = ColonyAccess.starvedMinutes(colony) - AntConfig.get(AntConfig.STARVATION_GRACE_MINUTES);
         if (starved > 0) {
             double resistance = Math.clamp((step.trait(Trait.ENVIRONMENTAL_RESISTANCE) - 1) * 0.5, 0, 0.6);
@@ -106,17 +100,15 @@ final class Breeding {
             eggs -= eggs * Math.min(1, loss * 2);
             larvae -= larvae * Math.min(1, loss * 1.5);
             workers -= workers * loss;
-            soldiers -= soldiers * loss;
-            if (workers + soldiers < 1 && larvae < 1 && eggs < 1) {
+            if (workers < 1 && larvae < 1 && eggs < 1) {
                 workers = 0;
-                soldiers = 0;
                 if (AntConfig.get(AntConfig.STARVATION_KILLS_QUEEN)) {
                     ColonyAccess.killQueen(colony);
                 }
             }
         }
-        ColonyAccess.setPopulation(colony, eggs, larvae, workers, soldiers);
-        return Math.max(0, before - (eggs + larvae + workers + soldiers));
+        ColonyAccess.setPopulation(colony, eggs, larvae, workers);
+        return Math.max(0, before - (eggs + larvae + workers));
     }
 
     private Breeding() {}

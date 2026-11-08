@@ -26,12 +26,11 @@ import org.jspecify.annotations.Nullable;
  */
 public final class Colony {
     /** One working chamber's ants, as the GUI lists them. */
-    public record Assignment(BlockPos pos, StructureKind kind, int assigned, int soldiers, int requested, int capacity, int status, double rate) {
+    public record Assignment(BlockPos pos, StructureKind kind, int assigned, int requested, int capacity, int status, double rate) {
         public static final Codec<Assignment> CODEC = RecordCodecBuilder.create(i -> i.group(
                 BlockPos.CODEC.fieldOf("pos").forGetter(Assignment::pos),
                 StructureKind.CODEC.fieldOf("kind").forGetter(Assignment::kind),
                 Codec.INT.fieldOf("assigned").forGetter(Assignment::assigned),
-                Codec.INT.optionalFieldOf("soldiers", 0).forGetter(Assignment::soldiers),
                 Codec.INT.fieldOf("requested").forGetter(Assignment::requested),
                 Codec.INT.fieldOf("capacity").forGetter(Assignment::capacity),
                 Codec.INT.fieldOf("status").forGetter(Assignment::status),
@@ -58,8 +57,8 @@ public final class Colony {
 
     /** The last step's results, for GUIs (per minute). */
     public record Stats(double eggsLaid, double adultsRaised, double foodIn, double foodOut, double finds, double hunts, double deaths,
-                        long adultCapacity, long soldierCapacity, long larvaeCapacity, double foodCapacity, int structures) {
-        public static final Stats NONE = new Stats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+                        long adultCapacity, long larvaeCapacity, double foodCapacity, int structures) {
+        public static final Stats NONE = new Stats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         public static final Codec<Stats> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.DOUBLE.fieldOf("eggs").forGetter(Stats::eggsLaid),
                 Codec.DOUBLE.fieldOf("raised").forGetter(Stats::adultsRaised),
@@ -69,7 +68,6 @@ public final class Colony {
                 Codec.DOUBLE.fieldOf("hunts").forGetter(Stats::hunts),
                 Codec.DOUBLE.fieldOf("deaths").forGetter(Stats::deaths),
                 Codec.LONG.fieldOf("adult_capacity").forGetter(Stats::adultCapacity),
-                Codec.LONG.fieldOf("soldier_capacity").forGetter(Stats::soldierCapacity),
                 Codec.LONG.fieldOf("larvae_capacity").forGetter(Stats::larvaeCapacity),
                 Codec.DOUBLE.fieldOf("food_capacity").forGetter(Stats::foodCapacity),
                 Codec.INT.fieldOf("structures").forGetter(Stats::structures)
@@ -87,13 +85,10 @@ public final class Colony {
     double eggs;
     double larvae;
     double workers;
-    double soldiers;
     double food;
     double specialFood;
     double health = 1;
     double starvedMinutes;
-    /** Share of new adults raised as soldiers (when Housing has room). */
-    double soldierShare = 0.2;
     int evolutionAttempts;
     int catalystCharges;
     long lastSimTime = Long.MIN_VALUE;
@@ -143,16 +138,12 @@ public final class Colony {
         return (long) workers;
     }
 
-    public long soldiers() {
-        return (long) soldiers;
-    }
-
     public long adults() {
-        return (long) (workers + soldiers);
+        return (long) workers;
     }
 
     public double exactAdults() {
-        return workers + soldiers;
+        return workers;
     }
 
     public double food() {
@@ -165,10 +156,6 @@ public final class Colony {
 
     public double health() {
         return health;
-    }
-
-    public double soldierShare() {
-        return soldierShare;
     }
 
     public int stage() {
@@ -274,10 +261,6 @@ public final class Colony {
         specialFood += special;
     }
 
-    public void setSoldierShare(double share) {
-        soldierShare = Math.clamp(share, 0, 0.6);
-    }
-
     public void countEvolutionAttempt() {
         evolutionAttempts++;
     }
@@ -295,20 +278,19 @@ public final class Colony {
     }
 
     /** For tests and commands: sets the population outright. */
-    /** Takes soldiers away (a Guard Ant leaving); false, and nothing taken, when the colony has fewer. */
-    public boolean takeSoldiers(double count) {
-        if (soldiers < count) {
+    /** Takes workers away (a Guard Ant leaving); false, and nothing taken, when the colony has fewer. */
+    public boolean takeWorkers(double count) {
+        if (workers < count) {
             return false;
         }
-        soldiers -= count;
+        workers -= count;
         return true;
     }
 
-    public void setPopulation(double eggs, double larvae, double workers, double soldiers) {
+    public void setPopulation(double eggs, double larvae, double workers) {
         this.eggs = eggs;
         this.larvae = larvae;
         this.workers = workers;
-        this.soldiers = soldiers;
     }
 
     public void setFood(double food) {
@@ -330,12 +312,10 @@ public final class Colony {
         output.putDouble("eggs", eggs);
         output.putDouble("larvae", larvae);
         output.putDouble("workers", workers);
-        output.putDouble("soldiers", soldiers);
         output.putDouble("food", food);
         output.putDouble("special_food", specialFood);
         output.putDouble("health", health);
         output.putDouble("starved", starvedMinutes);
-        output.putDouble("soldier_share", soldierShare);
         output.putInt("evolution_attempts", evolutionAttempts);
         output.putInt("catalyst", catalystCharges);
         output.putLong("last_sim", lastSimTime);
@@ -362,12 +342,12 @@ public final class Colony {
         eggs = Math.max(0, input.getDoubleOr("eggs", 0));
         larvae = Math.max(0, input.getDoubleOr("larvae", 0));
         workers = Math.max(0, input.getDoubleOr("workers", 0));
-        soldiers = Math.max(0, input.getDoubleOr("soldiers", 0));
+        // Colonies had soldiers once: they stay on as workers.
+        workers += Math.max(0, input.getDoubleOr("soldiers", 0));
         food = Math.max(0, input.getDoubleOr("food", 0));
         specialFood = Math.max(0, input.getDoubleOr("special_food", 0));
         health = Math.clamp(input.getDoubleOr("health", 1), 0, 1);
         starvedMinutes = input.getDoubleOr("starved", 0);
-        soldierShare = input.getDoubleOr("soldier_share", 0.2);
         evolutionAttempts = input.getIntOr("evolution_attempts", 0);
         catalystCharges = input.getIntOr("catalyst", 0);
         lastSimTime = input.getLongOr("last_sim", Long.MIN_VALUE);

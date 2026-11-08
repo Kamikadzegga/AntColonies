@@ -402,6 +402,40 @@ public class DataGen {
                 netherRearing, 4800, 0.9, 1.0, "blaze_powder",
                 "Ember Extraction", "Blaze Refining", "Heat Efficiency",
                 "Desert Ants fed blaze powder. They glow like coals and bring the Nether's fuels: blaze powder, magma, wart and quartz."));
+        // Hunters: their workers hunt mobs at a Hunting Ground (the mobs' loot, and food from the catch). Army Ants live wild;
+        // the others evolve from wild species fed a mob drop.
+        SPECIES.add(new Species("army", "Army Ant", 0, "hunter", "any", "spawns/army", "5A2A12", "3A1A0A", "C0602A", "banded", null, false,
+                1.1, 1.2, "", 0, 0.6,
+                List.of(Out.of("rotten_flesh", 20), Out.of("bone", 20), Out.of("string", 10), Out.of("arrow", 5).atStage(2)),
+                0, List.of(), 1.2, List.of(new String[] {"minecraft:zombie", "30"}, new String[] {"minecraft:skeleton", "25"},
+                        new String[] {"minecraft:spider", "25"}, new String[] {"minecraft:husk", "10"}, new String[] {"minecraft:zombie_villager", "5"}),
+                baseRearing, 2400, 1.2, 1.1, "rotten_flesh",
+                "Raid Extraction", "Bone Grinding", "Swarm Efficiency",
+                "Nomad hunters of plains and savannas that live anywhere. At a Hunting Ground they swarm zombies, skeletons and spiders, and feed on the catch."));
+        SPECIES.add(new Species("bullet", "Bullet Ant", 1, "hunter", "hot", null, "2A1A10", "8A3A10", "E0A040", "striped", null, false,
+                1.2, 1.3, "", 0, 0.5,
+                List.of(Out.of("gunpowder", 10), Out.of("redstone", 6), Out.of("glowstone_dust", 4).atStage(2)),
+                0, List.of(), 1.6, List.of(new String[] {"minecraft:creeper", "40"}, new String[] {"minecraft:witch", "15"},
+                        new String[] {"minecraft:spider", "15"}, new String[] {"minecraft:cave_spider", "10"}, new String[] {"minecraft:phantom", "10"}),
+                List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"gunpowder", "4"}), 3600, 1.0, 1.0, "gunpowder",
+                "Powder Extraction", "Powder Packing", "Sting Efficiency",
+                "Jungle Ants fed gunpowder. Their sting fells creepers and witches: gunpowder, redstone and glowstone come home."));
+        SPECIES.add(new Species("trap_jaw", "Trap-Jaw Ant", 1, "hunter", "temperate", null, "3A3020", "6A5A2A", "B0A050", "speckled", null, false,
+                1.1, 1.2, "", 0, 0.5,
+                List.of(Out.of("slime_ball", 10), Out.of("kelp", 10), Out.of("prismarine_shard", 3).atStage(3)),
+                0, List.of(), 1.4, List.of(new String[] {"minecraft:slime", "35"}, new String[] {"minecraft:drowned", "30"},
+                        new String[] {"minecraft:zombie", "15"}, new String[] {"minecraft:guardian", "5"}),
+                List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"slime_ball", "4"}), 3600, 1.0, 1.0, "slime_ball",
+                "Snap Extraction", "Slime Pressing", "Ambush Efficiency",
+                "Swamp Ants fed slime balls. Their jaws snap shut faster than anything: slimes, drowned and the odd guardian."));
+        SPECIES.add(new Species("inferno", "Inferno Ant", 2, "hunter", "nether", null, "6A1A0A", "C03010", "FFA020", "striped", null, true,
+                1.2, 1.4, "nether", 0.4, 0.4,
+                List.of(Out.of("blaze_powder", 10), Out.of("magma_cream", 8), Out.of("coal", 10)),
+                0, List.of(), 2.0, List.of(new String[] {"minecraft:blaze", "35"}, new String[] {"minecraft:magma_cube", "35"},
+                        new String[] {"minecraft:wither_skeleton", "10"}, new String[] {"minecraft:ghast", "10"}),
+                netherRearing, 4800, 0.9, 1.0, "blaze_powder",
+                "Cinder Extraction", "Ember Pressing", "Furnace Efficiency",
+                "Fire Ants fed blaze powder. They hunt the Nether's fire: blaze rods, magma cream, ghast tears and wither skulls."));
         SPECIES.add(new Species("soul", "Soul Ant", 3, "mineral", "nether", null, "3A2A20", "5A4030", "4AE0E8", "banded", "6AF0FF", true,
                 1.05, 1.8, "nether", 0.8, 0.3,
                 List.of(Out.of("soul_sand", 22), Out.of("soul_soil", 16), Out.of("bone", 14), Out.of("basalt", 10), Out.of("blackstone", 10), Out.of("quartz", 6),
@@ -583,6 +617,9 @@ public class DataGen {
                 {"stone_to_coal", "stone", "coal", "coal_block", 0.08, 24, 2, 200},
                 {"stone_to_deepslate", "stone", "deepslate", "cobbled_deepslate", 0.1, 16, 2, 150},
                 {"desert_to_fire", "desert", "fire", "blaze_powder", 0.06, 24, 2, 300},
+                {"jungle_to_bullet", "jungle", "bullet", "gunpowder", 0.06, 24, 2, 300},
+                {"swamp_to_trap_jaw", "swamp", "trap_jaw", "slime_ball", 0.06, 24, 2, 300},
+                {"fire_to_inferno", "fire", "inferno", "blaze_powder", 0.05, 32, 3, 1000},
                 {"fire_to_soul", "fire", "soul", "ghast_tear", 0.05, 32, 3, 1000},
                 {"amethyst_to_ender", "amethyst", "ender", "ender_eye", 0.03, 40, 4, 3000},
                 // Into other mods' metals and crystals (these load only with those mods).
@@ -662,14 +699,13 @@ public class DataGen {
         LANG.put("config.jade.plugin_" + NS + ".structure", "Colony chamber ants and output");
         LANG.put("config.jade.plugin_" + NS + ".wild_ant", "Wild ant species");
         LANG.put("config.jade.plugin_" + NS + ".wild_nest", "Wild nest species");
-        LANG.put("message." + NS + ".take.no_soldiers", "The colony has no soldiers");
-        LANG.put("message." + NS + ".terrarium.lost", "The colony in this Terrarium is lost. Take the Queen and ants out in Test Tubes first next time.");
         LANG.put("jade." + NS + ".catch", "Catch it with Tweezers (and an empty Test Tube)");
         LANG.put("jade." + NS + ".nest", "Tweezers take workers out; now and then a Queen");
         LANG.put("tooltip." + NS + ".species.climate", "Climate: %s");
         LANG.put("tooltip." + NS + ".species.finds", "Finds: %s");
         LANG.put("tooltip." + NS + ".species.grows", "Grows food and %s");
         LANG.put("tooltip." + NS + ".species.more", " and %s more");
+        LANG.put("tooltip." + NS + ".species.hunts", "Hunts: %s");
         LANG.put("tooltip." + NS + ".species.evolves", "Evolves into %s: feed %s from stage %s");
         LANG.put("tooltip." + NS + ".queen.best", "Best traits: %s");
         LANG.put("config.jade.plugin_" + NS + ".machine", "Generator and Genetic Laboratory");
@@ -853,6 +889,8 @@ public class DataGen {
                 "M", "packed_mud", "C", "chest");
         shaped("harvesting_site", ac("harvesting_site"), 1, new String[] {"RBR", "DMD", "DDD"}, "R", "brown_mushroom", "B", "bone_meal", "D", "dirt",
                 "M", "packed_mud");
+        shaped("hunting_ground", ac("hunting_ground"), 1, new String[] {"BWB", "SMS", "SSS"}, "B", "bone", "W", "iron_sword", "S", "cobblestone",
+                "M", "packed_mud");
         shaped("queen_chamber", ac("queen_chamber"), 1, new String[] {"MGM", "RMR", "MMM"}, "M", "packed_mud", "G", "gold_ingot", "R", ac("royal_jelly"));
         shaped("generator", ac("generator"), 1, new String[] {"III", "IFI", "CRC"}, "I", "iron_ingot", "F", "furnace", "C", "copper_ingot", "R", "redstone");
         shaped("upgrade_station", ac("upgrade_station"), 1, new String[] {"CCC", "PTP", "P P"}, "C", ac("chitin_plate"), "P", "#minecraft:planks", "T", "crafting_table");
@@ -861,7 +899,7 @@ public class DataGen {
                 "C", ac("genetic_circuit"), "X", ac("genetic_analyzer"), "A", "amethyst_block", "R", "redstone_block");
         // Upgrades: tier 1 from an Upgrade Base, tiers 2 and 3 from the tier below.
         String[][] materials = {{"speed", "sugar"}, {"food_efficiency", "golden_carrot"}, {"simulation", "comparator"}, {"storage", "chest"},
-                {"breeding", "egg"}, {"genetic", ac("genetic_circuit")}, {"soldier", "iron_sword"}, {"automation", "hopper"},
+                {"breeding", "egg"}, {"genetic", ac("genetic_circuit")}, {"hunting", "iron_sword"}, {"automation", "hopper"},
                 {"population", "packed_mud"}, {"evolution", ac("evolution_catalyst")}};
         for (String[] m : materials) {
             shaped(m[0] + "_upgrade_1", ac(m[0] + "_upgrade_1"), 1, new String[] {" X ", "XBX", " X "}, "X", m[1], "B", ac("upgrade_base"));
@@ -878,10 +916,10 @@ public class DataGen {
 
     // ------------------------------------------------------------------ Blocks, items, loot, tags, worldgen, models
 
-    static final String[] STRUCTURES = {"nest_chamber", "foraging_site", "harvesting_site", "storage", "queen_chamber"};
+    static final String[] STRUCTURES = {"nest_chamber", "foraging_site", "harvesting_site", "hunting_ground", "storage", "queen_chamber"};
     static final String[] NESTS = {"common", "wood", "stone", "snow", "desert", "farmer", "jungle", "swamp", "savanna", "shore", "blossom", "pale",
-            "badlands"};
-    static final String[] UPGRADE_TYPES = {"speed", "food_efficiency", "simulation", "storage", "breeding", "genetic", "soldier", "automation",
+            "badlands", "army"};
+    static final String[] UPGRADE_TYPES = {"speed", "food_efficiency", "simulation", "storage", "breeding", "genetic", "hunting", "automation",
             "population", "evolution"};
 
     static void selfDrop(String block) {
@@ -923,7 +961,7 @@ public class DataGen {
         List<Object> axe = new ArrayList<>();
         pickaxe.add(ac("genetic_laboratory"));
         pickaxe.add(ac("generator"));
-        for (String s : new String[] {"nest_chamber", "foraging_site", "harvesting_site", "queen_chamber"}) {
+        for (String s : new String[] {"nest_chamber", "foraging_site", "harvesting_site", "hunting_ground", "queen_chamber"}) {
             shovel.add(ac(s));
         }
         for (String nest : NESTS) {
@@ -968,6 +1006,7 @@ public class DataGen {
         biomes.put("blossom", arr("minecraft:cherry_grove", "minecraft:flower_forest", "minecraft:meadow", "minecraft:sunflower_plains"));
         biomes.put("pale", arr("minecraft:pale_garden"));
         biomes.put("badlands", arr("#minecraft:is_badlands"));
+        biomes.put("army", arr("#minecraft:is_savanna", "minecraft:plains", "minecraft:sunflower_plains"));
         List<Object> all = new ArrayList<>();
         for (Map.Entry<String, List<Object>> entry : biomes.entrySet()) {
             write(DATA.resolve("tags/worldgen/biome/spawns/" + entry.getKey() + ".json"), obj("values", entry.getValue()));
@@ -1322,6 +1361,13 @@ public class DataGen {
                         box(p(3.5, y, 3.5), p(4.5, y + 3, 4.5), "#stem", "#stem"), box(p(2.5, y + 3, 2.5), p(5.5, y + 4, 5.5), "#cap", "#cap"),
                         box(p(11.5, y, 10.5), p(12.5, y + 4, 11.5), "#stem", "#stem"), box(p(10, y + 4, 9), p(14, y + 5, 13), "#cap2", "#cap2"),
                         box(p(11, y, 4), p(11.8, y + 1.2, 4.8), "#stem", "#stem"), box(p(10.4, y + 1.2, 3.4), p(12.4, y + 1.9, 5.4), "#cap", "#cap")));
+                case "hunting_ground" -> model(s, obj("particle", top, "side", wood, "top", top, "bone", "minecraft:block/bone_block_side",
+                        "stone", "minecraft:block/cobblestone"), arr(
+                        floorBody(),
+                        // Stones for cover and the bones of past catches.
+                        box(p(2, y, 2), p(5, y + 2, 5), "#stone", "#stone"), box(p(11, y, 10), p(14, y + 1.5, 13), "#stone", "#stone"),
+                        box(p(10, y, 3), p(13, y + 0.8, 4), "#bone", "#bone"), box(p(11, y, 2), p(12, y + 0.8, 5), "#bone", "#bone"),
+                        box(p(3, y, 11), p(7, y + 0.8, 12), "#bone", "#bone")));
                 default -> model(s, obj("particle", top, "side", wood, "top", top), arr(floorBody()));
             }
         }
@@ -1424,15 +1470,16 @@ public class DataGen {
         LANG.put("tooltip." + NS + ".chitin_set", "Full set:");
         LANG.put("tooltip." + NS + ".chitin_set.ants", " Wild ants never attack you");
         LANG.put("tooltip." + NS + ".chitin_set.dig", " Dig %s%% faster");
-        LANG.put("tooltip." + NS + ".rally_pheromone", "Use on a Terrarium: its colony gives up soldiers for a Guard Ant.");
+        LANG.put("tooltip." + NS + ".rally_pheromone", "Use on a hunter colony's Terrarium: it gives up hunters for a Guard Ant.");
         LANG.put("tooltip." + NS + ".guard_ant.empty", "An empty Guard Ant tube.");
         LANG.put("tooltip." + NS + ".guard_ant.stats", "Strength %s · Health %s/%s · Bite %s · Armor %s");
         LANG.put("tooltip." + NS + ".guard_ant.use", "Use on a block to let it out. Right-click it to make it stay or follow; sneak-right-click to put it back. Ant food heals it.");
         LANG.put("message." + NS + ".guard.stay", "Your Guard Ant stays here");
         LANG.put("message." + NS + ".guard.follow", "Your Guard Ant follows you");
         LANG.put("message." + NS + ".guard.no_queen", "This colony has no Queen to send a guard");
-        LANG.put("message." + NS + ".guard.soldiers", "A Guard Ant takes %s soldiers; this colony has %s");
-        LANG.put("message." + NS + ".guard.recruited", "%s soldiers answered the call: a Guard Ant joins you");
+        LANG.put("message." + NS + ".guard.ants", "A Guard Ant takes %s hunters; this colony has %s");
+        LANG.put("message." + NS + ".guard.not_hunters", "Only a hunter colony gives Guard Ants");
+        LANG.put("message." + NS + ".guard.recruited", "%s hunters answered the call: a Guard Ant joins you");
     }
 
     static Map<String, Object> lootItem(String item, int weight, int min, int max) {
@@ -1460,7 +1507,7 @@ public class DataGen {
         String[][] info = {{"climate.any", "Any climate suits it"}, {"climate.right", "The climate here suits it"},
                 {"climate.wrong", "Wrong climate here: the colony loses health"}, {"climate.floor", "The block under the Terrarium makes it %s"},
                 {"climate.fix", "A Terrarium on one of these suits it anywhere:"}, {"climate.under", "Place it under the Terrarium"},
-                {"finds", "Its workers find:"}, {"farms", "Its farmers grow food (x%s) and harvest:"}, {"hunts", "Its soldiers hunt: %s"},
+                {"finds", "Its workers find:"}, {"farms", "Its farmers grow food (x%s) and harvest:"}, {"hunts", "Hunts at a Hunting Ground: %s"},
                 {"evolution", "Evolution:"}, {"evolves_into", "Into %s"}, {"evolves_from", "From %s"},
                 {"evolution.feed", "Feed the Terrarium %s"}, {"evolution.needs", "From stage %s and %s adults; %s%% a try, sure after %s tries"},
                 {"chance", "%s%% of finds"}, {"from_stage", "From colony stage %s"}, {"signature", "Signature find (rare)"}};
@@ -1475,9 +1522,10 @@ public class DataGen {
                         "To move a colony, take it out in Test Tubes: an empty tube in the Queen slot takes the Queen out, empty tubes in the feed slot fill with ants (up to 1,000 each), and the Colony page's Take out buttons do the same from your inventory. Then break the Terrarium and put the tubes into a new one. Ants left inside a broken Terrarium are lost.")},
                 {"chambers", "The Colony Build", String.join("\n",
                         "Chambers are additions. Put one against the Terrarium, or against a chamber already in the colony, on any side (above and below too): it joins, and the glass between them goes: the whole build becomes one glass case. A colony takes up to 32.",
-                        "Nest Chamber: eggs at full speed, faster larvae, room for 3,000 adults (1,000 of them soldiers) and 1,500 larvae. Without one the Queen lays at half speed and only 60 adults fit.",
-                        "Foraging Site: workers find the species' resources and soldiers hunt mobs for their drops. It sends its finds to the Storage, and holds 9 stacks while the Storage is full.",
+                        "Nest Chamber: eggs at full speed, faster larvae, room for 3,000 adults and 1,500 larvae. Without one the Queen lays at half speed and only 60 adults fit.",
+                        "Foraging Site: workers find the species' resources. It sends its finds to the Storage, and holds 9 stacks while the Storage is full.",
                         "Harvesting Site: Farmer Ants grow food and harvest there.",
+                        "Hunting Ground: hunter species (Army Ants and the ants that evolve into hunters) kill mobs there: the mobs' loot, and food from what they catch.",
                         "Storage: more room for finds, and food room.",
                         "Queen Chamber: raises new Queens.",
                         "A chamber exactly as near to two Terrariums joins neither.")},
@@ -1489,9 +1537,9 @@ public class DataGen {
                         "Mineral and crystal species need their own food for their eggs. A starving colony works slowly, then loses ants.",
                         "Farmer Ants at a Harvesting Site grow food themselves.")},
                 {"jobs", "Jobs", String.join("\n",
-                        "Workers go to Harvesting Sites first, then Foraging Sites; soldiers go to Foraging Sites to hunt. A twentieth of the adults stay home to look after the nest.",
-                        "Each site takes up to 256 workers and 256 soldiers, more with Population Upgrades. Its screen sets how many it wants; Auto takes all it can.",
-                        "The more ants on a job, the more they find, a little less for each extra ant. New adults become soldiers at the share set on the Terrarium's Colony page.")},
+                        "Workers go to Harvesting Sites and Hunting Grounds first (they bring food), then to Foraging Sites. A twentieth of the adults stay home to look after the nest.",
+                        "Each site takes up to 256 ants, more with Population Upgrades. Its screen sets how many it wants; Auto takes all it can.",
+                        "The more ants on a job, the more they find, a little less for each extra ant. Only Farmer species farm, and only hunter species hunt: the Info page says which.")},
                 {"evolution", "Evolution", String.join("\n",
                         "Queens evolve into new species: feed the Terrarium the right material once the colony is big enough (the Info page lists it). A try may fail, but one always works after enough tries. An Evolution Catalyst helps.",
                         "A Queen Chamber raises daughter Queens from the colony's Queen; with a Genetic Sample of another species it can raise a hybrid.")},
@@ -1579,7 +1627,7 @@ public class DataGen {
         l.put("item." + NS + ".species_upgrade.named", "%s %s");
         String[] numerals = {"I", "II", "III"};
         String[][] upgradeNames = {{"speed", "Speed"}, {"food_efficiency", "Food Efficiency"}, {"simulation", "Simulation"}, {"storage", "Storage"},
-                {"breeding", "Breeding"}, {"genetic", "Genetic"}, {"soldier", "Soldier"}, {"automation", "Automation"}, {"population", "Population"},
+                {"breeding", "Breeding"}, {"genetic", "Genetic"}, {"hunting", "Hunting"}, {"automation", "Automation"}, {"population", "Population"},
                 {"evolution", "Evolution"}};
         for (String[] u : upgradeNames) {
             for (int t = 1; t <= 3; t++) {
@@ -1587,7 +1635,7 @@ public class DataGen {
             }
         }
         String[][] blocks = {{"terrarium", "Terrarium"}, {"nest_chamber", "Nest Chamber"}, {"storage", "Storage"},
-                {"foraging_site", "Foraging Site"}, {"harvesting_site", "Harvesting Site"},
+                {"foraging_site", "Foraging Site"}, {"harvesting_site", "Harvesting Site"}, {"hunting_ground", "Hunting Ground"},
                 {"queen_chamber", "Queen Chamber"}, {"upgrade_station", "Upgrade Station"}, {"generator", "Generator"},
                 {"genetic_laboratory", "Genetic Laboratory"}};
         for (String[] b : blocks) {
@@ -1601,9 +1649,10 @@ public class DataGen {
         // Tooltips of blocks and items.
         String[][] tips = {
                 {"terrarium", "The heart of a colony. Put a Queen in and feed her. Chambers placed against it, or against its chambers, join the colony. Take the Queen and ants out in Test Tubes before breaking it: what is left inside is lost."},
-                {"nest_chamber", "Brood and housing: eggs at full speed, faster larvae, room for 3,000 adults (1,000 soldiers) and 1,500 larvae."},
+                {"nest_chamber", "Brood and housing: eggs at full speed, faster larvae, room for 3,000 adults and 1,500 larvae."},
                 {"storage", "More room for what the colony finds, and food room. Hoppers can empty it; Storage Upgrades open more slots."},
-                {"foraging_site", "Workers find their species' resources and soldiers hunt mobs (from their loot tables; none spawn). Sends finds to Storage; holds 9 stacks when it is full."},
+                {"foraging_site", "Workers find their species' resources. Sends finds to Storage; holds 9 stacks when it is full."},
+                {"hunting_ground", "Hunter species kill mobs here: the mobs' loot (from their loot tables; none spawn), and food from the catch."},
                 {"harvesting_site", "Farmer Ants grow food here, plus mushrooms, seeds and berries."},
                 {"queen_chamber", "Raises new Queens from the colony's Queen."},
                 {"upgrade_station", "Makes species upgrades from an Upgrade Base and a species' signature material."},
@@ -1619,7 +1668,7 @@ public class DataGen {
                 {"chitin_plate", "Upgrade material. Wild ants sometimes leave one."}, {"upgrade_base", "The blank every upgrade starts from."},
                 {"genetic_circuit", "Genetic Laboratory material."}, {"crystal_core", "High-level Genetic Laboratory material."},
                 {"ant_identification_book", "A field guide to every ant species."}, {"diamond_fragment", "Nine make a diamond."},
-                {"emerald_fragment", "Nine make an emerald."}, {"terrarium.colony", "Colony: %s"}, {"terrarium.population", "%s workers, %s soldiers"},
+                {"emerald_fragment", "Nine make an emerald."}, {"terrarium.colony", "Colony: %s"},
                 {"terrarium.queen", "Queen inside"}, {"terrarium.no_queen", "No Queen"},
         };
         for (String[] tip : tips) {
@@ -1644,7 +1693,7 @@ public class DataGen {
         String[][] upgradeTips = {{"speed", "Faster work in chambers and the lab, faster larvae."}, {"food_efficiency", "Less food eaten."},
                 {"simulation", "Terrarium: more offline catch-up (numbers only, no entities)."}, {"storage", "Storage: more slots and more food room."},
                 {"breeding", "Faster egg laying and Queen rearing."}, {"genetic", "Cheaper lab work; more mutations in Queen Chambers."},
-                {"soldier", "Stronger soldiers."}, {"automation", "Storage: pushes its finds into the container below."},
+                {"hunting", "Hunting Ground: stronger hunters, more catches, fewer losses."}, {"automation", "Storage: pushes its finds into the container below."},
                 {"population", "More ants housed, or more working in one chamber."}, {"evolution", "Terrarium: better evolution chances."}};
         for (String[] u : upgradeTips) {
             l.put("tooltip." + NS + ".upgrade." + u[0], u[1]);
@@ -1658,7 +1707,7 @@ public class DataGen {
         l.put("caste." + NS + ".worker", "Workers");
         l.put("caste." + NS + ".soldier", "Soldiers");
         l.put("caste." + NS + ".queen", "Queen");
-        for (String c : new String[] {"base", "farmer", "mineral", "hybrid", "endgame"}) {
+        for (String c : new String[] {"base", "farmer", "mineral", "hybrid", "endgame", "hunter"}) {
             l.put("category." + NS + "." + c, title(c));
         }
         for (String c : new String[] {"temperate", "cold", "hot", "underground", "nether", "any"}) {
@@ -1674,14 +1723,14 @@ public class DataGen {
         }
         String[][] traits = {{"worker_productivity", "Worker Productivity"}, {"gathering_efficiency", "Gathering Efficiency"},
                 {"food_efficiency", "Food Efficiency"}, {"egg_production", "Egg Production"}, {"larvae_growth", "Larvae Growth"},
-                {"soldier_strength", "Soldier Strength"}, {"farmer_productivity", "Farmer Productivity"}, {"mutation_probability", "Mutation Probability"},
+                {"soldier_strength", "Hunting Strength"}, {"farmer_productivity", "Farmer Productivity"}, {"mutation_probability", "Mutation Probability"},
                 {"environmental_resistance", "Environmental Resistance"}, {"specialization", "Specialization"}};
         for (String[] t : traits) {
             l.put("trait." + NS + "." + t[0], t[1]);
         }
         String[][] traitShort = {{"worker_productivity", "Productivity", "More finds per worker"}, {"gathering_efficiency", "Gathering", "Extra items per find"},
                 {"food_efficiency", "Food Use", "The whole colony eats less"}, {"egg_production", "Egg Laying", "The Queen lays more eggs"},
-                {"larvae_growth", "Growth", "Larvae become adults faster"}, {"soldier_strength", "Soldiers", "More hunts, fewer losses"},
+                {"larvae_growth", "Growth", "Larvae become adults faster"}, {"soldier_strength", "Hunting", "More hunts, fewer losses"},
                 {"farmer_productivity", "Farming", "More food per farmer"}, {"mutation_probability", "Mutation", "Mutations, evolutions, hybrids"},
                 {"environmental_resistance", "Resistance", "Bears wrong climates and hunger"}, {"specialization", "Specialty", "More signature finds"}};
         for (String[] t : traitShort) {
@@ -1690,7 +1739,7 @@ public class DataGen {
         }
         // Statuses.
         String[][] statuses = {{"no_queen", "No Queen: no eggs are laid"}, {"no_food", "No food"}, {"no_workers", "No workers for the jobs"},
-                {"no_soldiers", "No soldiers to hunt"}, {"missing_connection", "Not part of a colony: put it against a Terrarium or its chambers"},
+                {"missing_connection", "Not part of a colony: put it against a Terrarium or its chambers"},
                 {"storage_full", "Storage full"},
                 {"incompatible_species", "Incompatible species"}, {"insufficient_materials", "Insufficient materials (or colony not ready)"},
                 {"two_colonies", "As near to two Terrariums: it joins neither"}, {"unknown_species", "Unknown species (missing data)"},
@@ -1704,24 +1753,24 @@ public class DataGen {
         }
         // GUI.
         String[][] gui = {{"page.overview", "Colony"}, {"page.genetics", "Genes"}, {"page.jobs", "Jobs"}, {"page.production", "Stats"},
-                {"stage", "Stage %s"}, {"queen", "Queen %s"}, {"workers", "Workers: %s"}, {"soldiers", "Soldiers: %s"}, {"larvae", "Larvae: %s"},
+                {"stage", "Stage %s"}, {"queen", "Queen %s"}, {"workers", "Workers: %s"}, {"larvae", "Larvae: %s"},
                 {"eggs", "Eggs: %s"}, {"housing", "Adults %s / %s housed"}, {"food", "Food"}, {"health", "Health"},
-                {"soldier_share", "New soldiers: %s%%"}, {"soldier_share.hint", "Share of new adults raised as soldiers"},
+                
                 {"slot.queen", "Queen slot"}, {"slot.queen.hint", "A Queen Test Tube starts the colony; an empty Test Tube takes the Queen out"},
                 {"slot.feed", "Feed slot"}, {"slot.feed.hint", "Food, ants in Test Tubes, eggs, larvae or an Evolution Catalyst; empty Test Tubes fill with ants"},
                 {"slot.output", "Output"}, {"slot.output.hint", "Empty Test Tubes and leftovers come out here"},
                 {"slot.upgrade", "Upgrade slot"}, {"slot.upgrade.hint", "Population, Simulation, Evolution, Food Efficiency or Breeding upgrades"}, {"slot.structure_upgrade.hint", "Upgrades this chamber accepts (see JEI or EMI, or the item tooltip)"},
                 {"transforming", "Transforming from %s: %s%%"}, {"genetics_of", "%s, generation %s"}, {"no_mutations", "No mutations"},
                 {"mutations", "Mutations:"}, {"jobs_header", "Working sites - %s ants home"}, {"job_workers", "%s / %s ants"},
-                {"job_foraging", "%s workers, %s soldiers"}, {"job_soldiers", "Soldiers %s/%s"}, {"no_jobs", "No Foraging Site or Harvesting Site"},
+                {"no_jobs", "No Foraging Site, Harvesting Site or Hunting Ground"},
                 {"auto", "Auto"}, {"auto.hint", "Auto: as many ants as the chamber holds"}, {"per_minute", "/min"}, {"less_10", "-10"}, {"less_1", "-1"},
                 {"more_1", "+1"}, {"more_10", "+10"}, {"farm.hint", "Needs Farmer Ants (or a species that farms)"},
                 {"stat.eggs", "Eggs laid"}, {"stat.raised", "Adults raised"}, {"stat.food_in", "Food in"}, {"stat.food_out", "Food eaten"},
-                {"stat.finds", "Finds"}, {"stat.hunts", "Hunts"}, {"stat.deaths", "Deaths"}, {"stat.soldier_room", "Soldier room"},
+                {"stat.finds", "Finds"}, {"stat.hunts", "Hunts"}, {"stat.deaths", "Deaths"},
                 {"stat.larvae_room", "Larvae room"}, {"stat.structures", "Chambers"}, {"stat.found_total", "Found in total"},
                 {"evolution_attempts", "Evolution attempts: %s, catalysts: %s"}, {"upgrades", "Upgrades"}, {"linked", "Part of a colony"}, {"not_linked", "Not joined to a Terrarium"},
                 {"contested", "As near to two Terrariums: joins neither"},
-                {"site.workers", "Workers %s/%s (want %s)"}, {"site.soldiers", "Soldiers %s/%s (want %s)"},
+                {"site.workers", "Workers %s/%s (want %s)"}, {"site.hunters", "Hunters %s/%s (want %s)"},
                 {"site.farmers", "Farmers %s/%s (want %s)"}, {"site.rate", "%s finds per minute"},
                 {"site.hunt_rate", "%s hunts per minute"}, {"site.food_rate", "%s food per minute"}, {"site.store", "Finds wait here while the Storage is full"},
                 {"queen_chamber.slots", "Rears a new Queen"}, {"queen_chamber.time", "Takes %s s at full speed"},
@@ -1756,9 +1805,9 @@ public class DataGen {
                 {"generator.hint", "Place it next to the Genetic Laboratory"},
                 {"lab.catalyst_hint", "Catalyst: Reroll Serum, a mutation catalyst, or an empty Test Tube"},
                 {"lab.upgrade_slot_hint", "Speed or Genetic Upgrade"},
-                {"effect.nest_chamber", "Eggs at full speed and faster larvae. Room for 3,000 adults (1,000 of them soldiers) and 1,500 larvae."},
-                {"nest.adults", "Room for %s adults"}, {"nest.soldiers", "(%s of them soldiers)"}, {"nest.larvae", "Room for %s larvae"},
-                {"take", "Take out:"}, {"take.workers", "Workers"}, {"take.soldiers", "Soldiers"},
+                {"effect.nest_chamber", "Eggs at full speed and faster larvae. Room for 3,000 adults and 1,500 larvae."},
+                {"nest.adults", "Room for %s adults"}, {"nest.larvae", "Room for %s larvae"},
+                {"take", "Take out:"}, {"take.workers", "Workers"},
                 {"take.hint", "Takes up to %s ants into an empty Test Tube from your inventory"},
                 {"take.move", "Use the tube on another Terrarium to add them."},
                 {"take.whole", "Breaking the Terrarium loses the ants still in it."},
@@ -1773,7 +1822,7 @@ public class DataGen {
         String[][] messages = {{"message." + NS + ".tweezers.no_tube", "You need an empty Test Tube"},
                 {"message." + NS + ".tweezers.caught", "Caught: %s"}, {"message." + NS + ".tweezers.no_eggs", "Not enough eggs"},
                 {"message." + NS + ".tweezers.no_workers", "No spare workers"}, {"message." + NS + ".nest.recovering", "The nest is still recovering"},
-                {"scanner." + NS + ".colony", "%s colony, stage %s"}, {"scanner." + NS + ".population", "%s workers, %s soldiers, %s larvae, %s eggs"},
+                {"scanner." + NS + ".colony", "%s colony, stage %s"}, {"scanner." + NS + ".population", "%s workers, %s larvae, %s eggs"},
                 {"scanner." + NS + ".food", "Food %s / %s (+%s, -%s per minute)"}, {"scanner." + NS + ".health", "Health %s%%, %s chambers"},
                 {"scanner." + NS + ".queen", "Queen %s (%s)"}, {"scanner." + NS + ".linked", "Linked to the Terrarium at %s, %s, %s"},
                 {"scanner." + NS + ".site", "%s / %s ants, %s per minute"}, {"analyzer." + NS + ".header", "Genetic analysis"},
@@ -1789,13 +1838,13 @@ public class DataGen {
                 {"hybrid", "Hybrid Species"}, {"eggs", "Egg Production"}, {"larvae", "Larvae Development"}, {"production", "Resource Production"},
                 {"farming", "Farmer Ant Production"}, {"fighting", "Hunting Loot"}, {"lab", "Genetic Laboratory"},
                 {"trait", "Genetic Upgrades"}, {"species_upgrade", "Species Upgrades"}, {"hybrid_of", "%s x %s = %s"}, {"effect.production", "Production %s"}, {"effect.gathering", "Gathering %s"},
-                {"effect.food", "Food use %s"}, {"effect.eggs", "Eggs %s"}, {"effect.growth", "Growth %s"}, {"effect.soldiers", "Soldiers %s"},
+                {"effect.food", "Food use %s"}, {"effect.eggs", "Eggs %s"}, {"effect.growth", "Growth %s"}, {"effect.soldiers", "Hunting %s"},
                 {"effect.farming", "Farming %s"}, {"effect.special", "Signature finds %s"}, {"effect.cold_resistant", "Cold resistant"},
                 {"effect.heat_resistant", "Heat resistant"}, {"chance", "Chance: %s%% per attempt"},
                 {"guaranteed", "Guaranteed after %s attempts"}, {"needs_stage", "Colony stage %s, %s adults"}, {"time", "%s s"},
                 {"weight", "Weight %s"}, {"stage", "From stage %s"}, {"special", "Signature find"}, {"climate", "Climate: %s"},
                 {"diet", "Eggs need %s food (%s each)"}, {"rate", "%s finds/min per worker"},
-                {"food_rate", "%s food/min per farmer"}, {"strength", "Soldier strength x%s"},
+                {"food_rate", "%s food/min per farmer"}, {"strength", "Hunting strength x%s"},
                 {"loot", "Drops from this mob's own loot table"}, {"hybrid_chance", "Chance: %s%%, both parents average level %s+"},
                 {"catalyst", "Catalyst in the Mutation Chamber"}, {"random", "Random only (weight %s)"}, {"negative", "Harmful"},
                 {"level_step", "Level %s -> %s"}, {"energy", "%s FE"}, {"eggs_info", "%s eggs/min, hatch in %s min"},

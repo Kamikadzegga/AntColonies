@@ -188,8 +188,8 @@ required; every other field has a default.
 | `production.rate` | `1.0` | Finds per worker multiplier at job sites. |
 | `production.outputs` | none | What workers find (output fields below). |
 | `farming.food`, `farming.harvest` | `0`, none | A `food` above 0 lets the species tend Harvesting Sites: food per minute per farmer, plus `harvest` outputs. |
-| `combat.strength` | `1.0` | Soldier strength when hunting at Foraging Sites. |
-| `combat.targets` | zombie, skeleton, spider, creeper, slime | List of `{"entity": "minecraft:blaze", "weight": 10}`. Hunting soldiers roll that mob's own loot table (no mob is spawned). |
+| `combat.strength` | `1.0` | Hunting strength at a Hunting Ground (hunter species only: `"category": "hunter"`). |
+| `combat.targets` | zombie, skeleton, spider, creeper, slime | List of `{"entity": "minecraft:blaze", "weight": 10}`. Hunters roll that mob's own loot table (no mob is spawned). |
 | `rearing.cost` | none | What a Queen Chamber uses to rear a new Queen of this species. |
 | `rearing.time` | `2400` | Rearing time in ticks (20 ticks = 1 second). |
 | `breeding.eggs`, `breeding.growth` | `1.0` | Egg laying and larvae growth speed. |
@@ -461,8 +461,8 @@ The key is `species.<namespace>.<id>` and `mutation.<namespace>.<id>`, matching 
 `config/antcolonies/server.toml` is created on first launch and synced to players. It holds the numbers that are not
 per species: simulation interval and offline catch-up, capacities, egg and growth times, food use and starvation,
 production rates, upgrade strengths, trait multipliers and starting weights, mutation, evolution and hybrid chance
-multipliers, wild Queen and soldier chances, the Generator's output (`[power]`) and the soldiers a Guard Ant
-costs (`[guards] soldierCost`). To make every rare
+multipliers, wild Queen and soldier chances, the Generator's output (`[power]`) and the ants a Guard Ant
+costs (`[guards] antCost`). To make every rare
 find (outputs marked `special`) rarer or more common at once, change `rareFindMultiplier` under `[production]` (default
 1.0; 0.5 halves them, 0 turns them off) instead of editing each species. Every option has a comment in the file. For a modpack,
 ship the edited file as `config/antcolonies/server.toml` in your pack. It is a global file (not per world).
@@ -537,7 +537,7 @@ colony counts.
 |---|---|---|
 | `has_queen` | true / false | The colony has a Queen |
 | `stage` | number or `{"min": .., "max": ..}` | Colony stage, 1 to 4 |
-| `adults` | number or `{"min": .., "max": ..}` | Workers plus soldiers |
+| `adults` | number or `{"min": .., "max": ..}` | Adult ants |
 | `species` | species id | The colony's species, e.g. `"antcolonies:diamond"` or one of yours |
 | `category` | string | The species' category: `"base"`, `"farmer"`, `"mineral"`, `"hybrid"` or `"endgame"` |
 | `best_trait` | number or `{"min": .., "max": ..}` | The Queen's highest trait level, 1 to 10 |

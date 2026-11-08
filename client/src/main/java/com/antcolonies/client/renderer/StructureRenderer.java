@@ -89,10 +89,15 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         double detail = AntConfig.client(AntConfig.ANT_DETAIL_DISTANCE);
         boolean detailed = AntConfig.client(AntConfig.ANT_3D_MODELS)
                 && Vec3.atCenterOf(structure.getBlockPos()).distanceToSqr(camera) < detail * detail;
-        if (detailed && structure.kind().job().any() && structure.clientLinked() && structure.assigned() + structure.soldiers() > 0
+        if (detailed && structure.kind().job().any() && structure.clientLinked() && structure.assigned() > 0
                 && AntConfig.client(AntConfig.STRUCTURE_ANTS)) {
-            state.ants = structure.assigned() <= 0 ? 0 : (int) Math.min(6, 1 + Math.floor(Math.log(structure.assigned()) / Math.log(2.5)));
-            state.soldiers = structure.soldiers() <= 0 ? 0 : structure.soldiers() < 20 ? 2 : 4;
+            int shown = (int) Math.min(6, 1 + Math.floor(Math.log(structure.assigned()) / Math.log(2.5)));
+            // Hunters face off in pairs, lunging (the look of the hunt); everyone else walks loops.
+            if (structure.kind() == StructureKind.HUNTING_GROUND) {
+                state.soldiers = Math.max(2, shown / 2 * 2);
+            } else {
+                state.ants = shown;
+            }
             BlockPos terrarium = structure.terrarium() != null ? structure.terrarium() : null;
             AntSpecies species = null;
             if (structure.getLevel() != null) {

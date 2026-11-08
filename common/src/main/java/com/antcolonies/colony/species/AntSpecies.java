@@ -44,9 +44,14 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
             BuiltInRegistries.ITEM.holderByNameCodec().optionalFieldOf("signature_item").forGetter(AntSpecies::signature)
     ).apply(i, AntSpecies::new));
 
-    /** Whether its workers can tend a Fungus Garden. */
+    /** Whether its workers can tend a Harvesting Site. */
     public boolean canFarm() {
         return farming.foodPerMinute() > 0;
+    }
+
+    /** Whether its workers hunt at a Hunting Ground (hunter species only). */
+    public boolean canHunt() {
+        return category == Category.HUNTER;
     }
 
     /** What its eggs need besides plain food: "" for nothing, else a special food kind (see the ant_food data map). */

@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:fire",
+  "to": "antcolonies:inferno",
+  "item": "minecraft:blaze_powder",
+  "chance": 0.05,
+  "guaranteed_after": 32,
+  "min_stage": 3,
+  "min_population": 1000
+}

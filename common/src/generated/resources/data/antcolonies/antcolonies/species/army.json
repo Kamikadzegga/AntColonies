@@ -1,0 +1,81 @@
+{
+  "tier": 0,
+  "category": "hunter",
+  "look": {
+    "body": "#5A2A12",
+    "gaster": "#3A1A0A",
+    "accent": "#C0602A",
+    "pattern": "banded",
+    "size": 1.1
+  },
+  "climate": "any",
+  "spawn_biomes": "antcolonies:spawns/army",
+  "diet": {
+    "consumption": 1.2
+  },
+  "production": {
+    "rate": 0.6,
+    "outputs": [
+      {
+        "item": "minecraft:rotten_flesh",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:bone",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:string",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:arrow",
+        "weight": 5,
+        "min_stage": 2
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.2,
+    "targets": [
+      {
+        "entity": "minecraft:zombie",
+        "weight": 30
+      },
+      {
+        "entity": "minecraft:skeleton",
+        "weight": 25
+      },
+      {
+        "entity": "minecraft:spider",
+        "weight": 25
+      },
+      {
+        "entity": "minecraft:husk",
+        "weight": 10
+      },
+      {
+        "entity": "minecraft:zombie_villager",
+        "weight": 5
+      }
+    ]
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "#minecraft:flowers",
+        "count": 4
+      }
+    ],
+    "time": 2400
+  },
+  "breeding": {
+    "eggs": 1.2,
+    "growth": 1.1
+  },
+  "signature_item": "minecraft:rotten_flesh"
+}

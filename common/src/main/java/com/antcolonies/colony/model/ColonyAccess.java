@@ -11,10 +11,6 @@ public final class ColonyAccess {
         return colony.workers;
     }
 
-    public static double soldiers(Colony colony) {
-        return colony.soldiers;
-    }
-
     public static double eggs(Colony colony) {
         return colony.eggs;
     }
@@ -37,10 +33,6 @@ public final class ColonyAccess {
 
     public static double starvedMinutes(Colony colony) {
         return colony.starvedMinutes;
-    }
-
-    public static double soldierShare(Colony colony) {
-        return colony.soldierShare;
     }
 
     public static int stage(Colony colony) {
@@ -68,22 +60,20 @@ public final class ColonyAccess {
         colony.specialFood = Math.max(0, special);
     }
 
-    public static void setPopulation(Colony colony, double eggs, double larvae, double workers, double soldiers) {
+    public static void setPopulation(Colony colony, double eggs, double larvae, double workers) {
         colony.eggs = Math.max(0, eggs);
         colony.larvae = Math.max(0, larvae);
         colony.workers = Math.max(0, workers);
-        colony.soldiers = Math.max(0, soldiers);
     }
 
     /**
      * New adults of the current species join: the share of adults already of it rises; once (almost) every adult is,
      * the former species is gone.
      */
-    public static void addAdults(Colony colony, double workers, double soldiers) {
-        double before = colony.workers + colony.soldiers;
-        double added = workers + soldiers;
+    public static void addAdults(Colony colony, double workers) {
+        double before = colony.workers;
+        double added = workers;
         colony.workers += workers;
-        colony.soldiers += soldiers;
         if (colony.formerSpecies != null && added > 0) {
             double after = before + added;
             colony.conversion = after <= 0 ? 1 : Math.min(1, (colony.conversion * before + added) / after);
@@ -94,8 +84,9 @@ public final class ColonyAccess {
         }
     }
 
-    public static void killSoldier(Colony colony) {
-        colony.soldiers = Math.max(0, colony.soldiers - 1);
+    /** A hunter lost on a hunt. */
+    public static void killWorker(Colony colony) {
+        colony.workers = Math.max(0, colony.workers - 1);
     }
 
     public static void countFound(Colony colony, int count) {

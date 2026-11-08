@@ -129,7 +129,7 @@ public class IngameShowcase {
     private static final Object[][] GUI_TARGETS = {
             {"upgrades_terrarium", 0, 0, 5}, {"upgrades_foraging_site", -1, 0, 4}, {"upgrades_nest_chamber", 1, 0, 6},
             {"storage", 0, 0, 4}, {"foraging_site", 1, 0, 4}, {"nest_chamber", 1, 0, 6}, {"queen_chamber", 0, 0, 6},
-            {"foraging_site_soldiers", -1, 0, 6}, {"nest_chamber_west", -1, 0, 5}, {"harvesting_site", -6, 0, 6}, {"young_terrarium", -6, 0, 5},
+            {"foraging_site_soldiers", -1, 0, 6}, {"nest_chamber_west", -1, 0, 5}, {"hunting_ground", -5, 0, 5}, {"young_terrarium", -6, 0, 5},
             {"genetic_laboratory", 0, 0, 10}, {"lonely_nest_chamber", 3, 0, -4}, {"lonely_queen_chamber", 5, 0, -4},
             {"lonely_foraging_site", 3, 0, -6}};
 
@@ -435,7 +435,7 @@ public class IngameShowcase {
             genome = genome.withLevel(trait, 5 + trait.ordinal() % 5);
         }
         colony.setQueen(queen.withGenome(genome.withMutation(AntColonies.id("crystal_genetics"))));
-        colony.setPopulation(300, 420, 6200, 640);
+        colony.setPopulation(300, 420, 6840);
         colony.setFood(20000);
         colony.addFood(0, 4000);
         diamond.rescan(level);
@@ -443,16 +443,16 @@ public class IngameShowcase {
             ColonySimulator.step(diamond, level, 0.05);
         }
         diamond.syncNow();
-        // A young Fire Ant colony (one of the newer species) with a smaller build: a chamber on each side of its Terrarium.
+        // A young Army Ant colony (hunters) with a smaller build: a chamber on each side of its Terrarium, one a Hunting Ground.
         BlockPos young = origin.offset(-6, 0, 5);
         place(level, young, ModBlocks.TERRARIUM.get().defaultBlockState().setValue(ColonyEntityBlock.FACING, Direction.NORTH));
         structure(level, young.north(), StructureKind.STORAGE);
-        structure(level, young.east(), StructureKind.FORAGING_SITE);
-        structure(level, young.south(), StructureKind.HARVESTING_SITE);
+        structure(level, young.east(), StructureKind.HUNTING_GROUND);
+        structure(level, young.south(), StructureKind.FORAGING_SITE);
         structure(level, young.west(), StructureKind.NEST_CHAMBER);
         TerrariumBlockEntity common = (TerrariumBlockEntity) level.getBlockEntity(young);
-        common.colony().setQueen(Genetics.wildQueen(AntColonies.id("fire"), RandomSource.create(8)));
-        common.colony().setPopulation(6, 4, 9, 0);
+        common.colony().setQueen(Genetics.wildQueen(AntColonies.id("army"), RandomSource.create(8)));
+        common.colony().setPopulation(6, 4, 60);
         common.colony().setFood(800);
         common.rescan(level);
         ColonySimulator.step(common, level, 0.05);
@@ -707,7 +707,7 @@ public class IngameShowcase {
                 {"a02_queen_chamber", origin.offset(0, 0, 6)},
                 {"a03_nest_chamber_corner", origin.offset(1, 0, 6)},
                 {"a04_foraging_site", origin.offset(-1, 0, 6)},
-                {"a05_harvesting_site", origin.offset(-6, 0, 6)},
+                {"a05_hunting_ground", origin.offset(-5, 0, 5)},
                 {"a06_young_terrarium", origin.offset(-6, 0, 5)},
                 {"a07_young_storage", origin.offset(-6, 0, 4)},
                 {"a08_upgrade_station", origin.offset(6, 0, 3)},
@@ -880,7 +880,7 @@ public class IngameShowcase {
                 TerrariumBlockEntity terrarium = (TerrariumBlockEntity) level.getBlockEntity(pos);
                 Colony colony = terrarium.colony();
                 colony.setQueen(Genetics.wildQueen(AntColonies.id(gx % 2 == 0 ? "diamond" : "fire"), RandomSource.create(gx * 5L + gz)));
-                colony.setPopulation(300, 400, 6000, 600);
+                colony.setPopulation(300, 400, 6600);
                 colony.setFood(20000);
                 terrarium.rescan(level);
                 ColonySimulator.step(terrarium, level, 0.05);
@@ -963,7 +963,7 @@ public class IngameShowcase {
         ServerLevel level = server.overworld();
         if (level.getBlockEntity(origin.offset(0, 0, 5)) instanceof TerrariumBlockEntity terrarium) {
             Colony colony = terrarium.colony();
-            result("diamond colony: stage " + colony.stage() + ", workers " + colony.workers() + ", soldiers " + colony.soldiers()
+            result("diamond colony: stage " + colony.stage() + ", workers " + colony.workers()
                     + ", food " + (long) colony.food() + ", status " + com.antcolonies.colony.model.ColonyStatus.of(colony.status())
                     + ", jobs " + colony.assignments().size() + ", finds/min " + colony.stats().finds());
         }

@@ -1,0 +1,8 @@
+{
+  "parent": "antcolonies:block/ant_nest",
+  "textures": {
+    "side": "antcolonies:block/army_ant_nest_side",
+    "top": "antcolonies:block/army_ant_nest_top",
+    "particle": "antcolonies:block/army_ant_nest_side"
+  }
+}

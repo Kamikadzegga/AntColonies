@@ -25,9 +25,7 @@ public final class AntConfig {
 
     // --- Population ---
     public static final ModConfigSpec.IntValue TERRARIUM_CAPACITY;
-    public static final ModConfigSpec.IntValue TERRARIUM_SOLDIER_CAPACITY;
     public static final ModConfigSpec.IntValue NEST_ADULT_CAPACITY;
-    public static final ModConfigSpec.IntValue NEST_SOLDIER_CAPACITY;
     public static final ModConfigSpec.IntValue NEST_LARVAE_CAPACITY;
     public static final ModConfigSpec.DoubleValue NEST_GROWTH_BONUS;
     public static final ModConfigSpec.DoubleValue BASE_EGGS_PER_MINUTE;
@@ -42,7 +40,8 @@ public final class AntConfig {
     // --- Food ---
     public static final ModConfigSpec.DoubleValue QUEEN_FOOD;
     public static final ModConfigSpec.DoubleValue WORKER_FOOD;
-    public static final ModConfigSpec.DoubleValue SOLDIER_FOOD;
+    public static final ModConfigSpec.DoubleValue HUNTER_FOOD;
+    public static final ModConfigSpec.DoubleValue HUNT_FOOD;
     public static final ModConfigSpec.DoubleValue LARVA_FOOD;
     public static final ModConfigSpec.DoubleValue IDLE_ACTIVITY;
     public static final ModConfigSpec.IntValue TERRARIUM_FOOD_CAPACITY;
@@ -61,8 +60,8 @@ public final class AntConfig {
     public static final ModConfigSpec.DoubleValue SCAVENGE_ROLLS;
     public static final ModConfigSpec.DoubleValue FARMER_FOOD;
     public static final ModConfigSpec.DoubleValue FARMER_BYPRODUCT_ROLLS;
-    public static final ModConfigSpec.DoubleValue FIGHT_ROLLS;
-    public static final ModConfigSpec.DoubleValue SOLDIER_CASUALTY_CHANCE;
+    public static final ModConfigSpec.DoubleValue HUNT_ROLLS;
+    public static final ModConfigSpec.DoubleValue HUNTER_CASUALTY_CHANCE;
     public static final ModConfigSpec.DoubleValue SPEED_UPGRADE_BONUS;
     public static final ModConfigSpec.DoubleValue FOOD_UPGRADE_SAVING;
     public static final ModConfigSpec.DoubleValue SPECIES_UPGRADE_BONUS;
@@ -92,7 +91,7 @@ public final class AntConfig {
     public static final ModConfigSpec.IntValue NEST_COOLDOWN_SECONDS;
 
     // --- Guard Ants ---
-    public static final ModConfigSpec.IntValue GUARD_SOLDIER_COST;
+    public static final ModConfigSpec.IntValue GUARD_COST;
 
     // --- Connections ---
     public static final ModConfigSpec.IntValue GENERATOR_OUTPUT;
@@ -125,12 +124,8 @@ public final class AntConfig {
 
         s.push("population");
         TERRARIUM_CAPACITY = s.comment("Adults a Terrarium houses on its own.").defineInRange("terrariumCapacity", 60, 1, 100000);
-        TERRARIUM_SOLDIER_CAPACITY = s.comment("Of the Terrarium's own room, how many may be soldiers.")
-                .defineInRange("terrariumSoldierCapacity", 20, 0, 100000);
         NEST_ADULT_CAPACITY = s.comment("Adults each Nest Chamber adds (plus half as many again per Population Upgrade tier).")
                 .defineInRange("nestChamberAdults", 3000, 1, 1000000);
-        NEST_SOLDIER_CAPACITY = s.comment("Of each Nest Chamber's room, how many may be soldiers.")
-                .defineInRange("nestChamberSoldiers", 1000, 0, 1000000);
         NEST_LARVAE_CAPACITY = s.comment("Larvae each Nest Chamber holds on top of the Terrarium's own room.")
                 .defineInRange("nestChamberLarvae", 1500, 1, 1000000);
         NEST_GROWTH_BONUS = s.comment("Larvae growth speed added by each Nest Chamber (diminishing).").defineInRange("nestGrowthBonus", 0.5, 0, 10);
@@ -155,7 +150,8 @@ public final class AntConfig {
         s.push("food");
         QUEEN_FOOD = s.comment("Food a Queen eats per minute.").defineInRange("queen", 2.0, 0, 10000);
         WORKER_FOOD = s.comment("Food a working worker eats per minute.").defineInRange("worker", 0.02, 0, 100);
-        SOLDIER_FOOD = s.comment("Food a fighting soldier eats per minute.").defineInRange("soldier", 0.05, 0, 100);
+        HUNTER_FOOD = s.comment("Food an ant hunting at a Hunting Ground eats per minute.").defineInRange("hunter", 0.05, 0, 100);
+        HUNT_FOOD = s.comment("Food a colony gets from each mob its hunters catch (they feed on it).").defineInRange("huntFood", 40.0, 0, 100000);
         LARVA_FOOD = s.comment("Food a larva eats per minute.").defineInRange("larva", 0.015, 0, 100);
         IDLE_ACTIVITY = s.comment("How much an ant without a job eats, compared to a busy one.").defineInRange("idleActivity", 0.5, 0, 1);
         TERRARIUM_FOOD_CAPACITY = s.comment("Food a Terrarium stores on its own.").defineInRange("terrariumFoodCapacity", 2000, 1, Integer.MAX_VALUE);
@@ -174,7 +170,7 @@ public final class AntConfig {
         BONUS_EXPONENT = s.comment("Stacked bonuses (genetics x mutations x upgrades) above 1 count as bonus^exponent, so they can't multiply without end.",
                         "1 = no softening; 0.6 turns x20 into x6.")
                 .defineInRange("bonusExponent", 0.6, 0.1, 1.0);
-        SITE_BASE_CAPACITY = s.comment("Workers (and soldiers) one Foraging Site or Harvesting Site takes before Population Upgrades.")
+        SITE_BASE_CAPACITY = s.comment("Ants one Foraging Site, Harvesting Site or Hunting Ground takes before Population Upgrades.")
                 .defineInRange("chamberBaseCapacity", 256, 1, 1000000);
         SITE_CAPACITY_PER_UPGRADE = s.comment("Ants each Population Upgrade tier adds to one of those sites.")
                 .defineInRange("chamberCapacityPerUpgrade", 400, 0, 1000000);
@@ -184,17 +180,17 @@ public final class AntConfig {
                 .defineInRange("farmerFood", 1.2, 0, 10000);
         FARMER_BYPRODUCT_ROLLS = s.comment("Garden harvests (mushrooms, seeds, berries) per minute per effective farmer.")
                 .defineInRange("farmerByproductRolls", 0.08, 0, 10000);
-        FIGHT_ROLLS = s.comment("Simulated hunts per minute per effective soldier, before soldier strength.")
-                .defineInRange("fightRolls", 0.05, 0, 10000);
-        SOLDIER_CASUALTY_CHANCE = s.comment("Chance a hunt costs one soldier, before the soldiers' strength.")
-                .defineInRange("soldierCasualtyChance", 0.03, 0, 1);
+        HUNT_ROLLS = s.comment("Simulated hunts per minute per effective hunter, before hunting strength.")
+                .defineInRange("huntRolls", 0.05, 0, 10000);
+        HUNTER_CASUALTY_CHANCE = s.comment("Chance a hunt costs one hunter, before the hunters' strength.")
+                .defineInRange("hunterCasualtyChance", 0.03, 0, 1);
         SPEED_UPGRADE_BONUS = s.comment("Work speed added per Speed Upgrade tier.").defineInRange("speedUpgradeBonus", 0.25, 0, 100);
         FOOD_UPGRADE_SAVING = s.comment("Share of food saved per Food Efficiency Upgrade tier (at most 75% in total).")
                 .defineInRange("foodUpgradeSaving", 0.12, 0, 1);
         SPECIES_UPGRADE_BONUS = s.comment("Strength of species-specific upgrades per tier.").defineInRange("speciesUpgradeBonus", 0.3, 0, 100);
         RARE_FIND_MULTIPLIER = s.comment("Multiplier on the chance of every rare (\"special\") find: diamonds, netherite scrap, shells, sponges, sniffer eggs...",
                         "0.5 halves them, 0 turns them off, 2 doubles them. Common finds are not changed (lower scavengeRolls for those).",
-                        "Hunting loot comes from mob loot tables and is not affected (use fightRolls).")
+                        "Hunting loot comes from mob loot tables and is not affected (use huntRolls).")
                 .defineInRange("rareFindMultiplier", 1.0, 0, 100);
         STORAGE_SLOTS_PER_UPGRADE = s.comment("Storage slots unlocked per Storage Upgrade tier (base 9, at most 54).")
                 .defineInRange("storageSlotsPerUpgrade", 9, 0, 45);
@@ -234,8 +230,8 @@ public final class AntConfig {
         s.pop();
 
         s.push("guards");
-        GUARD_SOLDIER_COST = s.comment("Soldiers a colony gives up for one Guard Ant (a Rally Pheromone used on its Terrarium).")
-                .defineInRange("soldierCost", 50, 1, 1000000);
+        GUARD_COST = s.comment("Ants a hunter colony gives up for one Guard Ant (a Rally Pheromone used on its Terrarium).")
+                .defineInRange("antCost", 50, 1, 1000000);
         s.pop();
 
         s.push("power");

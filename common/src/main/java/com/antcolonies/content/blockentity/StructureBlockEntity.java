@@ -76,31 +76,22 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     public static final int DATA_COLONY_STATUS = 8;
     public static final int DATA_LINKED = 9;
     public static final int DATA_UNLOCKED = 10;
-    public static final int DATA_SOLDIERS = 11;
-    public static final int DATA_REQUESTED_SOLDIERS = 12;
-    public static final int DATA_HUNT_RATE = 13;
-    public static final int DATA_HUNT_PROGRESS = 14;
-    public static final int DATA_CONTESTED = 15;
-    public static final int DATA_COUNT = 16;
+    public static final int DATA_CONTESTED = 11;
+    public static final int DATA_COUNT = 12;
 
     private final StructureKind kind;
     private NonNullList<ItemStack> items;
     private final SimpleContainer upgrades;
     /** Ants the player wants here; -1 for as many as it can take. */
     private int requested = -1;
-    /** Soldiers the player wants here (Foraging Sites); -1 for as many as it can take. */
-    private int requestedSoldiers = -1;
     private @Nullable BlockPos terrarium;
     private long linkedAt = Long.MIN_VALUE;
     private int colonyStatus;
     private int assigned;
-    private int soldiers;
     private int capacityShown;
     private int siteStatus;
     private double rate;
     private double progress;
-    private double huntRate;
-    private double huntProgress;
     /** When a Terrarium last found this chamber exactly as near to another colony (it then joins neither). */
     private long contestedAt = Long.MIN_VALUE / 2;
     private double rearingProgress;
@@ -125,10 +116,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
                 case DATA_COLONY_STATUS -> colonyStatus;
                 case DATA_LINKED -> isLinked() ? 1 : 0;
                 case DATA_UNLOCKED -> unlockedSlots();
-                case DATA_SOLDIERS -> soldiers;
-                case DATA_REQUESTED_SOLDIERS -> requestedSoldiers;
-                case DATA_HUNT_RATE -> (int) Math.min(Integer.MAX_VALUE, Math.round(huntRate * 10_000));
-                case DATA_HUNT_PROGRESS -> (int) Math.round(Math.clamp(huntProgress, 0, 1) * 1000);
                 case DATA_CONTESTED -> isContested() ? 1 : 0;
                 default -> 0;
             };
@@ -237,29 +224,8 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         setChanged();
     }
 
-    public int requestedSoldiers() {
-        return requestedSoldiers;
-    }
-
-    public void setRequestedSoldiers(int requested) {
-        this.requestedSoldiers = requested < 0 ? -1 : Math.min(requested, capacity());
-        setChanged();
-    }
-
     public int assigned() {
         return assigned;
-    }
-
-    public int soldiers() {
-        return soldiers;
-    }
-
-    public double huntProgress() {
-        return huntProgress;
-    }
-
-    public void setHuntProgress(double progress) {
-        this.huntProgress = Math.max(0, progress);
     }
 
     public double rate() {
@@ -279,14 +245,12 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     }
 
     /** The colony's step tells the site what it got. */
-    public void setAssignment(int assigned, int soldiers, int capacity, int status, double rate, double huntRate) {
-        boolean visible = this.assigned != assigned || this.soldiers != soldiers || this.siteStatus != status;
+    public void setAssignment(int assigned, int capacity, int status, double rate) {
+        boolean visible = this.assigned != assigned || this.siteStatus != status;
         this.assigned = assigned;
-        this.soldiers = soldiers;
         this.capacityShown = capacity;
         this.siteStatus = status;
         this.rate = rate;
-        this.huntRate = huntRate;
         if (visible) {
             contentsChanged();
         }
@@ -390,7 +354,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         if (be.terrarium != null && time - be.linkedAt >= LINK_TIMEOUT) {
             be.terrarium = null;
             be.assigned = 0;
-            be.soldiers = 0;
             be.contentsChanged();
         }
         if ((time + pos.asLong()) % 20 == 0 && level instanceof ServerLevel serverLevel) {
@@ -562,15 +525,12 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
             }
         }
         requested = input.getIntOr("requested", -1);
-        requestedSoldiers = input.getIntOr("requested_soldiers", -1);
         progress = input.getDoubleOr("progress", 0);
-        huntProgress = input.getDoubleOr("hunt_progress", 0);
         rearingProgress = input.getDoubleOr("rearing", 0);
         rearingStatus = input.getIntOr("rearing_status", 0);
         queensRaised = input.getIntOr("queens_raised", 0);
         // Synced only: what the colony gave it.
         assigned = input.getIntOr("assigned", 0);
-        soldiers = input.getIntOr("soldiers", 0);
         if (input.getBooleanOr("contested", false)) {
             contestedAt = level != null ? level.getGameTime() : Long.MAX_VALUE / 2;
         }
@@ -593,9 +553,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
             list.add(upgrades.getItem(slot));
         }
         output.putInt("requested", requested);
-        output.putInt("requested_soldiers", requestedSoldiers);
         output.putDouble("progress", progress);
-        output.putDouble("hunt_progress", huntProgress);
         output.putDouble("rearing", rearingProgress);
         output.putInt("rearing_status", rearingStatus);
         output.putInt("queens_raised", queensRaised);
@@ -605,7 +563,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = saveCustomOnly(registries);
         tag.putInt("assigned", assigned);
-        tag.putInt("soldiers", soldiers);
         tag.putBoolean("contested", isContested());
         tag.putInt("site_status", siteStatus);
         tag.putInt("colony_status", colonyStatus);

@@ -286,6 +286,9 @@ public final class AntRecipes {
         for (Holder.Reference<AntSpecies> entry : species) {
             Identifier id = entry.key().identifier();
             AntSpecies data = entry.value();
+            if (!data.canHunt()) {
+                continue;
+            }
             List<AntSpecies.Combat.Target> targets = data.combat().targets().isEmpty() ? defaultTargets() : data.combat().targets();
             int total = targets.stream().mapToInt(AntSpecies.Combat.Target::weight).sum();
             List<AntRecipe.Output> outputs = new ArrayList<>();
@@ -294,7 +297,7 @@ public final class AntRecipes {
                 outputs.add(new AntRecipe.Output(List.of(egg), List.of(target.entity().value().getDescription().copy().withStyle(ChatFormatting.GOLD),
                         line("weight", percent(target.weight() / (double) total) + "%"), line("loot").withStyle(ChatFormatting.GRAY))));
             }
-            list.add(new AntRecipe(id("fighting", id), List.of(List.of(ants(id, Caste.SOLDIER))), outputs,
+            list.add(new AntRecipe(id("fighting", id), List.of(List.of(ants(id, Caste.WORKER))), outputs,
                     List.of(line("strength", String.format(Locale.ROOT, "%.2f", data.combat().strength())), line("loot"))));
         }
         return list;

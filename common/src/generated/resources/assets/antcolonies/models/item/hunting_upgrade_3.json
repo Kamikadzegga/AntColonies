@@ -2,6 +2,6 @@
   "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "antcolonies:item/upgrade_board_3",
-    "layer1": "antcolonies:item/upgrade_icon_soldier"
+    "layer1": "antcolonies:item/upgrade_icon_hunting"
   }
 }

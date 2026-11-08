@@ -20,10 +20,7 @@ import org.jspecify.annotations.Nullable;
  * the colony comes from the client's copy of the Terrarium, which the server keeps in sync.
  */
 public class TerrariumMenu extends BaseMenu {
-    public static final int BUTTON_SOLDIERS_LESS = 0;
-    public static final int BUTTON_SOLDIERS_MORE = 1;
     public static final int BUTTON_TAKE_WORKERS = 3;
-    public static final int BUTTON_TAKE_SOLDIERS = 4;
     /** Assignment buttons: base + site index * 20 + action (see {@link StructureMenu#adjust}). */
     public static final int BUTTON_ASSIGNMENT = 1000;
     public static final int INVENTORY_X = 44;
@@ -64,13 +61,8 @@ public class TerrariumMenu extends BaseMenu {
     public boolean clickMenuButton(Player player, int id) {
         Colony colony = terrarium.colony();
         switch (id) {
-            case BUTTON_SOLDIERS_LESS -> colony.setSoldierShare(colony.soldierShare() - 0.05);
-            case BUTTON_SOLDIERS_MORE -> colony.setSoldierShare(colony.soldierShare() + 0.05);
             case BUTTON_TAKE_WORKERS -> {
-                return com.antcolonies.content.item.TweezersItem.takeFromColony(player, terrarium, com.antcolonies.colony.species.Caste.WORKER);
-            }
-            case BUTTON_TAKE_SOLDIERS -> {
-                return com.antcolonies.content.item.TweezersItem.takeFromColony(player, terrarium, com.antcolonies.colony.species.Caste.SOLDIER);
+                return com.antcolonies.content.item.TweezersItem.takeFromColony(player, terrarium);
             }
             default -> {
                 if (id < BUTTON_ASSIGNMENT) {

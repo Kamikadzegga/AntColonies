@@ -55,7 +55,7 @@ public class ColonyScannerItem extends Item {
     private static void report(Player player, Colony colony) {
         player.sendSystemMessage(Component.translatable("scanner.antcolonies.colony", Tooltips.species(colony.species()), colony.stage())
                 .withStyle(ChatFormatting.GOLD));
-        player.sendSystemMessage(Component.translatable("scanner.antcolonies.population", colony.workers(), colony.soldiers(), colony.larvae(),
+        player.sendSystemMessage(Component.translatable("scanner.antcolonies.population", colony.workers(), colony.larvae(),
                 colony.eggs()).withStyle(ChatFormatting.GRAY));
         player.sendSystemMessage(Component.translatable("scanner.antcolonies.food", (long) colony.food(), (long) colony.stats().foodCapacity(),
                 String.format(java.util.Locale.ROOT, "%.1f", colony.stats().foodIn()), String.format(java.util.Locale.ROOT, "%.1f", colony.stats().foodOut()))

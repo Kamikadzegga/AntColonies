@@ -65,10 +65,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         label(graphics, linkLine(linked), x, y, linked ? GOOD : BAD);
         y += 10;
         if (kind.job().any()) {
-            y = jobRow(graphics, x, y, false);
-            if (kind.job().soldiers()) {
-                y = jobRow(graphics, x, y, true);
-            }
+            y = jobRow(graphics, x, y);
         }
         int status = menu.data(StructureBlockEntity.DATA_STATUS) | (kind == StructureKind.QUEEN_CHAMBER ? menu.data(StructureBlockEntity.DATA_REARING_STATUS) : 0);
         boolean slotted = kind == StructureKind.QUEEN_CHAMBER;
@@ -119,11 +116,8 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         int tier = menu.structure().upgradeTier(com.antcolonies.colony.upgrade.UpgradeType.POPULATION);
         double room = 1 + 0.5 * tier;
         long adults = Math.round(AntConfig.get(AntConfig.NEST_ADULT_CAPACITY) * room);
-        long soldiers = Math.round(AntConfig.get(AntConfig.NEST_SOLDIER_CAPACITY) * room);
         long larvae = Math.round(AntConfig.get(AntConfig.NEST_LARVAE_CAPACITY) * room);
         label(graphics, fit(Component.translatable("gui.antcolonies.nest.adults", number(adults)).getString(), 170), x, y, LABEL);
-        y += 10;
-        label(graphics, fit(Component.translatable("gui.antcolonies.nest.soldiers", number(soldiers)).getString(), 170), x, y, LABEL);
         y += 10;
         label(graphics, fit(Component.translatable("gui.antcolonies.nest.larvae", number(larvae)).getString(), 170), x, y, LABEL);
         y += 10;
@@ -135,14 +129,14 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         return y + 11;
     }
 
-    /** A working site's ants of one kind: how many it has and wants, the +/- buttons, and how fast they work. */
-    private int jobRow(GuiGraphicsExtractor graphics, int x, int y, boolean soldiers) {
-        int assigned = menu.data(soldiers ? StructureBlockEntity.DATA_SOLDIERS : StructureBlockEntity.DATA_ASSIGNED);
-        int requested = menu.data(soldiers ? StructureBlockEntity.DATA_REQUESTED_SOLDIERS : StructureBlockEntity.DATA_REQUESTED);
+    /** A working site's ants: how many it has and wants, the +/- buttons, and how fast they work. */
+    private int jobRow(GuiGraphicsExtractor graphics, int x, int y) {
+        int assigned = menu.data(StructureBlockEntity.DATA_ASSIGNED);
+        int requested = menu.data(StructureBlockEntity.DATA_REQUESTED);
         int capacity = menu.data(StructureBlockEntity.DATA_CAPACITY);
-        int offset = soldiers ? StructureMenu.SOLDIER_ROW : 0;
+        boolean hunting = kind == StructureKind.HUNTING_GROUND;
         String wanted = requested < 0 ? Component.translatable("gui.antcolonies.auto").getString() : String.valueOf(requested);
-        String key = soldiers ? "gui.antcolonies.site.soldiers" : kind == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.farmers"
+        String key = hunting ? "gui.antcolonies.site.hunters" : kind == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.farmers"
                 : "gui.antcolonies.site.workers";
         label(graphics, fit(Component.translatable(key, assigned, capacity, wanted).getString(), 170), x, y, LABEL);
         y += 11;
@@ -150,18 +144,18 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         Object[][] row = {{"-10", StructureMenu.LESS_10}, {"-1", StructureMenu.LESS}, {"+1", StructureMenu.MORE}, {"+10", StructureMenu.MORE_10}};
         for (Object[] b : row) {
             int width = buttonWidth((String) b[0]);
-            button(bx, y, width, 12, (String) b[0], (Integer) b[1] + offset, null, true);
+            button(bx, y, width, 12, (String) b[0], (Integer) b[1], null, true);
             bx += width + 2;
         }
         String auto = Component.translatable("gui.antcolonies.auto").getString();
-        toggle(bx, y, buttonWidth(auto), 12, auto, StructureMenu.AUTO + offset, List.of(Component.translatable("gui.antcolonies.auto.hint")), requested < 0);
+        toggle(bx, y, buttonWidth(auto), 12, auto, StructureMenu.AUTO, List.of(Component.translatable("gui.antcolonies.auto.hint")), requested < 0);
         y += 15;
-        double rate = menu.data(soldiers ? StructureBlockEntity.DATA_HUNT_RATE : StructureBlockEntity.DATA_RATE) / 10_000.0;
-        String rateKey = soldiers ? "gui.antcolonies.site.hunt_rate" : kind == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.food_rate"
+        double rate = menu.data(StructureBlockEntity.DATA_RATE) / 10_000.0;
+        String rateKey = hunting ? "gui.antcolonies.site.hunt_rate" : kind == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.food_rate"
                 : "gui.antcolonies.site.rate";
         label(graphics, Component.translatable(rateKey, rate(rate)), x, y, DIM);
-        double progress = menu.data(soldiers ? StructureBlockEntity.DATA_HUNT_PROGRESS : StructureBlockEntity.DATA_PROGRESS) / 1000.0;
-        drawBar(graphics, leftPos + x + 110, topPos + y, 56, 8, progress, soldiers ? 0xFFD05A3F : 0xFF3FD0A0);
+        double progress = menu.data(StructureBlockEntity.DATA_PROGRESS) / 1000.0;
+        drawBar(graphics, leftPos + x + 110, topPos + y, 56, 8, progress, hunting ? 0xFFD05A3F : 0xFF3FD0A0);
         return y + 11;
     }
 

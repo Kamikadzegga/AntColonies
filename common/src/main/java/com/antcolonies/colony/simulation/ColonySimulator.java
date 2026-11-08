@@ -46,7 +46,7 @@ import org.jspecify.annotations.Nullable;
 public final class ColonySimulator {
     /** At most this many finds per site and step, so a long catch-up can't stall the server. */
     private static final int MAX_ROLLS = 256;
-    /** What soldiers of species without their own list hunt. */
+    /** What hunters of species without their own list hunt. */
     public static final List<AntSpecies.Combat.Target> DEFAULT_TARGETS = List.of(
             new AntSpecies.Combat.Target(EntityTypes.ZOMBIE.builtInRegistryHolder(), 30),
             new AntSpecies.Combat.Target(EntityTypes.SKELETON.builtInRegistryHolder(), 25),
@@ -71,8 +71,6 @@ public final class ColonySimulator {
         double foodFactor = 1;
         /** Work per assigned ant, per kind of job: diminishing returns over all the colony's sites of that kind. */
         final Map<StructureKind, Double> perAnt = new EnumMap<>(StructureKind.class);
-        /** The same for soldiers (they hunt at Foraging Sites). */
-        final Map<StructureKind, Double> perSoldier = new EnumMap<>(StructureKind.class);
         @Nullable Allocation allocation;
 
         Step(ServerLevel level, TerrariumBlockEntity terrarium, AntSpecies species, @Nullable AntSpecies former, double dt) {
@@ -121,20 +119,6 @@ public final class ColonySimulator {
             });
             return site.assigned() * share;
         }
-
-        /** A site's soldiers as effective hunters, the same way. */
-        double effectiveSoldiers(Allocation.Site site) {
-            double share = perSoldier.computeIfAbsent(site.kind(), kind -> {
-                double total = 0;
-                if (allocation != null) {
-                    for (Allocation.Site other : allocation.of(kind)) {
-                        total += other.soldiers();
-                    }
-                }
-                return ProductionMath.perAnt(total);
-            });
-            return site.soldiers() * share;
-        }
     }
 
     public static void step(TerrariumBlockEntity terrarium, ServerLevel level, double dt) {
@@ -159,13 +143,11 @@ public final class ColonySimulator {
         int terrariumPopulation = terrarium.upgradeTier(UpgradeType.POPULATION);
         long maxPopulation = AntConfig.get(AntConfig.MAX_COLONY_POPULATION);
         double adultCapacity = AntConfig.get(AntConfig.TERRARIUM_CAPACITY) * (1 + terrariumPopulation);
-        double soldierCapacity = AntConfig.get(AntConfig.TERRARIUM_SOLDIER_CAPACITY) * (1 + terrariumPopulation);
         double larvaeCapacity = Math.max(20, AntConfig.get(AntConfig.TERRARIUM_CAPACITY) / 2.0);
-        // Nest Chambers: room for adults (a share of it for soldiers) and for larvae.
+        // Nest Chambers: room for adults and for larvae.
         for (StructureBlockEntity nest : step.of(StructureKind.NEST_CHAMBER)) {
             double room = 1 + 0.5 * nest.upgradeTier(UpgradeType.POPULATION);
             adultCapacity += AntConfig.get(AntConfig.NEST_ADULT_CAPACITY) * room;
-            soldierCapacity += AntConfig.get(AntConfig.NEST_SOLDIER_CAPACITY) * room;
             larvaeCapacity += AntConfig.get(AntConfig.NEST_LARVAE_CAPACITY) * room;
         }
         adultCapacity = Math.min(maxPopulation, adultCapacity);
@@ -207,7 +189,7 @@ public final class ColonySimulator {
         step.foodFactor = starving ? AntConfig.get(AntConfig.STARVED_FACTOR) : 1;
 
         // --- Ants to jobs ---
-        Allocation allocation = Allocation.allocate(step, workerCount - maintenance, (int) Math.floor(ColonyAccess.soldiers(colony)));
+        Allocation allocation = Allocation.allocate(step, workerCount - maintenance);
         step.allocation = allocation;
 
         // --- Food in and out ---
@@ -239,7 +221,7 @@ public final class ColonySimulator {
         ColonyAccess.setFood(colony, food, starvedMinutes);
 
         // --- Eggs, larvae and adults ---
-        Breeding.Result bred = Breeding.run(step, adultCapacity, soldierCapacity, larvaeCapacity);
+        Breeding.Result bred = Breeding.run(step, adultCapacity, larvaeCapacity);
 
         // --- Deaths ---
         double deaths = Breeding.deaths(step);
@@ -247,11 +229,18 @@ public final class ColonySimulator {
         // --- Job sites ---
         double finds = 0;
         double hunts = 0;
+        double hunted = 0;
         for (Allocation.Site site : allocation.of(StructureKind.FORAGING_SITE)) {
             Scavenging.run(step, site);
             finds += site.rate();
-            Fighting.run(step, site);
-            hunts += site.huntRate();
+        }
+        for (Allocation.Site site : allocation.of(StructureKind.HUNTING_GROUND)) {
+            // Hunters feed on what they catch: food for the colony, besides the mobs' loot.
+            hunted += Hunting.run(step, site) * AntConfig.get(AntConfig.HUNT_FOOD);
+            hunts += site.rate();
+        }
+        if (hunted > 0) {
+            ColonyAccess.setFood(colony, Math.min(foodCapacity, ColonyAccess.food(colony) + hunted), ColonyAccess.starvedMinutes(colony));
         }
         for (Allocation.Site site : allocation.of(StructureKind.HARVESTING_SITE)) {
             Farming.harvest(step, site);
@@ -292,21 +281,21 @@ public final class ColonySimulator {
         if (bred.specialShort()) {
             step.status |= ColonyStatus.NO_SPECIAL_FOOD.bit();
         }
-        if (allocation.assignedWorkers() + allocation.assignedSoldiers() > 0 && !starving) {
+        if (allocation.assignedWorkers() > 0 && !starving) {
             step.status |= ColonyStatus.WORKING.bit();
         }
         double adultsNow = Math.max(1, colony.exactAdults());
         Colony.Activity activity = new Colony.Activity(
                 (float) (allocation.assigned(StructureKind.FORAGING_SITE) / adultsNow),
-                (float) (allocation.soldiers(StructureKind.FORAGING_SITE) / adultsNow),
+                (float) (allocation.assigned(StructureKind.HUNTING_GROUND) / adultsNow),
                 (float) (allocation.assigned(StructureKind.HARVESTING_SITE) / adultsNow),
                 0F,
                 (float) (maintenance / adultsNow),
-                (float) Math.max(0, 1 - (allocation.assignedWorkers() + allocation.assignedSoldiers() + maintenance) / adultsNow),
-                intake.food() > 0 || farmed > 0, starving, bred.eggs() > 0);
+                (float) Math.max(0, 1 - (allocation.assignedWorkers() + maintenance) / adultsNow),
+                intake.food() > 0 || farmed > 0 || hunted > 0, starving, bred.eggs() > 0);
         int structureCount = step.sites.values().stream().mapToInt(List::size).sum();
-        Colony.Stats stats = new Colony.Stats(bred.eggs() / step.dt, bred.raised() / step.dt, farmed + intake.food() / step.dt, consumption,
-                finds, hunts, deaths / step.dt, (long) adultCapacity, (long) soldierCapacity, (long) larvaeCapacity,
+        Colony.Stats stats = new Colony.Stats(bred.eggs() / step.dt, bred.raised() / step.dt, farmed + (intake.food() + hunted) / step.dt, consumption,
+                finds, hunts, deaths / step.dt, (long) adultCapacity, (long) larvaeCapacity,
                 foodCapacity, structureCount);
         ColonyAccess.finish(colony, stage, step.status, stats, activity, allocation.assignments(), maintenance);
         // Structures show their part of the colony's state (problems that concern them, and the link itself).
@@ -336,18 +325,17 @@ public final class ColonySimulator {
     private static double foodUse(Step step, Allocation allocation, int maintenance) {
         Colony colony = step.colony;
         double worker = AntConfig.get(AntConfig.WORKER_FOOD);
-        double soldier = AntConfig.get(AntConfig.SOLDIER_FOOD);
+        double hunter = AntConfig.get(AntConfig.HUNTER_FOOD);
         double idle = AntConfig.get(AntConfig.IDLE_ACTIVITY);
         double use = colony.queen() != null ? AntConfig.get(AntConfig.QUEEN_FOOD) : 0;
         use += maintenance * worker;
         for (Allocation.Site site : allocation.all()) {
             double saving = site.entity().upgradeTier(UpgradeType.FOOD_EFFICIENCY)
                     + site.entity().speciesUpgradeTier(colony.species(), SpeciesUpgradeKind.EFFICIENCY);
-            use += (site.assigned() * worker + site.soldiers() * soldier) * ProductionMath.foodSaving(saving);
+            use += site.assigned() * (site.kind() == StructureKind.HUNTING_GROUND ? hunter : worker) * ProductionMath.foodSaving(saving);
         }
         double idleWorkers = Math.max(0, ColonyAccess.workers(colony) - maintenance - allocation.assignedWorkers());
-        double idleSoldiers = Math.max(0, ColonyAccess.soldiers(colony) - allocation.assignedSoldiers());
-        use += idleWorkers * worker * idle + idleSoldiers * soldier * idle;
+        use += idleWorkers * worker * idle;
         use += ColonyAccess.larvae(colony) * AntConfig.get(AntConfig.LARVA_FOOD);
         double efficiency = step.trait(Trait.FOOD_EFFICIENCY);
         use *= step.species.diet().consumption() / Math.max(0.01, efficiency) * step.effects.food();
@@ -418,25 +406,24 @@ public final class ColonySimulator {
         }
     }
 
-    static final class Fighting {
+    /** Hunters at a Hunting Ground catch mobs (their loot tables; no mob is spawned). Returns the catches. */
+    static final class Hunting {
         static double run(Step step, Allocation.Site site) {
-            if (site.soldiers() <= 0) {
+            if (site.assigned() <= 0 || !step.species.canHunt()) {
                 return 0;
             }
             StructureBlockEntity entity = site.entity();
             double strength = step.trait(Trait.SOLDIER_STRENGTH) * step.effects.soldiers() * step.species.combat().strength();
-            // The colony's Nest Chambers help every site's soldiers, but no more than one fully upgraded Nest Chamber would
-            // (two tier-3 upgrades).
-            int soldierTiers = entity.upgradeTier(UpgradeType.SOLDIER) + Math.min(6, step.tiers(StructureKind.NEST_CHAMBER, UpgradeType.SOLDIER));
-            double rate = AntConfig.get(AntConfig.FIGHT_ROLLS) * step.effectiveSoldiers(site)
-                    * ProductionMath.bonus(strength * (1 + 0.25 * soldierTiers) * ProductionMath.speed(entity.upgradeTier(UpgradeType.SPEED)))
+            int huntingTiers = entity.upgradeTier(UpgradeType.HUNTING);
+            double rate = AntConfig.get(AntConfig.HUNT_ROLLS) * step.effective(site)
+                    * ProductionMath.bonus(strength * (1 + 0.25 * huntingTiers) * ProductionMath.speed(entity.upgradeTier(UpgradeType.SPEED)))
                     * step.healthFactor * step.foodFactor;
-            site.setHuntRate(rate);
+            site.setRate(rate);
             List<AntSpecies.Combat.Target> targets = step.species.combat().targets().isEmpty() ? DEFAULT_TARGETS : step.species.combat().targets();
             int total = targets.stream().mapToInt(AntSpecies.Combat.Target::weight).sum();
-            double progress = entity.huntProgress() + rate * step.dt;
+            double progress = entity.progress() + rate * step.dt;
             int rolls = 0;
-            double casualtyChance = AntConfig.get(AntConfig.SOLDIER_CASUALTY_CHANCE) / Math.max(0.1, strength * (1 + 0.25 * soldierTiers));
+            double casualtyChance = AntConfig.get(AntConfig.HUNTER_CASUALTY_CHANCE) / Math.max(0.1, strength * (1 + 0.25 * huntingTiers));
             while (progress >= 1 && rolls < MAX_ROLLS) {
                 Holder<EntityType<?>> target = pick(targets, total, step.random);
                 List<ItemStack> loot = MobLoot.roll(step.level, target.value(), entity.getBlockPos());
@@ -448,13 +435,13 @@ public final class ColonySimulator {
                 for (ItemStack stack : loot) {
                     ColonyStorage.insert(step.level, step.colony, stack, entity);
                 }
-                if (step.random.nextDouble() < casualtyChance && ColonyAccess.soldiers(step.colony) >= 1) {
-                    ColonyAccess.killSoldier(step.colony);
+                if (step.random.nextDouble() < casualtyChance && ColonyAccess.workers(step.colony) >= 1) {
+                    ColonyAccess.killWorker(step.colony);
                 }
                 progress -= 1;
                 rolls++;
             }
-            entity.setHuntProgress(Math.min(progress, MAX_ROLLS));
+            entity.setProgress(Math.min(progress, MAX_ROLLS));
             return rolls;
         }
 

@@ -18,11 +18,13 @@ import net.minecraft.util.StringRepresentable;
  * @param allowed   the generic upgrades it takes (species upgrades go into Foraging Sites)
  */
 public enum StructureKind implements StringRepresentable {
-    /** Brood and housing: eggs at full speed, faster larvae, room for larvae, adults and soldiers. */
-    NEST_CHAMBER("nest_chamber", Job.NONE, 0, 3, EnumSet.of(UpgradeType.BREEDING, UpgradeType.SPEED, UpgradeType.POPULATION, UpgradeType.SOLDIER)),
-    /** Workers find the species' resources and soldiers hunt; a small store for what they bring. */
-    FORAGING_SITE("foraging_site", Job.FORAGING, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION,
-            UpgradeType.SOLDIER)),
+    /** Brood and housing: eggs at full speed, faster larvae, room for larvae and adults. */
+    NEST_CHAMBER("nest_chamber", Job.NONE, 0, 3, EnumSet.of(UpgradeType.BREEDING, UpgradeType.SPEED, UpgradeType.POPULATION)),
+    /** Workers find the species' resources; a small store for when the Storage is full. */
+    FORAGING_SITE("foraging_site", Job.FORAGING, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
+    /** Hunter species kill mobs here: their loot, and food from what they catch. */
+    HUNTING_GROUND("hunting_ground", Job.HUNTING, 0, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.HUNTING, UpgradeType.FOOD_EFFICIENCY,
+            UpgradeType.POPULATION)),
     /** Farmer Ants grow food and harvest. */
     HARVESTING_SITE("harvesting_site", Job.FARMERS, 0, 3, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
     /** More room for what the colony finds, and food room. */
@@ -39,15 +41,10 @@ public enum StructureKind implements StringRepresentable {
     public static final int QUEEN_CHAMBER_OUTPUT = 6;
 
     public enum Job {
-        NONE, FORAGING, FARMERS;
+        NONE, FORAGING, FARMERS, HUNTING;
 
         public boolean any() {
             return this != NONE;
-        }
-
-        /** Whether soldiers work here too (they hunt at Foraging Sites). */
-        public boolean soldiers() {
-            return this == FORAGING;
         }
     }
 

@@ -4,10 +4,10 @@
   "key": {
     "G": "minecraft:gold_ingot",
     "X": "minecraft:iron_sword",
-    "U": "antcolonies:soldier_upgrade_1"
+    "U": "antcolonies:hunting_upgrade_1"
   },
   "pattern": ["GXG", "XUX", "GXG"],
   "result": {
-    "id": "antcolonies:soldier_upgrade_2"
+    "id": "antcolonies:hunting_upgrade_2"
   }
 }

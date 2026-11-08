@@ -4,10 +4,10 @@
   "key": {
     "D": "minecraft:diamond",
     "X": "minecraft:iron_sword",
-    "U": "antcolonies:soldier_upgrade_2"
+    "U": "antcolonies:hunting_upgrade_2"
   },
   "pattern": ["DXD", "XUX", "DXD"],
   "result": {
-    "id": "antcolonies:soldier_upgrade_3"
+    "id": "antcolonies:hunting_upgrade_3"
   }
 }

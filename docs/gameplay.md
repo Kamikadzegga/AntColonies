@@ -28,7 +28,7 @@ chambers (`maxChambers`).
 When chambers touch two colonies, each chamber goes to the Terrarium it is fewer steps from. A chamber exactly as far
 from both joins neither, and says so in its screen.
 
-A colony's population is plain numbers on the server: eggs, larvae, workers and soldiers, food, health. The ants you
+A colony's population is plain numbers on the server: eggs, larvae, workers, food, health. The ants you
 see in the Terrarium and the chambers are a picture of those numbers (how many, which jobs, hungry or not,
 transforming or not). They never decide anything, and no ant entities are spawned for a colony.
 
@@ -36,7 +36,7 @@ Every simulation step (1 second by default) a colony:
 
 1. looks at its chambers (a chamber placed or broken makes it look again at once),
 2. keeps 5% of its adults home for maintenance, then hands out workers to Harvesting Sites and Foraging Sites, and
-   soldiers to Foraging Sites (each site takes what it asks for, up to its capacity; an ant is never counted twice),
+   hunters to Hunting Grounds (each site takes what it asks for, up to its capacity; an ant is never counted twice),
 3. eats food, lays eggs, hatches larvae, raises adults, loses the old and (when starving) the weak,
 4. produces: `rate = base x species x (ants on that kind of job)^0.85 x bonus^0.6 x health`, where `bonus` is
    genetics x mutations x upgrades. The ants are counted over all of a colony's sites, so many small sites find no
@@ -58,12 +58,12 @@ with Simulation Upgrades), never on the whole time away.
 3. Check the Terrarium's **Info** page: if the climate is wrong, put the block it shows under the Terrarium (snow
    for cold species, sand for hot ones...).
 4. Add chambers as you go: a **Nest Chamber** for a bigger, faster-growing colony, a **Foraging Site** to put workers
-   and soldiers to work, a **Storage** for the finds.
+   to work, a **Storage** for the finds.
 5. Grow: stage 2 needs 100 adults; stage 3 1,000 adults; stage 4 5,000 adults and a mineral species or good genetics.
    Stages unlock outputs and change the Terrarium's look.
 
 To move a colony, take it out in Test Tubes: an empty tube in the Queen slot takes the Queen out, and empty tubes in
-the feed slot fill with ants, workers first, then soldiers (up to 1,000 a tube). The Colony page's **Take out**
+the feed slot fill with workers (up to 1,000 a tube). The Colony page's **Take out**
 buttons do the same from the tubes in your inventory. Then break the Terrarium and put the tubes into a new one.
 **Ants still in a Terrarium when it is broken are lost**, and so are its eggs, larvae and food.
 
@@ -74,8 +74,9 @@ The **Ant Identification Book** has how-to-play pages and a page for every speci
 | Structure | What it does |
 |---|---|
 | Terrarium | The colony: Queen, food, evolution feeding, overview GUI (Colony, Genes, Jobs, Stats, Info). Houses 60 adults and lays eggs at half speed on its own. Its Queen and ants leave only in Test Tubes; broken, it keeps nothing. |
-| Nest Chamber | Brood and housing: eggs at full speed, faster larvae, room for 3,000 adults (1,000 of them soldiers) and 1,500 larvae. More chambers lay faster (diminishing). |
-| Foraging Site | Workers find the species' outputs; soldiers hunt, with drops from the hunted mobs' own loot tables (vanilla or modded; no mobs spawn). Sends its finds to Storage; holds 9 stacks while the Storage is full. Takes species upgrades. |
+| Nest Chamber | Brood and housing: eggs at full speed, faster larvae, room for 3,000 adults and 1,500 larvae. More chambers lay faster (diminishing). |
+| Foraging Site | Workers find the species' outputs. Sends its finds to Storage; holds 9 stacks while the Storage is full. Takes species upgrades. |
+| Hunting Ground | Hunter species (see below) kill mobs: drops from the hunted mobs' own loot tables (vanilla or modded; no mobs spawn), and 40 food for the colony from each catch. Other species leave it alone. |
 | Harvesting Site | Farmer Ants grow food and harvest mushrooms, seeds, berries. Other species can't farm. |
 | Storage | More room for finds, 9 to 54 slots (Storage Upgrades), and 25,000 food room. Hoppers can empty it; Automation pushes it down. |
 | Queen Chamber | Raises daughter Queens; a Genetic Sample crossed in can make hybrids. |
@@ -135,19 +136,19 @@ and Chitin Plates repair them. **Wearing the full armor set**:
 
 ## Guard Ants
 
-A colony can give up soldiers for a Guard Ant that follows you and fights for you:
+A hunter colony can give up some of its ants for a Guard Ant that follows you and fights for you:
 
 1. Craft a **Rally Pheromone** (Test Tube, Chitin Plate, sugar, redstone).
-2. Use it on a Terrarium whose colony has a Queen and at least 50 soldiers (config `guards.soldierCost`). The colony
-   loses the soldiers, and you get a **Guard Ant** in a tube.
+2. Use it on the Terrarium of a hunter colony with a Queen and at least 50 ants (config `guards.antCost`). The colony
+   loses the ants, and you get a **Guard Ant** in a tube.
 3. Use the tube on a block to let the ant out. It is tamed to you.
 
 Its strength comes from the colony's genetics:
 
 | Stat | From | Range |
 |---|---|---|
-| Health | Queen's Soldier Strength level | 24 (level 1) to 60 (level 10) |
-| Bite | Queen's Soldier Strength level | 3.6 to 9 damage |
+| Health | Queen's Hunting Strength level | 24 (level 1) to 60 (level 10) |
+| Bite | Queen's Hunting Strength level | 3.6 to 9 damage |
 | Armor | The species' tier | 2 per tier, up to 10 |
 
 It fights whatever attacks you, whatever you attack, and hostile mobs near it (not creepers). It follows you, and
@@ -165,11 +166,13 @@ blocks of it.
 
 ## Species
 
-38 species.
+42 species.
 
 - Wild, with nests in their biomes: Common, Wood, Stone, Snow, Desert, Farmer, Jungle, Swamp, Savanna, Shore (beaches),
-  Blossom (cherry groves and flower meadows), Pale (pale garden), Badlands.
-- Evolved: Iron, Copper, Coal, Deepslate, Lapis, Amethyst (from Stone); Redstone and Gold (from Iron; Gold also from
+  Blossom (cherry groves and flower meadows), Pale (pale garden), Badlands, Army (plains and savannas; a hunter).
+- Hunters, which work at a Hunting Ground: Army (wild: zombies, skeletons, spiders), Bullet (from Jungle, fed gunpowder:
+  creepers, witches), Trap-Jaw (from Swamp, fed slime balls: slimes, drowned), Inferno (from Fire, fed blaze powder: blazes,
+  magma cubes, wither skeletons, ghasts).- Evolved: Iron, Copper, Coal, Deepslate, Lapis, Amethyst (from Stone); Redstone and Gold (from Iron; Gold also from
   Desert); Diamond (from Gold or Lapis); Emerald and Netherite (from Diamond); Fire (from Desert); Soul (from Fire);
   Ender (from Amethyst).
 - Hybrids: Crystal Wood (Wood x Diamond), Frost Emerald (Snow x Emerald), Mechanical Miner (Stone x Redstone),
@@ -182,7 +185,7 @@ Ant Identification Book.
 
 ## Genetics
 
-Ten traits (Worker Productivity, Gathering Efficiency, Food Efficiency, Egg Production, Larvae Growth, Soldier
+Ten traits (Worker Productivity, Gathering Efficiency, Food Efficiency, Egg Production, Larvae Growth, Hunting
 Strength, Farmer Productivity, Mutation Probability, Environmental Resistance, Specialization), levels 1 to 10, each a
 multiplier used by the simulation. Wild Queens roll random levels; daughters inherit with variation and may mutate.
 The Genetic Laboratory raises one trait by one level per operation (permanent; no other trait changes), so every
@@ -205,7 +208,7 @@ single-player. Every option explains itself when you point at it. The same optio
 `config/antcolonies/server.toml` (synced to players): simulation interval, offline catch-up, capacities, egg and growth
 times, food use, starvation, production rates and diminishing returns, upgrade strengths, trait multipliers and
 starting weights, mutation and evolution chances, wild spawn and Queen chances, Generator output
-(`[power]`), the soldiers a Guard Ant costs (`[guards] soldierCost`), how much stacked bonuses are softened
+(`[power]`), the ants a Guard Ant costs (`[guards] antCost`), how much stacked bonuses are softened
 (`bonusExponent`), the mutation cap, and `rareFindMultiplier` (scales the chance of every rare find at once, for modpacks: 0.5 halves diamonds, netherite scrap, shells and the like,
 0 turns them off; common finds and hunting loot are not changed).
 `config/antcolonies/client.toml`: how many ants a Terrarium and its chambers draw, particles, sounds, draw

@@ -60,7 +60,8 @@ public class TweezersItem extends Item {
         if (ant.caste() == Caste.QUEEN) {
             caught = queenTube(Genetics.wildQueen(ant.species(), player.getRandom()));
         } else {
-            caught = antTube(new AntSample(ant.species(), ant.caste(), 1));
+            // A caught soldier becomes a worker: colonies have no soldiers.
+            caught = antTube(new AntSample(ant.species(), Caste.WORKER, 1));
         }
         takeEmptyTube(player);
         give(player, caught);
@@ -156,28 +157,22 @@ public class TweezersItem extends Item {
     }
 
     /**
-     * The Terrarium's take buttons: up to a tube's worth ({@link AntSample#MAX}) of the colony's workers or soldiers, into an empty Test Tube from the player's inventory. Using the tube on another Terrarium
+     * The Terrarium's take button: up to a tube's worth ({@link AntSample#MAX}) of the colony's workers, into an empty Test Tube from the player's inventory. Using the tube on another Terrarium
      * adds them to that colony.
      */
-    public static boolean takeFromColony(Player player, TerrariumBlockEntity terrarium, Caste caste) {
+    public static boolean takeFromColony(Player player, TerrariumBlockEntity terrarium) {
         if (!hasEmptyTube(player)) {
             player.sendOverlayMessage(Component.translatable("message.antcolonies.tweezers.no_tube").withStyle(ChatFormatting.RED));
             return false;
         }
         Colony colony = terrarium.colony();
-        boolean soldiers = caste == Caste.SOLDIER;
-        int count = (int) Math.min(AntSample.MAX, soldiers ? colony.soldiers() : colony.workers());
+        int count = (int) Math.min(AntSample.MAX, colony.workers());
         if (count <= 0) {
-            player.sendOverlayMessage(Component.translatable(soldiers ? "message.antcolonies.take.no_soldiers" : "message.antcolonies.tweezers.no_workers")
-                    .withStyle(ChatFormatting.RED));
+            player.sendOverlayMessage(Component.translatable("message.antcolonies.tweezers.no_workers").withStyle(ChatFormatting.RED));
             return false;
         }
-        if (soldiers) {
-            colony.takeSoldiers(count);
-        } else {
-            colony.addWorkers(-count);
-        }
-        ItemStack caught = antTube(new AntSample(colony.species(), caste, count));
+        colony.addWorkers(-count);
+        ItemStack caught = antTube(new AntSample(colony.species(), Caste.WORKER, count));
         takeEmptyTube(player);
         give(player, caught);
         player.level().playSound(null, player.blockPosition(), ModSounds.CAPTURE.get(), SoundSource.PLAYERS, 0.6F, 1.3F);

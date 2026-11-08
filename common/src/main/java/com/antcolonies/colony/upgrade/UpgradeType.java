@@ -6,7 +6,7 @@ import net.minecraft.util.StringRepresentable;
 
 /** The ten generic upgrades. Each comes in tiers 1-3; several in one block add up. */
 public enum UpgradeType implements StringRepresentable {
-    /** Faster work at working chambers, Genetic Laboratory processing, larvae growth in Brood Chambers. */
+    /** Faster work at working sites, Genetic Laboratory processing, larvae growth in Nest Chambers. */
     SPEED("speed"),
     /** Less food eaten by the ants of the structure (or, in a Terrarium, the whole colony). */
     FOOD_EFFICIENCY("food_efficiency"),
@@ -14,15 +14,15 @@ public enum UpgradeType implements StringRepresentable {
     SIMULATION("simulation"),
     /** More slots in Storage chambers, more food in Storage. */
     STORAGE("storage"),
-    /** Faster egg laying (Brood Chamber, Terrarium) and Queen rearing (Queen Chamber). */
+    /** Faster egg laying (Nest Chamber, Terrarium) and Queen rearing (Queen Chamber). */
     BREEDING("breeding"),
     /** Cheaper Genetic Laboratory work and more mutations in Queen Chambers. */
     GENETIC("genetic"),
-    /** Stronger soldiers at Hunting Chambers and Housing. */
-    SOLDIER("soldier"),
+    /** Stronger hunters at a Hunting Ground. */
+    HUNTING("hunting"),
     /** Storage pushes its finds into the container below. */
     AUTOMATION("automation"),
-    /** More ants housed (Terrarium, Housing) or working at one working chamber. */
+    /** More ants housed (Terrarium, Nest Chamber) or working at one site. */
     POPULATION("population"),
     /** Better evolution chances (Terrarium only). */
     EVOLUTION("evolution");

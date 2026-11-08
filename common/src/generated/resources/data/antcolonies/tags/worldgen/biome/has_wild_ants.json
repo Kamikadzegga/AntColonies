@@ -12,6 +12,7 @@
     "#antcolonies:spawns/shore",
     "#antcolonies:spawns/blossom",
     "#antcolonies:spawns/pale",
-    "#antcolonies:spawns/badlands"
+    "#antcolonies:spawns/badlands",
+    "#antcolonies:spawns/army"
   ]
 }

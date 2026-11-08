@@ -11,9 +11,9 @@ import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.colony.model.StructureKind;
 
 /**
- * Puts the colony's ants to work. Workers kept for maintenance are taken out first; the rest go to Harvesting Sites
- * (food first), then Foraging Sites, each site in the scan's fixed order taking what it asks for (or all it can hold) up
- * to its capacity. Soldiers go to Foraging Sites the same way, to hunt.
+ * Puts the colony's ants to work. Workers kept for maintenance are taken out first; the rest go to Harvesting Sites and
+ * Hunting Grounds (food first), then Foraging Sites, each site in the scan's fixed order taking what it asks for (or all
+ * it can hold) up to its capacity. Harvesting Sites take only species that farm, Hunting Grounds only hunters.
  *
  * <p>An ant is only ever counted once: the totals handed out never exceed the ants available, which
  * {@link #allocate} checks. A site that is gone, unloaded or no longer joined simply isn't in the next step's list, so
@@ -21,18 +21,16 @@ import com.antcolonies.colony.model.StructureKind;
  */
 public final class Allocation {
     /** The order workers are handed out in. */
-    private static final List<StructureKind> WORKER_ORDER = List.of(StructureKind.HARVESTING_SITE, StructureKind.FORAGING_SITE);
+    private static final List<StructureKind> WORKER_ORDER = List.of(StructureKind.HARVESTING_SITE, StructureKind.HUNTING_GROUND, StructureKind.FORAGING_SITE);
 
     /** One working site and the ants it got this step. */
     public static final class Site {
         private final StructureBlockEntity entity;
-        private int assigned;
-        private int soldiers;
+        private final int assigned;
         private final int requested;
         private final int capacity;
         private int status;
         private double rate;
-        private double huntRate;
 
         Site(StructureBlockEntity entity, int assigned, int requested, int capacity, int status) {
             this.entity = entity;
@@ -50,14 +48,9 @@ public final class Allocation {
             return entity.kind();
         }
 
-        /** Workers (farmers at a Harvesting Site). */
+        /** Its ants (farmers at a Harvesting Site, hunters at a Hunting Ground). */
         public int assigned() {
             return assigned;
-        }
-
-        /** Soldiers hunting here (Foraging Sites only). */
-        public int soldiers() {
-            return soldiers;
         }
 
         public void addStatus(ColonyStatus flag) {
@@ -71,14 +64,6 @@ public final class Allocation {
         public double rate() {
             return rate;
         }
-
-        public void setHuntRate(double huntRate) {
-            this.huntRate = huntRate;
-        }
-
-        public double huntRate() {
-            return huntRate;
-        }
     }
 
     /** A working site with a redstone signal on it is paused: its ants go to the other sites (or stay home). */
@@ -88,13 +73,11 @@ public final class Allocation {
 
     private final Map<StructureKind, List<Site>> sites = new EnumMap<>(StructureKind.class);
     private int assignedWorkers;
-    private int assignedSoldiers;
 
     /**
-     * @param workers  workers free for jobs (after maintenance)
-     * @param soldiers soldiers free for jobs
+     * @param workers workers free for jobs (after maintenance)
      */
-    static Allocation allocate(ColonySimulator.Step step, int workers, int soldiers) {
+    static Allocation allocate(ColonySimulator.Step step, int workers) {
         Allocation allocation = new Allocation();
         int freeWorkers = Math.max(0, workers);
         for (StructureKind kind : WORKER_ORDER) {
@@ -104,6 +87,11 @@ public final class Allocation {
                 int wanted = entity.requested() < 0 ? capacity : Math.min(entity.requested(), capacity);
                 if (kind == StructureKind.HARVESTING_SITE && !step.species.canFarm()) {
                     // A Harvesting Site needs Farmer Ants (or a species that farms); other ants leave it alone.
+                    wanted = 0;
+                    status |= ColonyStatus.INCOMPATIBLE_SPECIES.bit();
+                }
+                if (kind == StructureKind.HUNTING_GROUND && !step.species.canHunt()) {
+                    // A Hunting Ground needs a hunter species; others leave it alone.
                     wanted = 0;
                     status |= ColonyStatus.INCOMPATIBLE_SPECIES.bit();
                 }
@@ -120,17 +108,7 @@ public final class Allocation {
                 allocation.sites.computeIfAbsent(kind, k -> new ArrayList<>()).add(new Site(entity, given, entity.requested(), capacity, status));
             }
         }
-        int freeSoldiers = Math.max(0, soldiers);
-        for (Site site : allocation.of(StructureKind.FORAGING_SITE)) {
-            StructureBlockEntity entity = site.entity;
-            int capacity = entity.capacity();
-            int wanted = paused(step, entity) ? 0 : entity.requestedSoldiers() < 0 ? capacity : Math.min(entity.requestedSoldiers(), capacity);
-            int given = Math.min(wanted, freeSoldiers);
-            freeSoldiers -= given;
-            allocation.assignedSoldiers += given;
-            site.soldiers = given;
-        }
-        if (allocation.assignedWorkers > Math.max(0, workers) || allocation.assignedSoldiers > Math.max(0, soldiers)) {
+        if (allocation.assignedWorkers > Math.max(0, workers)) {
             throw new IllegalStateException("Ant allocation handed out more ants than the colony has");
         }
         return allocation;
@@ -150,31 +128,22 @@ public final class Allocation {
         return assignedWorkers;
     }
 
-    public int assignedSoldiers() {
-        return assignedSoldiers;
-    }
-
-    /** Workers (or farmers) at the sites of a kind. */
+    /** The ants at the sites of a kind. */
     public int assigned(StructureKind kind) {
         return of(kind).stream().mapToInt(Site::assigned).sum();
-    }
-
-    /** Soldiers at the sites of a kind. */
-    public int soldiers(StructureKind kind) {
-        return of(kind).stream().mapToInt(Site::soldiers).sum();
     }
 
     /** Tells each site what it got, for its GUI and its animation. */
     void publish(ColonySimulator.Step step) {
         for (Site site : all()) {
-            site.entity.setAssignment(site.assigned, site.soldiers, site.capacity, site.status, site.rate, site.huntRate);
+            site.entity.setAssignment(site.assigned, site.capacity, site.status, site.rate);
         }
     }
 
     List<Colony.Assignment> assignments() {
         List<Colony.Assignment> list = new ArrayList<>();
         for (Site site : all()) {
-            list.add(new Colony.Assignment(site.entity.getBlockPos(), site.kind(), site.assigned, site.soldiers, site.requested, site.capacity,
+            list.add(new Colony.Assignment(site.entity.getBlockPos(), site.kind(), site.assigned, site.requested, site.capacity,
                     site.status, site.rate));
         }
         return list;

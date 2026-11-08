@@ -3,6 +3,7 @@
     "antcolonies:nest_chamber",
     "antcolonies:foraging_site",
     "antcolonies:harvesting_site",
+    "antcolonies:hunting_ground",
     "antcolonies:queen_chamber",
     "antcolonies:common_ant_nest",
     "antcolonies:wood_ant_nest",
@@ -16,6 +17,7 @@
     "antcolonies:shore_ant_nest",
     "antcolonies:blossom_ant_nest",
     "antcolonies:pale_ant_nest",
-    "antcolonies:badlands_ant_nest"
+    "antcolonies:badlands_ant_nest",
+    "antcolonies:army_ant_nest"
   ]
 }

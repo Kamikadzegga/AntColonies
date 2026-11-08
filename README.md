@@ -5,7 +5,7 @@
 **Build a civilization, one ant at a time.**
 
 A NeoForge mod for Minecraft 26.3: catch wild ants, raise Queens in living Terrariums, put thousands of workers and
-soldiers to work, evolve mineral species and engineer their genes.
+hunters to work, evolve mineral species and engineer their genes.
 
 [![Minecraft 26.3](https://img.shields.io/badge/Minecraft-26.3-62B47A?style=flat-square)](https://www.minecraft.net)
 [![NeoForge 26.3.0.101](https://img.shields.io/badge/NeoForge-26.3.0.101-D7742F?style=flat-square)](https://neoforged.net)
@@ -22,14 +22,14 @@ soldiers to work, evolve mineral species and engineer their genes.
 
 ## Features
 
-- **Living colonies.** A Terrarium holds a whole colony: Queen, eggs, larvae, workers, soldiers, food and health. You
+- **Living colonies.** A Terrarium holds a whole colony: Queen, eggs, larvae, workers, food and health. You
   can watch the ants dig tunnels, carry food and work in the chambers. The simulation is plain numbers on the server,
   so even a colony of thousands costs almost nothing.
 - **One build that grows.** A Terrarium works on its own. Chambers placed against it join the colony and merge into one
-  glass case: Nest Chambers for a bigger colony, Foraging Sites where workers find resources and soldiers hunt for mob
-  drops (no mob is ever spawned), Harvesting Sites for farmers, Storage and Queen Chambers. A block under the Terrarium
+  glass case: Nest Chambers for a bigger colony, Foraging Sites where workers find resources, Hunting Grounds where
+  hunter species kill mobs for their drops and feed on them (no mob is ever spawned), Harvesting Sites for farmers, Storage and Queen Chambers. A block under the Terrarium
   sets its climate.
-- **38 species.** Thirteen wild species live in their own biomes, with nests. Mineral species (iron, gold, diamond,
+- **42 species.** Fourteen wild species live in their own biomes, with nests, among them the Army Ant, a hunter. Mineral species (iron, gold, diamond,
   emerald, netherite, ender and more) evolve from them, and eleven hybrids come from crossing Queens. Ten more species
   turn on when Mekanism, Create, Thermal, Immersive Engineering or AE2 add their ores.
 - **Genetics.** Each Queen has ten traits, and daughters inherit them with variation. There are 31 mutations, including
@@ -38,7 +38,7 @@ soldiers to work, evolve mineral species and engineer their genes.
 - **Giant anthills.** A rare world-generation structure: a mound over tunnels and chambers dug deep into the ground,
   with loot, a Queen to catch and soldiers that defend it.
 - **Chitin gear and Guard Ants.** Iron-tier tools and armor made from Chitin Plates; with the full set, wild ants take
-  you for one of their own. A colony can also give up its soldiers for a **Guard Ant** that follows you and fights for
+  you for one of their own. A hunter colony can also give up some of its ants for a **Guard Ant** that follows you and fights for
   you, as strong as the colony's genetics.
 - **Built for automation and modpacks.** Comparator outputs and redstone control. Items and FE move through any mod's
   pipes and cables. Species, evolutions, hybrids, mutations, lab costs, ant food and loot are all data packs, and a

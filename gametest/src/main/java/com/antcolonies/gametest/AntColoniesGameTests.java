@@ -136,7 +136,8 @@ public class AntColoniesGameTests {
         TerrariumBlockEntity terrarium = helper.getBlockEntity(pos, TerrariumBlockEntity.class);
         Colony colony = terrarium.colony();
         colony.setQueen(Genetics.wildQueen(species, RandomSource.create(5)));
-        colony.setPopulation(0, 0, workers, soldiers);
+        // Colonies have no soldiers: any asked for join the workers.
+        colony.setPopulation(0, 0, workers + soldiers);
         colony.setFood(food);
         return terrarium;
     }
@@ -245,7 +246,7 @@ public class AntColoniesGameTests {
         var registries = helper.getLevel().registryAccess();
         var species = registries.lookupOrThrow(ModRegistries.SPECIES);
         long own = species.listElements().filter(e -> e.key().identifier().getNamespace().equals(AntColonies.MODID)).count();
-        helper.assertTrue(own == 38, "Expected 38 species, got " + own);
+        helper.assertTrue(own == 42, "Expected 42 species, got " + own);
         for (var entry : species.listElements().toList()) {
             for (SpeciesOutput output : entry.value().production().outputs()) {
                 helper.assertTrue(output.tag().isPresent() || output.available(), "Output of " + entry.key().identifier() + " missing: " + output);
@@ -275,15 +276,15 @@ public class AntColoniesGameTests {
         BlockPos pos = new BlockPos(1, 1, 1);
         TerrariumBlockEntity terrarium = terrarium(helper, pos, COMMON, 12345.5, 678, 4321);
         Colony colony = terrarium.colony();
-        colony.setPopulation(55, 77, 12345.5, 678);
+        colony.setPopulation(55, 77, 12345.5);
         QueenData queen = colony.queen();
         var registries = helper.getLevel().registryAccess();
         CompoundTag saved = terrarium.saveWithFullMetadata(registries);
         BlockEntity loaded = BlockEntity.loadStatic(helper.absolutePos(pos), terrarium.getBlockState(), saved, registries);
         helper.assertTrue(loaded instanceof TerrariumBlockEntity, "Terrarium did not load");
         Colony copy = ((TerrariumBlockEntity) loaded).colony();
-        helper.assertTrue(copy.workers() == 12345 && copy.soldiers() == 678 && copy.eggs() == 55 && copy.larvae() == 77,
-                "Population changed: " + copy.workers() + " " + copy.soldiers() + " " + copy.eggs() + " " + copy.larvae());
+        helper.assertTrue(copy.workers() == 12345 && copy.eggs() == 55 && copy.larvae() == 77,
+                "Population changed: " + copy.workers() + " " + copy.eggs() + " " + copy.larvae());
         helper.assertTrue(Math.abs(copy.food() - 4321) < 1e-6, "Food changed: " + copy.food());
         helper.assertTrue(queen.equals(copy.queen()), "Queen changed: " + copy.queen());
         helper.assertTrue(copy.id().equals(colony.id()), "Colony id changed");
@@ -428,17 +429,27 @@ public class AntColoniesGameTests {
         helper.succeed();
     }
 
-    /** Soldiers at a Foraging Site bring mob drops (from loot tables, no mobs spawned) into its store. */
+    /**
+     * Hunters at a Hunting Ground bring mob drops (from loot tables, no mobs spawned) into the Storage and feed the colony
+     * on their catch; a species that doesn't hunt leaves a Hunting Ground alone.
+     */
     private static void fighting(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
-        TerrariumBlockEntity terrarium = terrarium(helper, pos, COMMON, 100, 64, 5000);
-        List<StructureBlockEntity> built = ring(helper, pos, StructureKind.FORAGING_SITE, StructureKind.NEST_CHAMBER);
-        StructureBlockEntity site = built.get(0);
-        site.setRequested(0);
+        TerrariumBlockEntity terrarium = terrarium(helper, pos, AntColonies.id("army"), 200, 0, 100);
+        List<StructureBlockEntity> built = ring(helper, pos, StructureKind.HUNTING_GROUND, StructureKind.STORAGE);
+        StructureBlockEntity ground = built.get(0);
+        StructureBlockEntity storage = built.get(1);
         int mobsBefore = helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new net.minecraft.world.phys.AABB(helper.absolutePos(pos)).inflate(16)).size();
         step(helper, terrarium, 10);
-        helper.assertTrue(site.soldiers() > 0 && site.assigned() == 0, "The site should have soldiers and no workers");
-        helper.assertTrue(count(site) > 0, "The hunts brought nothing");
+        helper.assertTrue(ground.assigned() > 0, "Army Ants should hunt at the Hunting Ground");
+        helper.assertTrue(count(storage) > 0, "The hunts brought nothing");
+        helper.assertTrue(terrarium.colony().stats().hunts() > 0 && terrarium.colony().stats().foodIn() > 0,
+                "The hunters should feed the colony on their catch: food in " + terrarium.colony().stats().foodIn());
+        // Common Ants don't hunt.
+        TerrariumBlockEntity common = terrarium(helper, new BlockPos(1, 1, 6), COMMON, 200, 0, 1000);
+        StructureBlockEntity idle = ring(helper, new BlockPos(1, 1, 6), StructureKind.HUNTING_GROUND).get(0);
+        step(helper, common, 0.1);
+        helper.assertTrue(idle.assigned() == 0 && ColonyStatus.INCOMPATIBLE_SPECIES.in(idle.siteStatus()), "Common Ants should not hunt");
         int mobsAfter = helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new net.minecraft.world.phys.AABB(helper.absolutePos(pos)).inflate(16)).size();
         helper.assertTrue(mobsAfter == mobsBefore, "Hunting must not spawn mobs");
         helper.succeed();
@@ -848,22 +859,25 @@ public class AntColoniesGameTests {
     }
 
     /**
-     * Guard Ants: a Rally Pheromone on a Terrarium costs the colony its soldiers and gives a Guard Ant as strong as the
-     * Queen's Soldier Strength; let out, it belongs to the player and has the stats of its tube.
+     * Guard Ants: a Rally Pheromone on a hunter colony's Terrarium costs it hunters and gives a Guard Ant as strong as the
+     * Queen's Hunting Strength; let out, it belongs to the player and has the stats of its tube. Other colonies give none.
      */
     private static void guardAnts(GameTestHelper helper) {
-        int cost = AntConfig.get(AntConfig.GUARD_SOLDIER_COST);
-        TerrariumBlockEntity terrarium = terrarium(helper, new BlockPos(1, 1, 1), COMMON, 100, cost - 1, 1000);
+        int cost = AntConfig.get(AntConfig.GUARD_COST);
+        TerrariumBlockEntity common = terrarium(helper, new BlockPos(1, 1, 6), COMMON, 1000, 0, 1000);
+        helper.assertFalse(com.antcolonies.content.block.TerrariumBlock.recruitGuard(common, helper.makeMockServerPlayerInLevel(),
+                new ItemStack(ModItems.RALLY_PHEROMONE.get())), "Only hunter colonies should give Guard Ants");
+        TerrariumBlockEntity terrarium = terrarium(helper, new BlockPos(1, 1, 1), AntColonies.id("army"), cost - 1, 0, 1000);
         QueenData queen = terrarium.colony().queen();
         terrarium.colony().setQueen(queen.withGenome(queen.genome().withLevel(Trait.SOLDIER_STRENGTH, 7)));
         var player = helper.makeMockServerPlayerInLevel();
         ItemStack pheromone = new ItemStack(ModItems.RALLY_PHEROMONE.get(), 2);
         helper.assertTrue(!com.antcolonies.content.block.TerrariumBlock.recruitGuard(terrarium, player, pheromone) && pheromone.getCount() == 2,
-                "Too few soldiers: no Guard Ant, the pheromone kept");
-        terrarium.colony().setPopulation(0, 0, 100, cost);
-        helper.assertTrue(com.antcolonies.content.block.TerrariumBlock.recruitGuard(terrarium, player, pheromone), "Enough soldiers should give a Guard Ant");
-        helper.assertTrue(pheromone.getCount() == (player.hasInfiniteMaterials() ? 2 : 1) && terrarium.colony().soldiers() == 0, "The soldiers and one pheromone should be used: "
-                + terrarium.colony().soldiers() + " left");
+                "Too few hunters: no Guard Ant, the pheromone kept");
+        terrarium.colony().setPopulation(0, 0, cost);
+        helper.assertTrue(com.antcolonies.content.block.TerrariumBlock.recruitGuard(terrarium, player, pheromone), "Enough hunters should give a Guard Ant");
+        helper.assertTrue(pheromone.getCount() == (player.hasInfiniteMaterials() ? 2 : 1) && terrarium.colony().workers() == 0, "The hunters and one pheromone should be used: "
+                + terrarium.colony().workers() + " left");
         ItemStack tube = ItemStack.EMPTY;
         for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
             if (player.getInventory().getItem(slot).is(ModItems.GUARD_ANT.get())) {
@@ -871,7 +885,7 @@ public class AntColoniesGameTests {
             }
         }
         com.antcolonies.content.item.GuardData data = tube.get(ModDataComponents.GUARD.get());
-        helper.assertTrue(data != null && data.strength() == 7 && data.species().equals(COMMON), "The tube should hold a strength-7 Common guard: " + data);
+        helper.assertTrue(data != null && data.strength() == 7 && data.species().equals(AntColonies.id("army")), "The tube should hold a strength-7 Army Ant guard: " + data);
         com.antcolonies.content.entity.GuardAnt ant = helper.spawn(ModEntities.GUARD_ANT.get(), new BlockPos(3, 1, 3));
         ant.tame(player);
         ant.setup(data);
@@ -1012,12 +1026,12 @@ public class AntColoniesGameTests {
                 tubes.add(out);
             }
         }
-        helper.assertTrue(tubes.size() == 2 && colony.workers() == 0 && colony.soldiers() == 0, "Two tubes should hold all the ants: " + tubes
-                + ", left " + colony.workers() + " workers, " + colony.soldiers() + " soldiers");
-        helper.assertTrue(terrarium.getItem(TerrariumBlockEntity.SLOT_FEED).getCount() == 1, "The third tube should stay empty in the feed slot");
+        helper.assertTrue(tubes.size() == 1 && colony.workers() == 0, "One tube should hold all the workers (the 40 soldiers joined them): " + tubes
+                + ", left " + colony.workers());
+        helper.assertTrue(terrarium.getItem(TerrariumBlockEntity.SLOT_FEED).getCount() == 2, "The other tubes should stay empty in the feed slot");
         // Broken, a Terrarium keeps no colony.
         BlockPos fromAbs = helper.absolutePos(from);
-        terrarium.colony().setPopulation(0, 0, 50, 0);
+        terrarium.colony().setPopulation(0, 0, 50);
         List<ItemStack> drops = net.minecraft.world.level.block.Block.getDrops(level.getBlockState(fromAbs), level, fromAbs, terrarium);
         helper.assertTrue(drops.stream().noneMatch(stack -> stack.has(ModDataComponents.COLONY.get())), "A broken Terrarium must not keep its colony");
         // The tubes start the colony again in a new Terrarium.
@@ -1032,8 +1046,8 @@ public class AntColoniesGameTests {
             moved.processSlots(level);
         }
         Colony again = moved.colony();
-        helper.assertTrue(again.queen() != null && again.workers() == 300 && again.soldiers() == 40,
-                "The new Terrarium should hold the Queen, 300 workers and 40 soldiers: " + again.queen() + ", " + again.workers() + ", " + again.soldiers());
+        helper.assertTrue(again.queen() != null && again.workers() == 340,
+                "The new Terrarium should hold the Queen and 340 workers: " + again.queen() + ", " + again.workers());
         helper.succeed();
     }
 
@@ -1111,10 +1125,10 @@ public class AntColoniesGameTests {
         for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
             AntSample sample = player.getInventory().getItem(slot).get(ModDataComponents.ANTS.get());
             if (sample != null) {
-                found = sample.species().equals(AntColonies.id("desert")) && sample.caste() == Caste.SOLDIER;
+                found = sample.species().equals(AntColonies.id("desert")) && sample.caste() == Caste.WORKER;
             }
         }
-        helper.assertTrue(found, "No tube of desert soldiers");
+        helper.assertTrue(found, "A caught soldier should come as a desert worker (colonies have no soldiers)");
         helper.succeed();
     }
 

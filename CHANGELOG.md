@@ -24,8 +24,8 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
   or another chamber of the colony, on any side, in any shape (up to 32). Every block is the same glass case on a wooden
   base; touching blocks open into each other, so the whole build is one closed glass case with one frame around it. A chamber exactly as near to two Terrariums joins neither.
 - Twelve structures became five chambers: Nest Chamber (was Breeding Chamber, Ant Nursery, Worker Housing and Soldier
-  Barracks), Foraging Site (was Scavenging Site and Fighting Site: workers find, soldiers hunt, and it holds 9
-  stacks of finds while the Storage is full), Harvesting Site (was Farmer Ant Garden), Storage (was Resource Pile and Food Storage) and Queen Chamber.
+  Barracks), Foraging Site (was Scavenging Site: it holds 9 stacks of finds
+  while the Storage is full), Harvesting Site (was Farmer Ant Garden), Storage (was Resource Pile and Food Storage) and Queen Chamber.
   Glass Ant Tubes, Underground Tunnels, the Colony Connector and the Resource Processing Chamber are gone; Processing
   species upgrades still turn finds into their processed form.
 - The Genetic Laboratory is one block that takes FE from any side. Its five parts and the Genetic Energy Core are gone.
@@ -33,8 +33,13 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 - A Nest Chamber's screen shows the room it adds, with its Population Upgrades.
 - Colonies move in Test Tubes: an empty tube in the Queen slot takes the Queen out, empty tubes in the feed slot fill
   with ants (a tube holds up to 1,000), and the Colony page's Take out buttons do the same from your inventory. A
-  broken Terrarium no longer keeps its colony: the ants left inside are lost (it warns you).
+  broken Terrarium no longer keeps its colony: the ants left inside are lost.
 - When the Queen moves in, her empty tube goes to the output slot. The Queen's X button is gone.
+- Hunters replace soldiers. Colonies have no soldiers any more (old ones join the workers; a caught wild soldier comes as
+  a worker). Four hunter species work at the new Hunting Ground, killing mobs for their loot and feeding the colony on
+  the catch: the Army Ant lives wild in plains and savannas; the Bullet, Trap-Jaw and Inferno Ants evolve from Jungle,
+  Swamp and Fire Ants fed gunpowder, slime balls and blaze powder. The Soldier Upgrade is now the Hunting Upgrade, and
+  Soldier Strength is Hunting Strength. Guard Ants come from hunter colonies, for 50 of their ants.
 - Foraging Sites send their finds to Storage, keeping them only while the Storage is full.
 - Shift-clicking an upgrade puts it only into an upgrade slot, never into a store or the feed slot.
 - Ants inside chambers are drawn only up close (`antDetailDistance`) with 3D models on: a view of 25 colonies runs

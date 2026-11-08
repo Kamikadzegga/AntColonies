@@ -140,7 +140,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         y += 11;
         Colony.Stats stats = colony.stats();
         label(graphics, Component.translatable("gui.antcolonies.workers", number(colony.workers())), x, y, LABEL);
-        label(graphics, Component.translatable("gui.antcolonies.soldiers", number(colony.soldiers())), x + 80, y, LABEL);
         y += 10;
         label(graphics, Component.translatable("gui.antcolonies.larvae", number(colony.larvae())), x, y, LABEL);
         label(graphics, Component.translatable("gui.antcolonies.eggs", number(colony.eggs())), x + 80, y, LABEL);
@@ -157,23 +156,14 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         drawBar(graphics, leftPos + x + 34, topPos + y, 82, 8, colony.health(), colony.health() < 0.5 ? BAD : GOOD);
         label(graphics, Math.round(colony.health() * 100) + "%", x + 120, y, DIM);
         y += 11;
-        // Soldier share.
-        label(graphics, Component.translatable("gui.antcolonies.soldier_share", Math.round(colony.soldierShare() * 100)), x, y, LABEL);
-        button(x + 116, y - 2, 12, 11, "-", TerrariumMenu.BUTTON_SOLDIERS_LESS, List.of(Component.translatable("gui.antcolonies.soldier_share.hint")), true);
-        button(x + 130, y - 2, 12, 11, "+", TerrariumMenu.BUTTON_SOLDIERS_MORE, List.of(Component.translatable("gui.antcolonies.soldier_share.hint")), true);
-        y += 11;
-        // Ants into a tube, to move them to another colony (the whole colony moves with the Terrarium when it is broken).
+        // Workers into a tube, to move them to another colony (a broken Terrarium keeps none).
         label(graphics, Component.translatable("gui.antcolonies.take"), x, y, LABEL);
         List<Component> takeHint = List.of(Component.translatable("gui.antcolonies.take.hint", com.antcolonies.content.item.AntSample.MAX),
                 Component.translatable("gui.antcolonies.take.move").withStyle(ChatFormatting.GRAY),
                 Component.translatable("gui.antcolonies.take.whole").withStyle(ChatFormatting.GRAY));
-        String soldiersText = Component.translatable("gui.antcolonies.take.soldiers").getString();
         String workersText = Component.translatable("gui.antcolonies.take.workers").getString();
-        int soldiersW = buttonWidth(soldiersText);
         int workersW = buttonWidth(workersText);
-        int bx = CONTENT_X + CONTENT_W - 4 - soldiersW;
-        button(bx, y - 2, soldiersW, 11, soldiersText, TerrariumMenu.BUTTON_TAKE_SOLDIERS, takeHint, colony.soldiers() > 0);
-        button(bx - 2 - workersW, y - 2, workersW, 11, workersText, TerrariumMenu.BUTTON_TAKE_WORKERS, takeHint, colony.workers() > 0);
+        button(CONTENT_X + CONTENT_W - 4 - workersW, y - 2, workersW, 11, workersText, TerrariumMenu.BUTTON_TAKE_WORKERS, takeHint, colony.workers() > 0);
         y += 11;
         if (colony.formerSpecies() != null) {
             label(graphics, Component.translatable("gui.antcolonies.transforming", Tooltips.species(colony.formerSpecies()),
@@ -270,9 +260,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             graphics.fill(leftPos + CONTENT_X + 2, topPos + rowY - 1, leftPos + CONTENT_X + CONTENT_W - 2, topPos + rowY + JOB_ROW_H - 2, 0x40000000);
             graphics.item(new ItemStack(ModBlocks.STRUCTURES.get(job.kind()).get()), leftPos + x, topPos + rowY + 3);
             int color = job.status() != 0 && ColonyStatus.of(job.status()).stream().anyMatch(ColonyStatus::problem) ? BAD : LABEL;
-            Component workers = job.kind().job().soldiers()
-                    ? Component.translatable("gui.antcolonies.job_foraging", job.assigned(), job.soldiers(), job.capacity())
-                    : Component.translatable("gui.antcolonies.job_workers", job.assigned(), job.capacity());
+            Component workers = Component.translatable("gui.antcolonies.job_workers", job.assigned(), job.capacity());
             int right = CONTENT_X + CONTENT_W - 4;
             // The ants, then the rate on the right if both fit; otherwise the ants alone (the tooltip has the rate).
             String perMinute = rate(job.rate()) + Component.translatable("gui.antcolonies.per_minute").getString();
@@ -330,7 +318,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                 {"gui.antcolonies.stat.finds", rate(stats.finds()) + perMinute, LABEL},
                 {"gui.antcolonies.stat.hunts", rate(stats.hunts()) + perMinute, LABEL},
                 {"gui.antcolonies.stat.deaths", rate(stats.deaths()) + perMinute, DIM},
-                {"gui.antcolonies.stat.soldier_room", number(stats.soldierCapacity()), LABEL},
                 {"gui.antcolonies.stat.larvae_room", number(stats.larvaeCapacity()), LABEL},
                 {"gui.antcolonies.stat.structures", String.valueOf(stats.structures()), LABEL},
                 {"gui.antcolonies.stat.found_total", number(colony.totalFound()), INFO},
@@ -379,13 +366,11 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                     lines.add(Component.literal(job.pos().getX() + ", " + job.pos().getY() + ", " + job.pos().getZ()).withStyle(ChatFormatting.DARK_GRAY));
                     // The full numbers: the card may have no room for the rate.
                     lines.add(Component.translatable(job.kind() == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.farmers"
-                            : "gui.antcolonies.site.workers", job.assigned(), job.capacity(), job.requested() < 0
+                            : job.kind() == StructureKind.HUNTING_GROUND ? "gui.antcolonies.site.hunters" : "gui.antcolonies.site.workers", job.assigned(), job.capacity(), job.requested() < 0
                             ? Component.translatable("gui.antcolonies.auto") : Component.literal(String.valueOf(job.requested())))
                             .withStyle(ChatFormatting.GRAY));
-                    if (job.kind().job().soldiers()) {
-                        lines.add(Component.translatable("gui.antcolonies.job_soldiers", job.soldiers(), job.capacity()).withStyle(ChatFormatting.GRAY));
-                    }
                     lines.add(Component.translatable(job.kind() == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.food_rate"
+                            : job.kind() == StructureKind.HUNTING_GROUND ? "gui.antcolonies.site.hunt_rate"
                             : "gui.antcolonies.site.rate", rate(job.rate())).withStyle(ChatFormatting.GRAY));
                     for (ColonyStatus status : ColonyStatus.of(job.status())) {
                         lines.add(Component.translatable(status.translationKey()).withStyle(status.color()));
