@@ -6,6 +6,10 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
+### Added
+
+- An in-game config screen: Mods → Ant Colonies → Config, with readable names and explanations for every option.
+
 ## [0.1.0] - 2026-11-08
 
 The first version, for Minecraft 26.3 and NeoForge 26.3.0.101.

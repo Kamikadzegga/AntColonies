@@ -1347,6 +1347,66 @@ public class DataGen {
                 "count", min == max ? min : obj("type", "minecraft:uniform", "max", max, "min", min)), "name", item, "weight", weight);
     }
 
+    // ------------------------------------------------------------------ Config screen
+
+    /** Readable names for options whose camelCase name doesn't read well on its own. */
+    static final Map<String, String> CONFIG_NAMES = Map.of(
+            "ant3DModels", "3D ant models",
+            "antDetailDistance", "3D ant distance",
+            "maxVisualAnts", "Ants drawn per Terrarium",
+            "visualDistance", "Ant draw distance",
+            "rareFindMultiplier", "Rare find multiplier",
+            "bonusExponent", "Bonus exponent");
+
+    /**
+     * Names, tooltips and section titles for NeoForge's configuration screen (the Config button in the Mods list), read
+     * from the options and their comments in AntConfig.java, so the screen always matches the config file.
+     */
+    static void configLang() {
+        Path source = Path.of("common/src/main/java/com/antcolonies/core/config/AntConfig.java");
+        String text;
+        try {
+            text = Files.readString(source);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
+        java.util.regex.Matcher option = java.util.regex.Pattern.compile(
+                "\\.comment\\(((?:\\s*\"(?:[^\"\\\\]|\\\\.)*\"\\s*,?)+)\\)\\s*\\.define\\w*\\(\\s*\"(\\w+)\"").matcher(text);
+        java.util.regex.Pattern part = java.util.regex.Pattern.compile("\"((?:[^\"\\\\]|\\\\.)*)\"");
+        int options = 0;
+        while (option.find()) {
+            String name = option.group(2);
+            StringBuilder comment = new StringBuilder();
+            java.util.regex.Matcher pieces = part.matcher(option.group(1));
+            while (pieces.find()) {
+                comment.append(comment.isEmpty() ? "" : " ").append(pieces.group(1).replace("\\\"", "\""));
+            }
+            String key = NS + ".configuration." + name;
+            if (LANG.containsKey(key)) {
+                throw new IllegalStateException("Two config options are called " + name + ": their screen names would clash");
+            }
+            LANG.put(key, CONFIG_NAMES.getOrDefault(name, words(name)));
+            LANG.put(key + ".tooltip", comment.toString());
+            options++;
+        }
+        java.util.regex.Matcher section = java.util.regex.Pattern.compile("\\.push\\(\"(\\w+)\"\\)").matcher(text);
+        while (section.find()) {
+            String title = words(section.group(1));
+            LANG.put(NS + ".configuration.section." + section.group(1), title);
+            LANG.put(NS + ".configuration.section." + section.group(1) + ".title", "Ant Colonies: " + title);
+        }
+        LANG.put(NS + ".configuration.title", "Ant Colonies Configuration");
+        if (options < 70) {
+            throw new IllegalStateException("Only " + options + " config options found in " + source + ": did its format change?");
+        }
+    }
+
+    /** "offlineCatchUpMinutes" -> "Offline catch up minutes". */
+    static String words(String camel) {
+        String spaced = camel.replaceAll("([a-z0-9])([A-Z])", "$1 $2").replaceAll("([A-Z])([A-Z][a-z])", "$1 $2").toLowerCase(Locale.ROOT);
+        return Character.toUpperCase(spaced.charAt(0)) + spaced.substring(1);
+    }
+
     static void lang() {
         Map<String, String> l = LANG;
         l.put("itemGroup." + NS, "Ant Colonies");
@@ -1621,6 +1681,7 @@ public class DataGen {
         customModels();
         items();
         newFeatures();
+        configLang();
         particles();
         sounds();
         lang();

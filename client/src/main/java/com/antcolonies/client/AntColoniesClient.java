@@ -19,6 +19,9 @@ import com.antcolonies.core.registry.ModParticles;
 import com.antcolonies.colony.species.Caste;
 
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
@@ -72,6 +75,11 @@ public final class AntColoniesClient {
         event.register(SpeciesTint.ID, SpeciesTint.MAP_CODEC);
     }
 
-    public AntColoniesClient() {
+    /**
+     * Gives the mod a Config button in the Mods list: NeoForge's configuration screen, with every client option (how the
+     * ants are drawn, particles, sounds) and, in single-player, the server options.
+     */
+    public AntColoniesClient(ModContainer container) {
+        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
     }
 }

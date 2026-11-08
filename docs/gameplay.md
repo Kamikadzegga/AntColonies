@@ -170,6 +170,10 @@ never takes it above level 6: the top levels have to be upgraded.
 
 ## Configuration
 
+In game: **Mods → Ant Colonies → Config**. **Client Settings** has how the ants are drawn (3D or 2D models, how many, how
+far), particles and sounds; **Synced Settings** has the server options below, which can be changed there in
+single-player. Every option explains itself when you point at it. The same options are in the config files:
+
 `config/antcolonies/server.toml` (synced to players): simulation interval, offline catch-up, capacities, egg and growth
 times, food use, starvation, production rates and diminishing returns, upgrade strengths, trait multipliers and
 starting weights, mutation and evolution chances, wild spawn and Queen chances, connector rates, Generator output

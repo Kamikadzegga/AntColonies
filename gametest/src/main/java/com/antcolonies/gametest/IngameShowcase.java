@@ -78,6 +78,48 @@ public class IngameShowcase {
         if (Files.exists(MARKER)) {
             LOGGER.info("[Showcase] marker found");
             NeoForge.EVENT_BUS.addListener(this::onClientTick);
+        } else if (Files.exists(CONFIG_MARKER)) {
+            LOGGER.info("[Showcase] config check");
+            NeoForge.EVENT_BUS.addListener(this::onConfigCheckTick);
+        }
+    }
+
+    /** A file named {@code config-check} in the run folder: only open the config screen, take pictures and quit. */
+    private static final Path CONFIG_MARKER = FMLPaths.GAMEDIR.get().resolve("config-check");
+    private int configTicks = -1;
+
+    /** The config-only check: from the title screen, open the Config screen, then its client page. */
+    private void onConfigCheckTick(ClientTickEvent.Post event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (configTicks < 0) {
+            if (minecraft.gui.screen() != null && minecraft.gui.screen().getClass().getSimpleName().equals("LoadingErrorScreen")) {
+                minecraft.gui.setScreen(new TitleScreen());
+            }
+            if (!(minecraft.gui.screen() instanceof TitleScreen)) {
+                return;
+            }
+            minecraft.options.pauseOnLostFocus = false;
+        }
+        configTicks++;
+        switch (configTicks) {
+            case 10 -> {
+                var container = net.neoforged.fml.ModList.get().getModContainerById(AntColonies.MODID).orElseThrow();
+                minecraft.gui.setScreen(net.neoforged.neoforge.client.gui.IConfigScreenFactory.getForMod(container.getModInfo())
+                        .map(factory -> factory.createScreen(container, new TitleScreen())).orElse(null));
+                result("config screen: " + (minecraft.gui.screen() == null ? "none" : minecraft.gui.screen().getClass().getSimpleName()));
+            }
+            case 30 -> {
+                screenshot(minecraft, "32_config_screen");
+                clickButton(minecraft, "Client Settings");
+            }
+            case 50 -> screenshot(minecraft, "33_config_client");
+            case 52 -> {
+                // The tooltip of the first option, as a player sees it on hover.
+                var widget = findWidget(minecraft.gui.screen().children(), "3D ant models");
+                result("3D ant models option: " + (widget == null ? "not found" : "found"));
+            }
+            case 55 -> finish(minecraft);
+            default -> { }
         }
     }
 
@@ -269,9 +311,20 @@ public class IngameShowcase {
             case 1275 -> minecraft.gui.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(minecraft.player));
             case 1295 -> screenshot(minecraft, "31_chitin_items");
             case 1298 -> minecraft.gui.setScreen(null);
+            // The Config button in the Mods list: NeoForge's configuration screen, then its client page.
+            case 1300 -> minecraft.gui.setScreen(net.neoforged.neoforge.client.gui.IConfigScreenFactory
+                    .getForMod(net.neoforged.fml.ModList.get().getModContainerById(AntColonies.MODID).orElseThrow().getModInfo())
+                    .map(factory -> factory.createScreen(net.neoforged.fml.ModList.get().getModContainerById(AntColonies.MODID).orElseThrow(), null))
+                    .orElse(null));
+            case 1320 -> {
+                screenshot(minecraft, "32_config_screen");
+                clickButton(minecraft, "Client Settings");
+            }
+            case 1340 -> screenshot(minecraft, "33_config_client");
+            case 1343 -> minecraft.gui.setScreen(null);
             default -> {
-                if (ticks > 1300) {
-                    audit(minecraft, server, ticks - 1305);
+                if (ticks > 1345) {
+                    audit(minecraft, server, ticks - 1350);
                 }
             }
         }
@@ -429,6 +482,41 @@ public class IngameShowcase {
         if (server.overworld().getBlockEntity(pos) instanceof net.minecraft.world.MenuProvider provider) {
             player.openMenu(provider, pos);
         }
+    }
+
+    /** A widget whose label contains the text, also inside lists and other containers. */
+    private static net.minecraft.client.gui.components.AbstractWidget findWidget(List<? extends net.minecraft.client.gui.components.events.GuiEventListener> children,
+                                                                                 String label) {
+        for (var child : children) {
+            if (child instanceof net.minecraft.client.gui.components.AbstractWidget widget && widget.getMessage().getString().contains(label)) {
+                return widget;
+            }
+            if (child instanceof net.minecraft.client.gui.components.events.ContainerEventHandler container) {
+                var found = findWidget(container.children(), label);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Clicks the first button whose label contains the text, as a player would. */
+    private void clickButton(Minecraft minecraft, String label) {
+        var screen = minecraft.gui.screen();
+        if (screen == null) {
+            result("FAIL no screen to click " + label);
+            return;
+        }
+        var widget = findWidget(screen.children(), label);
+        if (widget != null) {
+            double x = widget.getX() + widget.getWidth() / 2.0;
+            double y = widget.getY() + widget.getHeight() / 2.0;
+            screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0)), false);
+            result("clicked " + widget.getMessage().getString());
+            return;
+        }
+        result("FAIL no button " + label + " on " + screen.getClass().getSimpleName());
     }
 
     private void clickTab(Minecraft minecraft, int tab) {
