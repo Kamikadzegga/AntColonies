@@ -663,6 +663,7 @@ public class DataGen {
         LANG.put("config.jade.plugin_" + NS + ".wild_ant", "Wild ant species");
         LANG.put("config.jade.plugin_" + NS + ".wild_nest", "Wild nest species");
         LANG.put("message." + NS + ".take.no_soldiers", "The colony has no soldiers");
+        LANG.put("message." + NS + ".terrarium.lost", "The colony in this Terrarium is lost. Take the Queen and ants out in Test Tubes first next time.");
         LANG.put("jade." + NS + ".catch", "Catch it with Tweezers (and an empty Test Tube)");
         LANG.put("jade." + NS + ".nest", "Tweezers take workers out; now and then a Queen");
         LANG.put("tooltip." + NS + ".species.climate", "Climate: %s");
@@ -892,7 +893,7 @@ public class DataGen {
     static void loot() {
         write(DATA.resolve("loot_table/blocks/terrarium.json"), obj("type", "minecraft:block", "pools", arr(obj(
                 "entries", arr(obj("type", "minecraft:item", "modifier", obj("type", "minecraft:copy_components", "include",
-                        arr("minecraft:custom_name", ac("colony")), "source", "block_entity"), "name", ac("terrarium"))), "rolls", 1)),
+                        arr("minecraft:custom_name"), "source", "block_entity"), "name", ac("terrarium"))), "rolls", 1)),
                 "random_sequence", ac("blocks/terrarium")));
         for (String block : new String[] {"upgrade_station", "genetic_laboratory", "generator"}) {
             selfDrop(block);
@@ -1471,7 +1472,7 @@ public class DataGen {
                         "Craft Tweezers and some Test Tubes. Find wild ants or an Ant Nest and use the Tweezers on them: the ants go into an empty Test Tube in your inventory. Queens are rare; nests give one now and then.",
                         "Place a Terrarium, put the Queen Test Tube in, then some Ant Food. The Queen starts laying eggs at once: a Terrarium works on its own.",
                         "The Terrarium's screen shows the colony: its ants, genes, jobs and numbers, and on the Info page what its ants are like.",
-                        "To move a colony, break its Terrarium: it keeps the Queen, the ants and the food, and they go on wherever you place it. The Colony page's buttons take workers or soldiers into a Test Tube, to add to another colony.")},
+                        "To move a colony, take it out in Test Tubes: an empty tube in the Queen slot takes the Queen out, empty tubes in the feed slot fill with ants (up to 1,000 each), and the Colony page's Take out buttons do the same from your inventory. Then break the Terrarium and put the tubes into a new one. Ants left inside a broken Terrarium are lost.")},
                 {"chambers", "The Colony Build", String.join("\n",
                         "Chambers are additions. Put one against the Terrarium, or against a chamber already in the colony, on any side (above and below too): it joins, and the glass between them goes: the whole build becomes one glass case. A colony takes up to 32.",
                         "Nest Chamber: eggs at full speed, faster larvae, room for 3,000 adults (1,000 of them soldiers) and 1,500 larvae. Without one the Queen lays at half speed and only 60 adults fit.",
@@ -1599,7 +1600,7 @@ public class DataGen {
         l.put("entity." + NS + ".wild_ant", "Wild Ant");
         // Tooltips of blocks and items.
         String[][] tips = {
-                {"terrarium", "The heart of a colony. Put a Queen in and feed her. Chambers placed against it, or against its chambers, join the colony. Broken, it keeps its colony: place it anywhere to move it."},
+                {"terrarium", "The heart of a colony. Put a Queen in and feed her. Chambers placed against it, or against its chambers, join the colony. Take the Queen and ants out in Test Tubes before breaking it: what is left inside is lost."},
                 {"nest_chamber", "Brood and housing: eggs at full speed, faster larvae, room for 3,000 adults (1,000 soldiers) and 1,500 larvae."},
                 {"storage", "More room for what the colony finds, and food room. Hoppers can empty it; Storage Upgrades open more slots."},
                 {"foraging_site", "Workers find their species' resources and soldiers hunt mobs (from their loot tables; none spawn). Sends finds to Storage; holds 9 stacks when it is full."},
@@ -1706,9 +1707,8 @@ public class DataGen {
                 {"stage", "Stage %s"}, {"queen", "Queen %s"}, {"workers", "Workers: %s"}, {"soldiers", "Soldiers: %s"}, {"larvae", "Larvae: %s"},
                 {"eggs", "Eggs: %s"}, {"housing", "Adults %s / %s housed"}, {"food", "Food"}, {"health", "Health"},
                 {"soldier_share", "New soldiers: %s%%"}, {"soldier_share.hint", "Share of new adults raised as soldiers"},
-                {"remove_queen", "Take the Queen out"}, {"remove_queen.hint", "Needs an empty Test Tube in the Queen slot"},
                 {"slot.queen", "Queen slot"}, {"slot.queen.hint", "A Queen Test Tube starts the colony; an empty Test Tube takes the Queen out"},
-                {"slot.feed", "Feed slot"}, {"slot.feed.hint", "Food, ants in Test Tubes, eggs, larvae or an Evolution Catalyst"},
+                {"slot.feed", "Feed slot"}, {"slot.feed.hint", "Food, ants in Test Tubes, eggs, larvae or an Evolution Catalyst; empty Test Tubes fill with ants"},
                 {"slot.output", "Output"}, {"slot.output.hint", "Empty Test Tubes and leftovers come out here"},
                 {"slot.upgrade", "Upgrade slot"}, {"slot.upgrade.hint", "Population, Simulation, Evolution, Food Efficiency or Breeding upgrades"}, {"slot.structure_upgrade.hint", "Upgrades this chamber accepts (see JEI or EMI, or the item tooltip)"},
                 {"transforming", "Transforming from %s: %s%%"}, {"genetics_of", "%s, generation %s"}, {"no_mutations", "No mutations"},
@@ -1761,7 +1761,7 @@ public class DataGen {
                 {"take", "Take out:"}, {"take.workers", "Workers"}, {"take.soldiers", "Soldiers"},
                 {"take.hint", "Takes up to %s ants into an empty Test Tube from your inventory"},
                 {"take.move", "Use the tube on another Terrarium to add them."},
-                {"take.whole", "To move the whole colony, break the Terrarium."},
+                {"take.whole", "Breaking the Terrarium loses the ants still in it."},
                 {"nest.upgraded", "+%s%% from Population Upgrades"}, {"nest.upgrade_hint", "Population Upgrades: +50%% room per tier"},
                 {"effect.storage", ""}};
         for (String[] g : gui) {

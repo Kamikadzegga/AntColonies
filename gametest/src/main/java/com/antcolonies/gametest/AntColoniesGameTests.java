@@ -988,38 +988,52 @@ public class AntColoniesGameTests {
 
 
     /**
-     * Moving ants: a broken Terrarium keeps its colony (Queen, workers, soldiers, food) and brings it wherever it is
-     * placed; the Colony page's buttons take soldiers or workers into an empty Test Tube.
+     * Moving a colony goes through Test Tubes: an empty tube in the Queen slot takes the Queen out, empty tubes in the feed
+     * slot fill with workers, then soldiers. A broken Terrarium keeps nothing. The tubes start the colony again elsewhere.
      */
     private static void colonyMoves(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos from = new BlockPos(1, 1, 1);
         TerrariumBlockEntity terrarium = terrarium(helper, from, COMMON, 300, 40, 900);
+        Colony colony = terrarium.colony();
+        // The Queen out.
+        terrarium.setItem(TerrariumBlockEntity.SLOT_QUEEN, new ItemStack(ModItems.TEST_TUBE.get()));
+        terrarium.processSlots(level);
+        ItemStack queenTube = terrarium.removeItemNoUpdate(TerrariumBlockEntity.SLOT_OUTPUT);
+        helper.assertTrue(colony.queen() == null && queenTube.has(ModDataComponents.QUEEN.get()), "An empty tube in the Queen slot should take her out: "
+                + queenTube);
+        // The ants out: workers, then soldiers, a tube each.
+        terrarium.setItem(TerrariumBlockEntity.SLOT_FEED, new ItemStack(ModItems.TEST_TUBE.get(), 3));
+        List<ItemStack> tubes = new java.util.ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            terrarium.processSlots(level);
+            ItemStack out = terrarium.removeItemNoUpdate(TerrariumBlockEntity.SLOT_OUTPUT);
+            if (!out.isEmpty()) {
+                tubes.add(out);
+            }
+        }
+        helper.assertTrue(tubes.size() == 2 && colony.workers() == 0 && colony.soldiers() == 0, "Two tubes should hold all the ants: " + tubes
+                + ", left " + colony.workers() + " workers, " + colony.soldiers() + " soldiers");
+        helper.assertTrue(terrarium.getItem(TerrariumBlockEntity.SLOT_FEED).getCount() == 1, "The third tube should stay empty in the feed slot");
+        // Broken, a Terrarium keeps no colony.
         BlockPos fromAbs = helper.absolutePos(from);
+        terrarium.colony().setPopulation(0, 0, 50, 0);
         List<ItemStack> drops = net.minecraft.world.level.block.Block.getDrops(level.getBlockState(fromAbs), level, fromAbs, terrarium);
-        ItemStack item = drops.stream().filter(stack -> stack.is(ModItems.TERRARIUM.get())).findFirst().orElse(ItemStack.EMPTY);
-        helper.assertTrue(item.has(ModDataComponents.COLONY.get()), "A broken Terrarium should drop with its colony: " + drops);
-        helper.setBlock(from, net.minecraft.world.level.block.Blocks.AIR);
+        helper.assertTrue(drops.stream().noneMatch(stack -> stack.has(ModDataComponents.COLONY.get())), "A broken Terrarium must not keep its colony");
+        // The tubes start the colony again in a new Terrarium.
         BlockPos to = new BlockPos(6, 1, 1);
         helper.setBlock(to, ModBlocks.TERRARIUM.get());
         TerrariumBlockEntity moved = helper.getBlockEntity(to, TerrariumBlockEntity.class);
-        moved.applyComponentsFromItemStack(item);
-        Colony colony = moved.colony();
-        helper.assertTrue(colony.queen() != null && colony.workers() == 300 && colony.soldiers() == 40 && Math.abs(colony.food() - 900) < 1e-6,
-                "The placed Terrarium should hold the same colony: queen " + colony.queen() + ", " + colony.workers() + " workers, "
-                        + colony.soldiers() + " soldiers, food " + colony.food());
-        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        player.getInventory().add(new ItemStack(ModItems.TEST_TUBE.get(), 2));
-        helper.assertTrue(com.antcolonies.content.item.TweezersItem.takeFromColony(player, moved, Caste.SOLDIER), "Taking soldiers failed");
-        helper.assertTrue(colony.soldiers() == 0, "The soldiers should be in the tube, the colony still has " + colony.soldiers());
-        int inTube = 0;
-        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
-            var ants = player.getInventory().getItem(slot).get(ModDataComponents.ANTS.get());
-            if (ants != null && ants.caste() == Caste.SOLDIER) {
-                inTube += ants.count();
-            }
+        moved.setItem(TerrariumBlockEntity.SLOT_QUEEN, queenTube);
+        moved.processSlots(level);
+        for (ItemStack tube : tubes) {
+            moved.removeItemNoUpdate(TerrariumBlockEntity.SLOT_OUTPUT);
+            moved.setItem(TerrariumBlockEntity.SLOT_FEED, tube);
+            moved.processSlots(level);
         }
-        helper.assertTrue(inTube == 40, "The tube should hold the 40 soldiers, holds " + inTube);
+        Colony again = moved.colony();
+        helper.assertTrue(again.queen() != null && again.workers() == 300 && again.soldiers() == 40,
+                "The new Terrarium should hold the Queen, 300 workers and 40 soldiers: " + again.queen() + ", " + again.workers() + ", " + again.soldiers());
         helper.succeed();
     }
 
@@ -1104,7 +1118,7 @@ public class AntColoniesGameTests {
         helper.succeed();
     }
 
-    /** A Queen Test Tube in the Queen slot moves in; food in the feed slot becomes colony food. */
+    /** A Queen Test Tube in the Queen slot moves in (her empty tube goes to the output); food in the feed slot becomes colony food. */
     private static void feeding(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         helper.setBlock(pos, ModBlocks.TERRARIUM.get());
@@ -1116,7 +1130,8 @@ public class AntColoniesGameTests {
         helper.succeedWhen(() -> {
             Colony colony = terrarium.colony();
             helper.assertTrue(colony.queen() != null && colony.species().equals(AntColonies.id("snow")), "The Queen did not move in");
-            helper.assertTrue(terrarium.getItem(TerrariumBlockEntity.SLOT_QUEEN).is(ModItems.TEST_TUBE.get()), "The empty tube should stay");
+            helper.assertTrue(terrarium.getItem(TerrariumBlockEntity.SLOT_QUEEN).isEmpty() && terrarium.getItem(TerrariumBlockEntity.SLOT_OUTPUT).is(ModItems.TEST_TUBE.get()),
+                    "The empty tube should go to the output, leaving the Queen slot free");
             helper.assertTrue(colony.food() >= 700, "Food was not added: " + colony.food());
         });
     }

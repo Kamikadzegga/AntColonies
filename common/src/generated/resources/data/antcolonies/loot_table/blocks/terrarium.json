@@ -8,8 +8,7 @@
           "modifier": {
             "type": "minecraft:copy_components",
             "include": [
-              "minecraft:custom_name",
-              "antcolonies:colony"
+              "minecraft:custom_name"
             ],
             "source": "block_entity"
           },

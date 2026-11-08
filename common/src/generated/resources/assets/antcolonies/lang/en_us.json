@@ -346,8 +346,6 @@
   "gui.antcolonies.queen_chamber.needs": "Rearing needs:",
   "gui.antcolonies.queen_chamber.slots": "Rears a new Queen",
   "gui.antcolonies.queen_chamber.time": "Takes %s s at full speed",
-  "gui.antcolonies.remove_queen": "Take the Queen out",
-  "gui.antcolonies.remove_queen.hint": "Needs an empty Test Tube in the Queen slot",
   "gui.antcolonies.site.farmers": "Farmers %s/%s (want %s)",
   "gui.antcolonies.site.food_rate": "%s food per minute",
   "gui.antcolonies.site.hunt_rate": "%s hunts per minute",
@@ -356,7 +354,7 @@
   "gui.antcolonies.site.store": "Finds wait here while the Storage is full",
   "gui.antcolonies.site.workers": "Workers %s/%s (want %s)",
   "gui.antcolonies.slot.feed": "Feed slot",
-  "gui.antcolonies.slot.feed.hint": "Food, ants in Test Tubes, eggs, larvae or an Evolution Catalyst",
+  "gui.antcolonies.slot.feed.hint": "Food, ants in Test Tubes, eggs, larvae or an Evolution Catalyst; empty Test Tubes fill with ants",
   "gui.antcolonies.slot.output": "Output",
   "gui.antcolonies.slot.output.hint": "Empty Test Tubes and leftovers come out here",
   "gui.antcolonies.slot.qc_output": "New Queen",
@@ -396,7 +394,7 @@
   "gui.antcolonies.take.hint": "Takes up to %s ants into an empty Test Tube from your inventory",
   "gui.antcolonies.take.move": "Use the tube on another Terrarium to add them.",
   "gui.antcolonies.take.soldiers": "Soldiers",
-  "gui.antcolonies.take.whole": "To move the whole colony, break the Terrarium.",
+  "gui.antcolonies.take.whole": "Breaking the Terrarium loses the ants still in it.",
   "gui.antcolonies.take.workers": "Workers",
   "gui.antcolonies.transforming": "Transforming from %s: %s%%",
   "gui.antcolonies.upgrades": "Upgrades",
@@ -432,7 +430,7 @@ The more ants on a job, the more they find, a little less for each extra ant. Ne
   "guide.antcolonies.start.text": "Craft Tweezers and some Test Tubes. Find wild ants or an Ant Nest and use the Tweezers on them: the ants go into an empty Test Tube in your inventory. Queens are rare; nests give one now and then.
 Place a Terrarium, put the Queen Test Tube in, then some Ant Food. The Queen starts laying eggs at once: a Terrarium works on its own.
 The Terrarium's screen shows the colony: its ants, genes, jobs and numbers, and on the Info page what its ants are like.
-To move a colony, break its Terrarium: it keeps the Queen, the ants and the food, and they go on wherever you place it. The Colony page's buttons take workers or soldiers into a Test Tube, to add to another colony.",
+To move a colony, take it out in Test Tubes: an empty tube in the Queen slot takes the Queen out, empty tubes in the feed slot fill with ants (up to 1,000 each), and the Colony page's Take out buttons do the same from your inventory. Then break the Terrarium and put the tubes into a new one. Ants left inside a broken Terrarium are lost.",
   "guide.antcolonies.start.title": "Getting Started",
   "guide.antcolonies.upgrades.text": "Upgrades go in a screen's upgrade slots; shift-clicking one puts it there. Each block takes the kinds it can use: the slot's tooltip, and JEI or EMI, tell which.
 The Upgrade Station makes species upgrades from an Upgrade Base and a species' signature material. They work only for that species, in Foraging Sites.",
@@ -588,6 +586,7 @@ The Upgrade Station makes species upgrades from an Upgrade Base and a species' s
   "message.antcolonies.guard.stay": "Your Guard Ant stays here",
   "message.antcolonies.nest.recovering": "The nest is still recovering",
   "message.antcolonies.take.no_soldiers": "The colony has no soldiers",
+  "message.antcolonies.terrarium.lost": "The colony in this Terrarium is lost. Take the Queen and ants out in Test Tubes first next time.",
   "message.antcolonies.tweezers.caught": "Caught: %s",
   "message.antcolonies.tweezers.no_eggs": "Not enough eggs",
   "message.antcolonies.tweezers.no_tube": "You need an empty Test Tube",
@@ -827,7 +826,7 @@ The Upgrade Station makes species upgrades from an Upgrade Base and a species' s
   "tooltip.antcolonies.stone_ant_nest": "A wild nest. Use Tweezers (with an empty Test Tube) to take ants; it fights back.",
   "tooltip.antcolonies.storage": "More room for what the colony finds, and food room. Hoppers can empty it; Storage Upgrades open more slots.",
   "tooltip.antcolonies.swamp_ant_nest": "A wild nest. Use Tweezers (with an empty Test Tube) to take ants; it fights back.",
-  "tooltip.antcolonies.terrarium": "The heart of a colony. Put a Queen in and feed her. Chambers placed against it, or against its chambers, join the colony. Broken, it keeps its colony: place it anywhere to move it.",
+  "tooltip.antcolonies.terrarium": "The heart of a colony. Put a Queen in and feed her. Chambers placed against it, or against its chambers, join the colony. Take the Queen and ants out in Test Tubes before breaking it: what is left inside is lost.",
   "tooltip.antcolonies.terrarium.colony": "Colony: %s",
   "tooltip.antcolonies.terrarium.no_queen": "No Queen",
   "tooltip.antcolonies.terrarium.population": "%s workers, %s soldiers",

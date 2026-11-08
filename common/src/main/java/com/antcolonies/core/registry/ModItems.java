@@ -111,7 +111,6 @@ public final class ModItems {
                 public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip,
                                             TooltipFlag flag) {
                     tooltip.accept(Component.translatable("tooltip.antcolonies.terrarium").withStyle(net.minecraft.ChatFormatting.GRAY));
-                    TerrariumBlock.describeColony(stack, tooltip);
                 }
             }, p -> p.useBlockDescriptionPrefix());
 

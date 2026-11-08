@@ -134,9 +134,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         if (queen != null) {
             label(graphics, Component.translatable("gui.antcolonies.queen", queen.genome().lineage().name()).append(" ")
                     .append(Tooltips.rarity(queen.genome().rarity())), x, y, LABEL);
-            button(CONTENT_X + CONTENT_W - 18, y - 2, 14, 11, "X", TerrariumMenu.BUTTON_REMOVE_QUEEN,
-                    List.of(Component.translatable("gui.antcolonies.remove_queen"), Component.translatable("gui.antcolonies.remove_queen.hint")
-                            .withStyle(ChatFormatting.GRAY)), true);
         } else {
             label(graphics, Component.translatable("status.antcolonies.no_queen"), x, y, BAD);
         }
@@ -176,7 +173,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         int workersW = buttonWidth(workersText);
         int bx = CONTENT_X + CONTENT_W - 4 - soldiersW;
         button(bx, y - 2, soldiersW, 11, soldiersText, TerrariumMenu.BUTTON_TAKE_SOLDIERS, takeHint, colony.soldiers() > 0);
-        button(bx - 2 - workersW, y - 2, workersW, 11, workersText, TerrariumMenu.BUTTON_TAKE_WORKERS, takeHint, colony.workers() > colony.maintenanceWorkers());
+        button(bx - 2 - workersW, y - 2, workersW, 11, workersText, TerrariumMenu.BUTTON_TAKE_WORKERS, takeHint, colony.workers() > 0);
         y += 11;
         if (colony.formerSpecies() != null) {
             label(graphics, Component.translatable("gui.antcolonies.transforming", Tooltips.species(colony.formerSpecies()),

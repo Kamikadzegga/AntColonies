@@ -31,8 +31,10 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 - The Genetic Laboratory is one block that takes FE from any side. Its five parts and the Genetic Energy Core are gone.
 - Food goes in only through the Terrarium. Storage adds food room.
 - A Nest Chamber's screen shows the room it adds, with its Population Upgrades.
-- The Terrarium's Colony page takes workers or soldiers into a Test Tube (up to 1,000 a tube) to add to another colony.
-  A broken Terrarium keeps its whole colony; its tooltip and the book now say so.
+- Colonies move in Test Tubes: an empty tube in the Queen slot takes the Queen out, empty tubes in the feed slot fill
+  with ants (a tube holds up to 1,000), and the Colony page's Take out buttons do the same from your inventory. A
+  broken Terrarium no longer keeps its colony: the ants left inside are lost (it warns you).
+- When the Queen moves in, her empty tube goes to the output slot. The Queen's X button is gone.
 - Foraging Sites send their finds to Storage, keeping them only while the Storage is full.
 - Shift-clicking an upgrade puts it only into an upgrade slot, never into a store or the feed slot.
 - Ants inside chambers are drawn only up close (`antDetailDistance`) with 3D models on: a view of 25 colonies runs

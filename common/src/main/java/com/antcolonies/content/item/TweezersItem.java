@@ -156,8 +156,7 @@ public class TweezersItem extends Item {
     }
 
     /**
-     * The Terrarium's take buttons: up to a tube's worth ({@link AntSample#MAX}) of the colony's workers (never those it
-     * needs at home) or soldiers, into an empty Test Tube from the player's inventory. Using the tube on another Terrarium
+     * The Terrarium's take buttons: up to a tube's worth ({@link AntSample#MAX}) of the colony's workers or soldiers, into an empty Test Tube from the player's inventory. Using the tube on another Terrarium
      * adds them to that colony.
      */
     public static boolean takeFromColony(Player player, TerrariumBlockEntity terrarium, Caste caste) {
@@ -167,7 +166,7 @@ public class TweezersItem extends Item {
         }
         Colony colony = terrarium.colony();
         boolean soldiers = caste == Caste.SOLDIER;
-        int count = (int) Math.min(AntSample.MAX, soldiers ? colony.soldiers() : colony.workers() - colony.maintenanceWorkers());
+        int count = (int) Math.min(AntSample.MAX, soldiers ? colony.soldiers() : colony.workers());
         if (count <= 0) {
             player.sendOverlayMessage(Component.translatable(soldiers ? "message.antcolonies.take.no_soldiers" : "message.antcolonies.tweezers.no_workers")
                     .withStyle(ChatFormatting.RED));

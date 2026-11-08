@@ -62,8 +62,10 @@ with Simulation Upgrades), never on the whole time away.
 5. Grow: stage 2 needs 100 adults; stage 3 1,000 adults; stage 4 5,000 adults and a mineral species or good genetics.
    Stages unlock outputs and change the Terrarium's look.
 
-To move a colony, break its Terrarium: it keeps the Queen, the ants and the food. The Colony page's **Take out**
-buttons put workers or soldiers into a Test Tube (up to 1,000), to add to another colony.
+To move a colony, take it out in Test Tubes: an empty tube in the Queen slot takes the Queen out, and empty tubes in
+the feed slot fill with ants, workers first, then soldiers (up to 1,000 a tube). The Colony page's **Take out**
+buttons do the same from the tubes in your inventory. Then break the Terrarium and put the tubes into a new one.
+**Ants still in a Terrarium when it is broken are lost**, and so are its eggs, larvae and food.
 
 The **Ant Identification Book** has how-to-play pages and a page for every species.
 
@@ -71,7 +73,7 @@ The **Ant Identification Book** has how-to-play pages and a page for every speci
 
 | Structure | What it does |
 |---|---|
-| Terrarium | The colony: Queen, food, evolution feeding, overview GUI (Colony, Genes, Jobs, Stats, Info). Houses 60 adults and lays eggs at half speed on its own. Keeps the colony when broken. |
+| Terrarium | The colony: Queen, food, evolution feeding, overview GUI (Colony, Genes, Jobs, Stats, Info). Houses 60 adults and lays eggs at half speed on its own. Its Queen and ants leave only in Test Tubes; broken, it keeps nothing. |
 | Nest Chamber | Brood and housing: eggs at full speed, faster larvae, room for 3,000 adults (1,000 of them soldiers) and 1,500 larvae. More chambers lay faster (diminishing). |
 | Foraging Site | Workers find the species' outputs; soldiers hunt, with drops from the hunted mobs' own loot tables (vanilla or modded; no mobs spawn). Sends its finds to Storage; holds 9 stacks while the Storage is full. Takes species upgrades. |
 | Harvesting Site | Farmer Ants grow food and harvest mushrooms, seeds, berries. Other species can't farm. |

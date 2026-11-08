@@ -1,8 +1,5 @@
 package com.antcolonies.content.block;
 
-import java.util.List;
-import java.util.function.Consumer;
-
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.client.ClientHooks;
 import com.antcolonies.core.registry.ModBlockEntities;
@@ -146,26 +143,14 @@ public class TerrariumBlock extends ColonyPartBlock {
         ClientHooks.terrariumParticles(level, pos, random);
     }
 
-    /** The tooltip of a Terrarium item that carries a colony. */
-    public static void describeColony(ItemStack stack, Consumer<net.minecraft.network.chat.Component> tooltip) {
-        var data = stack.get(ModDataComponents.COLONY.get());
-        if (data == null) {
-            return;
+    /** Broken with ants in it: they are lost, so say how to take them out next time. */
+    @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TerrariumBlockEntity terrarium
+                && (terrarium.colony().queen() != null || terrarium.colony().exactAdults() >= 1)) {
+            player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.antcolonies.terrarium.lost")
+                    .withStyle(net.minecraft.ChatFormatting.GOLD));
         }
-        var tag = data.copyTag();
-        String species = tag.getStringOr("species", "");
-        long workers = (long) tag.getDoubleOr("workers", 0);
-        long soldiers = (long) tag.getDoubleOr("soldiers", 0);
-        boolean queen = tag.contains("queen");
-        net.minecraft.resources.Identifier id = net.minecraft.resources.Identifier.tryParse(species);
-        List<net.minecraft.network.chat.Component> lines = List.of(
-                net.minecraft.network.chat.Component.translatable("tooltip.antcolonies.terrarium.colony",
-                        id == null ? species : net.minecraft.network.chat.Component.translatable(com.antcolonies.colony.species.AntSpecies.translationKey(id)))
-                        .withStyle(net.minecraft.ChatFormatting.GOLD),
-                net.minecraft.network.chat.Component.translatable("tooltip.antcolonies.terrarium.population", workers, soldiers)
-                        .withStyle(net.minecraft.ChatFormatting.GRAY),
-                net.minecraft.network.chat.Component.translatable(queen ? "tooltip.antcolonies.terrarium.queen" : "tooltip.antcolonies.terrarium.no_queen")
-                        .withStyle(queen ? net.minecraft.ChatFormatting.GREEN : net.minecraft.ChatFormatting.RED));
-        lines.forEach(tooltip);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 }

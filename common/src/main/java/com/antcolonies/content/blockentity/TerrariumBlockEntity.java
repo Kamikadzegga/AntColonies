@@ -283,15 +283,21 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
     }
 
     /** The Queen slot and the feed slot. */
-    private void processSlots(ServerLevel level) {
+    /** Handles the Queen and feed slots (every few ticks; game tests call it directly). */
+    public void processSlots(ServerLevel level) {
         ItemStack queenSlot = items.get(SLOT_QUEEN);
         QueenData queen = queenSlot.get(ModDataComponents.QUEEN.get());
-        if (queen != null && queenSlot.is(ModItems.QUEEN_TEST_TUBE.get()) && colony.queen() == null && queenMayEnter()) {
+        if (queen != null && queenSlot.is(ModItems.QUEEN_TEST_TUBE.get()) && colony.queen() == null && queenMayEnter()
+                && giveBack(new ItemStack(ModItems.TEST_TUBE.get()))) {
+            // The Queen moves in; her empty tube goes to the output, so the slot is free for taking her out again.
             colony.setQueen(queen);
-            items.set(SLOT_QUEEN, new ItemStack(ModItems.TEST_TUBE.get()));
+            items.set(SLOT_QUEEN, ItemStack.EMPTY);
             level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_QUEEN, 0);
             level.playSound(null, worldPosition, ModSounds.QUEEN_ACTIVITY.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
             setChanged();
+        } else if (queenSlot.is(ModItems.TEST_TUBE.get()) && colony.queen() != null) {
+            // An empty Test Tube in the Queen slot takes her out, into the output.
+            removeQueen();
         }
         ItemStack feed = items.get(SLOT_FEED);
         feedStatus = 0;
@@ -316,6 +322,28 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
                 colony.addWorkers(ants.count());
             }
             feed.shrink(1);
+        } else if (feed.is(ModItems.TEST_TUBE.get())) {
+            // Empty Test Tubes fill with the colony's ants, a tube at a time into the output: workers, then soldiers. This is
+            // how a colony moves: a broken Terrarium keeps none of its ants.
+            if (!items.get(SLOT_OUTPUT).isEmpty()) {
+                feedStatus = ColonyStatus.STORAGE_FULL.bit();
+                return;
+            }
+            boolean soldiers = colony.workers() < 1;
+            int count = (int) Math.min(AntSample.MAX, soldiers ? colony.soldiers() : colony.workers());
+            if (count <= 0) {
+                feedStatus = ColonyStatus.NO_WORKERS.bit();
+                return;
+            }
+            if (soldiers) {
+                colony.takeSoldiers(count);
+            } else {
+                colony.addWorkers(-count);
+            }
+            items.set(SLOT_OUTPUT, com.antcolonies.content.item.TweezersItem.antTube(new AntSample(colony.species(),
+                    soldiers ? Caste.SOLDIER : Caste.WORKER, count)));
+            feed.shrink(1);
+            syncNow();
         } else if (species != null && (feed.is(ModItems.ANT_EGG.get()) || feed.is(ModItems.ANT_LARVA.get()))) {
             if (!accepts(species)) {
                 feedStatus = ColonyStatus.INCOMPATIBLE_SPECIES.bit();
@@ -402,16 +430,20 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         return false;
     }
 
-    /** The Queen leaves into an empty Test Tube in the Queen slot (the colony keeps its ants, but lays no more eggs). */
+    /**
+     * The Queen leaves into an empty Test Tube in the Queen slot, and her tube goes to the output (the colony keeps its
+     * ants, but lays no more eggs). Waits while the output is taken.
+     */
     public boolean removeQueen() {
         QueenData queen = colony.queen();
         ItemStack slot = items.get(SLOT_QUEEN);
-        if (queen == null || !slot.is(ModItems.TEST_TUBE.get()) || slot.getCount() != 1) {
+        if (queen == null || !slot.is(ModItems.TEST_TUBE.get()) || !items.get(SLOT_OUTPUT).isEmpty()) {
             return false;
         }
         ItemStack tube = new ItemStack(ModItems.QUEEN_TEST_TUBE.get());
         tube.set(ModDataComponents.QUEEN.get(), queen);
-        items.set(SLOT_QUEEN, tube);
+        slot.shrink(1);
+        items.set(SLOT_OUTPUT, tube);
         ColonyAccess.killQueen(colony);
         // Keep the tube from flowing straight back in.
         colonyQueenRemovedAt = level == null ? 0 : level.getGameTime();
@@ -571,32 +603,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         }
     }
 
-    @Override
-    protected void collectImplicitComponents(DataComponentMap.Builder components) {
-        super.collectImplicitComponents(components);
-        if (level != null && (colony.queen() != null || colony.exactAdults() >= 1 || colony.eggs() > 0)) {
-            TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
-            colony.save(output, false);
-            components.set(ModDataComponents.COLONY.get(), CustomData.of(output.buildResult()));
-        }
-    }
-
-    @Override
-    protected void applyImplicitComponents(DataComponentGetter components) {
-        super.applyImplicitComponents(components);
-        CustomData data = components.get(ModDataComponents.COLONY.get());
-        if (data != null && level != null) {
-            colony.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), data.copyTag()));
-            // Placed somewhere new: no catch-up for the time it spent as an item.
-            ColonyAccess.setLastSimTime(colony, Long.MIN_VALUE);
-        }
-    }
-
-    @Override
-    public void removeComponentsFromTag(ValueOutput output) {
-        super.removeComponentsFromTag(output);
-        output.discard("colony");
-    }
+    // A broken Terrarium keeps no colony: its Queen and ants leave only in Test Tubes (the Queen and feed slots).
 
     // --- Saving ---
 
