@@ -113,15 +113,20 @@ public final class ColonyStorage {
                 }
                 for (int i = 0; i < wanted.size(); i++) {
                     if (left.get(i) > 0 && ItemStack.isSameItemSameComponents(existing, wanted.get(i))) {
-                        left.set(i, left.get(i) - Math.min(left.get(i), existing.getMaxStackSize() - existing.getCount()));
+                        left.set(i, left.get(i) - Math.min(left.get(i), Math.max(0, pile.slotLimit(existing) - existing.getCount())));
                         break;
                     }
                 }
             }
         }
+        // An empty slot takes as much as the least compacting store allows (counting on the most could overfill).
+        int compacting = Integer.MAX_VALUE;
+        for (StructureBlockEntity pile : piles) {
+            compacting = Math.min(compacting, pile.slotLimit(new ItemStack(net.minecraft.world.item.Items.STONE)) / 64);
+        }
         int needed = 0;
         for (int i = 0; i < wanted.size(); i++) {
-            int max = Math.max(1, wanted.get(i).getMaxStackSize());
+            int max = Math.max(1, wanted.get(i).getMaxStackSize()) * Math.max(1, compacting);
             needed += (left.get(i) + max - 1) / max;
         }
         return needed <= emptySlots;
@@ -143,13 +148,13 @@ public final class ColonyStorage {
                 for (int slot = 0; slot < pile.unlockedSlots() && !left.isEmpty(); slot++) {
                     ItemStack existing = pile.getItem(slot);
                     if (!empties && !existing.isEmpty() && ItemStack.isSameItemSameComponents(existing, left)) {
-                        int moved = Math.min(existing.getMaxStackSize() - existing.getCount(), left.getCount());
+                        int moved = Math.min(pile.slotLimit(existing) - existing.getCount(), left.getCount());
                         if (moved > 0) {
                             existing.grow(moved);
                             left.shrink(moved);
                         }
                     } else if (empties && existing.isEmpty()) {
-                        pile.setItemQuietly(slot, left.split(Math.min(left.getMaxStackSize(), left.getCount())));
+                        pile.setItemQuietly(slot, left.split(Math.min(pile.slotLimit(left), left.getCount())));
                     }
                 }
                 if (left.getCount() != before) {

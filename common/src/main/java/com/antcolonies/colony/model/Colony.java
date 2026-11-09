@@ -57,8 +57,8 @@ public final class Colony {
 
     /** The last step's results, for GUIs (per minute). */
     public record Stats(double eggsLaid, double adultsRaised, double foodIn, double foodOut, double finds, double hunts, double deaths,
-                        long adultCapacity, long larvaeCapacity, double foodCapacity, int structures) {
-        public static final Stats NONE = new Stats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+                        long adultCapacity, long larvaeCapacity, double foodCapacity, int structures, double foodFromStorage) {
+        public static final Stats NONE = new Stats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         public static final Codec<Stats> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.DOUBLE.fieldOf("eggs").forGetter(Stats::eggsLaid),
                 Codec.DOUBLE.fieldOf("raised").forGetter(Stats::adultsRaised),
@@ -70,7 +70,9 @@ public final class Colony {
                 Codec.LONG.fieldOf("adult_capacity").forGetter(Stats::adultCapacity),
                 Codec.LONG.fieldOf("larvae_capacity").forGetter(Stats::larvaeCapacity),
                 Codec.DOUBLE.fieldOf("food_capacity").forGetter(Stats::foodCapacity),
-                Codec.INT.fieldOf("structures").forGetter(Stats::structures)
+                Codec.INT.fieldOf("structures").forGetter(Stats::structures),
+                // Food per minute the colony ate from its own stores (part of food_in).
+                Codec.DOUBLE.optionalFieldOf("food_from_storage", 0.0).forGetter(Stats::foodFromStorage)
         ).apply(i, Stats::new));
     }
 

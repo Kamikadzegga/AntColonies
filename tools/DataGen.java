@@ -863,6 +863,8 @@ public class DataGen {
         write(RES.resolve("data/c/tags/item/nuggets/diamond.json"), obj("values", arr(ac("diamond_fragment"))));
         write(RES.resolve("data/c/tags/item/nuggets/emerald.json"), obj("values", arr(ac("emerald_fragment"))));
         write(RES.resolve("data/c/tags/item/nuggets.json"), obj("values", arr("#c:nuggets/diamond", "#c:nuggets/emerald")));
+        LANG.put("tag.item.c.nuggets.diamond", "Diamond Nuggets");
+        LANG.put("tag.item.c.nuggets.emerald", "Emerald Nuggets");
     }
 
     static void mutations() {
@@ -1106,17 +1108,26 @@ public class DataGen {
         write(RES.resolve("data/minecraft/tags/block/mineable/pickaxe.json"), obj("values", pickaxe));
         write(RES.resolve("data/minecraft/tags/block/mineable/shovel.json"), obj("values", shovel));
         write(RES.resolve("data/minecraft/tags/block/mineable/axe.json"), obj("values", axe));
-        // Blocks that give a Terrarium standing on them a climate (Climate#ofFloor).
+        // Blocks that give a Terrarium standing on them a climate (Climate#ofFloor). Whole families count: every
+        // terracotta colour, every sandstone, every ice... (the Info page shows one cycling icon per family).
+        String[] colours = {"white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan", "purple", "blue",
+                "brown", "green", "red", "black"};
+        List<Object> hot = arr("#minecraft:sand", "minecraft:sandstone", "minecraft:chiseled_sandstone", "minecraft:cut_sandstone",
+                "minecraft:smooth_sandstone", "minecraft:red_sandstone", "minecraft:chiseled_red_sandstone", "minecraft:cut_red_sandstone",
+                "minecraft:smooth_red_sandstone", "#minecraft:terracotta");
+        for (String colour : colours) {
+            hot.add("minecraft:" + colour + "_glazed_terracotta");
+        }
         Map<String, List<Object>> floors = new LinkedHashMap<>();
-        floors.put("cold", arr("minecraft:snow_block", "minecraft:ice", "minecraft:packed_ice", "minecraft:blue_ice", "minecraft:powder_snow"));
-        floors.put("hot", arr("minecraft:sand", "minecraft:red_sand", "minecraft:sandstone", "minecraft:red_sandstone", "minecraft:cut_sandstone",
-                "minecraft:smooth_sandstone", "minecraft:terracotta"));
-        floors.put("temperate", arr("minecraft:grass_block", "minecraft:dirt", "minecraft:coarse_dirt", "minecraft:podzol", "minecraft:rooted_dirt",
-                "minecraft:moss_block", "minecraft:mud"));
-        floors.put("underground", arr("minecraft:stone", "minecraft:deepslate", "minecraft:cobbled_deepslate", "minecraft:tuff", "minecraft:calcite",
+        floors.put("cold", arr("minecraft:snow_block", "minecraft:powder_snow", "#minecraft:ice"));
+        floors.put("hot", hot);
+        floors.put("temperate", arr("#minecraft:dirt", "#minecraft:grass_blocks", "#minecraft:mud", "#minecraft:moss_blocks"));
+        floors.put("underground", arr("#minecraft:base_stone_overworld", "minecraft:smooth_stone", "minecraft:polished_granite",
+                "minecraft:polished_diorite", "minecraft:polished_andesite", "minecraft:polished_tuff", "minecraft:cobbled_deepslate",
+                "minecraft:polished_deepslate", "minecraft:cobblestone", "minecraft:mossy_cobblestone", "minecraft:calcite",
                 "minecraft:dripstone_block"));
-        floors.put("nether", arr("minecraft:netherrack", "minecraft:magma_block", "minecraft:soul_sand", "minecraft:soul_soil", "minecraft:crimson_nylium",
-                "minecraft:warped_nylium", "minecraft:blackstone", "minecraft:basalt"));
+        floors.put("nether", arr("#minecraft:base_stone_nether", "minecraft:polished_basalt", "minecraft:smooth_basalt",
+                "minecraft:polished_blackstone", "#minecraft:nylium", "minecraft:magma_block", "minecraft:soul_sand", "minecraft:soul_soil"));
         for (Map.Entry<String, List<Object>> floor : floors.entrySet()) {
             write(DATA.resolve("tags/block/climate/" + floor.getKey() + ".json"), obj("values", floor.getValue()));
         }
@@ -1618,6 +1629,9 @@ public class DataGen {
         // Tags: repairs, and the vanilla tool and armor tags (enchanting, durability and so on go by them).
         write(DATA.resolve("tags/item/repairs_chitin_gear.json"), obj("values", arr(c)));
         LANG.put("tag.item." + NS + ".repairs_chitin_gear", "Chitin Gear Repair Materials");
+        // What a colony never eats from its own stores (FoodIntake): Royal Jelly is for raising Queens.
+        write(DATA.resolve("tags/item/kept_in_storage.json"), obj("values", arr(ac("royal_jelly"))));
+        LANG.put("tag.item." + NS + ".kept_in_storage", "Not Eaten From Colony Storage");
         // The shield: the common shield tag, and Unbreaking and Mending like the vanilla shield.
         write(RES.resolve("data/c/tags/item/tools/shield.json"), obj("values", arr(ac("chitin_shield"))));
         write(RES.resolve("data/minecraft/tags/item/enchantable/durability.json"), obj("values", arr(ac("chitin_shield"))));
@@ -1733,6 +1747,7 @@ public class DataGen {
         String[][] info = {{"climate.any", "Any climate suits it"}, {"climate.right", "The climate here suits it"},
                 {"climate.wrong", "Wrong climate here: the colony loses health"}, {"climate.floor", "The block under the Terrarium makes it %s"},
                 {"climate.fix", "A Terrarium on one of these suits it anywhere:"}, {"climate.under", "Place it under the Terrarium"},
+                {"climate.variants", "Any of its %s variants works"},
                 {"finds", "Its workers find:"}, {"farms", "Its farmers grow food (x%s) and harvest:"}, {"hunts", "Hunts at a Hunting Ground: %s"},
                 {"evolution", "Evolution:"}, {"evolves_into", "Into %s"}, {"evolves_from", "From %s"},
                 {"evolution.feed", "Feed the Terrarium %s"}, {"evolution.needs", "From stage %s and %s adults; %s%% a try, sure after %s tries"},
@@ -1774,7 +1789,7 @@ public class DataGen {
                         "The Genetic Laboratory raises one trait at a time, rerolls, mutates and purges flaws. It runs on FE: put a Generator next to it, or any mod's cable.")},
                 {"upgrades", "Upgrades", String.join("\n",
                         "Upgrades go in a screen's upgrade slots; shift-clicking one puts it there. Each block takes the kinds it can use: the slot's tooltip, and JEI or EMI, tell which.",
-                        "The Upgrade Station makes species upgrades from an Upgrade Base and a species' signature material. They work only for that species, in Foraging Sites.")},
+                        "The Colony Upgrade Station makes species upgrades from an Upgrade Base and a species' signature material. They work only for that species, in Foraging Sites.")},
                 {"automation", "Automation", String.join("\n",
                         "Hoppers and pipes can feed the Terrarium and Queen Chambers, and empty Storage and Foraging Sites. A Storage with an Automation Upgrade pushes its finds into the container under it.",
                         "Comparators read a Terrarium's food, a site's workforce, or how full a store is. A redstone signal pauses a site: its ants go elsewhere.")}};
@@ -1857,12 +1872,12 @@ public class DataGen {
                 {"evolution", "Evolution"}};
         for (String[] u : upgradeNames) {
             for (int t = 1; t <= 4; t++) {
-                l.put("item." + NS + "." + u[0] + "_upgrade_" + t, u[1] + " Upgrade " + numerals[t - 1]);
+                l.put("item." + NS + "." + u[0] + "_upgrade_" + t, "Colony " + u[1] + " Upgrade " + numerals[t - 1]);
             }
         }
         String[][] blocks = {{"terrarium", "Terrarium"}, {"nest_chamber", "Nest Chamber"}, {"storage", "Storage"},
                 {"foraging_site", "Foraging Site"}, {"harvesting_site", "Harvesting Site"}, {"hunting_ground", "Hunting Ground"},
-                {"queen_chamber", "Queen Chamber"}, {"upgrade_station", "Upgrade Station"}, {"generator", "Generator"},
+                {"queen_chamber", "Queen Chamber"}, {"upgrade_station", "Colony Upgrade Station"}, {"generator", "Generator"},
                 {"genetic_laboratory", "Genetic Laboratory"}};
         for (String[] b : blocks) {
             l.put("block." + NS + "." + b[0], b[1]);
@@ -1920,6 +1935,42 @@ public class DataGen {
         l.put("tooltip." + NS + ".queen.generation", "Generation %s");
         l.put("tooltip." + NS + ".hold_shift", "Hold Shift for genetics");
         l.put("tooltip." + NS + ".upgrade.tier", "Tier %s");
+        // What each colony upgrade does, in numbers (UpgradeEffects), on its tooltip and its JEI/EMI page.
+        l.put("tooltip." + NS + ".upgrade.goes_in", "Goes in: %s");
+        l.put("tooltip." + NS + ".upgrade.adds_up", "Two of a kind in one block add up.");
+        l.put("jei." + NS + ".colony_upgrade", "Colony Upgrades");
+        l.put("jei." + NS + ".goes_in", "Goes in here");
+        // A heading per place, then short values under it, like vanilla's "When in Main Hand:" lines.
+        String[][] places = {{"sites", "In job sites:"}, {"nest", "In Nest Chambers:"}, {"queen", "In Queen Chambers:"},
+                {"lab", "In the Genetic Lab:"}, {"terrarium", "In the Terrarium:"}, {"terrarium_or_site", "In the Terrarium or a job site:"},
+                {"terrarium_and_nest", "In the Terrarium and Nest Chambers:"}, {"storage", "In Storage:"}, {"hunting", "In Hunting Grounds:"}};
+        for (String[] place : places) {
+            l.put("tooltip." + NS + ".upgrade_place." + place[0], place[1]);
+        }
+        String[][] effects = {
+                {"speed.sites", "+%s%% work speed"},
+                {"speed.larvae", "+%s%% larvae growth"},
+                {"speed.eggs", "+%s%% egg laying"},
+                {"speed.queen", "+%s%% Queen rearing"},
+                {"speed.lab", "%sx lab speed"},
+                {"food_efficiency", "-%s%% food eaten"},
+                {"simulation", "%s of offline catch-up"},
+                {"storage.slots", "%s slots (+%s)"},
+                {"storage.stacks", "%s stacks per slot"},
+                {"storage.food", "+%s food room"},
+                {"breeding.eggs", "+%s%% egg laying"},
+                {"breeding.queen", "+%s%% Queen rearing"},
+                {"genetic.lab", "-%s%% material cost"},
+                {"genetic.queen", "+%s%% mutation chance"},
+                {"hunting", "+%s%% hunting strength"},
+                {"automation", "Pushes %s items/s down"},
+                {"population.terrarium", "+%s adults housed"},
+                {"population.nest", "+%s%% room"},
+                {"population.sites", "+%s ants each"},
+                {"evolution", "+%s%% evolution chance"}};
+        for (String[] effect : effects) {
+            l.put("tooltip." + NS + ".upgrade_effect." + effect[0], effect[1]);
+        }
         String[][] upgradeTips = {{"speed", "Faster work in chambers and the lab, faster larvae."}, {"food_efficiency", "Less food eaten."},
                 {"simulation", "Terrarium: more offline catch-up (numbers only, no entities)."}, {"storage", "Storage: more slots and more food room."},
                 {"breeding", "Faster egg laying and Queen rearing."}, {"genetic", "Cheaper lab work; more mutations in Queen Chambers."},
@@ -1928,7 +1979,7 @@ public class DataGen {
         for (String[] u : upgradeTips) {
             l.put("tooltip." + NS + ".upgrade." + u[0], u[1]);
         }
-        l.put("tooltip." + NS + ".species_upgrade.blank", "Made at the Upgrade Station.");
+        l.put("tooltip." + NS + ".species_upgrade.blank", "Made at the Colony Upgrade Station.");
         l.put("tooltip." + NS + ".species_upgrade.for", "For %s colonies only");
         l.put("tooltip." + NS + ".species_upgrade.extraction", "+%s%% finds in Foraging Sites");
         l.put("tooltip." + NS + ".species_upgrade.processing", "Finds come processed (nuggets to ingots, fragments to gems), +%s%%");
@@ -1996,7 +2047,7 @@ public class DataGen {
                 {"no_jobs", "No Foraging Site, Harvesting Site or Hunting Ground"},
                 {"auto", "Auto"}, {"auto.hint", "Auto: as many ants as the chamber holds"}, {"per_minute", "/min"}, {"less_10", "-10"}, {"less_1", "-1"},
                 {"more_1", "+1"}, {"more_10", "+10"}, {"farm.hint", "Needs Farmer Ants (or a species that farms)"},
-                {"stat.eggs", "Eggs laid"}, {"stat.raised", "Adults raised"}, {"stat.food_in", "Food in"}, {"stat.food_out", "Food eaten"},
+                {"stat.eggs", "Eggs laid"}, {"stat.raised", "Adults raised"}, {"stat.food_in", "Food in"}, {"stat.food_from_storage", " of it from Storage"}, {"stat.food_out", "Food eaten"},
                 {"stat.finds", "Finds"}, {"stat.hunts", "Hunts"}, {"stat.deaths", "Deaths"},
                 {"stat.larvae_room", "Larvae room"}, {"stat.structures", "Chambers"}, {"stat.found_total", "Found in total"},
                 {"evolution_attempts", "Evolution attempts: %s, catalysts: %s"}, {"upgrades", "Upgrades"}, {"linked", "Part of a colony"}, {"not_linked", "Not joined to a Terrarium"},
@@ -2004,6 +2055,7 @@ public class DataGen {
                 {"site.workers", "Workers %s/%s (want %s)"}, {"site.hunters", "Hunters %s/%s (want %s)"},
                 {"site.farmers", "Farmers %s/%s (want %s)"}, {"site.rate", "%s finds per minute"},
                 {"site.hunt_rate", "%s hunts per minute"}, {"site.food_rate", "%s food per minute"}, {"site.store", "Finds wait here while the Storage is full"},
+                {"storage.slots", "%s slots"}, {"storage.upgrade_held", "Stuck: take out what won't fit without it"},
                 {"queen_chamber.slots", "Rears a new Queen"}, {"queen_chamber.time", "Takes %s s at full speed"},
                 {"slot.qc_tube", "Test Tube slot"}, {"slot.qc_tube.hint", "An empty Test Tube to hold the new Queen"},
                 {"slot.qc_sample", "Sample slot (optional)"}, {"slot.qc_sample.hint", "A Genetic Sample can cross a hybrid into the daughter"},

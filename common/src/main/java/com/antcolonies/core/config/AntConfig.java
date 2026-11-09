@@ -49,6 +49,7 @@ public final class AntConfig {
     public static final ModConfigSpec.DoubleValue STARVATION_GRACE_MINUTES;
     public static final ModConfigSpec.DoubleValue STARVATION_DECLINE;
     public static final ModConfigSpec.DoubleValue STARVED_FACTOR;
+    public static final ModConfigSpec.BooleanValue STORAGE_FEEDING;
     public static final ModConfigSpec.BooleanValue STARVATION_KILLS_QUEEN;
 
     // --- Production ---
@@ -162,6 +163,8 @@ public final class AntConfig {
         STARVATION_DECLINE = s.comment("Share of the population lost per minute of starvation after the grace period.")
                 .defineInRange("starvationDecline", 0.05, 0, 1);
         STARVED_FACTOR = s.comment("Work, egg laying and growth speed of a colony without food.").defineInRange("starvedFactor", 0.2, 0, 1);
+        STORAGE_FEEDING = s.comment("Colonies eat food items from their own Storage and Foraging Sites whenever there is room for them (feeding comes first).",
+                "Items in the tag antcolonies:kept_in_storage (Royal Jelly) are never eaten.").define("storageFeeding", true);
         STARVATION_KILLS_QUEEN = s.comment("Whether a Queen dies once her colony has starved down to nothing.")
                 .define("starvationKillsQueen", false);
         s.pop();
@@ -194,8 +197,8 @@ public final class AntConfig {
                         "0.5 halves them, 0 turns them off, 2 doubles them. Common finds are not changed (lower scavengeRolls for those).",
                         "Hunting loot comes from mob loot tables and is not affected (use huntRolls).")
                 .defineInRange("rareFindMultiplier", 1.0, 0, 100);
-        STORAGE_SLOTS_PER_UPGRADE = s.comment("Storage slots unlocked per Storage Upgrade tier (base 9, at most 54).")
-                .defineInRange("storageSlotsPerUpgrade", 9, 0, 45);
+        STORAGE_SLOTS_PER_UPGRADE = s.comment("Storage slots each Storage Upgrade tier adds (a Storage starts with 18, at most 162).")
+                .defineInRange("storageSlotsPerTier", 18, 0, 18);
         s.pop();
 
         s.push("genetics");

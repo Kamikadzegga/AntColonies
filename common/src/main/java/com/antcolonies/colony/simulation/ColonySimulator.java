@@ -296,7 +296,7 @@ public final class ColonySimulator {
         int structureCount = step.sites.values().stream().mapToInt(List::size).sum();
         Colony.Stats stats = new Colony.Stats(bred.eggs() / step.dt, bred.raised() / step.dt, farmed + (intake.food() + hunted) / step.dt, consumption,
                 finds, hunts, deaths / step.dt, (long) adultCapacity, (long) larvaeCapacity,
-                foodCapacity, structureCount);
+                foodCapacity, structureCount, intake.food() / step.dt);
         ColonyAccess.finish(colony, stage, step.status, stats, activity, allocation.assignments(), maintenance);
         // Structures show their part of the colony's state (problems that concern them, and the link itself).
         for (List<StructureBlockEntity> list : step.sites.values()) {

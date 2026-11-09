@@ -314,6 +314,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                 {"gui.antcolonies.stat.eggs", rate(stats.eggsLaid()) + perMinute, LABEL},
                 {"gui.antcolonies.stat.raised", rate(stats.adultsRaised()) + perMinute, LABEL},
                 {"gui.antcolonies.stat.food_in", rate(stats.foodIn()) + perMinute, GOOD},
+                {"gui.antcolonies.stat.food_from_storage", rate(stats.foodFromStorage()) + perMinute, INFO},
                 {"gui.antcolonies.stat.food_out", rate(stats.foodOut()) + perMinute, stats.foodOut() > stats.foodIn() ? BAD : LABEL},
                 {"gui.antcolonies.stat.finds", rate(stats.finds()) + perMinute, LABEL},
                 {"gui.antcolonies.stat.hunts", rate(stats.hunts()) + perMinute, LABEL},

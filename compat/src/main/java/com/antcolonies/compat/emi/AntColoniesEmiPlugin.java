@@ -52,7 +52,8 @@ public class AntColoniesEmiPlugin implements EmiPlugin {
                 new Kind("fighting", structure(StructureKind.HUNTING_GROUND), 2, 2, AntRecipes::fighting, structure(StructureKind.HUNTING_GROUND)),
                 new Kind("lab", ModItems.GENETIC_LAB.get(), 1, 4, AntRecipes::lab, lab),
                 new Kind("trait", ModItems.GENETIC_ANALYZER.get(), 1, 3, AntRecipes::traits, ModItems.GENETIC_LAB.get(), ModItems.GENETIC_ANALYZER.get()),
-                new Kind("species_upgrade", ModItems.UPGRADE_STATION.get(), 1, 2, AntRecipes::speciesUpgrades, ModItems.UPGRADE_STATION.get()));
+                new Kind("species_upgrade", ModItems.UPGRADE_STATION.get(), 1, 2, AntRecipes::speciesUpgrades, ModItems.UPGRADE_STATION.get()),
+                new Kind("colony_upgrade", ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.SPEED, 1), 2, 9, AntRecipes::colonyUpgrades));
     }
 
     private static ItemLike structure(StructureKind kind) {

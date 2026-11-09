@@ -309,7 +309,14 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
     }
 
     public @Nullable Requirement requirement(Operation op, QueenData queen, HolderLookup.Provider registries) {
-        Trait trait = selectedTrait();
+        return requirement(op, selectedTrait(), queen, registries);
+    }
+
+    /**
+     * What an operation on this trait takes. The screen passes the trait the menu says is selected: the client's copy of
+     * the lab isn't told when the selection changes, so its own selectedTrait() would show the first trait's costs.
+     */
+    public @Nullable Requirement requirement(Operation op, Trait trait, QueenData queen, HolderLookup.Provider registries) {
         int level = queen.genome().level(trait);
         double costs = costMultiplier();
         return switch (op) {

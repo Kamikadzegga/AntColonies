@@ -1,5 +1,6 @@
 package com.antcolonies.content.item;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import com.antcolonies.colony.upgrade.UpgradeType;
@@ -33,6 +34,13 @@ public class UpgradeItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
         tooltip.accept(Component.translatable("tooltip.antcolonies.upgrade.tier", tier).withStyle(ChatFormatting.GOLD));
-        tooltip.accept(Component.translatable("tooltip.antcolonies.upgrade." + type.getSerializedName()).withStyle(ChatFormatting.GRAY));
+        // What it does at this tier, in numbers, for each place it works; then where it goes.
+        for (Component line : com.antcolonies.colony.upgrade.UpgradeEffects.lines(type, tier)) {
+            tooltip.accept(line);
+        }
+        List<Component> places = com.antcolonies.colony.upgrade.UpgradeEffects.placements(type).stream().map(ItemStack::getHoverName).toList();
+        tooltip.accept(Component.translatable("tooltip.antcolonies.upgrade.goes_in", net.minecraft.network.chat.ComponentUtils.formatList(places,
+                Component.literal(", "))).withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.accept(Component.translatable("tooltip.antcolonies.upgrade.adds_up").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

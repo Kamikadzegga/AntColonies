@@ -27,6 +27,7 @@ import com.antcolonies.core.registry.ModRegistries;
 import com.antcolonies.colony.simulation.ColonySimulator;
 import com.antcolonies.colony.species.AntSpecies;
 import com.antcolonies.colony.species.Caste;
+import com.antcolonies.colony.species.Climate;
 import com.antcolonies.colony.species.SpeciesOutput;
 
 import net.minecraft.core.BlockPos;
@@ -105,6 +106,11 @@ public class AntColoniesGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> HOME_NEST_ALONE = test("home_nest_farms_by_itself", AntColoniesGameTests::homeNestAlone);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> PROGRESSION = test("progression_needs_nether_and_end", AntColoniesGameTests::progression);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> NETHER_ANTHILL = test("nether_anthill", AntColoniesGameTests::netherAnthill);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> RECIPES = test("recipes_never_clash", AntColoniesGameTests::recipesNeverClash);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> COMPACTING = test("storage_compacts", AntColoniesGameTests::storageCompacts);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> STORAGE_FOOD = test("colony_eats_from_storage", AntColoniesGameTests::colonyEatsFromStorage);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> UPGRADE_INFO = test("upgrades_explain_themselves", AntColoniesGameTests::upgradesExplainThemselves);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CLIMATE_VARIANTS = test("climate_blocks_take_variants", AntColoniesGameTests::climateVariants);
 
     public AntColoniesGameTests(IEventBus modEventBus) {
         TESTS.register(modEventBus);
@@ -120,7 +126,7 @@ public class AntColoniesGameTests {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(AntColonies.id("default"), new TestEnvironmentDefinition.AllOf(List.of()));
         for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> test : List.of(SPECIES_DATA_LOADS, COLONY_PERSISTS, ALLOCATION, SCAVENGING,
                 MORE_WORKERS, STARVATION, BREEDING, FARMING, GARDEN_NEEDS_FARMERS, FIGHTING, EVOLUTION, REARING, HYBRIDS, TWO_COLONIES, OFFLINE,
-                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL, RUNS_ALONE, JOINING, MOVING, UPGRADE_SYNC, MACHINAOPUS, MACHINAOPUS_PIPES, SHIELD, HOME_NEST, PROGRESSION, NETHER_ANTHILL)) {
+                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL, RUNS_ALONE, JOINING, MOVING, UPGRADE_SYNC, MACHINAOPUS, MACHINAOPUS_PIPES, SHIELD, HOME_NEST, PROGRESSION, NETHER_ANTHILL, RECIPES, COMPACTING, STORAGE_FOOD, UPGRADE_INFO, CLIMATE_VARIANTS)) {
             event.registerTest(test.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, test.getId()),
                     spaced(environment, 200)));
         }
@@ -712,6 +718,215 @@ public class AntColoniesGameTests {
         helper.succeed();
     }
 
+    /**
+     * Storage Upgrades compact: with a tier II one each slot holds three stacks. Ants fill a slot past 64, the count
+     * survives saving and loading (an item stack alone can't save more than 99), and the screen hands out a normal stack
+     * at a time.
+     */
+    private static void storageCompacts(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        TerrariumBlockEntity terrarium = terrarium(helper, pos, COMMON, 100, 0, 5000);
+        StructureBlockEntity storage = ring(helper, pos, StructureKind.STORAGE).get(0);
+        storage.upgrades().setItem(0, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.STORAGE, 2)));
+        helper.assertTrue(storage.slotLimit(new ItemStack(Items.COBBLESTONE)) == 192, "Tier II: a slot should hold 192 cobblestone");
+        helper.assertTrue(storage.slotLimit(new ItemStack(Items.ENDER_PEARL)) == 48, "Tier II: a slot should hold 48 ender pearls");
+        terrarium.rescan(helper.getLevel());
+        ItemStack left = com.antcolonies.colony.resource.ColonyStorage.insert(helper.getLevel(), terrarium.colony(), new ItemStack(Items.COBBLESTONE, 150), null);
+        helper.assertTrue(left.isEmpty() && storage.getItem(0).getCount() == 150, "150 cobblestone should fit in one slot, slot 0 has "
+                + storage.getItem(0).getCount() + ", left " + left.getCount());
+        var registries = helper.getLevel().registryAccess();
+        CompoundTag saved = storage.saveWithFullMetadata(registries);
+        var loaded = (StructureBlockEntity) BlockEntity.loadStatic(storage.getBlockPos(), storage.getBlockState(), saved, registries);
+        helper.assertTrue(loaded.getItem(0).is(Items.COBBLESTONE) && loaded.getItem(0).getCount() == 150,
+                "150 cobblestone should survive saving, got " + loaded.getItem(0));
+        // The screen: picking the slot up takes one stack, not all 150.
+        var player = helper.makeMockServerPlayerInLevel();
+        var menu = new com.antcolonies.content.menu.StructureMenu(0, player.getInventory(), storage);
+        menu.clicked(0, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, player);
+        helper.assertTrue(menu.getCarried().getCount() == 64 && storage.getItem(0).getCount() == 86,
+                "Picking up should take 64, carried " + menu.getCarried().getCount() + ", left " + storage.getItem(0).getCount());
+        menu.setCarried(ItemStack.EMPTY);
+        // The upgrade stays in while a slot holds more than a stack: without it, the 86 cobblestone wouldn't fit.
+        int upgradeSlot = com.antcolonies.content.menu.StorageWindow.SIZE;
+        menu.clicked(upgradeSlot, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, player);
+        helper.assertTrue(menu.getCarried().isEmpty() && !storage.upgrades().getItem(0).isEmpty(), "The Storage Upgrade should be held in");
+        menu.clicked(upgradeSlot, 0, net.minecraft.world.inventory.ContainerInput.QUICK_MOVE, player);
+        helper.assertTrue(!storage.upgrades().getItem(0).isEmpty(), "Shift-clicking shouldn't take the held upgrade out either");
+        storage.setItem(0, new ItemStack(Items.COBBLESTONE, 64));
+        menu.clicked(upgradeSlot, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, player);
+        helper.assertTrue(storage.upgrades().getItem(0).isEmpty(), "With a normal stack left the upgrade should come out");
+        menu.setCarried(ItemStack.EMPTY);
+        // Slots: 18, 18 more per tier; two Storage IV fill all 162. The screen shows six rows and scrolls.
+        helper.assertTrue(storage.unlockedSlots() == 18, "A Storage starts with 18 slots, has " + storage.unlockedSlots());
+        storage.upgrades().setItem(0, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.STORAGE, 4)));
+        helper.assertTrue(storage.unlockedSlots() == 90, "Storage IV: 90 slots, has " + storage.unlockedSlots());
+        storage.upgrades().setItem(1, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.STORAGE, 4)));
+        helper.assertTrue(storage.unlockedSlots() == 162, "Two Storage IV: 162 slots, has " + storage.unlockedSlots());
+        storage.setItem(0, ItemStack.EMPTY);
+        storage.setItem(100, new ItemStack(Items.DIAMOND, 5));
+        menu.broadcastChanges();
+        helper.assertTrue(menu.maxScroll() == 12, "18 rows, 6 shown: scrolls 12 rows, got " + menu.maxScroll());
+        helper.assertTrue(menu.clickMenuButton(player, com.antcolonies.content.menu.StructureMenu.SCROLL + 6), "Scrolling should work");
+        helper.assertTrue(menu.getSlot(100 - 54).getItem().is(Items.DIAMOND), "Scrolled 6 rows, slot 46 should show Storage slot 100");
+        // Shift-clicking into the Storage finds the diamonds' slot even when it is off screen.
+        menu.clickMenuButton(player, com.antcolonies.content.menu.StructureMenu.SCROLL);
+        player.getInventory().setItem(0, new ItemStack(Items.DIAMOND, 7));
+        int hotbar = menu.slots.size() - 9;
+        menu.quickMoveStack(player, hotbar);
+        helper.assertTrue(storage.getItem(100).getCount() == 12 && player.getInventory().getItem(0).isEmpty(),
+                "Shift-clicked diamonds should join Storage slot 100, it has " + storage.getItem(100).getCount());
+        helper.succeed();
+    }
+
+    /**
+     * A climate block counts with all its variants: every terracotta colour (glazed too), every sandstone, ice, dirt,
+     * stone and nether block of its family.
+     */
+    private static void climateVariants(GameTestHelper helper) {
+        Object[][] floors = {{"blue_terracotta", Climate.HOT}, {"lime_glazed_terracotta", Climate.HOT}, {"terracotta", Climate.HOT},
+                {"chiseled_red_sandstone", Climate.HOT}, {"suspicious_sand", Climate.HOT}, {"packed_ice", Climate.COLD},
+                {"blue_ice", Climate.COLD}, {"podzol", Climate.TEMPERATE}, {"mycelium", Climate.TEMPERATE},
+                {"polished_granite", Climate.UNDERGROUND}, {"andesite", Climate.UNDERGROUND}, {"warped_nylium", Climate.NETHER},
+                {"smooth_basalt", Climate.NETHER}, {"oak_planks", null}};
+        for (Object[] floor : floors) {
+            var block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(Identifier.withDefaultNamespace((String) floor[0]));
+            Climate climate = Climate.ofFloor(block.defaultBlockState());
+            helper.assertTrue(climate == floor[1], floor[0] + " should give " + floor[1] + ", gives " + climate);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * A colony feeds itself from its stores: food items in its Storage are eaten while there is room for them, Royal
+     * Jelly is kept for raising Queens, and the Colony page's "from Storage" rate shows it.
+     */
+    private static void colonyEatsFromStorage(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        TerrariumBlockEntity terrarium = terrarium(helper, pos, COMMON, 100, 0, 0);
+        StructureBlockEntity storage = ring(helper, pos, StructureKind.STORAGE).get(0);
+        storage.setItem(0, new ItemStack(Items.BREAD, 10));
+        storage.setItem(1, new ItemStack(ModItems.ROYAL_JELLY.get(), 5));
+        step(helper, terrarium, 0.05);
+        Colony colony = terrarium.colony();
+        helper.assertTrue(storage.getItem(0).isEmpty(), "The bread should be eaten, left " + storage.getItem(0));
+        helper.assertTrue(storage.getItem(1).getCount() == 5, "Royal Jelly should be kept, left " + storage.getItem(1));
+        helper.assertTrue(colony.food() > 700, "Ten bread should feed the colony, food " + colony.food());
+        helper.assertTrue(colony.stats().foodFromStorage() > 0, "The Colony page should show food from Storage");
+        helper.succeed();
+    }
+
+    /**
+     * Every colony upgrade says in numbers what it does at each tier, lists the blocks that really take it, and has its
+     * JEI/EMI page.
+     */
+    private static void upgradesExplainThemselves(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        for (var type : com.antcolonies.colony.upgrade.UpgradeType.values()) {
+            for (int tier = 1; tier <= com.antcolonies.colony.upgrade.UpgradeType.MAX_TIER; tier++) {
+                var effects = com.antcolonies.colony.upgrade.UpgradeEffects.effects(type, tier);
+                helper.assertTrue(!effects.isEmpty() && effects.stream().allMatch(effect -> !effect.values().isEmpty()
+                        && effect.values().stream().allMatch(value -> value.getString().matches(".*\\d.*"))),
+                        type + " " + tier + " should give numbers: " + effects);
+                for (var line : com.antcolonies.colony.upgrade.UpgradeEffects.lines(type, tier)) {
+                    helper.assertTrue(line.getString().length() <= 36, "Tooltip line too long to read at a glance: " + line.getString());
+                }
+            }
+            ItemStack upgrade = new ItemStack(ModItems.upgrade(type, 1));
+            for (ItemStack place : com.antcolonies.colony.upgrade.UpgradeEffects.placements(type)) {
+                var block = ((net.minecraft.world.item.BlockItem) place.getItem()).getBlock();
+                helper.setBlock(pos, block);
+                var entity = helper.getLevel().getBlockEntity(helper.absolutePos(pos));
+                boolean takes = entity instanceof StructureBlockEntity structure ? structure.acceptsUpgrade(upgrade)
+                        : entity instanceof TerrariumBlockEntity ? TerrariumBlockEntity.acceptsUpgrade(upgrade)
+                        : entity instanceof GeneticLabBlockEntity lab && lab.upgrades().canPlaceItem(0, upgrade);
+                helper.assertTrue(takes, type + " is listed for " + place.getHoverName().getString() + ", which doesn't take it");
+            }
+        }
+        var pages = new com.antcolonies.compat.recipes.AntRecipes(helper.getLevel().registryAccess()).colonyUpgrades();
+        helper.assertTrue(pages.size() == 40 && pages.stream().allMatch(p -> !p.outputs().isEmpty() && !p.lines().isEmpty()),
+                "Expected 40 Colony Upgrade pages with places and numbers, got " + pages.size());
+        helper.succeed();
+    }
+
+    /** The user's mods: their recipes must never clash with each other's or with vanilla's. */
+    private static final java.util.Set<String> MY_MODS = java.util.Set.of(AntColonies.MODID, "machinaopus", "machinaopus_tools");
+
+    /**
+     * No recipe of the user's mods (Ant Colonies, MachinaOpus and its Tools Addon, whichever are loaded) clashes with
+     * another: no other crafting recipe takes the same grid, and no other cooking recipe of the same kind takes the same
+     * item. A clash means one of the two can never be made (the game picks one). Each recipe is tried with the first item
+     * of each of its ingredients.
+     */
+    private static void recipesNeverClash(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var all = List.copyOf(level.getServer().getRecipeManager().getRecipes());
+        java.util.Set<String> clashes = new java.util.TreeSet<>();
+        int checked = 0;
+        for (var holder : all) {
+            if (!MY_MODS.contains(holder.id().identifier().getNamespace())) {
+                continue;
+            }
+            var recipe = holder.value();
+            if (recipe instanceof net.minecraft.world.item.crafting.CraftingRecipe crafting && !(recipe instanceof net.minecraft.world.item.crafting.CustomRecipe)) {
+                var input = craftingInput(crafting);
+                if (input == null) {
+                    continue;
+                }
+                checked++;
+                for (var other : all) {
+                    if (other != holder && other.value() instanceof net.minecraft.world.item.crafting.CraftingRecipe o
+                            && !(o instanceof net.minecraft.world.item.crafting.CustomRecipe) && o.matches(input, level)) {
+                        clashes.add(pair(holder, other));
+                    }
+                }
+            } else if (recipe instanceof net.minecraft.world.item.crafting.AbstractCookingRecipe cooking) {
+                ItemStack item = first(cooking.input());
+                if (item.isEmpty()) {
+                    continue;
+                }
+                checked++;
+                var input = new net.minecraft.world.item.crafting.SingleRecipeInput(item);
+                for (var other : all) {
+                    if (other != holder && other.value() instanceof net.minecraft.world.item.crafting.AbstractCookingRecipe o
+                            && o.getType() == cooking.getType() && o.matches(input, level)) {
+                        clashes.add(pair(holder, other));
+                    }
+                }
+            }
+        }
+        System.out.println("[Recipes] checked " + checked + " recipes of " + MY_MODS + " against " + all.size() + "; clashes: " + clashes);
+        helper.assertTrue(clashes.isEmpty(), "Recipes that clash: " + clashes);
+        helper.succeed();
+    }
+
+    /** A grid holding the first item of each ingredient of a shaped or shapeless recipe; null for other kinds. */
+    private static net.minecraft.world.item.crafting.CraftingInput craftingInput(net.minecraft.world.item.crafting.CraftingRecipe recipe) {
+        if (recipe instanceof net.minecraft.world.item.crafting.ShapedRecipe shaped) {
+            List<ItemStack> items = shaped.getIngredients().stream().map(o -> o.map(AntColoniesGameTests::first).orElse(ItemStack.EMPTY)).toList();
+            return net.minecraft.world.item.crafting.CraftingInput.of(shaped.getWidth(), shaped.getHeight(), items);
+        }
+        if (recipe instanceof net.minecraft.world.item.crafting.ShapelessRecipe shapeless) {
+            List<ItemStack> items = new java.util.ArrayList<>(shapeless.placementInfo().ingredients().stream().map(AntColoniesGameTests::first).toList());
+            int width = Math.min(3, items.size());
+            int height = (items.size() + 2) / 3;
+            while (items.size() < width * height) {
+                items.add(ItemStack.EMPTY);
+            }
+            return items.isEmpty() ? null : net.minecraft.world.item.crafting.CraftingInput.of(width, height, items);
+        }
+        return null;
+    }
+
+    private static ItemStack first(net.minecraft.world.item.crafting.Ingredient ingredient) {
+        return ingredient.items().findFirst().map(item -> new ItemStack(item)).orElse(ItemStack.EMPTY);
+    }
+
+    private static String pair(net.minecraft.world.item.crafting.RecipeHolder<?> a, net.minecraft.world.item.crafting.RecipeHolder<?> b) {
+        String x = a.id().identifier().toString();
+        String y = b.id().identifier().toString();
+        return x.compareTo(y) < 0 ? x + " & " + y : y + " & " + x;
+    }
+
     /** A Fungus Garden takes no ants of a species that can't farm. */
     private static void gardenNeedsFarmers(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
@@ -850,6 +1065,17 @@ public class AntColoniesGameTests {
         // Power it the way a cable would: FE into the lab through its energy capability.
         int given = power(helper, pos, 12_000);
         helper.assertTrue(given == 12_000 && lab.energy() == 12_000, "The lab should take 12000 FE, took " + given + ", has " + lab.energy());
+        // The screen shows each trait's own cost (it asks for the trait it highlights): the same the lab charges once
+        // that trait is selected, and not the first trait's.
+        var registries = helper.getLevel().registryAccess();
+        for (Trait trait : Trait.values()) {
+            lab.selectTrait(trait.ordinal());
+            var charged = lab.requirement(GeneticLabBlockEntity.Operation.UPGRADE, basic, registries);
+            lab.selectTrait(0);
+            var shown = lab.requirement(GeneticLabBlockEntity.Operation.UPGRADE, trait, basic, registries);
+            helper.assertTrue(charged != null && shown != null && charged.materials().toString().equals(shown.materials().toString())
+                    && charged.energy() == shown.energy(), trait + ": the screen's cost should be what the lab charges");
+        }
         lab.selectTrait(Trait.EGG_PRODUCTION.ordinal());
         helper.runAfterDelay(20, () -> {
             lab.start(GeneticLabBlockEntity.Operation.UPGRADE, helper.getLevel().registryAccess());

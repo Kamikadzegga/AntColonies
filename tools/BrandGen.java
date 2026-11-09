@@ -460,6 +460,10 @@ public class BrandGen {
         logo.save(RES.resolve("logo.png"), 4);
         // For the repository.
         icon.save(DOCS.resolve("icon.png"), 8);
+        // CurseForge's project logo must be 400 x 400: the same icon centred on a 40 x 40 canvas, at exactly 10x.
+        Art curseforge = new Art(40, 40);
+        curseforge.stamp(icon, 3, 3);
+        curseforge.save(DOCS.resolve("curseforge-logo.png"), 10);
         logo.save(DOCS.resolve("logo.png"), 8);
         // Banner, 1280 x 320 (art 256 x 64 at 5x): the logo on the earth.
         int keep = logo.w / 2 + 10;

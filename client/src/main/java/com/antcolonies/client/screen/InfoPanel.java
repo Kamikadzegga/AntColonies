@@ -66,8 +66,11 @@ public final class InfoPanel {
         }
     }
 
-    /** A row of item icons, each with its own tooltip. */
-    private record Icons(List<ItemStack> stacks, List<List<Component>> tips) implements Row {
+    /**
+     * A row of item icons, each with its own tooltip. An icon can stand for several items (a family of blocks, all
+     * accepted): it then cycles through them, one a second.
+     */
+    private record Icons(List<List<ItemStack>> stacks, List<List<Component>> tips) implements Row {
         @Override
         public int height() {
             return 18;
@@ -75,8 +78,10 @@ public final class InfoPanel {
 
         @Override
         public void draw(GuiGraphicsExtractor graphics, Font font, int x, int y, int w, List<Hover> hovers) {
+            long second = net.minecraft.util.Util.getMillis() / 1000;
             for (int i = 0; i < stacks.size(); i++) {
-                graphics.item(stacks.get(i), x + i * 18, y);
+                List<ItemStack> family = stacks.get(i);
+                graphics.item(family.get((int) (second % family.size())), x + i * 18, y);
                 hovers.add(new Hover(x + i * 18, y, 16, 16, tips.get(i)));
             }
         }
@@ -120,10 +125,33 @@ public final class InfoPanel {
     }
 
     private void icons(List<ItemStack> stacks, List<List<Component>> tips) {
+        cyclingIcons(stacks.stream().map(List::of).toList(), tips);
+    }
+
+    /** Icons that each cycle through a family of items. */
+    private void cyclingIcons(List<List<ItemStack>> families, List<List<Component>> tips) {
         int perRow = Math.max(1, width / 18);
-        for (int i = 0; i < stacks.size(); i += perRow) {
-            rows.add(new Icons(stacks.subList(i, Math.min(stacks.size(), i + perRow)), tips.subList(i, Math.min(tips.size(), i + perRow))));
+        for (int i = 0; i < families.size(); i += perRow) {
+            rows.add(new Icons(families.subList(i, Math.min(families.size(), i + perRow)), tips.subList(i, Math.min(tips.size(), i + perRow))));
         }
+    }
+
+    /**
+     * A climate's floor blocks in families, one per kind of block: every terracotta (colours and glazed), every
+     * sandstone, every ice, every dirt... A family is the last word of the blocks' names, after dropping "block"
+     * ("red_sandstone" and "cut_sandstone" are sandstone, "snow_block" and "powder_snow" are snow).
+     */
+    static java.util.Map<String, List<ItemStack>> floorFamilies(Climate climate) {
+        java.util.Map<String, List<ItemStack>> families = new java.util.LinkedHashMap<>();
+        for (Holder<Block> block : BuiltInRegistries.BLOCK.getTagOrEmpty(climate.floorTag())) {
+            ItemStack stack = new ItemStack(block.value());
+            if (stack.isEmpty()) {
+                continue;
+            }
+            String name = BuiltInRegistries.BLOCK.getKey(block.value()).getPath().replaceAll("_blocks?$", "");
+            families.computeIfAbsent(name.substring(name.lastIndexOf('_') + 1), key -> new ArrayList<>()).add(stack);
+        }
+        return families;
     }
 
     // --- What a species is ---
@@ -151,16 +179,20 @@ public final class InfoPanel {
                 text(font, Component.translatable(here ? "info.antcolonies.climate.right" : "info.antcolonies.climate.wrong"), here ? GOOD : BAD);
             }
             text(font, Component.translatable("info.antcolonies.climate.fix"), DIM);
-            List<ItemStack> blocks = new ArrayList<>();
+            // One icon per family of blocks, cycling through its variants (all of them work).
+            List<List<ItemStack>> families = new ArrayList<>();
             List<List<Component>> tips = new ArrayList<>();
-            for (Holder<Block> block : BuiltInRegistries.BLOCK.getTagOrEmpty(data.climate().floorTag())) {
-                ItemStack stack = new ItemStack(block.value());
-                if (!stack.isEmpty() && blocks.size() < 8) {
-                    blocks.add(stack);
-                    tips.add(List.of(stack.getHoverName(), Component.translatable("info.antcolonies.climate.under").withStyle(ChatFormatting.GRAY)));
+            for (List<ItemStack> family : floorFamilies(data.climate()).values()) {
+                families.add(family);
+                List<Component> tip = new ArrayList<>();
+                tip.add(family.getFirst().getHoverName());
+                if (family.size() > 1) {
+                    tip.add(Component.translatable("info.antcolonies.climate.variants", family.size()).withStyle(ChatFormatting.AQUA));
                 }
+                tip.add(Component.translatable("info.antcolonies.climate.under").withStyle(ChatFormatting.GRAY));
+                tips.add(tip);
             }
-            icons(blocks, tips);
+            cyclingIcons(families, tips);
             if (floor != null) {
                 text(font, Component.translatable("info.antcolonies.climate.floor",
                         Component.translatable("climate.antcolonies." + floor.getSerializedName())), DIM);

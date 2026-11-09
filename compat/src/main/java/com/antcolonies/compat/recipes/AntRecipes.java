@@ -363,6 +363,24 @@ public final class AntRecipes {
         return list;
     }
 
+    /**
+     * Colony upgrades: one entry per type and tier. The upgrade on the left, every block it goes in on the right, and what
+     * it does there in numbers underneath (the same lines as its tooltip).
+     */
+    public List<AntRecipe> colonyUpgrades() {
+        List<AntRecipe> list = new ArrayList<>();
+        for (var type : com.antcolonies.colony.upgrade.UpgradeType.values()) {
+            List<AntRecipe.Output> places = com.antcolonies.colony.upgrade.UpgradeEffects.placements(type).stream()
+                    .map(place -> AntRecipe.Output.of(place, line("goes_in").withStyle(ChatFormatting.GRAY))).toList();
+            for (int tier = 1; tier <= com.antcolonies.colony.upgrade.UpgradeType.MAX_TIER; tier++) {
+                list.add(new AntRecipe(AntColonies.id("colony_upgrade/" + type.getSerializedName() + "/" + tier),
+                        List.of(List.of(new ItemStack(ModItems.upgrade(type, tier)))), places,
+                        com.antcolonies.colony.upgrade.UpgradeEffects.lines(type, tier)));
+            }
+        }
+        return list;
+    }
+
     public List<AntRecipe> speciesUpgrades() {
         List<AntRecipe> list = new ArrayList<>();
         UpgradeStationBlockEntity.withSignatures(registries).forEach((id, data) -> {

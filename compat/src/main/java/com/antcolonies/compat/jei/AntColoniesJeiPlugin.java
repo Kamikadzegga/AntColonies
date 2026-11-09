@@ -47,6 +47,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
     public static final IRecipeType<AntRecipe> LAB = AntCategory.type("lab");
     public static final IRecipeType<AntRecipe> TRAIT = AntCategory.type("trait");
     public static final IRecipeType<AntRecipe> SPECIES_UPGRADE = AntCategory.type("species_upgrade");
+    public static final IRecipeType<AntRecipe> COLONY_UPGRADE = AntCategory.type("colony_upgrade");
 
     /** JEI's runtime once it is up (used by the dev showcase to open categories). */
     public static mezz.jei.api.runtime.@org.jspecify.annotations.Nullable IJeiRuntime runtime;
@@ -113,7 +114,8 @@ public class AntColoniesJeiPlugin implements IModPlugin {
                 new AntCategory(FIGHTING, "fighting", structure(StructureKind.HUNTING_GROUND), gui, 2, 2),
                 new AntCategory(LAB, "lab", ModItems.GENETIC_LAB.get(), gui, 1, 4),
                 new AntCategory(TRAIT, "trait", ModItems.GENETIC_ANALYZER.get(), gui, 1, 3),
-                new AntCategory(SPECIES_UPGRADE, "species_upgrade", ModItems.UPGRADE_STATION.get(), gui, 1, 2));
+                new AntCategory(SPECIES_UPGRADE, "species_upgrade", ModItems.UPGRADE_STATION.get(), gui, 1, 2),
+                new AntCategory(COLONY_UPGRADE, "colony_upgrade", ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.SPEED, 1), gui, 2, 9));
     }
 
     private static ItemLike structure(StructureKind kind) {
@@ -137,6 +139,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
         registration.addRecipes(LAB, recipes.lab());
         registration.addRecipes(TRAIT, recipes.traits());
         registration.addRecipes(SPECIES_UPGRADE, recipes.speciesUpgrades());
+        registration.addRecipes(COLONY_UPGRADE, recipes.colonyUpgrades());
     }
 
     @Override

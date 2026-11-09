@@ -43,6 +43,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -461,6 +462,24 @@ public class IngameShowcase {
         common.rescan(level);
         ColonySimulator.step(common, level, 0.05);
         common.syncNow();
+        // A Badlands colony (hot climate: its Info page shows terracotta cycling through its colours) and a Storage with
+        // two Storage IV upgrades (162 slots, scrolling), some of its items in the lower rows.
+        BlockPos badlands = origin.offset(-12, 0, 5);
+        place(level, badlands, ModBlocks.TERRARIUM.get().defaultBlockState().setValue(ColonyEntityBlock.FACING, Direction.NORTH));
+        TerrariumBlockEntity hot = (TerrariumBlockEntity) level.getBlockEntity(badlands);
+        hot.colony().setQueen(Genetics.wildQueen(AntColonies.id("badlands"), RandomSource.create(9)));
+        hot.colony().setPopulation(6, 4, 60);
+        hot.colony().setFood(800);
+        hot.rescan(level);
+        hot.syncNow();
+        StructureBlockEntity big = structure(level, origin.offset(-12, 0, 9), StructureKind.STORAGE);
+        big.upgrades().setItem(0, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.STORAGE, 4)));
+        big.upgrades().setItem(1, new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.STORAGE, 4)));
+        Item[] goods = {Items.COBBLESTONE, Items.IRON_INGOT, Items.DIAMOND, Items.REDSTONE, Items.WHEAT, Items.GOLD_INGOT, Items.EMERALD, Items.COAL};
+        for (int slot = 0; slot < 140; slot += 3) {
+            Item item = goods[slot % goods.length];
+            big.setItem(slot, new ItemStack(item, Math.min(big.slotLimit(new ItemStack(item)), 40 + slot * 3)));
+        }
         // The Genetic Laboratory with a Queen inside, a Generator burning coal beside it, the lab already charged (through
         // its FE input, as a cable would).
         BlockPos lab = origin.offset(0, 0, 10);
@@ -722,7 +741,7 @@ public class IngameShowcase {
         if (minecraft.gui.screen() instanceof net.minecraft.client.gui.screens.PauseScreen) {
             minecraft.gui.setScreen(null);
         }
-        if (t < 0 || t % AUDIT_STEP != 0 && t % AUDIT_STEP != AUDIT_STEP - 2) {
+        if (t < 0 || t % AUDIT_STEP != 0 && t % AUDIT_STEP != 6 && t % AUDIT_STEP != AUDIT_STEP - 2) {
             return;
         }
         int index = t / AUDIT_STEP;
@@ -738,12 +757,36 @@ public class IngameShowcase {
                 {"a08_upgrade_station", origin.offset(6, 0, 3)},
                 {"a09_lab_no_queen", origin.offset(-7, 0, 10)},
                 {"a10_generator", origin.offset(1, 0, 10)},
+                {"a11_badlands_info", origin.offset(-12, 0, 5)},
+                {"a12_big_storage", origin.offset(-12, 0, 9)},
+                {"a13_big_storage_scrolled", origin.offset(-12, 0, 9)},
+                {"a14_lab_other_trait", origin.offset(0, 0, 10)},
         };
+        // A few ticks after opening: the Info page, or scroll the Storage to its end.
+        if (t % AUDIT_STEP == 6) {
+            if (t / AUDIT_STEP >= screens.length) {
+                return;
+            }
+            String name = (String) screens[t / AUDIT_STEP][0];
+            if (name.endsWith("_info")) {
+                clickTab(minecraft, 4);
+            } else if (name.endsWith("_other_trait") && minecraft.player.containerMenu instanceof com.antcolonies.content.menu.GeneticLabMenu lab) {
+                // Select Soldier Strength (trait 5) as the trait list does: the cost card should follow it.
+                minecraft.gameMode.handleInventoryButtonClick(lab.containerId, 5);
+            } else if (name.endsWith("_scrolled") && minecraft.gui.screen() != null) {
+                var window = minecraft.getWindow();
+                for (int i = 0; i < 20; i++) {
+                    minecraft.gui.screen().mouseScrolled(window.getGuiScaledWidth() / 2.0, window.getGuiScaledHeight() / 2.0 - 60, 0, -1);
+                }
+            }
+            return;
+        }
         mezz.jei.api.recipe.types.IRecipeType<?>[] jei = {
                 com.antcolonies.compat.jei.AntColoniesJeiPlugin.BREEDING, com.antcolonies.compat.jei.AntColoniesJeiPlugin.MUTATION,
                 com.antcolonies.compat.jei.AntColoniesJeiPlugin.EGGS, com.antcolonies.compat.jei.AntColoniesJeiPlugin.LARVAE,
                 com.antcolonies.compat.jei.AntColoniesJeiPlugin.FARMING, com.antcolonies.compat.jei.AntColoniesJeiPlugin.FIGHTING,
                 com.antcolonies.compat.jei.AntColoniesJeiPlugin.TRAIT, com.antcolonies.compat.jei.AntColoniesJeiPlugin.SPECIES_UPGRADE,
+                com.antcolonies.compat.jei.AntColoniesJeiPlugin.COLONY_UPGRADE,
         };
         if (index < screens.length) {
             if (shoot) {
@@ -751,7 +794,11 @@ public class IngameShowcase {
             } else {
                 minecraft.gui.setScreen(null);
                 BlockPos pos = (BlockPos) screens[index][1];
-                server.execute(() -> open(server, pos));
+                // Stand on the block first: a screen out of reach closes at once.
+                server.execute(() -> {
+                    command(server, String.format(java.util.Locale.ROOT, "tp @s %.1f %d %.1f", pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5));
+                    open(server, pos);
+                });
             }
             return;
         }
@@ -763,7 +810,12 @@ public class IngameShowcase {
                 if (minecraft.player.containerMenu != minecraft.player.inventoryMenu) {
                     minecraft.player.closeContainer();
                 }
-                jei(jei[index]);
+                // With EMI installed JEI's recipe screen doesn't open; show the same category in EMI.
+                if (net.neoforged.fml.ModList.get().isLoaded("emi")) {
+                    emi(minecraft, jei[index].getUid().getPath());
+                } else {
+                    jei(jei[index]);
+                }
             }
             return;
         }
@@ -937,6 +989,9 @@ public class IngameShowcase {
                 com.antcolonies.colony.upgrade.SpeciesUpgradeKind.EXTRACTION, 2));
         list.add(upgrade);
         list.add(new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.POPULATION, 3)));
+        list.add(new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.STORAGE, 2)));
+        list.add(new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.STORAGE, 4)));
+        list.add(new ItemStack(ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.SPEED, 4)));
         list.add(new ItemStack(ModItems.TERRARIUM.get()));
         list.add(new ItemStack(ModItems.TWEEZERS.get()));
         list.add(new ItemStack(ModItems.EVOLUTION_CATALYST.get()));

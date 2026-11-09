@@ -6,114 +6,88 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
-### Added
+## [0.0.1] - 2026-11-09
 
-- An in-game config screen: Mods → Ant Colonies → Config, with readable names and explanations for every option.
-- An Info page in the Terrarium: what the colony's ants find (with chances) and hunt, the climate they need and the
-  blocks that fix it, and what they evolve into.
-- Climate blocks: a block under the Terrarium gives it a climate, whatever the biome (snow or ice cold, sand hot, grass
-  or dirt temperate, stone or deepslate underground, netherrack or magma nether). Block tags `antcolonies:climate/*`.
-- The Ant Identification Book has how-to-play pages, and its species pages show the same as the Info page.
-- Queen and ant tube tooltips show the species' climate, finds, best traits, and with Shift its evolutions.
-- Jade tooltips for wild ants and wild nests.
-- The creative tab shows the ant's head from the mod's logo.
-- Progression through the Nether and the End:
-  - Evolutions can be bound to a dimension (`"dimension"` in the evolution JSON). The Nether's line (Fire, Inferno, Soul,
-    Netherite, Wither) evolves only in a Terrarium in the Nether, the End's (Ender, Dragon) only in the End.
-  - The Chitin ladder: Hardened Chitin (Blast Furnace), Infernal Chitin (ghast tear, blaze powder, nether wart), Void
-    Chitin (shulker shells, popped chorus, eye of ender).
-  - Two wild species with nests outside the Overworld: the Warped Ant (the Nether's fungus forests; becomes Fire Ants)
-    and the Chorus Ant (the End's outer islands; becomes Ender Ants).
-  - Two boss-gated endgame species: the Wither Ant (Soul Ants fed a Nether Star) and the Dragon Ant (Ender Ants fed
-    dragon's breath).
-- Tier IV upgrades, the endgame, for all ten upgrade types: each takes the tier III upgrade, four Void Chitin and two
-  netherite ingots. A tier IV Simulation Upgrade allows 12 hours of offline catch-up.
-- The Nether anthill: the giant anthill's nest dug into the Nether's floor, in soul soil and blackstone with the lava
-  walled off, home to Fire Ants (Warped Ants in the fungus forests), with the Nether's loot.
-- Eleven advancements on a path through the dimensions: the Chitin ladder, colonies in the Nether and the End, Warped
-  and Chorus Ant colonies, the Nether anthill, a tier IV upgrade, and the Wither and Dragon Ants.
-- Home nests: a nest picked up with Silk Touch and placed becomes home to three ants of its species, like bees in a
-  beehive. In daylight they work the land within 10 blocks, growing crops and saplings on and harvesting ripe crops
-  (replanting them), and carry the harvest into the nest, where hoppers and pipes take it out. They never attack you.
-  Options `nestCropGrowth` and `nestHarvest`; Jade shows a home nest's ants and store.
-- The Chitin Shield: blocks like a shield, raised faster (0.15 s instead of 0.25 s), knocked down by axes for less
-  time, lasts longer (450 uses), mended with Chitin Plates.
-- Chitin armor on baby zombies and other baby mobs (it was invisible on them).
-- MachinaOpus support. The Tin, Lead, Silver, Uranium and Fluorite Ants also load with MachinaOpus and bring its
-  materials. Three new species load only with it: the Molybdenum Ant (from Iron Ants fed molybdenum), the Sulfur Ant
-  (from Fire Ants fed sulfur) and the Rubber Ant (from Wood Ants fed rubber), a farmer that taps rubber at a Harvesting
-  Site. The Mechanical Miner Ant turns up raw molybdenum at stage 3.
-
-### Changed
-
-- Chambers are additions, not requirements: a Terrarium works on its own. A chamber joins when it touches the Terrarium
-  or another chamber of the colony, on any side, in any shape (up to 32). Every block is the same glass case on a wooden
-  base; touching blocks open into each other, so the whole build is one closed glass case with one frame around it. A chamber exactly as near to two Terrariums joins neither.
-- Twelve structures became five chambers: Nest Chamber (was Breeding Chamber, Ant Nursery, Worker Housing and Soldier
-  Barracks), Foraging Site (was Scavenging Site: it holds 9 stacks of finds
-  while the Storage is full), Harvesting Site (was Farmer Ant Garden), Storage (was Resource Pile and Food Storage) and Queen Chamber.
-  Glass Ant Tubes, Underground Tunnels, the Colony Connector and the Resource Processing Chamber are gone; Processing
-  species upgrades still turn finds into their processed form.
-- The Genetic Laboratory is one block that takes FE from any side. Its five parts and the Genetic Energy Core are gone.
-- Food goes in only through the Terrarium. Storage adds food room.
-- A Nest Chamber's screen shows the room it adds, with its Population Upgrades.
-- Colonies move in Test Tubes: an empty tube in the Queen slot takes the Queen out, empty tubes in the feed slot fill
-  with ants (a tube holds up to 1,000), and the Colony page's Take out buttons do the same from your inventory. A
-  broken Terrarium no longer keeps its colony: the ants left inside are lost.
-- When the Queen moves in, her empty tube goes to the output slot. The Queen's X button is gone.
-- Hunters replace soldiers. Colonies have no soldiers any more (old ones join the workers; a caught wild soldier comes as
-  a worker). Four hunter species work at the new Hunting Ground, killing mobs for their loot and feeding the colony on
-  the catch: the Army Ant lives wild in plains and savannas; the Bullet, Trap-Jaw and Inferno Ants evolve from Jungle,
-  Swamp and Fire Ants fed gunpowder, slime balls and blaze powder. The Soldier Upgrade is now the Hunting Upgrade, and
-  Soldier Strength is Hunting Strength. Guard Ants come from hunter colonies, for 50 of their ants.
-- Chitin gear redrawn. Chitin is now overlapping scales, like a pangolin's, on the armor, its icons and the Chitin
-  Plate. The Chitin Helmet is an ant's head with compound eyes, jaws and two elbowed antennae that stand out from the
-  helmet in 3D when worn. The chestplate has an ant's narrow waist, shoulder plates and studded cuffs; the leggings a
-  studded belt and knee caps; the boots dark soles. The tools are drawn like vanilla's, with straight handles.
-- Harder recipes: tier II upgrades take Hardened Chitin (was gold), tier III Infernal Chitin (was diamonds), the
-  Genetic Laboratory Hardened Chitin (was iron); raising a trait to level 8 takes Infernal Chitin (was emeralds) and to
-  level 9 Void Chitin (was netherite scrap).
-- Foraging Sites send their finds to Storage, keeping them only while the Storage is full.
-- Lead Ants evolve into Uranium Ants when fed raw uranium (was a uranium ingot), and Uranium Ants find raw uranium
-  from stage 1.
-- Shift-clicking an upgrade puts it only into an upgrade slot, never into a store or the feed slot.
-- Ants inside chambers are drawn only up close (`antDetailDistance`) with 3D models on: a view of 25 colonies runs
-  about 80% faster.
-- Worlds from 0.1.0: the removed and renamed blocks disappear. Rebuild colonies by placing chambers against the
-  Terrarium.
-
-### Fixed
-
-- EMI showed the Chitin repair tag (`#antcolonies:repairs_chitin_gear`) without a name.
-
-- Terrariums never scanned for their structures in a real game, so nothing linked to them; climate was never read and
-  evolution was never attempted. A timer started at the lowest possible value and "now - then" overflowed.
-- The "not linked" line on colony structure screens ran past the edge of the panel.
-- Upgrades in a Terrarium vanished from its screen a moment after being put in: the updates sent to players left them
-  out and emptied the slots (the upgrades kept working).
-
-## [0.1.0] - 2026-11-08
-
-The first version, for Minecraft 26.3 and NeoForge 26.3.0.101.
+The first release, for Minecraft 26.3 and NeoForge 26.3.0.101 (Java 25).
 
 ### Added
 
-- Colonies simulated as numbers on the server: eggs, larvae, workers, soldiers, food and health, with offline catch-up
-  limits and diminishing returns per colony.
-- The Terrarium and 12 colony structures, joined by glass Ant Tubes and Underground Tunnels, with a shared console-style
-  interface.
-- 38 species: 13 wild species with nests, 14 evolved mineral species and 11 hybrids, plus 10 species that load when
-  Mekanism, Create, Thermal, Immersive Engineering or AE2 provide their materials.
-- Genetics: ten traits, inheritance with variation, and 31 mutations including flaws. The FE-powered Genetic Laboratory
-  upgrades, rerolls, mutates, purges and samples Queens, and a Generator powers it.
-- Giant anthills: a rare world-generation structure with tunnels, loot, a Queen and defending soldiers.
-- Chitin tools and armor, with a full-set bonus: wild ants leave you alone and you dig 20% faster.
-- Guard Ants: a colony gives up soldiers for a tamed defender whose stats come from its Queen's genetics.
-- Comparator outputs and redstone control for Terrariums, job sites and machines.
-- 16 advancements and the `antcolonies:colony` advancement trigger for modpacks and quest mods.
-- JEI and EMI recipe categories, and Jade tooltips.
-- Data-driven species, evolutions, hybrids, mutations, lab costs, ant food and loot, a full server config, and a
-  modpack and KubeJS guide.
+**Colonies**
 
-[Unreleased]: https://github.com/Kamikadzegga/AntColonies/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.1.0
+- Colonies simulated as numbers on the server: a Queen, eggs, larvae, workers, food and health, with limits on offline
+  catch-up and diminishing returns per colony. The ants you see in a Terrarium are pictures of those numbers, so even a
+  colony of thousands costs almost nothing.
+- The Terrarium works on its own. Chambers join the colony when they touch the Terrarium or another of its chambers, on
+  any side and in any shape (up to 32), and the whole build becomes one glass case: Nest Chambers (room and eggs),
+  Foraging Sites (workers bring finds), Harvesting Sites (farmer species grow food), Hunting Grounds (hunter species kill
+  mobs for their drops; no mob is ever spawned), Storage and Queen Chambers (raising and crossing Queens).
+- Climate: each species likes temperate, cold, hot, underground or nether conditions, and a block under the Terrarium
+  sets its climate (block tags `antcolonies:climate/*`). Every variant counts (any terracotta colour, glazed too; any
+  sandstone, ice, dirt or stone); the Info page shows one icon per family that cycles through them.
+- Colony stages 1 to 4: bigger colonies find rarer things.
+- Colonies move in Test Tubes: an empty tube takes the Queen out, others fill with up to 1,000 ants each.
+- Colonies feed themselves from their stores: food items in Storage and Foraging Sites are eaten whenever there is
+  room for them (feeding comes first), worth what the feed slot gives. Royal Jelly is kept for raising Queens (item tag
+  `antcolonies:kept_in_storage`); the `storageFeeding` option turns it off. The Colony page shows the food from Storage.
+- Storage compacts: a Storage starts with 18 slots, and each Storage Upgrade tier adds 18 more (Storage IV: 90; two
+  Storage IV: 162, in a screen that scrolls), a stack per slot (tier II: three stacks in each slot) and 25,000 food room.
+  Hoppers, pipes and the ants use the bigger slots; the screen hands out a normal stack at a time, and shift-clicking
+  fills the whole Storage. A Storage Upgrade can't be taken out while the Storage holds more than would fit without it.
+
+**Species and progression**
+
+- 46 species: 16 wild species with nests in their biomes (among them the Army Ant, a hunter, the Nether's Warped Ant and
+  the End's Chorus Ant), mineral species that evolve from them, 11 hybrids from crossing Queens, and the boss-gated
+  Wither Ant (Soul Ants fed a Nether Star) and Dragon Ant (Ender Ants fed the dragon's breath).
+- 13 more species that load when MachinaOpus, Mekanism, Create, Thermal, Immersive Engineering or AE2 add their
+  materials; the Molybdenum, Sulfur and Rubber Ants load only with MachinaOpus.
+- Evolutions bound to a dimension (`"dimension"` in the evolution JSON): the Nether's line (Fire, Inferno, Soul,
+  Netherite, Wither) evolves only in a Terrarium in the Nether, the End's (Ender, Dragon) only in the End.
+- The Chitin ladder: Hardened Chitin (Blast Furnace), Infernal Chitin (ghast tear, blaze powder, nether wart) and Void
+  Chitin (shulker shells, popped chorus, eye of ender).
+- Ten colony upgrades (speed, food efficiency, simulation, storage, breeding, genetic, hunting, automation, population,
+  evolution) in tiers I to IV: tier II takes Hardened Chitin, III Infernal Chitin, IV four Void Chitin and two netherite
+  ingots. Species upgrades come from the Colony Upgrade Station.
+
+**Genetics**
+
+- Ten traits per Queen, inherited with variation, and 31 mutations including flaws.
+- The FE-powered Genetic Laboratory raises, rerolls, mutates and purges traits and samples Queens; trait levels 8 and 9
+  take Infernal and Void Chitin, level 10 a Nether Star. The Generator burns fuel to power it, or any mod's FE does.
+
+**The world**
+
+- Wild nests in their species' biomes, including the Nether's fungus forests and the End's outer islands. Tweezers and
+  an empty Test Tube take ants from them; disturbed nests send soldiers.
+- Giant anthills: rare mounds over tunnels dug deep into the ground, with loot, defenders and a Queen to catch.
+- Nether anthills: the same nest dug into the Nether's floor, in soul soil and blackstone, home to Fire Ants (Warped
+  Ants in the fungus forests), with the Nether's loot.
+- Home nests: a wild nest picked up with Silk Touch and placed becomes home to three ants, like bees in a beehive. In
+  daylight they tend crops and saplings within 10 blocks, harvest ripe crops, replant them and carry the harvest into
+  the nest, where hoppers and pipes take it out. Options `nestCropGrowth` and `nestHarvest`.
+
+**Gear and companions**
+
+- Chitin tools, armor and shield, iron tier, in overlapping scales. The helmet is an ant's head with antennae that
+  stand out in 3D when worn; the full set makes wild ants ignore you and lets you dig 20% faster. The Chitin Shield is
+  raised in 0.15 s, lasts 450 uses and is mended with Chitin Plates.
+- Guard Ants: a hunter colony gives up 50 of its ants for a tamed Guard Ant that follows you and fights for you, as
+  strong as the colony's genetics.
+
+**Interface and integration**
+
+- The Terrarium's Info page (finds, hunts, climate, evolutions), the Ant Identification Book with how-to-play pages,
+  detailed tooltips, and an in-game config screen with an explanation for every option.
+- JEI and EMI recipe categories for the whole progression, including a Colony Upgrades page for every upgrade and tier
+  (where it goes and what it does), and Jade tooltips for colonies, machines, wild ants and nests.
+- Colony upgrade tooltips say in numbers what the upgrade does at its tier, under a heading for each block it goes in
+  ("In Storage:" then "54 slots (+36)", "3 stacks per slot", "+50,000 food room").
+- 27 advancements, including a path through the Nether and the End, and the `antcolonies:colony` trigger for modpacks
+  and quest mods.
+- Comparator outputs and redstone control. Items and FE move through any mod's pipes and cables.
+- Data-driven species, evolutions, hybrids, mutations, lab costs, ant food and loot, a full server config, and a modpack
+  and KubeJS guide.
+- Tested together with MachinaOpus and its Tools Addon: no clashing recipes or names.
+
+[Unreleased]: https://github.com/Kamikadzegga/AntColonies/compare/v0.0.1...HEAD
+[0.0.1]: https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.0.1

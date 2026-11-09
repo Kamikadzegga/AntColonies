@@ -142,10 +142,8 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
     }
 
     public static boolean acceptsUpgrade(ItemStack stack) {
-        return stack.getItem() instanceof UpgradeItem upgrade && switch (upgrade.type()) {
-            case POPULATION, SIMULATION, EVOLUTION, FOOD_EFFICIENCY, BREEDING -> true;
-            default -> false;
-        };
+        return stack.getItem() instanceof UpgradeItem upgrade
+                && com.antcolonies.colony.upgrade.UpgradeEffects.TerrariumAccepts.types().contains(upgrade.type());
     }
 
     public int upgradeTier(UpgradeType type) {

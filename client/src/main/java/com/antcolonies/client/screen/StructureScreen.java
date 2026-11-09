@@ -9,6 +9,7 @@ import com.antcolonies.client.ClientSpecies;
 import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.colony.model.StructureKind;
 import com.antcolonies.core.config.AntConfig;
+import com.antcolonies.content.menu.StorageWindow;
 import com.antcolonies.content.menu.StructureMenu;
 import com.antcolonies.colony.species.AntSpecies;
 import com.antcolonies.colony.species.Cost;
@@ -30,6 +31,65 @@ public class StructureScreen extends AntScreen<StructureMenu> {
     private record Clipped(int x, int y, int w, String text) {
     }
 
+    /** A Storage's scrollbar: right of its slots, as tall as the six rows shown. */
+    private static final int SCROLL_X = 172;
+    private static final int SCROLL_Y = 18;
+    private static final int SCROLL_H = StorageWindow.ROWS * 18 - 2;
+    private boolean draggingScrollbar;
+
+    private int thumbHeight() {
+        return Math.max(8, SCROLL_H * StorageWindow.ROWS / Math.max(StorageWindow.ROWS, menu.storageRows()));
+    }
+
+    /** Scrolls here and on the server (which then sends what the slots now show). */
+    private void scrollStorage(int row) {
+        int target = Math.clamp(row, 0, menu.maxScroll());
+        if (target != menu.firstRow()) {
+            menu.scrollTo(target);
+            minecraft.gameMode.handleInventoryButtonClick(menu.containerId, StructureMenu.SCROLL + target);
+        }
+    }
+
+    private void dragScrollbar(double mouseY) {
+        int thumb = thumbHeight();
+        double along = (mouseY - topPos - SCROLL_Y - thumb / 2.0) / Math.max(1, SCROLL_H - thumb);
+        scrollStorage((int) Math.round(Math.clamp(along, 0, 1) * menu.maxScroll()));
+    }
+
+    @Override
+    public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+        if (kind == StructureKind.STORAGE && menu.maxScroll() > 0 && scrollY != 0 && over(x, y, 0, 0, 182, StructureMenu.inventoryY(kind) - 12)) {
+            scrollStorage(menu.firstRow() - (int) Math.signum(scrollY));
+            return true;
+        }
+        return super.mouseScrolled(x, y, scrollX, scrollY);
+    }
+
+    @Override
+    protected boolean clickPage(double mouseX, double mouseY) {
+        if (kind == StructureKind.STORAGE && menu.maxScroll() > 0 && over(mouseX, mouseY, SCROLL_X, SCROLL_Y, 6, SCROLL_H)) {
+            draggingScrollbar = true;
+            dragScrollbar(mouseY);
+            return true;
+        }
+        return super.clickPage(mouseX, mouseY);
+    }
+
+    @Override
+    public boolean mouseDragged(net.minecraft.client.input.MouseButtonEvent event, double dx, double dy) {
+        if (draggingScrollbar) {
+            dragScrollbar(event.y());
+            return true;
+        }
+        return super.mouseDragged(event, dx, dy);
+    }
+
+    @Override
+    public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent event) {
+        draggingScrollbar = false;
+        return super.mouseReleased(event);
+    }
+
     public StructureScreen(StructureMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 206, StructureMenu.inventoryY(menu.structure().kind()) + 82);
         this.kind = menu.structure().kind();
@@ -49,17 +109,31 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         boolean linked = menu.data(StructureBlockEntity.DATA_LINKED) != 0;
         int x = 8;
         int y = kind == StructureKind.STORAGE ? 130 : 18;
-        // The locked Storage slots, darkened.
+        // The locked Storage slots, darkened, and the scrollbar when the open rows don't fit.
         if (kind == StructureKind.STORAGE) {
             int unlocked = menu.data(StructureBlockEntity.DATA_UNLOCKED);
-            for (int slot = unlocked; slot < kind.slots(); slot++) {
+            int first = menu.firstRow() * 9;
+            for (int slot = 0; slot < StorageWindow.SIZE; slot++) {
+                if (first + slot < unlocked) {
+                    continue;
+                }
                 int sx = leftPos + 8 + (slot % 9) * 18 - 1;
                 int sy = topPos + 18 + (slot / 9) * 18 - 1;
                 graphics.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF141B22);
                 graphics.fill(sx + 6, sy + 7, sx + 12, sy + 12, 0xFF2B3B48);
                 graphics.fill(sx + 7, sy + 4, sx + 11, sy + 7, 0xFF2B3B48);
             }
+            if (menu.maxScroll() > 0) {
+                int top = topPos + SCROLL_Y;
+                graphics.fill(leftPos + SCROLL_X, top, leftPos + SCROLL_X + 6, top + SCROLL_H, 0xFF141B22);
+                int thumb = thumbHeight();
+                int thumbY = top + (SCROLL_H - thumb) * menu.firstRow() / menu.maxScroll();
+                boolean hot = draggingScrollbar || over(mouseX, mouseY, SCROLL_X, SCROLL_Y, 6, SCROLL_H);
+                graphics.fill(leftPos + SCROLL_X, thumbY, leftPos + SCROLL_X + 6, thumbY + thumb, hot ? 0xFF6FD8F5 : 0xFF3FA8C8);
+            }
+            String rows = Component.translatable("gui.antcolonies.storage.slots", unlocked).getString();
             label(graphics, linkLine(linked), x, y, linked ? GOOD : BAD);
+            label(graphics, rows, 8 + 162 - font.width(rows), 6, DIM);
             return;
         }
         label(graphics, linkLine(linked), x, y, linked ? GOOD : BAD);
@@ -197,6 +271,14 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         }
         if (hoveredSlot != null && kind == StructureKind.FORAGING_SITE && hoveredSlot.container == menu.structure() && !hoveredSlot.hasItem()) {
             graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.site.store")), mouseX, mouseY);
+            return;
+        }
+        if (hoveredSlot != null && hoveredSlot.container == menu.structure().upgrades() && hoveredSlot.hasItem()
+                && menu.upgradeHeld(hoveredSlot.getContainerSlot())) {
+            // Why this Storage Upgrade won't come out, under the item's own tooltip.
+            List<Component> lines = new ArrayList<>(getTooltipFromContainerItem(hoveredSlot.getItem()));
+            lines.add(Component.translatable("gui.antcolonies.storage.upgrade_held").withStyle(ChatFormatting.RED));
+            graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
             return;
         }
         if (hoveredSlot != null && hoveredSlot.container == menu.structure().upgrades() && !hoveredSlot.hasItem()) {

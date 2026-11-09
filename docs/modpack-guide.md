@@ -81,7 +81,7 @@ Every crafted item (Terrarium, chambers, upgrades, tools, foods, the lab) uses o
 (`minecraft:crafting_shaped`, `crafting_shapeless`), 72 recipes in all, in `data/antcolonies/recipe/`. Change them like
 any vanilla recipe: replace the file with the same name, or remove and add recipes with KubeJS.
 
-The mod has **no custom recipe types**. The lab, Queen rearing, evolution and the Upgrade Station read their costs from
+The mod has **no custom recipe types**. The lab, Queen rearing, evolution and the Colony Upgrade Station read their costs from
 the files in sections 5 to 9, not from recipes. JEI shows those costs in its own categories.
 
 KubeJS (untested on 26.3, see the note at the top):
@@ -193,7 +193,7 @@ required; every other field has a default.
 | `rearing.cost` | none | What a Queen Chamber uses to rear a new Queen of this species. |
 | `rearing.time` | `2400` | Rearing time in ticks (20 ticks = 1 second). |
 | `breeding.eggs`, `breeding.growth` | `1.0` | Egg laying and larvae growth speed. |
-| `signature_item` | none | The item the Upgrade Station combines into species upgrades (4, 8 or 16 of it). Without one, the species has no species upgrades. |
+| `signature_item` | none | The item the Colony Upgrade Station combines into species upgrades (4, 8 or 16 of it). Without one, the species has no species upgrades. |
 
 **Output fields** (in `outputs` and `harvest`): either `item` or `tag`, plus
 
@@ -571,7 +571,7 @@ Generator, and comparators read a Terrarium's food, a job site's ants, storage f
 
 These are fixed in the mod's code today:
 
-- **Upgrade Station amounts**: species upgrades always take 4, 8 or 16 of the signature item for tiers 1 to 3.
+- **Colony Upgrade Station amounts**: species upgrades always take 4, 8 or 16 of the signature item for tiers 1 to 3.
 - **Nest blocks**: only the 13 built-in wild species have nest blocks; species added by a data pack can be wild ants but
   can't have nests.
 - **Structures, upgrades and their effects**: what each structure and upgrade does (the numbers are in the config).

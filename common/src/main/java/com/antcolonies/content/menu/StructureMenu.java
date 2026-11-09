@@ -12,6 +12,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Any colony chamber's GUI: its status and link, for working sites the ants it has and wants (+/- buttons), its own slots (Storage, a Foraging Site's store, Queen
@@ -29,8 +32,14 @@ public class StructureMenu extends BaseMenu {
     /** Where a Foraging Site's store slots are. */
     public static final int STORE_Y = 72;
 
+    /** Menu button ids from here on scroll a Storage: SCROLL + the first row to show. */
+    public static final int SCROLL = 100;
+
     private final StructureBlockEntity structure;
     private final ContainerData data;
+    /** A Storage's scrolling view of six rows, and the row it starts at. */
+    private @Nullable StorageWindow window;
+    private int scroll;
 
     public StructureMenu(int containerId, Inventory inventory, StructureBlockEntity structure) {
         this(containerId, inventory, structure, structure.data());
@@ -43,10 +52,11 @@ public class StructureMenu extends BaseMenu {
         StructureKind kind = structure.kind();
         switch (kind) {
             case STORAGE -> {
-                for (int slot = 0; slot < kind.slots(); slot++) {
+                window = new StorageWindow(structure, this::firstRow);
+                for (int slot = 0; slot < StorageWindow.SIZE; slot++) {
                     int s = slot;
-                    addSlot(new FilteredSlot(structure, slot, 8 + (slot % 9) * 18, 18 + (slot / 9) * 18, stack -> true, 64,
-                            () -> s < data.get(StructureBlockEntity.DATA_UNLOCKED)));
+                    addSlot(new StorageSlot(window, structure, slot, 8 + (slot % 9) * 18, 18 + (slot / 9) * 18,
+                            () -> window.storageSlot(s) < data.get(StructureBlockEntity.DATA_UNLOCKED)));
                 }
             }
             case FORAGING_SITE -> {
@@ -66,7 +76,14 @@ public class StructureMenu extends BaseMenu {
             }
         }
         for (int slot = 0; slot < kind.upgradeSlots(); slot++) {
-            addUpgradeSlot(new FilteredSlot(structure.upgrades(), slot, UPGRADE_X, 18 + slot * 18, structure::acceptsUpgrade, 1));
+            int s = slot;
+            addUpgradeSlot(new FilteredSlot(structure.upgrades(), slot, UPGRADE_X, 18 + slot * 18, structure::acceptsUpgrade, 1) {
+                // A Storage Upgrade stays in while the Storage holds more than it could without it.
+                @Override
+                public boolean mayPickup(Player player) {
+                    return player.level().isClientSide() ? !upgradeHeld(s) : structure.canRemoveUpgrade(s);
+                }
+            });
         }
         addPlayerInventory(inventory, 8, inventoryY(kind));
         addDataSlots(WideData.slots(data));
@@ -91,6 +108,71 @@ public class StructureMenu extends BaseMenu {
         return data.get(id);
     }
 
+    /** Whether the upgrade in this upgrade slot is held in (the server says so: it sees the whole Storage). */
+    public boolean upgradeHeld(int upgradeSlot) {
+        return (data.get(StructureBlockEntity.DATA_UPGRADES_HELD) & (1 << upgradeSlot)) != 0;
+    }
+
+    // --- Storage scrolling ---
+
+    /** The rows of open Storage slots. */
+    public int storageRows() {
+        return (data.get(StructureBlockEntity.DATA_UNLOCKED) + 8) / 9;
+    }
+
+    /** The furthest a Storage scrolls: its last open row at the bottom (0 when all fit). */
+    public int maxScroll() {
+        return Math.max(0, storageRows() - StorageWindow.ROWS);
+    }
+
+    /** The Storage row the window starts at. */
+    public int firstRow() {
+        return Math.clamp(scroll, 0, maxScroll());
+    }
+
+    /** Scrolls a Storage (the screen does this here and asks the server to do the same). */
+    public void scrollTo(int row) {
+        scroll = Math.clamp(row, 0, maxScroll());
+    }
+
+    /**
+     * Shift-clicking into a Storage fills the whole Storage, not only the rows on screen: first the slots already
+     * holding the item, then empty ones.
+     */
+    @Override
+    public ItemStack quickMoveStack(Player player, int index) {
+        if (window == null || index < blockSlots || isUpgrade(slots.get(index).getItem()) || !slots.get(index).hasItem()) {
+            return super.quickMoveStack(player, index);
+        }
+        Slot from = slots.get(index);
+        ItemStack stack = from.getItem();
+        ItemStack original = stack.copy();
+        int open = structure.unlockedSlots();
+        for (int pass = 0; pass < 2 && !stack.isEmpty(); pass++) {
+            for (int slot = 0; slot < open && !stack.isEmpty(); slot++) {
+                ItemStack held = structure.getItem(slot);
+                if (pass == 0 ? !ItemStack.isSameItemSameComponents(held, stack) : !held.isEmpty()) {
+                    continue;
+                }
+                int moving = Math.min(stack.getCount(), structure.slotLimit(stack) - held.getCount());
+                if (moving > 0) {
+                    structure.setItem(slot, stack.copyWithCount(held.getCount() + moving));
+                    stack.shrink(moving);
+                }
+            }
+        }
+        if (stack.getCount() == original.getCount()) {
+            return ItemStack.EMPTY;
+        }
+        if (stack.isEmpty()) {
+            from.setByPlayer(ItemStack.EMPTY);
+        } else {
+            from.setChanged();
+        }
+        from.onTake(player, stack);
+        return ItemStack.EMPTY;
+    }
+
     /** One of the assignment buttons, for this GUI and the Terrarium's job list. */
     public static void adjust(StructureBlockEntity site, int action) {
         int current = site.requested();
@@ -109,8 +191,24 @@ public class StructureMenu extends BaseMenu {
         site.contentsChanged();
     }
 
+    /** Swapping a hotbar slot with a Storage slot that holds more than a stack would put it all in the hotbar: not allowed. */
+    @Override
+    public void clicked(int slotId, int button, net.minecraft.world.inventory.ContainerInput clickType, Player player) {
+        if (clickType == net.minecraft.world.inventory.ContainerInput.SWAP && slotId >= 0 && slotId < slots.size()
+                && slots.get(slotId) instanceof StorageSlot storage && storage.overfull()) {
+            return;
+        }
+        super.clicked(slotId, button, clickType, player);
+    }
+
     @Override
     public boolean clickMenuButton(Player player, int id) {
+        if (window != null && id >= SCROLL) {
+            scrollTo(id - SCROLL);
+            // The slots now show other Storage slots: send them all, even where they look the same as before.
+            sendAllDataToRemote();
+            return true;
+        }
         if (!structure.kind().job().any() || id < 0 || id > MORE_100) {
             return false;
         }

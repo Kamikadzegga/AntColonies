@@ -56,7 +56,9 @@ with Simulation Upgrades), never on the whole time away.
    mountains, snowy biomes, deserts, jungles. Right-click an ant (or the nest) with Tweezers: it goes into an empty
    tube from your inventory. Queens are rare; nests give one now and then.
 2. Place a **Terrarium**, put the **Queen Test Tube** in (right-click or the Queen slot) and some **Ant Food**. Food
-   only ever goes in through the Terrarium's feed slot (by hand, or a hopper or pipe into the Terrarium).
+   goes in through the Terrarium's feed slot (by hand, or a hopper or pipe into the Terrarium), and the colony also
+   feeds itself from its Storage: food items there are eaten whenever there is room for them (Royal Jelly is kept).
+   The Colony page shows how much of the food came from Storage.
 3. Check the Terrarium's **Info** page: if the climate is wrong, put the block it shows under the Terrarium (snow
    for cold species, sand for hot ones...).
 4. Add chambers as you go: a **Nest Chamber** for a bigger, faster-growing colony, a **Foraging Site** to put workers
@@ -80,26 +82,29 @@ The **Ant Identification Book** has how-to-play pages and a page for every speci
 | Foraging Site | Workers find the species' outputs. Sends its finds to Storage; holds 9 stacks while the Storage is full. Takes species upgrades. |
 | Hunting Ground | Hunter species (see below) kill mobs: drops from the hunted mobs' own loot tables (vanilla or modded; no mobs spawn), and 40 food for the colony from each catch. Other species leave it alone. |
 | Harvesting Site | Farmer Ants grow food and harvest mushrooms, seeds, berries. Other species can't farm. |
-| Storage | More room for finds, 9 to 54 slots (Storage Upgrades), and 25,000 food room. Hoppers can empty it; Automation pushes it down. |
+| Storage | More room for finds and 25,000 food room. A Storage starts with 18 slots; each Storage Upgrade tier adds 18 (Storage IV: 90, two Storage IV: 162, the screen scrolls), a stack per slot (Storage II: three stacks in each slot) and 25,000 food room. An upgrade stays in while the Storage holds more than would fit without it. The colony eats the food items in it (not Royal Jelly). Hoppers can empty it; Automation pushes it down. |
 | Queen Chamber | Raises daughter Queens; a Genetic Sample crossed in can make hybrids. |
 | Genetic Laboratory | One block. Upgrades one trait at a time, rerolls, mutates, purges, copies genes. Runs on FE (1,000,000 stored) from any side: a Generator next to it or any mod's FE cable. |
 | Generator | Burns furnace fuel into FE (40 FE/t, 100k buffer) and gives it to the blocks next to it; any mod's FE cables work too. |
-| Upgrade Station | Makes species upgrades (Upgrade Base + the species' signature material). |
+| Colony Upgrade Station | Makes species upgrades (Upgrade Base + the species' signature material). |
 
-Shift-clicking an upgrade puts it only into an upgrade slot, never into a store or the feed slot.
+Shift-clicking an upgrade puts it only into an upgrade slot, never into a store or the feed slot. Each colony upgrade's tooltip
+says in numbers what it does at its tier and where it goes, and JEI and EMI have a Colony Upgrades page for every
+upgrade and tier. Upgrades of a kind in one block add up their tiers.
 
 ### Climate
 
 Each species likes a climate: temperate, cold, hot, underground or nether. In the wrong one a colony loses health
-(less with good Environmental Resistance). A block under the Terrarium gives it a climate, whatever the biome:
+(less with good Environmental Resistance). A block under the Terrarium gives it a climate, whatever the biome. Every variant of a block counts (any
+terracotta colour, glazed too; any sandstone; any ice), and the Info page shows one icon per family, cycling through them:
 
 | Climate | Blocks (block tag `antcolonies:climate/<name>`) |
 |---|---|
-| Cold | Snow block, ice, packed ice, blue ice, powder snow |
-| Hot | Sand, red sand, sandstones, terracotta |
-| Temperate | Grass block, dirt, coarse dirt, podzol, rooted dirt, moss, mud |
-| Underground | Stone, deepslate, cobbled deepslate, tuff, calcite, dripstone |
-| Nether | Netherrack, magma, soul sand and soil, nylium, blackstone, basalt |
+| Cold | Snow block, powder snow, every ice |
+| Hot | Every sand, every sandstone, every terracotta (all colours, glazed too) |
+| Temperate | Grass block, podzol, mycelium, every dirt, mud and moss block |
+| Underground | Stone, granite, diorite, andesite, tuff and deepslate (polished too), cobblestone, calcite, dripstone |
+| Nether | Netherrack, magma, soul sand and soil, nylium, blackstone and basalt (polished and smooth too) |
 
 ### Redstone and comparators
 

@@ -77,7 +77,9 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     public static final int DATA_LINKED = 9;
     public static final int DATA_UNLOCKED = 10;
     public static final int DATA_CONTESTED = 11;
-    public static final int DATA_COUNT = 12;
+    /** A bit per upgrade slot whose upgrade can't come out now (canRemoveUpgrade). */
+    public static final int DATA_UPGRADES_HELD = 12;
+    public static final int DATA_COUNT = 13;
 
     private final StructureKind kind;
     private NonNullList<ItemStack> items;
@@ -117,6 +119,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
                 case DATA_LINKED -> isLinked() ? 1 : 0;
                 case DATA_UNLOCKED -> unlockedSlots();
                 case DATA_CONTESTED -> isContested() ? 1 : 0;
+                case DATA_UPGRADES_HELD -> upgradesHeld();
                 default -> 0;
             };
         }
@@ -329,12 +332,81 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
 
     // --- Storage ---
 
+    /** The slots a Storage has without upgrades: two rows. */
+    public static final int STORAGE_BASE_SLOTS = 18;
+
     /** Storage slots open with its Storage Upgrades; other chambers use all their slots. */
     public int unlockedSlots() {
-        if (kind != StructureKind.STORAGE) {
-            return kind.slots();
+        return kind != StructureKind.STORAGE ? kind.slots() : storageSlots(upgradeTier(UpgradeType.STORAGE));
+    }
+
+    /** A Storage's slots with Storage Upgrades of these summed tiers: 18, and 18 more per tier (Storage IV: 90). */
+    public static int storageSlots(int tier) {
+        return Math.min(StructureKind.STORAGE.slots(), STORAGE_BASE_SLOTS + AntConfig.get(AntConfig.STORAGE_SLOTS_PER_UPGRADE) * tier);
+    }
+
+    /**
+     * How many of an item one slot holds. Storage Upgrades compact: each tier adds a whole stack per slot (Storage Upgrade
+     * II: three stacks, so 192 cobblestone or 48 ender pearls). Other chambers hold normal stacks.
+     */
+    public int slotLimit(ItemStack stack) {
+        return kind == StructureKind.STORAGE ? slotLimit(stack, upgradeTier(UpgradeType.STORAGE)) : Math.max(1, stack.getMaxStackSize());
+    }
+
+    private static int slotLimit(ItemStack stack, int storageTier) {
+        return Math.max(1, stack.getMaxStackSize()) * (1 + storageTier);
+    }
+
+    /**
+     * Whether the upgrade in this upgrade slot can come out. A Storage Upgrade can't while the Storage holds more than it
+     * would hold without it: stacks bigger than a slot would then take, or items in slots that would close. Taking it out
+     * would leave them stuck, so the extra items have to come out first.
+     */
+    public boolean canRemoveUpgrade(int upgradeSlot) {
+        if (kind != StructureKind.STORAGE || !(upgrades.getItem(upgradeSlot).getItem() instanceof UpgradeItem upgrade)
+                || upgrade.type() != UpgradeType.STORAGE) {
+            return true;
         }
-        return Math.min(kind.slots(), 9 + AntConfig.get(AntConfig.STORAGE_SLOTS_PER_UPGRADE) * upgradeTier(UpgradeType.STORAGE) * 2);
+        int tierWithout = upgradeTier(UpgradeType.STORAGE) - upgrade.tier();
+        int slotsWithout = storageSlots(tierWithout);
+        for (int slot = 0; slot < items.size(); slot++) {
+            ItemStack stack = items.get(slot);
+            if (!stack.isEmpty() && (slot >= slotsWithout || stack.getCount() > slotLimit(stack, tierWithout))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** A bit per upgrade slot whose upgrade can't come out now, for the screen. */
+    private int upgradesHeld() {
+        int held = 0;
+        for (int slot = 0; slot < upgrades.getContainerSize(); slot++) {
+            if (!canRemoveUpgrade(slot)) {
+                held |= 1 << slot;
+            }
+        }
+        return held;
+    }
+
+    /** One saved slot: the item (as a single) and how many. */
+    public record StoredSlot(int slot, ItemStack item, int count) {
+        public static final com.mojang.serialization.Codec<StoredSlot> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.create(i -> i.group(
+                com.mojang.serialization.Codec.INT.fieldOf("slot").forGetter(StoredSlot::slot),
+                ItemStack.CODEC.fieldOf("item").forGetter(StoredSlot::item),
+                com.mojang.serialization.Codec.intRange(1, Integer.MAX_VALUE).fieldOf("count").forGetter(StoredSlot::count)
+        ).apply(i, StoredSlot::new));
+    }
+
+    /** Hoppers, pipes and the screen ask this: a compacting Storage takes more than a stack per slot. */
+    @Override
+    public int getMaxStackSize(ItemStack stack) {
+        return slotLimit(stack);
+    }
+
+    @Override
+    public int getMaxStackSize() {
+        return kind == StructureKind.STORAGE ? 64 * (1 + upgradeTier(UpgradeType.STORAGE)) : WorldlyContainer.super.getMaxStackSize();
     }
 
     /** Sets a slot without the change notice (bulk inserts call {@link #contentsChanged()} once). */
@@ -516,7 +588,12 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         items = NonNullList.withSize(kind.slots(), ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(input, items);
+        ContainerHelper.loadAllItems(input, items); // saves from before compacting Storage
+        for (StoredSlot stored : input.listOrEmpty("stored", StoredSlot.CODEC)) {
+            if (stored.slot() >= 0 && stored.slot() < items.size()) {
+                items.set(stored.slot(), stored.item().copyWithCount(stored.count()));
+            }
+        }
         upgrades.clearContent();
         int slot = 0;
         for (ItemStack stack : input.listOrEmpty("upgrades", ItemStack.OPTIONAL_CODEC)) {
@@ -547,7 +624,15 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
-        ContainerHelper.saveAllItems(output, items);
+        // A compacting Storage slot can hold more than an item stack may save (99): each slot is saved as one item and
+        // its count.
+        ValueOutput.TypedOutputList<StoredSlot> stored = output.list("stored", StoredSlot.CODEC);
+        for (int slot = 0; slot < items.size(); slot++) {
+            ItemStack stack = items.get(slot);
+            if (!stack.isEmpty()) {
+                stored.add(new StoredSlot(slot, stack.copyWithCount(1), stack.getCount()));
+            }
+        }
         ValueOutput.TypedOutputList<ItemStack> list = output.list("upgrades", ItemStack.OPTIONAL_CODEC);
         for (int slot = 0; slot < upgrades.getContainerSize(); slot++) {
             list.add(upgrades.getItem(slot));

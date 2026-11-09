@@ -28,7 +28,7 @@ public enum StructureKind implements StringRepresentable {
     /** Farmer Ants grow food and harvest. */
     HARVESTING_SITE("harvesting_site", Job.FARMERS, 0, 3, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
     /** More room for what the colony finds, and food room. */
-    STORAGE("storage", Job.NONE, 54, 2, EnumSet.of(UpgradeType.STORAGE, UpgradeType.AUTOMATION)),
+    STORAGE("storage", Job.NONE, 162, 2, EnumSet.of(UpgradeType.STORAGE, UpgradeType.AUTOMATION)),
     /** Raises new Queens, and hybrids when a Genetic Sample is crossed in. */
     QUEEN_CHAMBER("queen_chamber", Job.NONE, 7, 2, EnumSet.of(UpgradeType.BREEDING, UpgradeType.GENETIC, UpgradeType.SPEED));
 

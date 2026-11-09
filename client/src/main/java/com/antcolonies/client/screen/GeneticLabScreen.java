@@ -290,7 +290,7 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
     }
 
     private GeneticLabBlockEntity.@Nullable Requirement requirement(QueenData queen) {
-        return minecraft.level == null ? null : menu.lab().requirement(GeneticLabBlockEntity.Operation.UPGRADE, queen, minecraft.level.registryAccess());
+        return minecraft.level == null ? null : menu.lab().requirement(GeneticLabBlockEntity.Operation.UPGRADE, selected(), queen, minecraft.level.registryAccess());
     }
 
 
