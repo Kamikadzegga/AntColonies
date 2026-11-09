@@ -388,6 +388,7 @@ public class IngameShowcase {
                         player.getInventory().setItem(i, new ItemStack(items[i]));
                     }
                     player.getInventory().setItem(9, new ItemStack(ModItems.RALLY_PHEROMONE.get()));
+                    player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, new ItemStack(ModItems.CHITIN_SHIELD.get()));
                 });
             }
             case 1275 -> minecraft.gui.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(minecraft.player));
@@ -613,7 +614,7 @@ public class IngameShowcase {
                     : pos.getY() > center.getY() - 3 ? net.minecraft.world.level.block.Blocks.DIRT : net.minecraft.world.level.block.Blocks.STONE;
             level.setBlock(pos, block.defaultBlockState(), 2);
         }
-        com.antcolonies.content.worldgen.AnthillPiece piece = new com.antcolonies.content.worldgen.AnthillPiece(center);
+        com.antcolonies.content.worldgen.AnthillPiece piece = new com.antcolonies.content.worldgen.AnthillPiece(center, false);
         piece.postProcess(level, level.structureManager(), level.getChunkSource().getGenerator(), level.getRandom(), piece.getBoundingBox(),
                 net.minecraft.world.level.ChunkPos.containing(center), center);
         var ants = level.getEntitiesOfClass(com.antcolonies.content.entity.WildAnt.class, new net.minecraft.world.phys.AABB(center).inflate(14, 22, 14));
@@ -650,8 +651,26 @@ public class IngameShowcase {
         stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new ItemStack(ModItems.CHITIN_CHESTPLATE.get()));
         stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS, new ItemStack(ModItems.CHITIN_LEGGINGS.get()));
         stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET, new ItemStack(ModItems.CHITIN_BOOTS.get()));
-        stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(ModItems.CHITIN_SWORD.get()));
+        // The shield in the hand on the close-up camera's side, front outward; the sword in the other.
+        stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(ModItems.CHITIN_SHIELD.get()));
+        stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, new ItemStack(ModItems.CHITIN_SWORD.get()));
         level.addFreshEntity(stand);
+        // A baby zombie in Chitin, for the armor's baby layer (zombies need more than Peaceful; this one does nothing).
+        command(server, "difficulty easy");
+        var baby = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        baby.setBaby(true);
+        baby.setNoAi(true);
+        baby.setPersistenceRequired();
+        baby.snapTo(spot.getX() + 2.6, spot.getY(), spot.getZ() - 0.4, 180, 0);
+        baby.setYBodyRot(180);
+        baby.setYHeadRot(180);
+        for (var piece : new Object[][] {{net.minecraft.world.entity.EquipmentSlot.HEAD, ModItems.CHITIN_HELMET},
+                {net.minecraft.world.entity.EquipmentSlot.CHEST, ModItems.CHITIN_CHESTPLATE}, {net.minecraft.world.entity.EquipmentSlot.LEGS, ModItems.CHITIN_LEGGINGS},
+                {net.minecraft.world.entity.EquipmentSlot.FEET, ModItems.CHITIN_BOOTS}}) {
+            baby.setItemSlot((net.minecraft.world.entity.EquipmentSlot) piece[0],
+                    new ItemStack(((net.neoforged.neoforge.registries.DeferredItem<?>) piece[1]).get()));
+        }
+        level.addFreshEntity(baby);
         var guard = com.antcolonies.core.registry.ModEntities.GUARD_ANT.get().create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
         guard.snapTo(spot.getX() + 1.6, spot.getY(), spot.getZ() + 0.6, 200, 0);
         // Owned without taming, so no advancement toast covers the picture.

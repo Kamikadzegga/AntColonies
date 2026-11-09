@@ -37,6 +37,8 @@ public class WildAntRenderer<T extends net.minecraft.world.entity.Mob & AntLike>
         float seed;
         float scale = 1;
         boolean sitting;
+        /** ARGB of what it carries home (a home nest ant's harvest), 0 for nothing. */
+        int carry;
     }
 
     public WildAntRenderer(EntityRendererProvider.Context context) {
@@ -64,6 +66,7 @@ public class WildAntRenderer<T extends net.minecraft.world.entity.Mob & AntLike>
         state.seed = (ant.getId() % 97) * 0.37F;
         state.scale = ant.renderScale();
         state.sitting = ant.sitting();
+        state.carry = ant instanceof com.antcolonies.content.entity.WildAnt wild ? wild.carryColor() : 0;
     }
 
     @Override
@@ -94,7 +97,7 @@ public class WildAntRenderer<T extends net.minecraft.world.entity.Mob & AntLike>
         }
         float length = 0.5F * AntDrawer.casteScale(state.caste) * state.scale;
         int overlay = OverlayTexture.pack(0, OverlayTexture.v(state.hurt));
-        drawer.draw(collector, poseStack, state.caste, state.look, pose, length, state.lightCoords, overlay, 0, state.outlineColor);
+        drawer.draw(collector, poseStack, state.caste, state.look, pose, length, state.lightCoords, overlay, state.carry, state.outlineColor);
         poseStack.popPose();
         super.submit(state, poseStack, collector, camera);
     }

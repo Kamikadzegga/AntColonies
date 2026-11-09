@@ -8,6 +8,7 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.LayerDefinitions;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
@@ -42,10 +43,11 @@ public final class ChitinHelmetModel {
             PartDefinition scape = head.addOrReplaceChild(name + "_antenna",
                     CubeListBuilder.create().texOffs(32, 0).addBox(-0.5F, -6.0F, -0.5F, 1.0F, 6.0F, 1.0F),
                     PartPose.offsetAndRotation(side * 2.0F, -9.0F, -3.5F, 0.35F, 0.0F, side * 0.35F));
-            // The rest of the antenna, from the elbow forward and a little up and out, with the club at its tip.
+            // The rest of the antenna, from the elbow forward and a little up and out, with the club at its tip (a 2-pixel
+            // box drawn 0.3 smaller on every side, so it is a little thicker than the antenna, not a block).
             scape.addOrReplaceChild(name + "_antenna_tip",
                     CubeListBuilder.create().texOffs(36, 0).addBox(-0.5F, -0.5F, -6.0F, 1.0F, 1.0F, 6.0F)
-                            .texOffs(50, 0).addBox(-1.0F, -1.0F, -7.5F, 2.0F, 2.0F, 2.0F),
+                            .texOffs(50, 0).addBox(-1.0F, -1.0F, -7.2F, 2.0F, 2.0F, 2.0F, new CubeDeformation(-0.3F)),
                     PartPose.offsetAndRotation(0.0F, -6.0F, 0.0F, -0.75F, side * -0.3F, 0.0F));
         }
         return LayerDefinition.create(mesh, 64, 32);

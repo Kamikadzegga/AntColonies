@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "D": "minecraft:diamond",
+    "D": "antcolonies:infernal_chitin",
     "X": "minecraft:sugar",
     "U": "antcolonies:speed_upgrade_2"
   },

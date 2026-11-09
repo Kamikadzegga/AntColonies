@@ -1,0 +1,78 @@
+{
+  "tier": 4,
+  "category": "endgame",
+  "look": {
+    "body": "#1A0A2A",
+    "gaster": "#4A1A6A",
+    "accent": "#C060F0",
+    "pattern": "faceted",
+    "crystal": "#D080FF",
+    "glow": true,
+    "size": 1.15
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.6,
+    "special_food": "crystal",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.08,
+    "outputs": [
+      {
+        "item": "minecraft:end_stone",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:ender_pearl",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:purpur_block",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:shulker_shell",
+        "weight": 2,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:dragon_breath",
+        "weight": 0.6,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:dragon_head",
+        "weight": 0.02,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.6
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 8
+      },
+      {
+        "ingredient": "antcolonies:void_chitin",
+        "count": 2
+      }
+    ],
+    "time": 9600
+  },
+  "breeding": {
+    "eggs": 0.7,
+    "growth": 0.8
+  },
+  "signature_item": "minecraft:dragon_breath"
+}

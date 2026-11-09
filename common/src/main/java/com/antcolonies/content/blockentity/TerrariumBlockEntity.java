@@ -355,9 +355,11 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
                 return;
             }
             lastEvolutionAttempt = level.getGameTime();
-            EvolutionLogic.Result result = EvolutionLogic.attempt(level.registryAccess(), colony, feed, upgradeTier(UpgradeType.EVOLUTION), level.getRandom());
+            EvolutionLogic.Result result = EvolutionLogic.attempt(level.registryAccess(), colony, feed, upgradeTier(UpgradeType.EVOLUTION), level.dimension(),
+                    level.getRandom());
             switch (result.outcome()) {
                 case NOT_READY -> feedStatus = ColonyStatus.INSUFFICIENT_MATERIALS.bit();
+                case WRONG_DIMENSION -> feedStatus = ColonyStatus.WRONG_DIMENSION.bit();
                 case ABSORBED -> {
                     feed.shrink(1);
                     level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_ABSORBED, 0);

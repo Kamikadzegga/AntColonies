@@ -1,0 +1,29 @@
+{
+  "parent": "antcolonies:end_colony",
+  "criteria": {
+    "void_chitin": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:void_chitin"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:void_chitin"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.void_chitin.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.void_chitin.description"
+    }
+  },
+  "requirements": [
+    ["void_chitin"]
+  ]
+}

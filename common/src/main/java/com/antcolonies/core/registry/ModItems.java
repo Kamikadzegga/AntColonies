@@ -65,6 +65,10 @@ public final class ModItems {
     public static final DeferredItem<DescribedItem> REROLL_SERUM = ITEMS.registerItem("reroll_serum", DescribedItem::new,
             p -> p.rarity(Rarity.RARE));
     public static final DeferredItem<DescribedItem> CHITIN_PLATE = ITEMS.registerItem("chitin_plate", DescribedItem::new);
+    // The Chitin ladder: hardened (Blast Furnace), infernal (the Nether), void (the End).
+    public static final DeferredItem<DescribedItem> HARDENED_CHITIN = ITEMS.registerItem("hardened_chitin", DescribedItem::new);
+    public static final DeferredItem<DescribedItem> INFERNAL_CHITIN = ITEMS.registerItem("infernal_chitin", DescribedItem::new, p -> p.fireResistant());
+    public static final DeferredItem<DescribedItem> VOID_CHITIN = ITEMS.registerItem("void_chitin", DescribedItem::new, p -> p.rarity(net.minecraft.world.item.Rarity.UNCOMMON));
     public static final DeferredItem<DescribedItem> UPGRADE_BASE = ITEMS.registerItem("upgrade_base", DescribedItem::new);
     /** Only the creative tab's icon: the ant's head from the mod's logo. Not in the tab, no recipe. */
     public static final DeferredItem<Item> ANT_HEAD = ITEMS.registerSimpleItem("ant_head");
@@ -148,6 +152,8 @@ public final class ModItems {
             p -> p.shovel(ChitinGear.TOOLS, 1.5F, -3.0F));
     public static final DeferredItem<ChitinGear.Piece> CHITIN_HOE = ITEMS.registerItem("chitin_hoe", p -> new ChitinGear.Piece(false, p),
             p -> p.hoe(ChitinGear.TOOLS, -2.0F, -1.0F));
+    public static final DeferredItem<com.antcolonies.content.item.ChitinShieldItem> CHITIN_SHIELD = ITEMS.registerItem("chitin_shield",
+            com.antcolonies.content.item.ChitinShieldItem::new, com.antcolonies.content.item.ChitinShieldItem::properties);
 
     private static DeferredItem<ChitinGear.Piece> armor(String name, ArmorType type) {
         return ITEMS.registerItem(name, p -> new ChitinGear.Piece(true, p), p -> p.humanoidArmor(ChitinGear.ARMOR, type));

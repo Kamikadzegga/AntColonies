@@ -1,0 +1,10 @@
+{
+  "from": "antcolonies:chorus",
+  "to": "antcolonies:ender",
+  "item": "minecraft:ender_eye",
+  "chance": 0.05,
+  "guaranteed_after": 32,
+  "min_stage": 3,
+  "min_population": 2000,
+  "dimension": "minecraft:the_end"
+}

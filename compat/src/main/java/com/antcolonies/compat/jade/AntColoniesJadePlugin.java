@@ -27,6 +27,7 @@ public class AntColoniesJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(ColonyProviders.STRUCTURE_DATA, StructureBlockEntity.class);
         registration.registerBlockDataProvider(ColonyProviders.MACHINE_DATA, GeneratorBlockEntity.class);
         registration.registerBlockDataProvider(ColonyProviders.MACHINE_DATA, GeneticLabBlockEntity.class);
+        registration.registerBlockDataProvider(ColonyProviders.NEST_DATA, com.antcolonies.content.blockentity.HomeNestBlockEntity.class);
     }
 
     @Override

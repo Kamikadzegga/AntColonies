@@ -18,6 +18,8 @@
     "antcolonies:blossom_ant_nest",
     "antcolonies:pale_ant_nest",
     "antcolonies:badlands_ant_nest",
-    "antcolonies:army_ant_nest"
+    "antcolonies:army_ant_nest",
+    "antcolonies:warped_ant_nest",
+    "antcolonies:chorus_ant_nest"
   ]
 }

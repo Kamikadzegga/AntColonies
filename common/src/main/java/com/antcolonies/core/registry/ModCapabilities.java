@@ -15,6 +15,8 @@ public final class ModCapabilities {
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.TERRARIUM.get(), (be, side) -> new WorldlyContainerWrapper(be, side));
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.GENETIC_LAB.get(), (be, side) -> new WorldlyContainerWrapper(be, side));
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.GENERATOR.get(), (be, side) -> new WorldlyContainerWrapper(be, side));
+        // A home nest's store of harvested crops: taken out on any side, nothing put in.
+        event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.HOME_NEST.get(), (be, side) -> new WorldlyContainerWrapper(be, side));
         // FE: the Generator gives energy out; the Genetic Laboratory takes it in on any side.
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.GENERATOR.get(), (be, side) -> be.energyHandler());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.GENETIC_LAB.get(), (be, side) -> be.energyHandler());

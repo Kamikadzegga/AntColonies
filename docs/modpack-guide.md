@@ -273,6 +273,7 @@ attempt to turn the colony into `to`.
 | `guaranteed_after` | `32` | Attempts after which it always works. |
 | `min_stage` | `1` | Colony stage needed. |
 | `min_population` | `0` | Adults needed. |
+| `dimension` | none | If set (e.g. `"minecraft:the_nether"`), the Terrarium must be in that dimension. |
 
 To remove a built-in evolution, replace its file (for example `data/antcolonies/antcolonies/evolution/stone_to_iron.json`)
 with one whose `chance` is `0` and `guaranteed_after` is very large (`100000`).
@@ -525,7 +526,7 @@ Identification Book.
 
 ## 15. Advancements and the colony trigger
 
-The mod's 16 advancements are ordinary data files in `data/antcolonies/advancement/`. Replace one with a data pack
+The mod's 27 advancements are ordinary data files in `data/antcolonies/advancement/`. Replace one with a data pack
 file at the same path to change it.
 
 For your own advancements, and for quest mods that complete quests from advancements (FTB Quests, Heracles), use the

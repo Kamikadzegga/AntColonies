@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "D": "minecraft:diamond",
+    "D": "antcolonies:infernal_chitin",
     "X": "minecraft:golden_carrot",
     "U": "antcolonies:food_efficiency_upgrade_2"
   },

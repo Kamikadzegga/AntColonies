@@ -40,6 +40,7 @@ import net.neoforged.neoforge.common.Tags;
  */
 public class AnthillPiece extends StructurePiece {
     public static final ResourceKey<LootTable> LOOT = ResourceKey.create(Registries.LOOT_TABLE, AntColonies.id("chests/giant_anthill"));
+    public static final ResourceKey<LootTable> NETHER_LOOT = ResourceKey.create(Registries.LOOT_TABLE, AntColonies.id("chests/nether_anthill"));
     /** Mound radius and height, and how deep the nest goes below the ground. */
     static final int RADIUS = 7;
     static final int HEIGHT = 5;
@@ -63,16 +64,20 @@ public class AnthillPiece extends StructurePiece {
             {4, -5, 1, 7, -7, -3, 1.0}};
 
     private final BlockPos center;
+    /** Dug into the Nether's floor: blackstone and soul soil, Nether loot, Fire (or Warped) Ants, lava walled off. */
+    private final boolean nether;
 
-    public AnthillPiece(BlockPos center) {
+    public AnthillPiece(BlockPos center, boolean nether) {
         super(ModStructures.ANTHILL_PIECE.get(), 0, box(center));
         this.center = center;
+        this.nether = nether;
         setOrientation(null);
     }
 
     public AnthillPiece(CompoundTag tag) {
         super(ModStructures.ANTHILL_PIECE.get(), tag);
         this.center = new BlockPos(tag.getIntOr("CX", 0), tag.getIntOr("CY", 0), tag.getIntOr("CZ", 0));
+        this.nether = tag.getBooleanOr("Nether", false);
     }
 
     private static BoundingBox box(BlockPos center) {
@@ -85,6 +90,7 @@ public class AnthillPiece extends StructurePiece {
         tag.putInt("CX", center.getX());
         tag.putInt("CY", center.getY());
         tag.putInt("CZ", center.getZ());
+        tag.putBoolean("Nether", nether);
     }
 
     // --- Shape ---
@@ -147,7 +153,7 @@ public class AnthillPiece extends StructurePiece {
         RandomSource layout = RandomSource.create(seed);
         int sx = layout.nextBoolean() ? 1 : -1;
         int sz = layout.nextBoolean() ? 1 : -1;
-        Soil soil = Soil.of(level, center);
+        Soil soil = nether ? Soil.NETHER : Soil.of(level, center);
         for (int x = boundingBox.minX(); x <= boundingBox.maxX(); x++) {
             for (int z = boundingBox.minZ(); z <= boundingBox.maxZ(); z++) {
                 int rx = (x - center.getX()) * sx;
@@ -175,7 +181,9 @@ public class AnthillPiece extends StructurePiece {
                     BlockState here = level.getBlockState(pos);
                     if (shell(rx, ry, rz)) {
                         // Ant-dug walls, but caves and water stay as they are.
-                        if (!here.isAir() && here.getFluidState().isEmpty() && !here.is(Blocks.BEDROCK)) {
+                        // In the Nether lava is walled off too, so it never pours into the tunnels.
+                        boolean wallOff = here.getFluidState().isEmpty() || nether && here.getFluidState().is(net.minecraft.tags.FluidTags.LAVA);
+                        if (!here.isAir() && wallOff && !here.is(Blocks.BEDROCK)) {
                             boolean floor = carved(rx, ry + 1, rz);
                             level.setBlock(pos, soil.wall(hash(seed, x, y, z), floor), Block.UPDATE_CLIENTS);
                         }
@@ -191,18 +199,19 @@ public class AnthillPiece extends StructurePiece {
     /** The chests, the nest and the ants, each only by the chunk it stands in. */
     private void furnish(WorldGenLevel level, BoundingBox chunkBB, long seed, int sx, int sz) {
         RandomSource random = RandomSource.create(seed + 1);
-        Identifier species = WildAnt.speciesFor(level, center, random);
+        Identifier species = nether ? netherSpecies(level) : WildAnt.speciesFor(level, center, random);
+        ResourceKey<LootTable> loot = nether ? NETHER_LOOT : LOOT;
         BlockPos storageChest = floor(STORAGE, 1, 0, sx, sz);
         BlockPos queenBarrel = floor(QUEEN, -2, 1, sx, sz);
         BlockPos nest = floor(QUEEN, 3, 0, sx, sz);
         if (chunkBB.isInside(storageChest)) {
             level.setBlock(storageChest, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(random)),
                     Block.UPDATE_CLIENTS);
-            RandomizableContainer.setBlockEntityLootTable(level, random, storageChest, LOOT);
+            RandomizableContainer.setBlockEntityLootTable(level, random, storageChest, loot);
         }
         if (chunkBB.isInside(queenBarrel)) {
             level.setBlock(queenBarrel, Blocks.BARREL.defaultBlockState(), Block.UPDATE_CLIENTS);
-            RandomizableContainer.setBlockEntityLootTable(level, random, queenBarrel, LOOT);
+            RandomizableContainer.setBlockEntityLootTable(level, random, queenBarrel, loot);
         }
         var nestBlock = AntColonies.MODID.equals(species.getNamespace()) ? ModBlocks.NESTS.get(species.getPath()) : null;
         if (nestBlock != null && chunkBB.isInside(nest)) {
@@ -218,6 +227,13 @@ public class AnthillPiece extends StructurePiece {
         spawn(level, chunkBB, floor(GALLERY, 1, 1, sx, sz), species, Caste.WORKER, home);
         spawn(level, chunkBB, floor(GALLERY, -1, 0, sx, sz), species, Caste.WORKER, home);
         spawn(level, chunkBB, floor(STORAGE, -1, 1, sx, sz), species, Caste.WORKER, home);
+    }
+
+    /** A Nether anthill's ants: Warped Ants in the fungus forests, Fire Ants elsewhere. */
+    private Identifier netherSpecies(WorldGenLevel level) {
+        var biome = level.getBiome(center);
+        boolean forest = biome.is(net.minecraft.world.level.biome.Biomes.WARPED_FOREST) || biome.is(net.minecraft.world.level.biome.Biomes.CRIMSON_FOREST);
+        return AntColonies.id(forest ? "warped" : "fire");
     }
 
     /** The lowest dug-out spot of a chamber's column (offset from its center), in the world. */
@@ -262,7 +278,8 @@ public class AnthillPiece extends StructurePiece {
     private enum Soil {
         EARTH(Blocks.COARSE_DIRT, Blocks.DIRT, Blocks.ROOTED_DIRT, Blocks.GRAVEL),
         DESERT(Blocks.SAND, Blocks.SANDSTONE, Blocks.COARSE_DIRT, Blocks.GRAVEL),
-        BADLANDS(Blocks.RED_SAND, Blocks.TERRACOTTA, Blocks.COARSE_DIRT, Blocks.GRAVEL);
+        BADLANDS(Blocks.RED_SAND, Blocks.TERRACOTTA, Blocks.COARSE_DIRT, Blocks.GRAVEL),
+        NETHER(Blocks.SOUL_SOIL, Blocks.NETHERRACK, Blocks.BLACKSTONE, Blocks.MAGMA_BLOCK);
 
         private final Block main;
         private final Block second;
@@ -287,6 +304,10 @@ public class AnthillPiece extends StructurePiece {
 
         /** Tunnel walls: packed earth, with a softer floor. */
         BlockState wall(double roll, boolean floor) {
+            if (this == NETHER) {
+                return (floor ? roll < 0.06 ? Blocks.BONE_BLOCK : roll < 0.6 ? Blocks.SOUL_SOIL : Blocks.SOUL_SAND
+                        : roll < 0.45 ? Blocks.POLISHED_BLACKSTONE_BRICKS : roll < 0.8 ? Blocks.BLACKSTONE : Blocks.BASALT).defaultBlockState();
+            }
             if (floor) {
                 return (roll < 0.06 ? Blocks.BONE_BLOCK : roll < 0.5 ? Blocks.ROOTED_DIRT : main == Blocks.COARSE_DIRT ? Blocks.COARSE_DIRT : main)
                         .defaultBlockState();

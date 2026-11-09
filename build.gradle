@@ -82,6 +82,29 @@ neoForge {
             type = "gameTestServer"
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
+        // The multiplayer check (MultiplayerCheckServer/Client): a dedicated server and two players, each in its own
+        // folder under runs/ (an mp-check file there turns the check on). Start the server, then both clients.
+        mpServer {
+            server()
+            gameDirectory = project.file('runs/mp-server')
+            programArgument '--nogui'
+        }
+        // The world generation check (WorldgenCheckServer): a dedicated server with normal terrain in runs/worldgen-server.
+        worldgenServer {
+            server()
+            gameDirectory = project.file('runs/worldgen-server')
+            programArgument '--nogui'
+        }
+        mpClientA {
+            client()
+            gameDirectory = project.file('runs/mp-a')
+            programArguments.addAll('--username', 'Ant_A', '--quickPlayMultiplayer', 'localhost')
+        }
+        mpClientB {
+            client()
+            gameDirectory = project.file('runs/mp-b')
+            programArguments.addAll('--username', 'Ant_B', '--quickPlayMultiplayer', 'localhost')
+        }
         configureEach {
             sourceSet = sourceSets.gametest
             systemProperty 'forge.logging.markers', 'REGISTRIES'

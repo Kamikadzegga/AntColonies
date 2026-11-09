@@ -19,6 +19,8 @@ public final class EvolutionLogic {
     public enum Outcome {
         /** The item isn't an evolution material for this Queen. */
         NONE,
+        /** The Terrarium is in the wrong dimension for this evolution; nothing was used. */
+        WRONG_DIMENSION,
         /** The colony isn't ready (stage or population); nothing was used. */
         NOT_READY,
         /** Absorbed, no evolution this time. */
@@ -49,7 +51,8 @@ public final class EvolutionLogic {
     }
 
     /** One attempt with one item of {@code stack} (the caller removes the item when the result says it was used). */
-    public static Result attempt(RegistryAccess registries, Colony colony, ItemStack stack, int evolutionUpgradeTiers, RandomSource random) {
+    public static Result attempt(RegistryAccess registries, Colony colony, ItemStack stack, int evolutionUpgradeTiers,
+                                 net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension, RandomSource random) {
         QueenData queen = colony.queen();
         if (queen == null) {
             return new Result(Outcome.NONE, null);
@@ -57,6 +60,9 @@ public final class EvolutionLogic {
         Evolution evolution = find(registries, colony, stack);
         if (evolution == null) {
             return new Result(Outcome.NONE, null);
+        }
+        if (!evolution.allowedIn(dimension)) {
+            return new Result(Outcome.WRONG_DIMENSION, evolution);
         }
         if (colony.stage() < evolution.minStage() || colony.adults() < evolution.minPopulation()) {
             return new Result(Outcome.NOT_READY, evolution);

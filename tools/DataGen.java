@@ -531,6 +531,43 @@ public class DataGen {
                 "Dig Site Extraction", "Find Cleaning", "Careful Digging",
                 "A hybrid of Desert and Deepslate Ants that digs like an archaeologist: bones, pottery sherds, ancient seeds, even sniffer eggs."));
 
+        // --- The Nether's and the End's own wild ants (nests there only), and the boss-gated endgame species. ---
+        SPECIES.add(new Species("warped", "Warped Ant", 0, "base", "nether", "spawns/warped", "1A4A4A", "2AA59A", "5AE8D8", "speckled", null, false,
+                1.0, 1.0, "", 0, 0.9,
+                List.of(Out.of("netherrack", 26), Out.of("warped_fungus", 10), Out.of("crimson_fungus", 8), Out.of("warped_roots", 6),
+                        Out.of("nether_wart", 6).atStage(2), Out.of("warped_wart_block", 4).atStage(2), Out.of("quartz", 3).atStage(3),
+                        Out.of("shroomlight", 1).atStage(3).asSpecial()),
+                0, List.of(), 1.1, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"warped_fungus", "4"}), 2400, 1.0, 1.0,
+                "warped_fungus", "Fungus Gathering", "Wart Curing", "Nether Thrift",
+                "Teal ants of the Nether's fungus forests, at home in its heat. Bring netherrack, fungi and nether wart; fed blaze "
+                        + "powder in the Nether they become Fire Ants."));
+        SPECIES.add(new Species("chorus", "Chorus Ant", 1, "base", "any", "spawns/chorus", "3A2A4A", "9A6AB8", "D8B8F0", "faceted", "C8A0F0", false,
+                1.0, 1.1, "", 0, 0.75,
+                List.of(Out.of("end_stone", 26), Out.of("chorus_fruit", 14), Out.of("chorus_flower", 2).atStage(2), Out.of("purpur_block", 4).atStage(2),
+                        Out.of("ender_pearl", 1).atStage(3).asSpecial(), Out.of("shulker_shell", 0.03).atStage(4).asSpecial()),
+                0, List.of(), 1.1, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"chorus_fruit", "4"}), 3600, 0.95, 1.0,
+                "chorus_fruit", "Chorus Gathering", "Fruit Popping", "Island Thrift",
+                "Pale violet ants of the End's outer islands. Bring end stone, chorus fruit and purpur; fed eyes of ender in the End "
+                        + "they become Ender Ants."));
+        SPECIES.add(new Species("dragon", "Dragon Ant", 4, "endgame", "any", null, "1A0A2A", "4A1A6A", "C060F0", "faceted", "D080FF", true,
+                1.15, 1.6, "crystal", 0.6, 0.08,
+                List.of(Out.of("end_stone", 20), Out.of("ender_pearl", 10), Out.of("purpur_block", 6), Out.of("shulker_shell", 2).atStage(2),
+                        Out.of("dragon_breath", 0.6).atStage(3).asSpecial(), Out.of("dragon_head", 0.02).atStage(4).asSpecial()),
+                0, List.of(), 1.6, List.of(), List.of(new String[] {ac("royal_jelly"), "4"}, new String[] {ac("crystal_ant_food"), "8"},
+                        new String[] {ac("void_chitin"), "2"}), 9600, 0.7, 0.8, "dragon_breath",
+                "Draconic Extraction", "Breath Bottling", "Void Efficiency",
+                "Ender Ants fed the dragon's breath in the End. Black and violet, they glow faintly and bring the End's treasures: "
+                        + "pearls, purpur, shulker shells and the dragon's breath itself."));
+        SPECIES.add(new Species("wither", "Wither Ant", 4, "endgame", "nether", null, "141414", "2A2A2A", "6A6A6A", "plain", null, false,
+                1.15, 1.6, "nether", 0.6, 0.08,
+                List.of(Out.of("soul_sand", 18), Out.of("coal", 14), Out.of("bone", 12), Out.of("blackstone", 10), Out.of("wither_rose", 2).atStage(2),
+                        Out.of("wither_skeleton_skull", 0.4).atStage(3).asSpecial(), Out.of("nether_star", 0.01).atStage(4).asSpecial()),
+                0, List.of(), 1.8, List.of(), List.of(new String[] {ac("royal_jelly"), "4"}, new String[] {ac("nether_ant_food"), "8"},
+                        new String[] {ac("infernal_chitin"), "2"}), 9600, 0.7, 0.8, "wither_skeleton_skull",
+                "Withering Extraction", "Skull Polishing", "Decay Efficiency",
+                "Soul Ants fed a Nether Star in the Nether. Ash-black and grim, they bring soul sand, coal and bones, wither roses "
+                        + "and skulls, and very rarely a Nether Star of their own."));
+
         // --- Species for other mods' metals and crystals. Each loads only when a mod that adds its material is installed
         // (a "neoforge:conditions" block), finds through common c: item tags, and has no signature item (so no species
         // upgrades), since the exact item ids differ between mods. ---
@@ -630,6 +667,10 @@ public class DataGen {
 
     // ------------------------------------------------------------------ Evolutions, hybrids, mutations
 
+    // Evolutions that happen only in a Terrarium in this dimension (the colony can live anywhere afterwards).
+    static final String NETHER = "minecraft:the_nether";
+    static final String END = "minecraft:the_end";
+
     static void evolutions() {
         Object[][] list = {
                 {"common_to_farmer", "common", "farmer", "brown_mushroom", 0.15, 12, 1, 0},
@@ -642,16 +683,21 @@ public class DataGen {
                 {"gold_to_diamond", "gold", "diamond", "diamond", 0.04, 32, 3, 1500},
                 {"lapis_to_diamond", "lapis", "diamond", "diamond", 0.04, 32, 3, 1500},
                 {"diamond_to_emerald", "diamond", "emerald", "emerald", 0.04, 32, 3, 2000},
-                {"diamond_to_netherite", "diamond", "netherite", "netherite_scrap", 0.02, 48, 4, 5000},
+                {"diamond_to_netherite", "diamond", "netherite", "netherite_scrap", 0.02, 48, 4, 5000, NETHER},
                 {"stone_to_copper", "stone", "copper", "copper_ingot", 0.08, 24, 2, 200},
                 {"stone_to_coal", "stone", "coal", "coal_block", 0.08, 24, 2, 200},
                 {"stone_to_deepslate", "stone", "deepslate", "cobbled_deepslate", 0.1, 16, 2, 150},
-                {"desert_to_fire", "desert", "fire", "blaze_powder", 0.06, 24, 2, 300},
+                {"desert_to_fire", "desert", "fire", "blaze_powder", 0.06, 24, 2, 300, NETHER},
                 {"jungle_to_bullet", "jungle", "bullet", "gunpowder", 0.06, 24, 2, 300},
                 {"swamp_to_trap_jaw", "swamp", "trap_jaw", "slime_ball", 0.06, 24, 2, 300},
-                {"fire_to_inferno", "fire", "inferno", "blaze_powder", 0.05, 32, 3, 1000},
-                {"fire_to_soul", "fire", "soul", "ghast_tear", 0.05, 32, 3, 1000},
-                {"amethyst_to_ender", "amethyst", "ender", "ender_eye", 0.03, 40, 4, 3000},
+                {"fire_to_inferno", "fire", "inferno", "blaze_powder", 0.05, 32, 3, 1000, NETHER},
+                {"fire_to_soul", "fire", "soul", "ghast_tear", 0.05, 32, 3, 1000, NETHER},
+                {"amethyst_to_ender", "amethyst", "ender", "ender_eye", 0.03, 40, 4, 3000, END},
+                // The Nether's and the End's own wild ants, and the two boss-gated endgame species.
+                {"warped_to_fire", "warped", "fire", "blaze_powder", 0.08, 24, 2, 300, NETHER},
+                {"chorus_to_ender", "chorus", "ender", "ender_eye", 0.05, 32, 3, 2000, END},
+                {"ender_to_dragon", "ender", "dragon", "dragon_breath", 0.05, 24, 4, 4000, END},
+                {"soul_to_wither", "soul", "wither", "nether_star", 0.5, 3, 4, 4000, NETHER},
                 // Into other mods' metals and crystals (these load only with those mods).
                 {"stone_to_osmium", "stone", "osmium", "#c:ingots/osmium", 0.07, 24, 2, 300},
                 {"copper_to_tin", "copper", "tin", "#c:ingots/tin", 0.08, 24, 2, 300},
@@ -671,6 +717,9 @@ public class DataGen {
         for (Object[] e : list) {
             Map<String, Object> json = obj("from", ac((String) e[1]), "to", ac((String) e[2]),
                     "item", mc((String) e[3]), "chance", e[4], "guaranteed_after", e[5], "min_stage", e[6], "min_population", ((Integer) e[7]).longValue());
+            if (e.length > 8) {
+                json.put("dimension", e[8]);
+            }
             if (NEEDS_MODS.containsKey((String) e[2])) {
                 json.put("neoforge:conditions", conditions(NEEDS_MODS.get((String) e[2])));
             }
@@ -735,12 +784,19 @@ public class DataGen {
         LANG.put("config.jade.plugin_" + NS + ".wild_nest", "Wild nest species");
         LANG.put("jade." + NS + ".catch", "Catch it with Tweezers (and an empty Test Tube)");
         LANG.put("jade." + NS + ".nest", "Tweezers take workers out; now and then a Queen");
+        LANG.put("jade." + NS + ".home_nest", "Home nest: %s ants in, %s out working");
+        LANG.put("jade." + NS + ".home_nest.stored", "Harvest stored: %s");
         LANG.put("tooltip." + NS + ".species.climate", "Climate: %s");
         LANG.put("tooltip." + NS + ".species.finds", "Finds: %s");
         LANG.put("tooltip." + NS + ".species.grows", "Grows food and %s");
         LANG.put("tooltip." + NS + ".species.more", " and %s more");
         LANG.put("tooltip." + NS + ".species.hunts", "Hunts: %s");
         LANG.put("tooltip." + NS + ".species.evolves", "Evolves into %s: feed %s from stage %s");
+        LANG.put("tooltip." + NS + ".species.evolves_in", "Only in a Terrarium in %s");
+        LANG.put("jei." + NS + ".dimension", "Only in %s");
+        LANG.put("dimension.minecraft.overworld", "the Overworld");
+        LANG.put("dimension.minecraft.the_nether", "the Nether");
+        LANG.put("dimension.minecraft.the_end", "the End");
         LANG.put("tooltip." + NS + ".queen.best", "Best traits: %s");
         LANG.put("config.jade.plugin_" + NS + ".machine", "Generator and Genetic Laboratory");
         advancement("root", null, "terrarium", "task", "Ant Colonies", "Tiny workers, big colonies", hasItem("tweezers", "terrarium", "ant_test_tube"));
@@ -764,6 +820,38 @@ public class DataGen {
         advancement("netherite", "evolution", "minecraft:netherite_scrap", "challenge", "Forged in the Deep", "Raise a Netherite Ant colony",
                 colony("species", ac("netherite")));
         advancement("ender", "evolution", "minecraft:ender_pearl", "challenge", "Void Walkers", "Raise an Ender Ant colony", colony("species", ac("ender")));
+        // The path through the dimensions: the Chitin ladder, colonies in the Nether and the End, their own ants, the
+        // boss-gated endgame species and tier IV upgrades.
+        advancement("hardened_chitin", "first_colony", "hardened_chitin", "task", "Case Hardened", "Bake Chitin Plates into Hardened Chitin",
+                hasItem("hardened_chitin"));
+        advancement("nether_colony", "hardened_chitin", "minecraft:netherrack", "task", "Hot Property", "Keep a colony in a Terrarium in the Nether",
+                colonyIn("minecraft:the_nether"));
+        advancement("warped_colony", "nether_colony", "warped_ant_nest", "task", "Fungal Empire", "Raise a Warped Ant colony",
+                colony("species", ac("warped")));
+        advancement("infernal_chitin", "nether_colony", "infernal_chitin", "task", "Trial by Fire", "Temper Hardened Chitin into Infernal Chitin",
+                hasItem("infernal_chitin"));
+        advancement("wither_ant", "infernal_chitin", "minecraft:wither_skeleton_skull", "challenge", "Withering Heights",
+                "Raise a Wither Ant colony: Soul Ants fed a Nether Star in the Nether", colony("species", ac("wither")));
+        advancement("end_colony", "infernal_chitin", "minecraft:end_stone", "task", "The End of the Line", "Keep a colony in a Terrarium in the End",
+                colonyIn("minecraft:the_end"));
+        advancement("chorus_colony", "end_colony", "minecraft:chorus_fruit", "task", "Chorus Line", "Raise a Chorus Ant colony",
+                colony("species", ac("chorus")));
+        advancement("void_chitin", "end_colony", "void_chitin", "task", "Into the Void", "Steep Infernal Chitin into Void Chitin",
+                hasItem("void_chitin"));
+        advancement("dragon_ant", "void_chitin", "minecraft:dragon_head", "challenge", "Here Be Dragons",
+                "Raise a Dragon Ant colony: Ender Ants fed the dragon's breath in the End", colony("species", ac("dragon")));
+        List<String> tierFour = new ArrayList<>();
+        for (String type : UPGRADE_TYPES) {
+            tierFour.add(ac(type + "_upgrade_4"));
+        }
+        advancement("tier_four", "void_chitin", "speed_upgrade_4", "goal", "Overengineered", "Make a tier IV upgrade",
+                obj("trigger", "minecraft:inventory_changed", "conditions", obj("items", arr(obj("items", tierFour)))));
+    }
+
+    /** A colony whose Terrarium the player is near, in this dimension. */
+    static Map<String, Object> colonyIn(String dimension) {
+        return obj("trigger", ac("colony"), "conditions", obj("player", obj("type", "minecraft:entity_properties", "entity", "this",
+                "predicate", obj("minecraft:location", obj("dimension", dimension)))));
     }
 
     static String structureItem(String kind) {
@@ -839,8 +927,8 @@ public class DataGen {
                     {ac("genetic_circuit"), 2, mc("gold_ingot"), 4, 50_000, 500},
                     {ac("genetic_circuit"), 2, theme, 12, 80_000, 600},
                     {ac("crystal_core"), 1, mc("diamond"), 2, 120_000, 800},
-                    {ac("crystal_core"), 2, mc("emerald"), 4, 180_000, 1000},
-                    {ac("crystal_core"), 3, mc("netherite_scrap"), 1, 260_000, 1200},
+                    {ac("crystal_core"), 2, ac("infernal_chitin"), 2, 180_000, 1000},
+                    {ac("crystal_core"), 3, ac("void_chitin"), 2, 260_000, 1200},
                     {ac("crystal_core"), 4, mc("nether_star"), 1, 400_000, 1600},
             };
             List<Object> json = new ArrayList<>();
@@ -905,6 +993,14 @@ public class DataGen {
         shapeless("evolution_catalyst", ac("evolution_catalyst"), 1, ac("royal_jelly"), "glowstone_dust", "redstone", "amethyst_shard");
         shapeless("reroll_serum", ac("reroll_serum"), 1, ac("evolution_catalyst"), "nether_wart", "ender_pearl", ac("genetic_circuit"));
         shapeless("chitin_plate", ac("chitin_plate"), 4, "bone_meal", "bone_meal", "slime_ball");
+        // The Chitin ladder: each step needs the next dimension. Hardened in a Blast Furnace; Infernal with the Nether's ghast
+        // tears, blaze powder and wart; Void with the End's shulker shells, popped chorus and an eye of ender.
+        write(DATA.resolve("recipe/hardened_chitin.json"), obj("type", "minecraft:blasting", "category", "misc", "cookingtime", 100, "experience", 0.2,
+                "ingredient", ac("chitin_plate"), "result", obj("id", ac("hardened_chitin"))));
+        shaped("infernal_chitin", ac("infernal_chitin"), 4, new String[] {"HBH", "WGW", "HBH"}, "H", ac("hardened_chitin"), "B", "blaze_powder",
+                "W", "nether_wart", "G", "ghast_tear");
+        shaped("void_chitin", ac("void_chitin"), 4, new String[] {"ISI", "PEP", "ISI"}, "I", ac("infernal_chitin"), "S", "shulker_shell",
+                "P", "popped_chorus_fruit", "E", "ender_eye");
         shaped("upgrade_base", ac("upgrade_base"), 2, new String[] {"CIC", "IRI", "CIC"}, "C", ac("chitin_plate"), "I", "iron_ingot", "R", "redstone");
         shaped("genetic_circuit", ac("genetic_circuit"), 2, new String[] {"GRG", "QAQ", "GRG"}, "G", "gold_nugget", "R", "redstone", "Q", "quartz",
                 "A", "amethyst_shard");
@@ -929,16 +1025,19 @@ public class DataGen {
         shaped("generator", ac("generator"), 1, new String[] {"III", "IFI", "CRC"}, "I", "iron_ingot", "F", "furnace", "C", "copper_ingot", "R", "redstone");
         shaped("upgrade_station", ac("upgrade_station"), 1, new String[] {"CCC", "PTP", "P P"}, "C", ac("chitin_plate"), "P", "#minecraft:planks", "T", "crafting_table");
         // The Genetic Laboratory, one block: about what its controller and five parts used to cost together.
-        shaped("genetic_laboratory", ac("genetic_laboratory"), 1, new String[] {"IGI", "CXC", "ARA"}, "I", "iron_ingot", "G", "glass",
+        shaped("genetic_laboratory", ac("genetic_laboratory"), 1, new String[] {"IGI", "CXC", "ARA"}, "I", ac("hardened_chitin"), "G", "glass",
                 "C", ac("genetic_circuit"), "X", ac("genetic_analyzer"), "A", "amethyst_block", "R", "redstone_block");
-        // Upgrades: tier 1 from an Upgrade Base, tiers 2 and 3 from the tier below.
+        // Upgrades: tier 1 from an Upgrade Base, tiers 2 to 4 from the tier below.
         String[][] materials = {{"speed", "sugar"}, {"food_efficiency", "golden_carrot"}, {"simulation", "comparator"}, {"storage", "chest"},
                 {"breeding", "egg"}, {"genetic", ac("genetic_circuit")}, {"hunting", "iron_sword"}, {"automation", "hopper"},
                 {"population", "packed_mud"}, {"evolution", ac("evolution_catalyst")}};
         for (String[] m : materials) {
             shaped(m[0] + "_upgrade_1", ac(m[0] + "_upgrade_1"), 1, new String[] {" X ", "XBX", " X "}, "X", m[1], "B", ac("upgrade_base"));
-            shaped(m[0] + "_upgrade_2", ac(m[0] + "_upgrade_2"), 1, new String[] {"GXG", "XUX", "GXG"}, "G", "gold_ingot", "X", m[1], "U", ac(m[0] + "_upgrade_1"));
-            shaped(m[0] + "_upgrade_3", ac(m[0] + "_upgrade_3"), 1, new String[] {"DXD", "XUX", "DXD"}, "D", "diamond", "X", m[1], "U", ac(m[0] + "_upgrade_2"));
+            shaped(m[0] + "_upgrade_2", ac(m[0] + "_upgrade_2"), 1, new String[] {"GXG", "XUX", "GXG"}, "G", ac("hardened_chitin"), "X", m[1], "U", ac(m[0] + "_upgrade_1"));
+            shaped(m[0] + "_upgrade_3", ac(m[0] + "_upgrade_3"), 1, new String[] {"DXD", "XUX", "DXD"}, "D", ac("infernal_chitin"), "X", m[1], "U", ac(m[0] + "_upgrade_2"));
+            // Tier IV, the endgame: four Void Chitin (shulker shells, ghast tears, an eye of ender behind them) and two netherite ingots.
+            shaped(m[0] + "_upgrade_4", ac(m[0] + "_upgrade_4"), 1, new String[] {"VXV", "NUN", "VXV"}, "V", ac("void_chitin"), "X", m[1],
+                    "N", "netherite_ingot", "U", ac(m[0] + "_upgrade_3"));
         }
     }
 
@@ -952,7 +1051,7 @@ public class DataGen {
 
     static final String[] STRUCTURES = {"nest_chamber", "foraging_site", "harvesting_site", "hunting_ground", "storage", "queen_chamber"};
     static final String[] NESTS = {"common", "wood", "stone", "snow", "desert", "farmer", "jungle", "swamp", "savanna", "shore", "blossom", "pale",
-            "badlands", "army"};
+            "badlands", "army", "warped", "chorus"};
     static final String[] UPGRADE_TYPES = {"speed", "food_efficiency", "simulation", "storage", "breeding", "genetic", "hunting", "automation",
             "population", "evolution"};
 
@@ -1041,6 +1140,8 @@ public class DataGen {
         biomes.put("pale", arr("minecraft:pale_garden"));
         biomes.put("badlands", arr("#minecraft:is_badlands"));
         biomes.put("army", arr("#minecraft:is_savanna", "minecraft:plains", "minecraft:sunflower_plains"));
+        biomes.put("warped", arr("minecraft:warped_forest", "minecraft:crimson_forest"));
+        biomes.put("chorus", arr("minecraft:end_highlands", "minecraft:end_midlands"));
         List<Object> all = new ArrayList<>();
         for (Map.Entry<String, List<Object>> entry : biomes.entrySet()) {
             write(DATA.resolve("tags/worldgen/biome/spawns/" + entry.getKey() + ".json"), obj("values", entry.getValue()));
@@ -1052,15 +1153,32 @@ public class DataGen {
     static void worldgen() {
         for (String nest : NESTS) {
             write(DATA.resolve("worldgen/feature/" + nest + "_ant_nest.json"), obj("type", "minecraft:simple_block", "to_place", obj("id", ac(nest + "_ant_nest"))));
-            write(DATA.resolve("worldgen/placed_feature/" + nest + "_ant_nest.json"), obj("feature", ac(nest + "_ant_nest"), "placement", arr(
-                    obj("type", "minecraft:rarity_filter", "chance", nest.equals("stone") || nest.equals("snow") ? 28
-                            : nest.equals("shore") || nest.equals("pale") ? 14 : 20),
-                    obj("type", "minecraft:in_square"),
-                    obj("type", "minecraft:heightmap", "heightmap", "WORLD_SURFACE_WG"),
-                    obj("type", "minecraft:biome"),
-                    obj("type", "minecraft:block_predicate_filter", "predicate", obj("type", "minecraft:all_of", "predicates", arr(
-                            obj("type", "minecraft:matching_block_tag", "tag", "minecraft:air"),
-                            obj("type", "minecraft:has_sturdy_face", "direction", "up", "offset", arr(0, -1, 0))))))));
+            List<Object> placement = new ArrayList<>();
+            boolean nether = nest.equals("warped");
+            placement.add(obj("type", "minecraft:rarity_filter", "chance", nest.equals("stone") || nest.equals("snow") ? 28
+                    : nest.equals("shore") || nest.equals("pale") ? 14 : nether ? 6 : 20));
+            if (nether) {
+                // A few tries in each chosen chunk: many land in rock or over lava.
+                placement.add(obj("type", "minecraft:count", "count", 4));
+            }
+            placement.add(obj("type", "minecraft:in_square"));
+            // Where a nest may stand: air, or (in the Nether's forests, thick with roots and sprouts) a plant it replaces.
+            Map<String, Object> room = nether ? obj("type", "minecraft:matching_block_tag", "tag", "minecraft:replaceable")
+                    : obj("type", "minecraft:matching_block_tag", "tag", "minecraft:air");
+            if (nether) {
+                // The Nether has a roof: take a height between floor and roof, scan down to the ground, stand on it.
+                placement.add(obj("type", "minecraft:height_range", "height", obj("type", "minecraft:uniform",
+                        "min_inclusive", obj("absolute", 32), "max_inclusive", obj("absolute", 110))));
+                placement.add(obj("type", "minecraft:environment_scan", "direction_of_search", "down", "max_steps", 32,
+                        "target_condition", obj("type", "minecraft:solid"), "allowed_search_condition", room));
+                placement.add(obj("type", "minecraft:offset", "x", 0, "y", 1, "z", 0));
+            } else {
+                placement.add(obj("type", "minecraft:heightmap", "heightmap", "WORLD_SURFACE_WG"));
+            }
+            placement.add(obj("type", "minecraft:biome"));
+            placement.add(obj("type", "minecraft:block_predicate_filter", "predicate", obj("type", "minecraft:all_of", "predicates", arr(
+                    room, obj("type", "minecraft:has_sturdy_face", "direction", "up", "offset", arr(0, -1, 0))))));
+            write(DATA.resolve("worldgen/placed_feature/" + nest + "_ant_nest.json"), obj("feature", ac(nest + "_ant_nest"), "placement", placement));
             write(DATA.resolve("neoforge/biome_modifier/add_" + nest + "_ant_nests.json"), obj("type", "neoforge:add_features",
                     "biomes", "#" + ac("spawns/" + nest), "features", ac(nest + "_ant_nest"), "step", "vegetal_decoration"));
         }
@@ -1110,8 +1228,8 @@ public class DataGen {
                     "side", ac("block/generator_side"), "top", ac("block/generator_top"))));
         }
         for (String nest : NESTS) {
-            write(states.resolve(nest + "_ant_nest.json"), obj("variants", obj("recovering=false", obj("model", ac("block/" + nest + "_ant_nest")),
-                    "recovering=true", obj("model", ac("block/" + nest + "_ant_nest")))));
+            // One look for every state (recovering or not, wild or a home nest).
+            write(states.resolve(nest + "_ant_nest.json"), obj("variants", obj("", obj("model", ac("block/" + nest + "_ant_nest")))));
             write(blockModels.resolve(nest + "_ant_nest.json"), obj("parent", ac("block/ant_nest"), "textures", obj("side", ac("block/" + nest + "_ant_nest_side"),
                     "top", ac("block/" + nest + "_ant_nest_top"), "particle", ac("block/" + nest + "_ant_nest_side"))));
         }
@@ -1254,7 +1372,7 @@ public class DataGen {
         Path items = ASSETS.resolve("items");
         Path models = ASSETS.resolve("models/item");
         String[] flat = {"tweezers", "test_tube", "ant_food", "mineral_ant_food", "crystal_ant_food", "nether_ant_food", "royal_jelly", "nuptial_pheromone",
-                "evolution_catalyst", "reroll_serum", "chitin_plate", "upgrade_base", "genetic_circuit", "crystal_core", "ant_identification_book",
+                "evolution_catalyst", "reroll_serum", "chitin_plate", "hardened_chitin", "infernal_chitin", "void_chitin", "upgrade_base", "genetic_circuit", "crystal_core", "ant_identification_book",
                 "colony_scanner", "genetic_analyzer", "diamond_fragment", "emerald_fragment", "wild_ant_spawn_egg", "ant_head"};
         for (String item : flat) {
             write(models.resolve(item + ".json"), obj("parent", item.equals("tweezers") ? "minecraft:item/handheld" : "minecraft:item/generated",
@@ -1262,7 +1380,7 @@ public class DataGen {
             write(items.resolve(item + ".json"), obj("model", obj("type", "minecraft:model", "model", ac("item/" + item))));
         }
         for (String type : UPGRADE_TYPES) {
-            for (int tier = 1; tier <= 3; tier++) {
+            for (int tier = 1; tier <= 4; tier++) {
                 String id = type + "_upgrade_" + tier;
                 write(models.resolve(id + ".json"), obj("parent", "minecraft:item/generated", "textures", obj("layer0", ac("item/upgrade_board_" + tier),
                         "layer1", ac("item/upgrade_icon_" + type))));
@@ -1420,6 +1538,49 @@ public class DataGen {
     static final String[] CHITIN_ARMOR = {"chitin_helmet", "chitin_chestplate", "chitin_leggings", "chitin_boots"};
     static final String[] CHITIN_TOOLS = {"chitin_sword", "chitin_pickaxe", "chitin_axe", "chitin_shovel", "chitin_hoe"};
 
+    /**
+     * The Chitin Shield's models: the vanilla shield's shape (a 12x22x1 plate and a 2x6x6 handle, as its special model
+     * puts them after flipping y and z) and its hand poses, as a plain model, so it needs no renderer of its own. One
+     * model for holding it and one for blocking, switched by whether it is being used, like the vanilla shield.
+     * Texture pixels map 1:1 (TexGen's {@code chitinShield}); a 64-pixel texture is 16 uv units, so uv = pixel / 4.
+     */
+    static void chitinShield() {
+        Map<String, Object> plate = obj("from", arr(-6, -11, 1), "to", arr(6, 11, 2), "faces", obj(
+                "south", face(2, 2, 14, 24), "north", face(16, 2, 28, 24), "east", face(30, 2, 31, 24), "west", face(32, 2, 33, 24),
+                "up", face(2, 26, 14, 27), "down", face(16, 26, 28, 27)));
+        Map<String, Object> handleFace = face(40, 2, 46, 8);
+        Map<String, Object> handle = obj("from", arr(-1, -3, -5), "to", arr(1, 3, 1), "faces", obj("north", handleFace, "south", handleFace,
+                "east", handleFace, "west", handleFace, "up", handleFace, "down", handleFace));
+        Map<String, Object> textures = obj("shield", ac("item/chitin_shield"), "particle", ac("item/chitin_shield"));
+        Map<String, Object> holding = obj(
+                "thirdperson_righthand", pose(0, 90, 0, 10, 6, -4, 1), "thirdperson_lefthand", pose(0, 90, 0, 10, 6, 12, 1),
+                "firstperson_righthand", pose(0, 180, 5, -10, 1.75, -10, 1.25), "firstperson_lefthand", pose(0, 180, 5, 10, 0, -10, 1.25),
+                "gui", pose(15, -25, -5, 2, 3, 0, 0.65), "fixed", pose(0, 180, 0, -4.5, 4.5, -5, 0.55),
+                "on_shelf", pose(0, 0, 0, 11, 18.5, 8.7, 1.4), "ground", pose(0, 0, 0, 2, 4, 2, 0.25));
+        Map<String, Object> blocking = new LinkedHashMap<>(holding);
+        blocking.put("thirdperson_righthand", pose(45, 155, 0, -3.49, 11, -2, 1));
+        blocking.put("thirdperson_lefthand", pose(45, 155, 0, 11.51, 7, 2.5, 1));
+        blocking.put("firstperson_righthand", pose(0, 180, -5, -15, 3.25, -11, 1.25));
+        blocking.put("firstperson_lefthand", pose(0, 180, -5, 5, 5, -11, 1.25));
+        Path models = ASSETS.resolve("models/item");
+        write(models.resolve("chitin_shield.json"), obj("gui_light", "front", "textures", textures, "elements", arr(plate, handle), "display", holding));
+        write(models.resolve("chitin_shield_blocking.json"), obj("gui_light", "front", "textures", textures, "elements", arr(plate, handle),
+                "display", blocking));
+        write(ASSETS.resolve("items/chitin_shield.json"), obj("model", obj("type", "minecraft:condition", "property", "minecraft:using_item",
+                "on_false", obj("type", "minecraft:model", "model", ac("item/chitin_shield")),
+                "on_true", obj("type", "minecraft:model", "model", ac("item/chitin_shield_blocking")))));
+    }
+
+    /** A model face showing the texture's pixels from (x0, y0) to (x1, y1) of a 64x64 texture. */
+    static Map<String, Object> face(double x0, double y0, double x1, double y1) {
+        return obj("uv", arr(x0 / 4, y0 / 4, x1 / 4, y1 / 4), "texture", "#shield");
+    }
+
+    /** An item display pose: rotation, translation and an even scale. */
+    static Map<String, Object> pose(double rx, double ry, double rz, double tx, double ty, double tz, double scale) {
+        return obj("rotation", arr(rx, ry, rz), "translation", arr(tx, ty, tz), "scale", arr(scale, scale, scale));
+    }
+
     static void newFeatures() {
         Path items = ASSETS.resolve("items");
         Path models = ASSETS.resolve("models/item");
@@ -1435,9 +1596,10 @@ public class DataGen {
             write(models.resolve(item + ".json"), obj("parent", "minecraft:item/handheld", "textures", obj("layer0", ac("item/" + item))));
             write(items.resolve(item + ".json"), obj("model", obj("type", "minecraft:model", "model", ac("item/" + item))));
         }
-        // How the armor looks when worn.
+        // How the armor looks when worn (babies have their own smaller boxes, so their own texture).
         write(ASSETS.resolve("equipment/chitin.json"), obj("layers", obj("humanoid", arr(obj("texture", ac("chitin"))),
-                "humanoid_leggings", arr(obj("texture", ac("chitin"))))));
+                "humanoid_baby", arr(obj("texture", ac("chitin"))), "humanoid_leggings", arr(obj("texture", ac("chitin"))))));
+        chitinShield();
 
         // Recipes.
         String c = ac("chitin_plate");
@@ -1451,9 +1613,14 @@ public class DataGen {
         shaped("chitin_shovel", ac("chitin_shovel"), 1, new String[] {"C", "S", "S"}, "C", c, "S", "stick");
         shaped("chitin_hoe", ac("chitin_hoe"), 1, new String[] {"CC", " S", " S"}, "C", c, "S", "stick");
         shapeless("rally_pheromone", ac("rally_pheromone"), 1, ac("test_tube"), c, "sugar", "redstone");
+        shaped("chitin_shield", ac("chitin_shield"), 1, new String[] {"CWC", "CCC", " C "}, "C", c, "W", "#minecraft:planks");
 
         // Tags: repairs, and the vanilla tool and armor tags (enchanting, durability and so on go by them).
         write(DATA.resolve("tags/item/repairs_chitin_gear.json"), obj("values", arr(c)));
+        LANG.put("tag.item." + NS + ".repairs_chitin_gear", "Chitin Gear Repair Materials");
+        // The shield: the common shield tag, and Unbreaking and Mending like the vanilla shield.
+        write(RES.resolve("data/c/tags/item/tools/shield.json"), obj("values", arr(ac("chitin_shield"))));
+        write(RES.resolve("data/minecraft/tags/item/enchantable/durability.json"), obj("values", arr(ac("chitin_shield"))));
         String[][] gearTags = {{"swords", "chitin_sword"}, {"pickaxes", "chitin_pickaxe"}, {"axes", "chitin_axe"}, {"shovels", "chitin_shovel"},
                 {"hoes", "chitin_hoe"}, {"head_armor", "chitin_helmet"}, {"chest_armor", "chitin_chestplate"}, {"leg_armor", "chitin_leggings"},
                 {"foot_armor", "chitin_boots"}};
@@ -1482,7 +1649,30 @@ public class DataGen {
                         lootItem(ac("chitin_pickaxe"), 1, 1, 1)), "rolls", 1)),
                 "random_sequence", ac("chests/giant_anthill")));
 
+        // The Nether anthill: the same nest dug into the Nether's floor, in blackstone and soul soil, home to Fire Ants (Warped
+        // Ants in the fungus forests). Rarer than the Overworld's, and its chests hold the Nether's materials.
+        write(DATA.resolve("worldgen/structure/nether_anthill.json"), obj("type", ac("nether_anthill"), "biomes", "#" + ac("has_structure/nether_anthill"),
+                "spawn_overrides", obj(), "step", "surface_structures", "terrain_adaptation", "none"));
+        write(DATA.resolve("worldgen/structure_set/nether_anthills.json"), obj("placement", obj("type", "minecraft:random_spread",
+                        "salt", 517294613, "separation", 8, "spacing", 24),
+                "structures", arr(obj("structure", ac("nether_anthill"), "weight", 1))));
+        write(DATA.resolve("tags/worldgen/biome/has_structure/nether_anthill.json"), obj("values", arr("minecraft:nether_wastes",
+                "minecraft:crimson_forest", "minecraft:warped_forest", "minecraft:soul_sand_valley")));
+        write(DATA.resolve("loot_table/chests/nether_anthill.json"), obj("type", "minecraft:chest", "pools", arr(
+                obj("entries", arr(
+                        lootItem(ac("nether_ant_food"), 15, 2, 6), lootItem("minecraft:quartz", 15, 4, 12), lootItem("minecraft:gold_ingot", 12, 2, 6),
+                        lootItem("minecraft:blaze_rod", 10, 1, 4), lootItem("minecraft:magma_cream", 10, 1, 4), lootItem(ac("hardened_chitin"), 10, 2, 5),
+                        lootItem(ac("infernal_chitin"), 6, 1, 3), lootItem(ac("royal_jelly"), 6, 1, 3), lootItem("minecraft:ghast_tear", 4, 1, 2),
+                        lootItem(ac("evolution_catalyst"), 3, 1, 2), lootItem("minecraft:ancient_debris", 1, 1, 1)),
+                        "rolls", obj("type", "minecraft:uniform", "max", 6, "min", 3)),
+                obj("entries", arr(obj("type", "minecraft:empty", "weight", 4), lootItem(ac("chitin_shield"), 1, 1, 1),
+                        lootItem("minecraft:netherite_scrap", 1, 1, 1)), "rolls", 1)),
+                "random_sequence", ac("chests/nether_anthill")));
+
         // Advancements.
+        advancement("nether_anthill", "nether_colony", "minecraft:soul_soil", "task", "Hell's Kitchen Garden", "Find a Nether anthill",
+                obj("trigger", "minecraft:location", "conditions", obj("player", obj("type", "minecraft:entity_properties", "entity", "this",
+                        "predicate", obj("minecraft:location", obj("structures", ac("nether_anthill")))))));
         advancement("giant_anthill", "catch_ants", "minecraft:coarse_dirt", "task", "Down the Anthill", "Find a giant anthill",
                 obj("trigger", "minecraft:location", "conditions", obj("player", obj("type", "minecraft:entity_properties", "entity", "this",
                         "predicate", obj("minecraft:location", obj("structures", ac("giant_anthill")))))));
@@ -1496,7 +1686,8 @@ public class DataGen {
         // Names and text.
         String[][] names = {{"chitin_helmet", "Chitin Helmet"}, {"chitin_chestplate", "Chitin Chestplate"}, {"chitin_leggings", "Chitin Leggings"},
                 {"chitin_boots", "Chitin Boots"}, {"chitin_sword", "Chitin Sword"}, {"chitin_pickaxe", "Chitin Pickaxe"}, {"chitin_axe", "Chitin Axe"},
-                {"chitin_shovel", "Chitin Shovel"}, {"chitin_hoe", "Chitin Hoe"}, {"rally_pheromone", "Rally Pheromone"}, {"guard_ant", "Guard Ant"}};
+                {"chitin_shovel", "Chitin Shovel"}, {"chitin_hoe", "Chitin Hoe"}, {"chitin_shield", "Chitin Shield"},
+                {"rally_pheromone", "Rally Pheromone"}, {"guard_ant", "Guard Ant"}};
         for (String[] name : names) {
             LANG.put("item." + NS + "." + name[0], name[1]);
         }
@@ -1504,7 +1695,8 @@ public class DataGen {
         LANG.put("tooltip." + NS + ".chitin_set", "Full set:");
         LANG.put("tooltip." + NS + ".chitin_set.ants", " Wild ants never attack you");
         LANG.put("tooltip." + NS + ".chitin_set.dig", " Dig %s%% faster");
-        LANG.put("tooltip." + NS + ".rally_pheromone", "Use on a hunter colony's Terrarium: it gives up hunters for a Guard Ant.");
+        LANG.put("tooltip." + NS + ".chitin_shield", "Light: raised faster than a wooden shield, and an axe knocks it down for less time.");
+        LANG.put("tooltip." + NS + ".rally_pheromone","Use on a hunter colony's Terrarium: it gives up hunters for a Guard Ant.");
         LANG.put("tooltip." + NS + ".guard_ant.empty", "An empty Guard Ant tube.");
         LANG.put("tooltip." + NS + ".guard_ant.stats", "Strength %s · Health %s/%s · Bite %s · Armor %s");
         LANG.put("tooltip." + NS + ".guard_ant.use", "Use on a block to let it out. Right-click it to make it stay or follow; sneak-right-click to put it back. Ant food heals it.");
@@ -1645,7 +1837,7 @@ public class DataGen {
                 {"genetic_sample", "Genetic Sample"}, {"ant_egg", "Ant Eggs"}, {"ant_larva", "Ant Larvae"}, {"ant_food", "Ant Food"},
                 {"mineral_ant_food", "Mineral Ant Food"}, {"crystal_ant_food", "Crystal Ant Food"}, {"nether_ant_food", "Nether Ant Food"},
                 {"royal_jelly", "Royal Jelly"}, {"nuptial_pheromone", "Nuptial Pheromone"}, {"evolution_catalyst", "Evolution Catalyst"},
-                {"reroll_serum", "Genetic Reroll Serum"}, {"chitin_plate", "Chitin Plate"}, {"upgrade_base", "Upgrade Base"},
+                {"reroll_serum", "Genetic Reroll Serum"}, {"chitin_plate", "Chitin Plate"}, {"hardened_chitin", "Hardened Chitin"}, {"infernal_chitin", "Infernal Chitin"}, {"void_chitin", "Void Chitin"}, {"upgrade_base", "Upgrade Base"},
                 {"genetic_circuit", "Genetic Circuit"}, {"crystal_core", "Crystal Core"}, {"ant_identification_book", "Ant Identification Book"},
                 {"colony_scanner", "Colony Scanner"}, {"genetic_analyzer", "Genetic Analyzer"}, {"species_upgrade", "Species Upgrade"},
                 {"diamond_fragment", "Diamond Fragment"}, {"emerald_fragment", "Emerald Fragment"}, {"wild_ant_spawn_egg", "Wild Ant Spawn Egg"},
@@ -1659,12 +1851,12 @@ public class DataGen {
         l.put("item." + NS + ".ant_egg.of", "%s Eggs");
         l.put("item." + NS + ".ant_larva.of", "%s Larvae");
         l.put("item." + NS + ".species_upgrade.named", "%s %s");
-        String[] numerals = {"I", "II", "III"};
+        String[] numerals = {"I", "II", "III", "IV"};
         String[][] upgradeNames = {{"speed", "Speed"}, {"food_efficiency", "Food Efficiency"}, {"simulation", "Simulation"}, {"storage", "Storage"},
                 {"breeding", "Breeding"}, {"genetic", "Genetic"}, {"hunting", "Hunting"}, {"automation", "Automation"}, {"population", "Population"},
                 {"evolution", "Evolution"}};
         for (String[] u : upgradeNames) {
-            for (int t = 1; t <= 3; t++) {
+            for (int t = 1; t <= 4; t++) {
                 l.put("item." + NS + "." + u[0] + "_upgrade_" + t, u[1] + " Upgrade " + numerals[t - 1]);
             }
         }
@@ -1677,7 +1869,8 @@ public class DataGen {
         }
         for (String nest : NESTS) {
             l.put("block." + NS + "." + nest + "_ant_nest", title(nest) + " Ant Nest");
-            l.put("tooltip." + NS + "." + nest + "_ant_nest", "A wild nest. Use Tweezers (with an empty Test Tube) to take ants; it fights back.");
+            l.put("tooltip." + NS + "." + nest + "_ant_nest", "Place it and ants move in: they tend and harvest crops within 10 blocks and bring the harvest "
+                    + "home, for hoppers and pipes to take out.");
         }
         l.put("entity." + NS + ".wild_ant", "Wild Ant");
         // Tooltips of blocks and items.
@@ -1699,7 +1892,10 @@ public class DataGen {
                 {"royal_jelly", "Rich food (400) and the base of Queen rearing."}, {"nuptial_pheromone", "Needed to rear Queens of advanced species."},
                 {"evolution_catalyst", "Feed to a Terrarium: doubles the chance of the next evolution attempt."},
                 {"reroll_serum", "Genetic Laboratory: reroll a trait (never lower) or purge a harmful mutation."},
-                {"chitin_plate", "Upgrade material. Wild ants sometimes leave one."}, {"upgrade_base", "The blank every upgrade starts from."},
+                {"chitin_plate", "Upgrade material. Wild ants sometimes leave one."},
+                {"hardened_chitin", "Chitin baked hard in a Blast Furnace. For tier II upgrades and the Genetic Laboratory."},
+                {"infernal_chitin", "Hardened Chitin tempered with the Nether: for tier III upgrades and high genetics."},
+                {"void_chitin", "Infernal Chitin steeped in the End: for the highest genetics and the Dragon Ant."}, {"upgrade_base", "The blank every upgrade starts from."},
                 {"genetic_circuit", "Genetic Laboratory material."}, {"crystal_core", "High-level Genetic Laboratory material."},
                 {"ant_identification_book", "A field guide to every ant species."}, {"diamond_fragment", "Nine make a diamond."},
                 {"emerald_fragment", "Nine make an emerald."}, {"terrarium.colony", "Colony: %s"},
@@ -1781,7 +1977,8 @@ public class DataGen {
                 {"climate", "Wrong climate for this species"},
                 {"low_health", "Colony health is low"}, {"no_nest_chamber", "No Nest Chamber: slow eggs, little room"},
                 {"population_full", "No room for more adults"}, {"starving", "Starving!"},
-                {"working", "Working"}, {"paused", "Paused by a redstone signal"}};
+                {"working", "Working"}, {"paused", "Paused by a redstone signal"},
+                {"wrong_dimension", "This evolution happens only in another dimension (see the Info page)"}};
         for (String[] s : statuses) {
             l.put("status." + NS + "." + s[0], s[1]);
         }

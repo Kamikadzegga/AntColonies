@@ -27,5 +27,10 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<UpgradeStationBlockEntity>> UPGRADE_STATION = BLOCK_ENTITY_TYPES.register("upgrade_station",
             () -> new BlockEntityType<>(UpgradeStationBlockEntity::new, ModBlocks.UPGRADE_STATION.get()));
 
+    /** Nests a player placed (only those have one: see WildNestBlock.HOME). */
+    public static final Supplier<BlockEntityType<com.antcolonies.content.blockentity.HomeNestBlockEntity>> HOME_NEST = BLOCK_ENTITY_TYPES.register("home_nest",
+            () -> new BlockEntityType<>(com.antcolonies.content.blockentity.HomeNestBlockEntity::new,
+                    ModBlocks.NESTS.values().stream().map(b -> (Block) b.get()).toArray(Block[]::new)));
+
     private ModBlockEntities() {}
 }

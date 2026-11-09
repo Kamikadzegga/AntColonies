@@ -1,0 +1,41 @@
+{
+  "parent": "antcolonies:void_chitin",
+  "criteria": {
+    "tier_four": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "antcolonies:speed_upgrade_4",
+              "antcolonies:food_efficiency_upgrade_4",
+              "antcolonies:simulation_upgrade_4",
+              "antcolonies:storage_upgrade_4",
+              "antcolonies:breeding_upgrade_4",
+              "antcolonies:genetic_upgrade_4",
+              "antcolonies:hunting_upgrade_4",
+              "antcolonies:automation_upgrade_4",
+              "antcolonies:population_upgrade_4",
+              "antcolonies:evolution_upgrade_4"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:speed_upgrade_4"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.tier_four.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.tier_four.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    ["tier_four"]
+  ]
+}

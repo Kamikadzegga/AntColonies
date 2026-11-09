@@ -1,0 +1,7 @@
+{
+  "type": "antcolonies:nether_anthill",
+  "biomes": "#antcolonies:has_structure/nether_anthill",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "none"
+}

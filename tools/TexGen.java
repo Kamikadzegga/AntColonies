@@ -38,6 +38,24 @@ public class TexGen {
             return x >= 0 && y >= 0 && x < w && y < h ? image.getRGB(x, y) : 0;
         }
 
+        /**
+         * Small chitin scales over an icon's plain chitin (its base and light pixels): rows of scales 4 pixels wide, a
+         * new row every 2, each shifted by half a scale; lit on top, dark where they round off at the bottom.
+         */
+        Img scaled() {
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    int color = get(x, y);
+                    if (color == CH_BASE || color == CH_LIGHT) {
+                        int dx = Math.floorMod(x + (y / 2 % 2) * 2, 4);
+                        boolean edge = dx == 0 || dx == 3;
+                        set(x, y, y % 2 == 0 ? (edge ? CH_BASE : CH_LIGHT) : (edge ? CH_DARK : CH_BASE));
+                    }
+                }
+            }
+            return this;
+        }
+
         void fill(int x0, int y0, int x1, int y1, int argb) {
             for (int y = y0; y < y1; y++) {
                 for (int x = x0; x < x1; x++) {
@@ -608,7 +626,8 @@ public class TexGen {
                 {"jungle", rgb(84, 62, 40), rgb(70, 122, 42)}, {"swamp", rgb(72, 62, 50), rgb(88, 98, 58)},
                 {"savanna", rgb(150, 100, 60), rgb(172, 160, 88)}, {"shore", rgb(222, 208, 160), rgb(234, 222, 178)},
                 {"blossom", rgb(118, 86, 58), rgb(108, 150, 70)}, {"pale", rgb(122, 112, 102), rgb(200, 205, 195)},
-                {"badlands", rgb(172, 92, 50), rgb(190, 102, 52)}, {"army", rgb(96, 60, 36), rgb(120, 104, 70)}};
+                {"badlands", rgb(172, 92, 50), rgb(190, 102, 52)}, {"army", rgb(96, 60, 36), rgb(120, 104, 70)},
+                {"warped", rgb(104, 42, 40), rgb(24, 124, 116)}, {"chorus", rgb(220, 222, 158), rgb(150, 108, 172)}};
         for (Object[] nest : nests) {
             String id = (String) nest[0];
             Img side = block((Integer) nest[1], 14, id.hashCode());
@@ -817,14 +836,28 @@ public class TexGen {
         line(serum, 11, 4, 13, 2, rgb(160, 160, 170));
         line(serum, 2, 14, 3, 13, rgb(140, 140, 150));
         serum.save("item/reroll_serum");
-        // Chitin Plate.
-        Img chitin = item();
-        disc(chitin, 8, 8, 5.5, rgb(120, 70, 40));
-        disc(chitin, 8, 7, 4, rgb(160, 100, 56));
-        line(chitin, 4, 8, 12, 8, rgb(100, 56, 30));
-        chitin.set(6, 5, rgb(220, 170, 120));
-        outline(chitin, rgb(60, 34, 18));
-        chitin.save("item/chitin_plate");
+        // Chitin Plate: one big scale, rounded at the bottom, with a ridge down its middle.
+        Img plate = sprite("................",
+               "................",
+               "....OOOOOOOO....",
+               "...OWWLLLLCCO...",
+               "..OWLLLLCCCCDO..",
+               "..OLLLCCCCCCDO..",
+               "..OLLCCCDCCCDO..",
+               "..OLCCCCDCCCDO..",
+               "..OCCCCCDCCDDO..",
+               "...OCCCCDCCDO...",
+               "...OCCCCDCDDO...",
+               "....OCCCDCDO....",
+               ".....OCCDDO.....",
+               "......OODO......",
+               ".......OO.......",
+               "................");
+        plate.save("item/chitin_plate");
+        // The Chitin ladder: the same scale, baked grey-brown (hardened), ember-red with a glowing rim (infernal), void-violet (void).
+        recolor(plate, rgb(40, 34, 30), rgb(74, 64, 58), rgb(112, 98, 86), rgb(150, 136, 120), rgb(196, 186, 170)).save("item/hardened_chitin");
+        recolor(plate, rgb(70, 14, 8), rgb(130, 30, 14), rgb(186, 60, 20), rgb(236, 120, 40), rgb(255, 210, 110)).save("item/infernal_chitin");
+        recolor(plate, rgb(16, 8, 26), rgb(40, 20, 66), rgb(70, 40, 110), rgb(120, 80, 170), rgb(214, 170, 255)).save("item/void_chitin");
         // Upgrade Base and upgrade boards.
         Img base = item();
         base.fill(2, 3, 14, 13, rgb(96, 70, 44));
@@ -835,8 +868,8 @@ public class TexGen {
         base.set(11, 10, rgb(180, 180, 186));
         outline(base, rgb(50, 36, 22));
         base.save("item/upgrade_base");
-        int[] rims = {rgb(190, 194, 200), rgb(240, 200, 70), rgb(110, 230, 230)};
-        for (int tier = 1; tier <= 3; tier++) {
+        int[] rims = {rgb(190, 194, 200), rgb(240, 200, 70), rgb(110, 230, 230), rgb(178, 96, 246)};
+        for (int tier = 1; tier <= 4; tier++) {
             Img board = item();
             board.fill(2, 2, 14, 14, rims[tier - 1]);
             board.fill(3, 3, 13, 13, rgb(70, 52, 34));
@@ -1319,6 +1352,26 @@ public class TexGen {
     static final int CH_EYE = rgb(26, 16, 12);
     static final int CH_EYE_SHINE = rgb(150, 112, 88);
 
+    /** A copy of a chitin sprite in other colours: outline, dark, base, light and shine take the five given. */
+    static Img recolor(Img source, int out, int dark, int base, int light, int shine) {
+        Img copy = new Img(source.w, source.h);
+        int[] from = {CH_OUT, CH_DARK, CH_BASE, CH_LIGHT, CH_SHINE};
+        int[] to = {out, dark, base, light, shine};
+        for (int y = 0; y < source.h; y++) {
+            for (int x = 0; x < source.w; x++) {
+                int color = source.get(x, y);
+                for (int i = 0; i < from.length; i++) {
+                    if (color == from[i]) {
+                        color = to[i];
+                        break;
+                    }
+                }
+                copy.set(x, y, color);
+            }
+        }
+        return copy;
+    }
+
     /**
      * A sprite from rows of letters: O outline, D dark, C chitin, L light, W shine, S/s stick, E/e compound eye and its
      * glint; anything else is clear.
@@ -1367,52 +1420,52 @@ public class TexGen {
                ".....OO..OO.....").save("item/chitin_helmet");
         sprite("................",
                "..OOOO....OOOO..",
-               ".OLWCO....OCCDO.",
+               ".OWLLO....OLCDO.",
                ".OLCCOOOOOOCCDO.",
-               ".OCCLWWLCCCCCDO.",
+               ".OCCLLLLLLCCCDO.",
                "..OOCCCCCCCCOO..",
-               "...OLDDDDDDDO...",
-               "...OLCCCCCCDO...",
+               "...OCCCCCCCDO...",
                "...OCCCCCCCDO...",
                "...ODDDDDDDDO...",
+               "....OOCCCDOO....",
+               "....OLCCCCDO....",
                "...OLCCCCCCDO...",
-               "....OCCCCCDO....",
-               ".....OOOOOO.....",
+               "...OCCCCCCCDO...",
+               "....OOOOOOOO....",
                "................",
-               "................",
-               "................").save("item/chitin_chestplate");
+               "................").scaled().save("item/chitin_chestplate");
         sprite("................",
                "................",
                "...OOOOOOOOOO...",
-               "...OLWWLCCCDO...",
-               "...ODDDDDDDDO...",
-               "...OLCCOOCCDO...",
-               "...OLCO..OCDO...",
+               "...OLDDLDDLDO...",
+               "...OCCCCCCCDO...",
+               "...OCCCOOCCDO...",
                "...OCCO..OCDO...",
+               "...OWLO..OLDO...",
                "...ODDO..ODDO...",
-               "...OLCO..OCDO...",
                "...OCCO..OCDO...",
-               "...ODDO..ODDO...",
-               "...OLCO..OCDO...",
+               "...OCCO..OCDO...",
+               "...OCCO..OCDO...",
                "...OOOO..OOOO...",
                "................",
-               "................").save("item/chitin_leggings");
+               "................",
+               "................").scaled().save("item/chitin_leggings");
         sprite("................",
                "................",
                "................",
                "................",
                "...OOOO..OOOO...",
-               "...OLCO..OCDO...",
-               "...ODDO..ODDO...",
-               "...OLCO..OCDO...",
-               "..OLCCO..OCCDO..",
-               ".OLWCCO..OCCCDO.",
-               ".ODDDDO..ODDDDO.",
+               "...OLDO..OLDO...",
+               "...OCCO..OCDO...",
+               "...OCCO..OCDO...",
+               "..OCCCO..OCCDO..",
+               ".OLCCCO..OCCCDO.",
                ".OOOOOO..OOOOOO.",
                "................",
                "................",
                "................",
-               "................").save("item/chitin_boots");
+               "................",
+               "................").scaled().save("item/chitin_boots");
 
         // Tools, drawn like vanilla's: a straight three-pixel stick from the bottom left and a chitin head with grooves
         // between its plates.
@@ -1497,6 +1550,7 @@ public class TexGen {
                "..ss............",
                "................").save("item/chitin_hoe");
         chitinArmorLayers();
+        chitinShield();
         // Rally Pheromone: a tube of glowing orange-red scent.
         Img rally = item();
         tube(rally, null, rgb(150, 110, 70), false);
@@ -1524,60 +1578,155 @@ public class TexGen {
     }
 
     /**
-     * The worn armor (the 64x32 humanoid layouts): overlapping chitin plates, darker grooves between them. Layer
-     * "humanoid" holds the helmet, chestplate (body and arms) and boots (the bottom of the legs); "humanoid_leggings" the
-     * leggings (the hips and the legs).
+     * The worn armor, all in chitin scales. Layer "humanoid" (64x32) holds the helmet, chestplate (body and arms) and
+     * boots (the bottom of the legs); "humanoid_leggings" the leggings (the hips and the legs); "humanoid_baby" (64x64)
+     * everything for baby mobs.
      */
     static void chitinArmorLayers() {
         Img outer = new Img(64, 32);
         Random random = new Random(41);
         plates(outer, 0, 0, 8, 8, 8, 0, 8, random);      // head
-        antHead(outer);
-        plates(outer, 16, 16, 8, 12, 4, 0, 12, random);  // body
-        plates(outer, 40, 16, 4, 12, 4, 0, 12, random);  // arm
-        plates(outer, 0, 16, 4, 12, 4, 8, 12, random);   // leg: boots, the lowest 4 rows
+        antFace(outer, 8, 8, 8);
+        antennaSkins(outer);
+        // Chestplate: an ant's thorax, a groove, a narrow waist (the sides and the corners cut away), the abdomen.
+        plates(outer, 16, 16, 8, 12, 4, 0, 12, random);
+        band(outer, 16, 16, 8, 4, 6, CH_OUT);
+        for (int row = 7; row <= 8; row++) {
+            for (int x = 0; x < 24; x++) {
+                int faceX = x < 4 ? -1 : x < 12 ? x - 4 : x < 16 ? -1 : x - 16;
+                if (faceX < 1 || faceX > 6) {
+                    outer.set(16 + x, 20 + row, 0);
+                } else if (faceX == 1 || faceX == 6) {
+                    outer.set(16 + x, 20 + row, CH_OUT);
+                }
+            }
+        }
+        band(outer, 16, 16, 8, 4, 9, CH_LIGHT);
+        // Arms: a lit shoulder plate, scales, a studded cuff at the elbow and bare forearms.
+        plates(outer, 40, 16, 4, 12, 4, 0, 9, random);
+        band(outer, 40, 16, 4, 4, 0, CH_SHINE);
+        band(outer, 40, 16, 4, 4, 1, CH_LIGHT);
+        band(outer, 40, 16, 4, 4, 2, CH_OUT);
+        studded(outer, 40, 16, 4, 4, 8);
+        // Boots: a cuff, scales, a dark sole.
+        plates(outer, 0, 16, 4, 12, 4, 8, 12, random);
+        studded(outer, 0, 16, 4, 4, 8);
+        band(outer, 0, 16, 4, 4, 11, CH_OUT);
         outer.save("entity/equipment/humanoid/chitin");
+
         Img inner = new Img(64, 32);
-        plates(inner, 16, 16, 8, 12, 4, 7, 12, random);  // body: the hips
-        plates(inner, 0, 16, 4, 12, 4, 0, 10, random);   // leg
+        // Leggings: a studded belt over the hips, scaled legs with a lit knee cap and a dark joint below it.
+        plates(inner, 16, 16, 8, 12, 4, 7, 12, random);
+        studded(inner, 16, 16, 8, 4, 7);
+        plates(inner, 0, 16, 4, 12, 4, 0, 10, random);
+        band(inner, 0, 16, 4, 4, 6, CH_OUT);
+        for (int x = 5; x <= 6; x++) {
+            inner.set(x, 23, CH_SHINE);
+            inner.set(x, 24, CH_LIGHT);
+        }
+        inner.set(4, 24, CH_LIGHT);
+        inner.set(7, 24, CH_BASE);
+        inner.set(4, 25, CH_DARK);
+        inner.set(7, 25, CH_DARK);
         inner.save("entity/equipment/humanoid_leggings/chitin");
+
+        // Babies: their own smaller boxes in one 64x64 texture (see HumanoidModel.createBabyArmorMesh).
+        Img baby = new Img(64, 64);
+        plates(baby, 0, 0, 9, 8, 8, 0, 8, random);       // head, 9 wide
+        antFace(baby, 8, 8, 9);
+        plates(baby, 0, 17, 6, 5, 3, 0, 5, random);      // body
+        band(baby, 0, 17, 6, 3, 3, CH_OUT);
+        plates(baby, 30, 17, 2, 5, 3, 0, 5, random);     // left arm
+        plates(baby, 30, 25, 2, 5, 3, 0, 5, random);     // right arm
+        band(baby, 30, 17, 2, 3, 4, CH_OUT);
+        band(baby, 30, 25, 2, 3, 4, CH_OUT);
+        plates(baby, 0, 36, 6, 2, 3, 0, 2, random);      // waist (leggings)
+        studded(baby, 0, 36, 6, 3, 0);
+        plates(baby, 18, 17, 3, 4, 3, 0, 4, random);     // legs
+        plates(baby, 18, 24, 3, 4, 3, 0, 4, random);
+        plates(baby, 0, 25, 3, 1, 3, 0, 1, random);      // feet
+        plates(baby, 0, 29, 3, 1, 3, 0, 1, random);
+        baby.save("entity/equipment/humanoid_baby/chitin");
     }
 
     /**
-     * The helmet as an ant's head: compound eyes wrapping round the front corners, a ridge down the middle, jaws with a
-     * gap between them at the bottom of the face. Also the skins of the antennae, which take the place of the hat layer
-     * (32,0 to 64,16; the helmet model has no hat): see {@code ChitinHelmetModel} for the boxes.
+     * The Chitin Shield's 64x64 skin, one pixel per model pixel (DataGen's shield model maps its faces onto it): the
+     * front (2,2 to 14,24) in scales with a dark rim, a ridge down the middle and a lit boss like an ant's head; the
+     * back (16,2) dark chitin with a strap; the rim's edges (30,2 / 32,2 and 2,26 / 16,26); the handle (40,2).
      */
-    static void antHead(Img img) {
-        // The front face is 8..16 x 8..16; the right side's front edge is column 7, the left side's column 16.
-        for (int y = 10; y <= 12; y++) {
-            for (int x = 0; x < 2; x++) {
-                img.set(8 + x, y, CH_EYE);
-                img.set(15 - x, y, CH_EYE);
-                img.set(6 + x, y, CH_EYE);
-                img.set(16 + x, y, CH_EYE);
+    static void chitinShield() {
+        Img img = new Img(64, 64);
+        Random random = new Random(7);
+        for (int y = 0; y < 22; y++) {
+            for (int x = 0; x < 12; x++) {
+                boolean rim = x == 0 || x == 11 || y == 0 || y == 21;
+                boolean corner = (x == 0 || x == 11) && (y == 0 || y == 21);
+                int front = rim ? CH_OUT : x == 5 || x == 6 ? (x == 5 ? CH_DARK : shade(CH_DARK, 0.85)) : scaleColor(x - 1, y + 1, random);
+                img.set(2 + x, 2 + y, corner ? 0 : front);
+                int back = rim ? CH_OUT : y >= 9 && y <= 12 ? (y == 9 || y == 12 ? STICK_DARK : STICK) : shade(CH_DARK, 0.85 + random.nextDouble() * 0.15);
+                img.set(16 + x, 2 + y, corner ? 0 : back);
             }
         }
-        for (int x : new int[] {7, 9, 14, 16}) {
-            img.set(x, 10, CH_EYE_SHINE);
+        // The boss: a lit oval over the ridge, with two eyes.
+        int[][] boss = {{4, 8}, {5, 7}, {6, 7}, {7, 8}, {4, 9}, {5, 9}, {6, 9}, {7, 9}, {4, 10}, {5, 10}, {6, 10}, {7, 10}, {5, 11}, {6, 11}};
+        for (int[] p : boss) {
+            img.set(2 + p[0], 2 + p[1], p[1] <= 8 ? CH_SHINE : CH_LIGHT);
         }
-        for (int y = 10; y <= 13; y++) {
-            img.set(11, y, CH_DARK);
-            img.set(12, y, CH_DARK);
+        img.set(2 + 4, 2 + 9, CH_EYE);
+        img.set(2 + 7, 2 + 9, CH_EYE);
+        for (int y = 0; y < 22; y++) {
+            img.set(30, 2 + y, CH_DARK);
+            img.set(32, 2 + y, CH_DARK);
+        }
+        for (int x = 0; x < 12; x++) {
+            img.set(2 + x, 26, CH_LIGHT);
+            img.set(16 + x, 26, CH_DARK);
+        }
+        for (int y = 0; y < 6; y++) {
+            for (int x = 0; x < 6; x++) {
+                img.set(40 + x, 2 + y, y == 0 || y == 5 ? STICK_DARK : STICK);
+            }
+        }
+        img.save("item/chitin_shield");
+    }
+
+    /**
+     * The helmet's face as an ant's head, on the front face at (fx, fy), {@code w} wide: compound eyes wrapping round the
+     * front corners onto the sides, a ridge down the middle, and jaws with a gap between them at the bottom.
+     */
+    static void antFace(Img img, int fx, int fy, int w) {
+        for (int y = fy + 2; y <= fy + 4; y++) {
+            for (int x = 0; x < 2; x++) {
+                img.set(fx + x, y, CH_EYE);
+                img.set(fx + w - 1 - x, y, CH_EYE);
+                img.set(fx - 2 + x, y, CH_EYE);
+                img.set(fx + w + x, y, CH_EYE);
+            }
+        }
+        for (int x : new int[] {fx - 1, fx + 1, fx + w - 2, fx + w}) {
+            img.set(x, fy + 2, CH_EYE_SHINE);
+        }
+        double middle = (w - 1) / 2.0;
+        for (int x = 0; x < w; x++) {
+            if (Math.abs(x - middle) <= 0.5) {
+                for (int y = fy + 2; y <= fy + 5; y++) {
+                    img.set(fx + x, y, CH_DARK);
+                }
+            }
         }
         // Jaws: the bottom two rows, light on top, dark tips pointing in, nothing between them.
-        for (int x = 0; x < 3; x++) {
-            img.set(8 + x, 14, x == 2 ? CH_DARK : CH_LIGHT);
-            img.set(15 - x, 14, x == 2 ? CH_DARK : CH_BASE);
+        for (int x = 0; x < w; x++) {
+            int fromEdge = Math.min(x, w - 1 - x);
+            img.set(fx + x, fy + 6, fromEdge < 2 ? (x < w / 2 ? CH_LIGHT : CH_BASE) : fromEdge == 2 ? CH_DARK : 0);
+            img.set(fx + x, fy + 7, fromEdge == 1 ? CH_DARK : fromEdge == 2 ? CH_OUT : 0);
         }
-        img.set(11, 14, 0);
-        img.set(12, 14, 0);
-        for (int x = 8; x < 16; x++) {
-            img.set(x, 15, x == 10 || x == 13 ? CH_OUT : 0);
-        }
-        img.set(9, 15, CH_DARK);
-        img.set(14, 15, CH_DARK);
-        // Antennae: dark segments with a lighter club at the tip.
+    }
+
+    /**
+     * The antennae's skins, which take the place of the hat layer (32,0 to 64,16; the helmet model has no hat): see
+     * {@code ChitinHelmetModel} for the boxes. Dark segments, a lit club at the tip.
+     */
+    static void antennaSkins(Img img) {
         for (int y = 0; y < 7; y++) {
             for (int x = 32; x < 50; x++) {
                 img.set(x, y, (x + y) % 2 == 0 ? CH_OUT : CH_DARK);
@@ -1591,8 +1740,9 @@ public class TexGen {
     }
 
     /**
-     * Paints the faces of one model box (texture corner u, v; size w, h, d) between side rows {@code from} and
-     * {@code to}; the top face when the rows start at 0, the bottom face when they reach h.
+     * Paints the faces of one model box (texture corner u, v; size w, h, d) with chitin scales between side rows
+     * {@code from} and {@code to}; the top face when the rows start at 0, the bottom face when they reach h. The four
+     * side faces lie side by side in the texture, so the scales run on round the box.
      */
     static void plates(Img img, int u, int v, int w, int h, int d, int from, int to, Random random) {
         int sideY = v + d;
@@ -1600,14 +1750,15 @@ public class TexGen {
         for (int[] face : faces) {
             for (int y = from; y < to; y++) {
                 for (int x = 0; x < face[1]; x++) {
-                    img.set(face[0] + x, sideY + y, plateColor(y - from, x, face[1], random));
+                    int color = scaleColor(face[0] - u + x, y, random);
+                    img.set(face[0] + x, sideY + y, x == 0 || x == face[1] - 1 ? shade(color, 0.88) : color);
                 }
             }
         }
         if (from == 0) {
             for (int y = 0; y < d; y++) {
                 for (int x = 0; x < w; x++) {
-                    img.set(u + d + x, v + y, plateColor(y % 3 + 1, x, w, random));
+                    img.set(u + d + x, v + y, scaleColor(x, y + 1, random));
                 }
             }
         }
@@ -1620,17 +1771,59 @@ public class TexGen {
         }
     }
 
-    /** Plates three rows tall: a lit top edge, the plate, a dark groove; a little noise and darker sides. */
-    static int plateColor(int row, int x, int width, Random random) {
-        int band = row % 3;
-        int color = band == 0 ? CH_LIGHT : band == 1 ? CH_BASE : CH_DARK;
-        if (x == 0 || x == width - 1) {
-            color = shade(color, 0.85);
+    /** A scale's rows: from which to which pixel it covers, top to bottom (rounded at the bottom). */
+    static final int[][] SCALE = {{0, 5}, {0, 5}, {0, 5}, {1, 4}, {2, 3}};
+    static final int SCALE_WIDTH = 6;
+    static final int SCALE_STEP = 3;
+
+    /**
+     * Chitin scales, like a pangolin's: rows of rounded scales 6 pixels wide, a new row every 3 pixels, each row shifted
+     * by half a scale. Every scale lies over the top of the ones below it, so what shows of each is its rounded lower
+     * part: lit at the top, a dark rim, a darker tip.
+     */
+    static int scaleColor(int x, int y, Random random) {
+        int row = Math.floorDiv(y, SCALE_STEP);
+        int color = CH_DARK;
+        for (int r = row - SCALE.length / SCALE_STEP - 1; r <= row; r++) {
+            int dy = y - r * SCALE_STEP;
+            if (dy < 0 || dy >= SCALE.length) {
+                continue;
+            }
+            int dx = Math.floorMod(x - Math.floorMod(r, 2) * (SCALE_WIDTH / 2), SCALE_WIDTH);
+            if (dx < SCALE[dy][0] || dx > SCALE[dy][1]) {
+                continue;
+            }
+            boolean bottom = dy + 1 >= SCALE.length || dx < SCALE[dy + 1][0] || dx > SCALE[dy + 1][1];
+            boolean side = dx == SCALE[dy][0] || dx == SCALE[dy][1];
+            // Low contrast on purpose: at the size armor is seen, black tips and bright glints read as spots, not scales.
+            if (bottom) {
+                color = dy == SCALE.length - 1 ? shade(CH_DARK, 0.85) : CH_DARK;
+            } else if (side && dy > 0) {
+                color = shade(CH_BASE, 0.88);
+            } else if (dy == 0) {
+                color = CH_LIGHT;
+            } else if (dy == 1 && dx <= SCALE_WIDTH / 2) {
+                color = shade(CH_BASE, 1.12);
+            } else {
+                color = CH_BASE;
+            }
+            break;
         }
-        if (band == 0 && random.nextInt(5) == 0) {
-            color = CH_SHINE;
+        return shade(color, 0.97 + random.nextDouble() * 0.06);
+    }
+
+    /** One side row of a box (all four side faces) in a colour, or cleared with 0. */
+    static void band(Img img, int u, int v, int w, int d, int row, int color) {
+        for (int x = 0; x < 2 * (w + d); x++) {
+            img.set(u + x, v + d + row, color);
         }
-        return shade(color, 0.94 + random.nextDouble() * 0.12);
+    }
+
+    /** A belt or cuff: a dark band with a lit stud every third pixel. */
+    static void studded(Img img, int u, int v, int w, int d, int row) {
+        for (int x = 0; x < 2 * (w + d); x++) {
+            img.set(u + x, v + d + row, x % 3 == 1 ? CH_LIGHT : CH_OUT);
+        }
     }
 
     public static void main(String[] args) {

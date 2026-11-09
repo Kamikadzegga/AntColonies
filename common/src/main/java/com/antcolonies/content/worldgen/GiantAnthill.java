@@ -55,7 +55,7 @@ public class GiantAnthill extends Structure {
         }
         // The ground's top block is one below the first free one.
         BlockPos center = new BlockPos(cx, middle - 1, cz);
-        return Optional.of(new GenerationStub(center, builder -> builder.addPiece(new AnthillPiece(center))));
+        return Optional.of(new GenerationStub(center, builder -> builder.addPiece(new AnthillPiece(center, false))));
     }
 
     @Override

@@ -1,0 +1,80 @@
+{
+  "tier": 4,
+  "category": "endgame",
+  "look": {
+    "body": "#141414",
+    "gaster": "#2A2A2A",
+    "accent": "#6A6A6A",
+    "pattern": "plain",
+    "size": 1.15
+  },
+  "climate": "nether",
+  "diet": {
+    "consumption": 1.6,
+    "special_food": "nether",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.08,
+    "outputs": [
+      {
+        "item": "minecraft:soul_sand",
+        "weight": 18
+      },
+      {
+        "item": "minecraft:coal",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:bone",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:blackstone",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:wither_rose",
+        "weight": 2,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:wither_skeleton_skull",
+        "weight": 0.4,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:nether_star",
+        "weight": 0.01,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.8
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:nether_ant_food",
+        "count": 8
+      },
+      {
+        "ingredient": "antcolonies:infernal_chitin",
+        "count": 2
+      }
+    ],
+    "time": 9600
+  },
+  "breeding": {
+    "eggs": 0.7,
+    "growth": 0.8
+  },
+  "signature_item": "minecraft:wither_skeleton_skull"
+}

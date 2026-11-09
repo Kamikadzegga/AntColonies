@@ -1,9 +1,6 @@
 {
   "variants": {
-    "recovering=false": {
-      "model": "antcolonies:block/desert_ant_nest"
-    },
-    "recovering=true": {
+    "": {
       "model": "antcolonies:block/desert_ant_nest"
     }
   }

@@ -1,0 +1,27 @@
+{
+  "parent": "antcolonies:nether_colony",
+  "criteria": {
+    "warped_colony": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "species": "antcolonies:warped"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:warped_ant_nest"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.warped_colony.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.warped_colony.description"
+    }
+  },
+  "requirements": [
+    [
+      "warped_colony"
+    ]
+  ]
+}

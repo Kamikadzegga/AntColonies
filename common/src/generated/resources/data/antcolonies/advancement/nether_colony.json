@@ -1,0 +1,35 @@
+{
+  "parent": "antcolonies:hardened_chitin",
+  "criteria": {
+    "nether_colony": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "player": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:location": {
+              "dimension": "minecraft:the_nether"
+            }
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:netherrack"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.nether_colony.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.nether_colony.description"
+    }
+  },
+  "requirements": [
+    [
+      "nether_colony"
+    ]
+  ]
+}

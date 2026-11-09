@@ -20,6 +20,9 @@ public final class ModStructures {
 
     public static final DeferredHolder<StructureType<?>, StructureType<GiantAnthill>> GIANT_ANTHILL =
             STRUCTURE_TYPES.register("giant_anthill", () -> () -> GiantAnthill.CODEC);
+    /** The same nest dug into the Nether's floor (its pieces are the giant anthill's, with a Nether flag). */
+    public static final DeferredHolder<StructureType<?>, StructureType<com.antcolonies.content.worldgen.NetherAnthill>> NETHER_ANTHILL =
+            STRUCTURE_TYPES.register("nether_anthill", () -> () -> com.antcolonies.content.worldgen.NetherAnthill.CODEC);
     public static final DeferredHolder<StructurePieceType, StructurePieceType> ANTHILL_PIECE =
             STRUCTURE_PIECES.register("giant_anthill", () -> (context, tag) -> new AnthillPiece(tag));
 

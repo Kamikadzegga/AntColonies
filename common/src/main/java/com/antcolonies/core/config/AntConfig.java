@@ -89,6 +89,8 @@ public final class AntConfig {
     public static final ModConfigSpec.DoubleValue WILD_SOLDIER_CHANCE;
     public static final ModConfigSpec.DoubleValue NEST_QUEEN_CHANCE;
     public static final ModConfigSpec.IntValue NEST_COOLDOWN_SECONDS;
+    public static final ModConfigSpec.DoubleValue NEST_CROP_GROWTH;
+    public static final ModConfigSpec.BooleanValue NEST_HARVEST;
 
     // --- Guard Ants ---
     public static final ModConfigSpec.IntValue GUARD_COST;
@@ -115,7 +117,7 @@ public final class AntConfig {
                         "Production never runs while unloaded; this is the most it can make up afterwards (0 = none).")
                 .defineInRange("offlineCatchUpMinutes", 5, 0, 1440);
         SIMULATION_UPGRADE_MINUTES = s.comment("Extra catch-up minutes from a Simulation Upgrade of tier 1, 2 and 3.")
-                .defineList("simulationUpgradeMinutes", List.of(15, 60, 240), () -> 15, o -> o instanceof Integer i && i >= 0);
+                .defineList("simulationUpgradeMinutes", List.of(15, 60, 240, 720), () -> 15, o -> o instanceof Integer i && i >= 0);
         MAX_COLONY_POPULATION = s.comment("Hard cap on the adults of one colony, whatever its housing.")
                 .defineInRange("maxColonyPopulation", 1_000_000L, 100L, 100_000_000L);
         MAX_CHAMBERS = s.comment("Most chambers one colony takes. Touching chambers beyond it (the furthest from the Terrarium) don't join.")
@@ -227,6 +229,10 @@ public final class AntConfig {
         WILD_SOLDIER_CHANCE = s.comment("Chance a naturally spawned wild ant is a soldier.").defineInRange("soldierChance", 0.15, 0, 1);
         NEST_QUEEN_CHANCE = s.comment("Chance Tweezers pull a Queen instead of workers from a wild nest.").defineInRange("nestQueenChance", 0.05, 0, 1);
         NEST_COOLDOWN_SECONDS = s.comment("Seconds a wild nest needs to recover after ants were taken from it.").defineInRange("nestCooldownSeconds", 60, 0, 86400);
+        NEST_CROP_GROWTH = s.comment("Chance per tick that an ant from a home nest, standing at a crop or sapling, grows it a stage (0 turns tending off).")
+                .defineInRange("nestCropGrowth", 0.02, 0, 1);
+        NEST_HARVEST = s.comment("Ants from a home nest harvest ripe crops around it, replant them and carry the harvest into the nest.")
+                .define("nestHarvest", true);
         s.pop();
 
         s.push("guards");

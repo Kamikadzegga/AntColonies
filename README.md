@@ -29,16 +29,22 @@ hunters to work, evolve mineral species and engineer their genes.
   glass case: Nest Chambers for a bigger colony, Foraging Sites where workers find resources, Hunting Grounds where
   hunter species kill mobs for their drops and feed on them (no mob is ever spawned), Harvesting Sites for farmers, Storage and Queen Chambers. A block under the Terrarium
   sets its climate.
-- **42 species.** Fourteen wild species live in their own biomes, with nests, among them the Army Ant, a hunter. Mineral species (iron, gold, diamond,
-  emerald, netherite, ender and more) evolve from them, and eleven hybrids come from crossing Queens. Thirteen more
+- **46 species.** Sixteen wild species live in their own biomes, with nests, among them the Army Ant, a hunter, and the
+  Nether's Warped Ant and the End's Chorus Ant. Mineral species (iron, gold, diamond, emerald, netherite, ender and more)
+  evolve from them, and eleven hybrids come from crossing Queens. The endgame Wither and Dragon Ants need a Nether Star
+  and the dragon's breath.
+- **Progression through the dimensions.** The Nether's ants evolve only in the Nether and the End's only in the End, and
+  the Chitin ladder (Hardened, Infernal, Void) gates tier III upgrades and high genetics behind both. Thirteen more
   species turn on when MachinaOpus, Mekanism, Create, Thermal, Immersive Engineering or AE2 add their ores.
 - **Genetics.** Each Queen has ten traits, and daughters inherit them with variation. There are 31 mutations, including
   flaws. The FE-powered **Genetic Laboratory** upgrades traits, rerolls, mutates and purges Queens and copies their
   genes.
 - **Giant anthills.** A rare world-generation structure: a mound over tunnels and chambers dug deep into the ground,
   with loot, a Queen to catch and soldiers that defend it.
-- **Chitin gear and Guard Ants.** Iron-tier tools and armor made from Chitin Plates; with the full set, wild ants take
-  you for one of their own. A hunter colony can also give up some of its ants for a **Guard Ant** that follows you and fights for
+- **Home nests.** Pick up a wild nest with Silk Touch and place it at home: its ants tend and harvest your crops and
+  carry the harvest in, for hoppers and pipes to take out.
+- **Chitin gear and Guard Ants.** Iron-tier tools, armor and a quick shield made from Chitin Plates; the helmet is an
+  ant's head with antennae, and with the full set, wild ants take you for one of their own. A hunter colony can also give up some of its ants for a **Guard Ant** that follows you and fights for
   you, as strong as the colony's genetics.
 - **Built for automation and modpacks.** Comparator outputs and redstone control. Items and FE move through any mod's
   pipes and cables. Species, evolutions, hybrids, mutations, lab costs, ant food and loot are all data packs, and a
@@ -47,7 +53,7 @@ hunters to work, evolve mineral species and engineer their genes.
   block that fixes it) and what they evolve into. Tube tooltips and the Ant Identification Book say the same, and the
   book has how-to-play pages.
 - **Integrations.** JEI and EMI recipe categories for the whole progression, Jade tooltips (colonies, wild ants and
-  nests), and 16 advancements.
+  nests), and 27 advancements, with a path through the Nether and the End.
 
 ## Screenshots
 

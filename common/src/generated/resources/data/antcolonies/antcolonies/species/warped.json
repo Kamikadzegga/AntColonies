@@ -1,0 +1,78 @@
+{
+  "tier": 0,
+  "category": "base",
+  "look": {
+    "body": "#1A4A4A",
+    "gaster": "#2AA59A",
+    "accent": "#5AE8D8",
+    "pattern": "speckled"
+  },
+  "climate": "nether",
+  "spawn_biomes": "antcolonies:spawns/warped",
+  "diet": {
+    "consumption": 1.0
+  },
+  "production": {
+    "rate": 0.9,
+    "outputs": [
+      {
+        "item": "minecraft:netherrack",
+        "weight": 26
+      },
+      {
+        "item": "minecraft:warped_fungus",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:crimson_fungus",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:warped_roots",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:nether_wart",
+        "weight": 6,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:warped_wart_block",
+        "weight": 4,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:quartz",
+        "weight": 3,
+        "min_stage": 3
+      },
+      {
+        "item": "minecraft:shroomlight",
+        "weight": 1,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:warped_fungus",
+        "count": 4
+      }
+    ],
+    "time": 2400
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:warped_fungus"
+}

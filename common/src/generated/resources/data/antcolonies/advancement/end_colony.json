@@ -1,0 +1,33 @@
+{
+  "parent": "antcolonies:infernal_chitin",
+  "criteria": {
+    "end_colony": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "player": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:location": {
+              "dimension": "minecraft:the_end"
+            }
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:end_stone"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.end_colony.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.end_colony.description"
+    }
+  },
+  "requirements": [
+    ["end_colony"]
+  ]
+}

@@ -211,9 +211,12 @@ public final class InfoPanel {
                 ItemStack item = evolution.item().items().findFirst().map(ItemStack::new).orElse(ItemStack.EMPTY);
                 Component line = into ? Component.translatable("info.antcolonies.evolves_into", Tooltips.species(evolution.to()))
                         : Component.translatable("info.antcolonies.evolves_from", Tooltips.species(evolution.from()));
-                List<Component> tip = List.of(line, Component.translatable("info.antcolonies.evolution.feed", item.getHoverName()).withStyle(ChatFormatting.GRAY),
+                List<Component> tip = new java.util.ArrayList<>(List.of(line,
+                        Component.translatable("info.antcolonies.evolution.feed", item.getHoverName()).withStyle(ChatFormatting.GRAY),
                         Component.translatable("info.antcolonies.evolution.needs", evolution.minStage(), evolution.minPopulation(),
-                                Math.round(evolution.chance() * 100), evolution.guaranteedAfter()).withStyle(ChatFormatting.GRAY));
+                                Math.round(evolution.chance() * 100), evolution.guaranteedAfter()).withStyle(ChatFormatting.GRAY)));
+                evolution.dimension().ifPresent(dimension -> tip.add(Component.translatable("tooltip.antcolonies.species.evolves_in",
+                        Tooltips.dimension(dimension)).withStyle(ChatFormatting.RED)));
                 rows.add(new ItemLine(item, font.split(line, width - 20).getFirst(), ACCENT, tip));
             }
         }

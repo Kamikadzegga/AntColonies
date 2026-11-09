@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "D": "minecraft:diamond",
+    "D": "antcolonies:infernal_chitin",
     "X": "minecraft:egg",
     "U": "antcolonies:breeding_upgrade_2"
   },

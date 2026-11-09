@@ -99,6 +99,12 @@ public class AntColoniesGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> MOVING = test("colony_moves_with_terrarium", AntColoniesGameTests::colonyMoves);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> UPGRADE_SYNC = test("terrarium_update_keeps_upgrades", AntColoniesGameTests::terrariumUpdateKeepsUpgrades);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> MACHINAOPUS = test("machinaopus_materials", AntColoniesGameTests::machinaOpus);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> MACHINAOPUS_PIPES = test("machinaopus_pipes", AntColoniesGameTests::machinaOpusPipes);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> SHIELD = test("chitin_shield", AntColoniesGameTests::chitinShield);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> HOME_NEST = test("home_nest_farms", AntColoniesGameTests::homeNest);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> HOME_NEST_ALONE = test("home_nest_farms_by_itself", AntColoniesGameTests::homeNestAlone);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> PROGRESSION = test("progression_needs_nether_and_end", AntColoniesGameTests::progression);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> NETHER_ANTHILL = test("nether_anthill", AntColoniesGameTests::netherAnthill);
 
     public AntColoniesGameTests(IEventBus modEventBus) {
         TESTS.register(modEventBus);
@@ -114,12 +120,14 @@ public class AntColoniesGameTests {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(AntColonies.id("default"), new TestEnvironmentDefinition.AllOf(List.of()));
         for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> test : List.of(SPECIES_DATA_LOADS, COLONY_PERSISTS, ALLOCATION, SCAVENGING,
                 MORE_WORKERS, STARVATION, BREEDING, FARMING, GARDEN_NEEDS_FARMERS, FIGHTING, EVOLUTION, REARING, HYBRIDS, TWO_COLONIES, OFFLINE,
-                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL, RUNS_ALONE, JOINING, MOVING, UPGRADE_SYNC, MACHINAOPUS)) {
+                TWEEZERS, FEEDING, NESTS, GUIDE, GENERATOR, PERFORMANCE, DIMINISHING, LIMITS, RARE, ADVANCEMENTS, REDSTONE, CHITIN, GUARDS, ANTHILL, RUNS_ALONE, JOINING, MOVING, UPGRADE_SYNC, MACHINAOPUS, MACHINAOPUS_PIPES, SHIELD, HOME_NEST, PROGRESSION, NETHER_ANTHILL)) {
             event.registerTest(test.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, test.getId()),
                     spaced(environment, 200)));
         }
         event.registerTest(LAB.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, LAB.getId()),
                 spaced(environment, 600)));
+        event.registerTest(HOME_NEST_ALONE.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, HOME_NEST_ALONE.getId()),
+                spaced(environment, 1600)));
     }
 
     // --- Helpers ---
@@ -172,6 +180,15 @@ public class AntColoniesGameTests {
         ServerLevel level = helper.getLevel();
         terrarium.rescan(level);
         ColonySimulator.step(terrarium, level, minutes);
+    }
+
+    /** Ground for mobs to walk on: stone at y 0 from (0, 0) to (sizeX, sizeZ) (the test area has none). */
+    private static void floor(GameTestHelper helper, int sizeX, int sizeZ) {
+        for (int x = 0; x <= sizeX; x++) {
+            for (int z = 0; z <= sizeZ; z++) {
+                helper.setBlock(new BlockPos(x, 0, z), net.minecraft.world.level.block.Blocks.STONE);
+            }
+        }
     }
 
     private static int count(StructureBlockEntity pile) {
@@ -257,7 +274,7 @@ public class AntColoniesGameTests {
                 java.util.Map.entry("fluorite", List.of("mekanism", "machinaopus")), java.util.Map.entry("certus", List.of("ae2")),
                 java.util.Map.entry("molybdenum", List.of("machinaopus")), java.util.Map.entry("sulfur", List.of("machinaopus")),
                 java.util.Map.entry("rubber", List.of("machinaopus")));
-        long expected = 42;
+        long expected = 46;
         for (var entry : needs.entrySet()) {
             boolean modLoaded = entry.getValue().stream().anyMatch(ModList.get()::isLoaded);
             boolean speciesLoaded = ModRegistries.species(registries, AntColonies.id(entry.getKey())) != null;
@@ -491,6 +508,210 @@ public class AntColoniesGameTests {
         helper.succeed();
     }
 
+    /**
+     * MachinaOpus's item pipes and energy cables with Ant Colonies' blocks, three lines side by side: a pipe pulling
+     * finds out of a Storage into a chest; a pipe pulling Ant Food out of a chest into a Terrarium, which feeds it to the
+     * colony; and a cable carrying a Generator's FE into a Genetic Laboratory. Passes at once without MachinaOpus.
+     */
+    private static void machinaOpusPipes(GameTestHelper helper) {
+        if (!ModList.get().isLoaded("machinaopus")) {
+            helper.succeed();
+            return;
+        }
+        net.minecraft.core.Direction west = net.minecraft.core.Direction.WEST;
+        // Storage -> pipe (pulling) -> pipe -> chest.
+        StructureBlockEntity storage = structure(helper, new BlockPos(1, 1, 1), StructureKind.STORAGE);
+        storage.setItem(0, new ItemStack(Items.COBBLESTONE, 32));
+        MachinaOpusPipes.place(helper, new BlockPos(2, 1, 1), "ITEM");
+        MachinaOpusPipes.place(helper, new BlockPos(3, 1, 1), "ITEM");
+        MachinaOpusPipes.setMode(helper, new BlockPos(2, 1, 1), "ITEM", west, "OUTPUT");
+        helper.setBlock(new BlockPos(4, 1, 1), net.minecraft.world.level.block.Blocks.CHEST);
+        // Chest -> pipe (pulling) -> pipe -> Terrarium.
+        helper.setBlock(new BlockPos(1, 1, 5), net.minecraft.world.level.block.Blocks.CHEST);
+        helper.getBlockEntity(new BlockPos(1, 1, 5), net.minecraft.world.level.block.entity.ChestBlockEntity.class)
+                .setItem(0, new ItemStack(ModItems.ANT_FOOD.get(), 16));
+        MachinaOpusPipes.place(helper, new BlockPos(2, 1, 5), "ITEM");
+        MachinaOpusPipes.place(helper, new BlockPos(3, 1, 5), "ITEM");
+        MachinaOpusPipes.setMode(helper, new BlockPos(2, 1, 5), "ITEM", west, "OUTPUT");
+        TerrariumBlockEntity terrarium = terrarium(helper, new BlockPos(4, 1, 5), COMMON, 50, 0, 0);
+        // Generator -> cable -> cable -> Genetic Laboratory (the Generator pushes its FE into whatever takes it).
+        helper.setBlock(new BlockPos(1, 1, 9), ModBlocks.GENERATOR.get());
+        helper.getBlockEntity(new BlockPos(1, 1, 9), com.antcolonies.content.blockentity.GeneratorBlockEntity.class)
+                .setItem(0, new ItemStack(Items.COAL, 2));
+        MachinaOpusPipes.place(helper, new BlockPos(2, 1, 9), "ENERGY");
+        MachinaOpusPipes.place(helper, new BlockPos(3, 1, 9), "ENERGY");
+        helper.setBlock(new BlockPos(4, 1, 9), ModBlocks.GENETIC_LAB.get());
+        GeneticLabBlockEntity lab = helper.getBlockEntity(new BlockPos(4, 1, 9), GeneticLabBlockEntity.class);
+        helper.succeedWhen(() -> {
+            int moved = helper.getBlockEntity(new BlockPos(4, 1, 1), net.minecraft.world.level.block.entity.ChestBlockEntity.class)
+                    .countItem(Items.COBBLESTONE);
+            helper.assertTrue(moved >= 8, "An item pipe should pull finds out of the Storage, moved " + moved);
+            helper.assertTrue(terrarium.colony().food() > 0, "An item pipe should feed the Terrarium, food " + terrarium.colony().food());
+            helper.assertTrue(lab.energy() >= 1000, "A cable should carry the Generator's FE into the lab, has " + lab.energy());
+        });
+    }
+
+    /**
+     * The Chitin Shield blocks like a shield (raised faster, knocked down for less time), lasts longer than a wooden one,
+     * is mended with Chitin Plates, and is crafted.
+     */
+    private static void chitinShield(GameTestHelper helper) {
+        ItemStack shield = new ItemStack(ModItems.CHITIN_SHIELD.get());
+        var blocks = shield.get(net.minecraft.core.component.DataComponents.BLOCKS_ATTACKS);
+        helper.assertTrue(blocks != null, "The Chitin Shield doesn't block");
+        helper.assertTrue(blocks.blockDelayTicks() < Items.SHIELD.components().get(net.minecraft.core.component.DataComponents.BLOCKS_ATTACKS).blockDelayTicks(),
+                "The Chitin Shield should be up sooner than a wooden one");
+        helper.assertTrue(shield.getMaxDamage() > new ItemStack(Items.SHIELD).getMaxDamage(), "The Chitin Shield should last longer");
+        helper.assertTrue(shield.isValidRepairItem(new ItemStack(ModItems.CHITIN_PLATE.get())), "Chitin Plates should mend it");
+        helper.assertTrue(shield.is(net.minecraft.tags.TagKey.create(Registries.ITEM, Identifier.parse("c:tools/shield"))), "Not in c:tools/shield");
+        var recipe = helper.getLevel().getServer().getRecipeManager()
+                .byKey(ResourceKey.create(Registries.RECIPE, AntColonies.id("chitin_shield")));
+        helper.assertTrue(recipe.isPresent(), "No Chitin Shield recipe");
+        helper.succeed();
+    }
+
+    /**
+     * A nest a player places is a home nest and a wild one is not. An ant it sends out harvests a ripe wheat crop and
+     * replants it, tends a young one a stage on, and going home puts the harvest in the nest, where a hopper under the
+     * nest takes it out.
+     */
+    private static void homeNest(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        floor(helper, 12, 10);
+        var nestBlock = ModBlocks.NESTS.get("common").get();
+        helper.setBlock(new BlockPos(1, 1, 1), nestBlock.defaultBlockState());
+        helper.assertTrue(helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(1, 1, 1))) == null, "A wild nest has no residents");
+        BlockPos nestPos = new BlockPos(5, 1, 5);
+        helper.setBlock(nestPos, nestBlock.defaultBlockState().setValue(com.antcolonies.content.block.WildNestBlock.HOME, true));
+        var home = helper.getBlockEntity(nestPos, com.antcolonies.content.blockentity.HomeNestBlockEntity.class);
+        helper.setBlock(nestPos.below(), net.minecraft.world.level.block.Blocks.HOPPER);
+        BlockPos ripe = new BlockPos(8, 1, 5);
+        BlockPos young = new BlockPos(9, 1, 5);
+        for (BlockPos crop : List.of(ripe, young)) {
+            helper.setBlock(crop.below(), net.minecraft.world.level.block.Blocks.FARMLAND);
+        }
+        var wheat = (net.minecraft.world.level.block.CropBlock) net.minecraft.world.level.block.Blocks.WHEAT;
+        helper.setBlock(ripe, wheat.getStateForAge(wheat.getMaxAge()));
+        helper.setBlock(young, wheat.getStateForAge(0));
+
+        var ant = home.release(level);
+        helper.assertTrue(ant != null && home.inside() == 2 && home.out() == 1, "The nest should send an ant out");
+        helper.assertTrue(helper.absolutePos(nestPos).equals(ant.nest()), "The ant should belong to the nest");
+        helper.assertTrue(ant.harvest(level, helper.absolutePos(ripe)), "The ant should harvest ripe wheat");
+        helper.assertTrue(wheat.getAge(helper.getBlockState(ripe)) == 0, "The harvested wheat should be replanted");
+        helper.assertTrue(ant.carried().stream().anyMatch(stack -> stack.is(Items.WHEAT)), "The ant should carry the wheat: " + ant.carried());
+        helper.assertTrue(!ant.harvest(level, helper.absolutePos(young)), "Young wheat is not ripe");
+        helper.assertTrue(ant.tend(level, helper.absolutePos(young)) && wheat.getAge(helper.getBlockState(young)) == 1, "Tending should grow wheat a stage");
+        // Home: right by the nest, it goes in with its harvest.
+        BlockPos door = helper.absolutePos(nestPos.above());
+        ant.snapTo(door.getX() + 0.5, door.getY(), door.getZ() + 1.2, 0, 0);
+        ant.goHome();
+        helper.succeedWhen(() -> {
+            helper.assertTrue(ant.isRemoved(), "The ant should go back into the nest");
+            // All three accounted for (in daylight the nest may already have sent another one out).
+            helper.assertTrue(home.inside() + home.out() == 3, "The ant should be counted home: " + home.inside() + " in, " + home.out() + " out");
+            var hopper = helper.getBlockEntity(nestPos.below(), net.minecraft.world.level.block.entity.HopperBlockEntity.class);
+            helper.assertTrue(hopper.countItem(Items.WHEAT) > 0, "A hopper under the nest should take the harvest out");
+        });
+    }
+
+    /**
+     * Only real ticking and the ants' own AI, as in a world: in daylight a home nest's ants come out, walk to a ripe
+     * wheat field a few blocks away, harvest and replant it, and carry the wheat back into the nest.
+     */
+    private static void homeNestAlone(GameTestHelper helper) {
+        helper.setTime(6000);
+        floor(helper, 12, 8);
+        BlockPos nestPos = new BlockPos(2, 1, 2);
+        helper.setBlock(nestPos, ModBlocks.NESTS.get("common").get().defaultBlockState().setValue(com.antcolonies.content.block.WildNestBlock.HOME, true));
+        var home = helper.getBlockEntity(nestPos, com.antcolonies.content.blockentity.HomeNestBlockEntity.class);
+        var wheat = (net.minecraft.world.level.block.CropBlock) net.minecraft.world.level.block.Blocks.WHEAT;
+        List<BlockPos> field = new java.util.ArrayList<>();
+        for (int x = 6; x <= 8; x++) {
+            for (int z = 2; z <= 4; z++) {
+                BlockPos crop = new BlockPos(x, 1, z);
+                helper.setBlock(crop.below(), net.minecraft.world.level.block.Blocks.FARMLAND);
+                helper.setBlock(crop, wheat.getStateForAge(wheat.getMaxAge()));
+                field.add(crop);
+            }
+        }
+        helper.succeedWhen(() -> {
+            int stored = 0;
+            for (int slot = 0; slot < home.getContainerSize(); slot++) {
+                stored += home.getItem(slot).is(Items.WHEAT) ? home.getItem(slot).getCount() : 0;
+            }
+            helper.assertTrue(stored > 0, "No wheat brought home yet");
+            helper.assertTrue(field.stream().anyMatch(crop -> wheat.getAge(helper.getBlockState(crop)) < wheat.getMaxAge()), "Nothing was replanted");
+        });
+    }
+
+    /**
+     * Progression through the dimensions: the Nether line evolves only in the Nether and the End line only in the End (an
+     * Overworld Terrarium keeps the material and says so), the Wither and Dragon Ants need a Nether Star and dragon's
+     * breath there, and the Chitin ladder's recipes need the Nether's and the End's materials.
+     */
+    private static void progression(GameTestHelper helper) {
+        var registries = helper.getLevel().registryAccess();
+        var evolutions = registries.lookupOrThrow(ModRegistries.EVOLUTION).listElements().toList();
+        java.util.function.Function<String, com.antcolonies.colony.evolution.Evolution> evolution = name -> evolutions.stream()
+                .filter(e -> e.key().identifier().equals(AntColonies.id(name))).findFirst().orElseThrow().value();
+        ResourceKey<net.minecraft.world.level.Level> nether = net.minecraft.world.level.Level.NETHER;
+        ResourceKey<net.minecraft.world.level.Level> end = net.minecraft.world.level.Level.END;
+        for (String name : List.of("desert_to_fire", "warped_to_fire", "fire_to_inferno", "fire_to_soul", "diamond_to_netherite", "soul_to_wither")) {
+            helper.assertTrue(evolution.apply(name).dimension().equals(java.util.Optional.of(nether)), name + " should need the Nether");
+        }
+        for (String name : List.of("amethyst_to_ender", "chorus_to_ender", "ender_to_dragon")) {
+            helper.assertTrue(evolution.apply(name).dimension().equals(java.util.Optional.of(end)), name + " should need the End");
+        }
+        helper.assertTrue(evolution.apply("stone_to_iron").dimension().isEmpty(), "Overworld evolutions need no dimension");
+        helper.assertTrue(evolution.apply("soul_to_wither").item().test(new ItemStack(Items.NETHER_STAR)), "The Wither Ant needs a Nether Star");
+        helper.assertTrue(evolution.apply("ender_to_dragon").item().test(new ItemStack(Items.DRAGON_BREATH)), "The Dragon Ant needs dragon's breath");
+
+        // In the Overworld a Desert colony fed blaze powder keeps it and is told why.
+        TerrariumBlockEntity terrarium = terrarium(helper, new BlockPos(1, 1, 1), AntColonies.id("desert"), 400, 0, 5000);
+        ring(helper, new BlockPos(1, 1, 1), StructureKind.NEST_CHAMBER, StructureKind.NEST_CHAMBER);
+        step(helper, terrarium, 0.05);
+        Colony colony = terrarium.colony();
+        helper.assertTrue(colony.stage() >= 2, "The colony should be stage 2, is " + colony.stage());
+        ItemStack powder = new ItemStack(Items.BLAZE_POWDER, 4);
+        var result = EvolutionLogic.attempt(registries, colony, powder, 0, helper.getLevel().dimension(), RandomSource.create(1));
+        helper.assertTrue(result.outcome() == EvolutionLogic.Outcome.WRONG_DIMENSION, "Expected the wrong dimension, got " + result.outcome());
+        helper.assertTrue(colony.species().equals(AntColonies.id("desert")), "The colony should not evolve in the Overworld");
+        // The same colony in the Nether evolves (the dimension is all that differs).
+        for (int i = 0; i < 40 && colony.species().equals(AntColonies.id("desert")); i++) {
+            EvolutionLogic.attempt(registries, colony, powder, 0, nether, RandomSource.create(i));
+        }
+        helper.assertTrue(colony.species().equals(AntColonies.id("fire")), "In the Nether the colony should become Fire Ants, is " + colony.species());
+
+        // The Chitin ladder's recipes and what they take.
+        var recipes = helper.getLevel().getServer().getRecipeManager();
+        for (String id : List.of("hardened_chitin", "infernal_chitin", "void_chitin")) {
+            helper.assertTrue(recipes.byKey(ResourceKey.create(Registries.RECIPE, AntColonies.id(id))).isPresent(), "No recipe for " + id);
+        }
+        String infernal = recipes.byKey(ResourceKey.create(Registries.RECIPE, AntColonies.id("speed_upgrade_3"))).orElseThrow().value().toString();
+        helper.assertTrue(recipes.byKey(ResourceKey.create(Registries.RECIPE, AntColonies.id("speed_upgrade_3"))).orElseThrow().value()
+                .placementInfo().ingredients().stream().anyMatch(ingredient -> ingredient.test(new ItemStack(ModItems.INFERNAL_CHITIN.get()))),
+                "Tier III upgrades should need Infernal Chitin: " + infernal);
+        // Tier IV: an item for every upgrade, made from Void Chitin and netherite ingots, stronger than tier III.
+        for (var type : com.antcolonies.colony.upgrade.UpgradeType.values()) {
+            var tierFour = recipes.byKey(ResourceKey.create(Registries.RECIPE, AntColonies.id(type.itemName(4))));
+            helper.assertTrue(tierFour.isPresent(), "No tier IV recipe for " + type);
+            var ingredients = tierFour.get().value().placementInfo().ingredients();
+            helper.assertTrue(ingredients.stream().filter(i -> i.test(new ItemStack(ModItems.VOID_CHITIN.get()))).count() == 4
+                            && ingredients.stream().filter(i -> i.test(new ItemStack(Items.NETHERITE_INGOT))).count() == 2,
+                    "Tier IV " + type + " should take 4 Void Chitin and 2 netherite ingots");
+        }
+        helper.assertTrue(com.antcolonies.colony.simulation.ProductionMath.speed(4) > com.antcolonies.colony.simulation.ProductionMath.speed(3),
+                "Tier IV should be faster than tier III");
+        // The advancement path through the dimensions loads.
+        var advancements = helper.getLevel().getServer().getAdvancements();
+        for (String id : List.of("hardened_chitin", "nether_colony", "warped_colony", "nether_anthill", "infernal_chitin", "wither_ant",
+                "end_colony", "chorus_colony", "void_chitin", "dragon_ant", "tier_four")) {
+            helper.assertTrue(advancements.get(AntColonies.id(id)) != null, "Advancement " + id + " didn't load");
+        }
+        helper.succeed();
+    }
+
     /** A Fungus Garden takes no ants of a species that can't farm. */
     private static void gardenNeedsFarmers(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
@@ -541,7 +762,7 @@ public class AntColoniesGameTests {
         EvolutionLogic.Outcome outcome = EvolutionLogic.Outcome.NONE;
         int attempts = 0;
         while (outcome != EvolutionLogic.Outcome.EVOLVED && attempts < 64) {
-            outcome = EvolutionLogic.attempt(registries, colony, iron, 0, RandomSource.create(attempts)).outcome();
+            outcome = EvolutionLogic.attempt(registries, colony, iron, 0, helper.getLevel().dimension(), RandomSource.create(attempts)).outcome();
             attempts++;
         }
         helper.assertTrue(outcome == EvolutionLogic.Outcome.EVOLVED, "No evolution within the guaranteed number of attempts");
@@ -975,6 +1196,58 @@ public class AntColoniesGameTests {
      * The giant anthill builds (inside the test's padding): the shaft, a chest and a barrel with its loot, and its ants
      * as defenders: a Queen and soldiers that guard it and stay.
      */
+    /**
+     * The Nether anthill builds like the giant one but in blackstone and soul soil, with the Nether's loot and Fire Ants
+     * (Warped Ants in the fungus forests), and walls off lava so none pours into its tunnels.
+     */
+    private static void netherAnthill(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var structures = level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.STRUCTURE);
+        helper.assertTrue(structures.get(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.STRUCTURE,
+                AntColonies.id("nether_anthill"))).isPresent(), "The nether_anthill structure didn't load");
+        BlockPos center = helper.absolutePos(new BlockPos(10, 0, 10));
+        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-10, -20, -10), center.offset(10, 0, 10))) {
+            level.setBlock(pos, net.minecraft.world.level.block.Blocks.NETHERRACK.defaultBlockState(), 2);
+        }
+        // A pocket of lava around the storage chamber, as the Nether's floor often has.
+        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-9, -12, -9), center.offset(9, -7, 9))) {
+            if (pos.distSqr(center.offset(-4, -9, 3)) < 30) {
+                level.setBlock(pos, net.minecraft.world.level.block.Blocks.LAVA.defaultBlockState(), 2);
+            }
+        }
+        var piece = new com.antcolonies.content.worldgen.AnthillPiece(center, true);
+        piece.postProcess(level, level.structureManager(), level.getChunkSource().getGenerator(), level.getRandom(), piece.getBoundingBox(),
+                net.minecraft.world.level.ChunkPos.containing(center), center);
+        var box = piece.getBoundingBox();
+        int blackstone = 0;
+        int containers = 0;
+        for (BlockPos pos : BlockPos.betweenClosed(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ())) {
+            var state = level.getBlockState(pos);
+            if (state.is(net.minecraft.world.level.block.Blocks.CHEST) || state.is(net.minecraft.world.level.block.Blocks.BARREL)) {
+                var container = (net.minecraft.world.RandomizableContainer) level.getBlockEntity(pos);
+                helper.assertTrue(com.antcolonies.content.worldgen.AnthillPiece.NETHER_LOOT.equals(container.getLootTable()),
+                        "A Nether anthill container without the Nether loot");
+                containers++;
+            } else if (state.is(net.minecraft.world.level.block.Blocks.BLACKSTONE) || state.is(net.minecraft.world.level.block.Blocks.POLISHED_BLACKSTONE_BRICKS)) {
+                blackstone++;
+            } else if (state.isAir()) {
+                for (net.minecraft.core.Direction side : net.minecraft.core.Direction.values()) {
+                    helper.assertTrue(!level.getFluidState(pos.relative(side)).is(net.minecraft.tags.FluidTags.LAVA),
+                            "Lava touches a tunnel at " + pos.relative(side).toShortString());
+                }
+            }
+        }
+        helper.assertTrue(containers == 2, "A chest and a barrel, found " + containers);
+        helper.assertTrue(blackstone > 20, "The tunnels should be walled in blackstone, found " + blackstone);
+        helper.runAfterDelay(20, () -> {
+            var ants = level.getEntitiesOfClass(WildAnt.class, new net.minecraft.world.phys.AABB(center).inflate(14, 22, 14));
+            helper.assertTrue(!ants.isEmpty() && ants.stream().allMatch(a -> a.species().equals(AntColonies.id("fire"))),
+                    "The Nether anthill's ants should be Fire Ants: " + ants.stream().map(WildAnt::species).toList());
+            ants.forEach(net.minecraft.world.entity.Entity::discard);
+            helper.succeed();
+        });
+    }
+
     private static void giantAnthill(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         var structures = level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.STRUCTURE);
@@ -986,7 +1259,7 @@ public class AntColoniesGameTests {
         for (BlockPos pos : BlockPos.betweenClosed(center.offset(-10, -20, -10), center.offset(10, 0, 10))) {
             level.setBlock(pos, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
         }
-        com.antcolonies.content.worldgen.AnthillPiece piece = new com.antcolonies.content.worldgen.AnthillPiece(center);
+        com.antcolonies.content.worldgen.AnthillPiece piece = new com.antcolonies.content.worldgen.AnthillPiece(center, false);
         piece.postProcess(level, level.structureManager(), level.getChunkSource().getGenerator(), level.getRandom(), piece.getBoundingBox(),
                 net.minecraft.world.level.ChunkPos.containing(center), center);
         helper.assertTrue(level.getBlockState(center.above(1)).isAir() && level.getBlockState(center.below(1)).isAir(), "The shaft should go down");

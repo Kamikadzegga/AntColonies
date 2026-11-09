@@ -1,0 +1,72 @@
+{
+  "tier": 1,
+  "category": "base",
+  "look": {
+    "body": "#3A2A4A",
+    "gaster": "#9A6AB8",
+    "accent": "#D8B8F0",
+    "pattern": "faceted",
+    "crystal": "#C8A0F0"
+  },
+  "climate": "any",
+  "spawn_biomes": "antcolonies:spawns/chorus",
+  "diet": {
+    "consumption": 1.1
+  },
+  "production": {
+    "rate": 0.75,
+    "outputs": [
+      {
+        "item": "minecraft:end_stone",
+        "weight": 26
+      },
+      {
+        "item": "minecraft:chorus_fruit",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:chorus_flower",
+        "weight": 2,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:purpur_block",
+        "weight": 4,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:ender_pearl",
+        "weight": 1,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:shulker_shell",
+        "weight": 0.03,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:chorus_fruit",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.95,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:chorus_fruit"
+}

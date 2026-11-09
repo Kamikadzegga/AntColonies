@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "antcolonies:infernal_chitin",
+    "S": "minecraft:shulker_shell",
+    "P": "minecraft:popped_chorus_fruit",
+    "E": "minecraft:ender_eye"
+  },
+  "pattern": ["ISI", "PEP", "ISI"],
+  "result": {
+    "count": 4,
+    "id": "antcolonies:void_chitin"
+  }
+}

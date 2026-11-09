@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "V": "antcolonies:void_chitin",
+    "X": "minecraft:packed_mud",
+    "N": "minecraft:netherite_ingot",
+    "U": "antcolonies:population_upgrade_3"
+  },
+  "pattern": ["VXV", "NUN", "VXV"],
+  "result": {
+    "id": "antcolonies:population_upgrade_4"
+  }
+}

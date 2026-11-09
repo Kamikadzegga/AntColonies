@@ -1,0 +1,26 @@
+{
+  "parent": "antcolonies:void_chitin",
+  "criteria": {
+    "dragon_ant": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "species": "antcolonies:dragon"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:dragon_head"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.dragon_ant.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.dragon_ant.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    ["dragon_ant"]
+  ]
+}

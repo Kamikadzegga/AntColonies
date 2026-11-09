@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "I": "minecraft:iron_ingot",
+    "I": "antcolonies:hardened_chitin",
     "G": "minecraft:glass",
     "C": "antcolonies:genetic_circuit",
     "X": "antcolonies:genetic_analyzer",

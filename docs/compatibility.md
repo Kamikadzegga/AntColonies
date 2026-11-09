@@ -65,5 +65,9 @@ passes at once without it. With MachinaOpus installed, eight species bring its m
   Site taps rubber sheets (and slime balls from stage 2).
 
 Molybdenum, Sulfur and Rubber Ants name MachinaOpus's items directly, so they have species upgrades made from a
-molybdenum ingot, sulfur and a rubber sheet. MachinaOpus's item pipes and energy cables use the same NeoForge
-capabilities as other mods, but have not been tried against Ant Colonies' blocks in game.
+molybdenum ingot, sulfur and a rubber sheet.
+
+MachinaOpus's pipes and cables work with Ant Colonies' blocks (the `machinaopus_pipes` game test): an item pipe set to
+pull ("output" on the side touching it) empties a Storage; a pipe delivers Ant Food into a Terrarium, which feeds the
+colony; an energy cable carries a Generator's FE into a Genetic Laboratory (the Generator pushes it, so the cable needs
+no setting).

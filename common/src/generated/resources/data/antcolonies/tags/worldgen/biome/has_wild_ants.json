@@ -13,6 +13,8 @@
     "#antcolonies:spawns/blossom",
     "#antcolonies:spawns/pale",
     "#antcolonies:spawns/badlands",
-    "#antcolonies:spawns/army"
+    "#antcolonies:spawns/army",
+    "#antcolonies:spawns/warped",
+    "#antcolonies:spawns/chorus"
   ]
 }

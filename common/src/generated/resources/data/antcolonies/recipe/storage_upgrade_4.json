@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "V": "antcolonies:void_chitin",
+    "X": "minecraft:chest",
+    "N": "minecraft:netherite_ingot",
+    "U": "antcolonies:storage_upgrade_3"
+  },
+  "pattern": ["VXV", "NUN", "VXV"],
+  "result": {
+    "id": "antcolonies:storage_upgrade_4"
+  }
+}

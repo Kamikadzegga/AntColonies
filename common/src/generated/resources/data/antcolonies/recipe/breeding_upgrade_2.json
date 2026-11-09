@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "G": "minecraft:gold_ingot",
+    "G": "antcolonies:hardened_chitin",
     "X": "minecraft:egg",
     "U": "antcolonies:breeding_upgrade_1"
   },

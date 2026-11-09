@@ -1,0 +1,27 @@
+{
+  "parent": "antcolonies:end_colony",
+  "criteria": {
+    "chorus_colony": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "species": "antcolonies:chorus"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:chorus_fruit"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.chorus_colony.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.chorus_colony.description"
+    }
+  },
+  "requirements": [
+    [
+      "chorus_colony"
+    ]
+  ]
+}

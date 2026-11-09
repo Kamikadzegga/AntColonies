@@ -29,7 +29,9 @@ public enum ColonyStatus {
     STARVING(true),
     WORKING(false),
     /** A redstone signal has paused this working chamber: it takes no ants. */
-    PAUSED(false);
+    PAUSED(false),
+    /** The Queen is fed an evolution material, but this evolution happens only in another dimension (the Nether or the End). */
+    WRONG_DIMENSION(true);
 
     private final boolean problem;
 

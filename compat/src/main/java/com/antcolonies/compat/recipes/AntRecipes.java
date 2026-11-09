@@ -154,8 +154,12 @@ public final class AntRecipes {
             double chance = Math.min(1, evolution.chance() * AntConfig.get(AntConfig.EVOLUTION_CHANCE_MULTIPLIER));
             list.add(new AntRecipe(id("evolution", entry.key().identifier()), List.of(List.of(queen(evolution.from())), items),
                     List.of(AntRecipe.Output.of(queen(evolution.to()))),
-                    List.of(line("chance", percent(chance)), line("guaranteed", evolution.guaranteedAfter()),
-                            line("needs_stage", evolution.minStage(), evolution.minPopulation()))));
+                    evolution.dimension().isEmpty()
+                            ? List.of(line("chance", percent(chance)), line("guaranteed", evolution.guaranteedAfter()),
+                                    line("needs_stage", evolution.minStage(), evolution.minPopulation()))
+                            : List.of(line("chance", percent(chance)), line("guaranteed", evolution.guaranteedAfter()),
+                                    line("needs_stage", evolution.minStage(), evolution.minPopulation()),
+                                    line("dimension", com.antcolonies.content.item.Tooltips.dimension(evolution.dimension().get())).withStyle(ChatFormatting.RED))));
         }));
         return list;
     }

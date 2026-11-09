@@ -181,8 +181,24 @@ final class ColonyProviders {
         }
     };
 
-    /** A wild nest: whose it is and how to take ants from it. */
-    static final IBlockComponentProvider WILD_NEST = new IBlockComponentProvider() {
+    /** A home nest's ants and store, from the server. */
+    static final Server NEST_DATA = new Server("wild_nest") {
+        @Override
+        public void appendServerData(CompoundTag data, BlockAccessor accessor) {
+            if (accessor.getBlockEntity() instanceof com.antcolonies.content.blockentity.HomeNestBlockEntity home) {
+                data.putInt("inside", home.inside());
+                data.putInt("out", home.out());
+                int stored = 0;
+                for (int slot = 0; slot < home.getContainerSize(); slot++) {
+                    stored += home.getItem(slot).getCount();
+                }
+                data.putInt("stored", stored);
+            }
+        }
+    };
+
+    /** A nest: whose it is; for a wild one how to take ants from it, for a home nest its ants and what they brought in. */
+    static final Client WILD_NEST = new Client("wild_nest") {
         @Override
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
             if (!(accessor.getBlock() instanceof WildNestBlock nest)) {
@@ -190,12 +206,14 @@ final class ColonyProviders {
             }
             tooltip.add(Tooltips.species(nest.species()));
             Tooltips.speciesFacts(accessor.getLevel().registryAccess(), nest.species(), tooltip::add, false);
-            tooltip.add(Component.translatable("jade.antcolonies.nest").withStyle(ChatFormatting.DARK_GRAY));
-        }
-
-        @Override
-        public Identifier getUid() {
-            return AntColonies.id("wild_nest");
+            CompoundTag data = accessor.getServerData();
+            if (data.contains("inside")) {
+                tooltip.add(Component.translatable("jade.antcolonies.home_nest", data.getIntOr("inside", 0), data.getIntOr("out", 0))
+                        .withStyle(ChatFormatting.GREEN));
+                tooltip.add(Component.translatable("jade.antcolonies.home_nest.stored", data.getIntOr("stored", 0)).withStyle(ChatFormatting.GRAY));
+            } else {
+                tooltip.add(Component.translatable("jade.antcolonies.nest").withStyle(ChatFormatting.DARK_GRAY));
+            }
         }
     };
 

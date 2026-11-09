@@ -1,0 +1,10 @@
+{
+  "from": "antcolonies:soul",
+  "to": "antcolonies:wither",
+  "item": "minecraft:nether_star",
+  "chance": 0.5,
+  "guaranteed_after": 3,
+  "min_stage": 4,
+  "min_population": 4000,
+  "dimension": "minecraft:the_nether"
+}

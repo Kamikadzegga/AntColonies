@@ -1,0 +1,31 @@
+{
+  "parent": "antcolonies:nether_colony",
+  "criteria": {
+    "infernal_chitin": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:infernal_chitin"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:infernal_chitin"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.infernal_chitin.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.infernal_chitin.description"
+    }
+  },
+  "requirements": [
+    [
+      "infernal_chitin"
+    ]
+  ]
+}

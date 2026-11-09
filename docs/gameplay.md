@@ -10,10 +10,12 @@ world content, species, genetics and the settings. For data packs and modpacks s
 - [Getting started](#getting-started)
 - [Structures](#structures)
 - [Giant anthills](#giant-anthills)
+- [Home nests](#home-nests)
 - [Chitin gear](#chitin-gear)
 - [Guard Ants](#guard-ants)
 - [Advancements](#advancements)
 - [Species](#species)
+- [Progression through the dimensions](#progression-through-the-dimensions)
 - [Genetics](#genetics)
 - [Configuration](#configuration)
 
@@ -125,6 +127,29 @@ and its soldiers attack players who come close. A full set of Chitin armor keeps
 Plates, ant food, nuggets, Royal Jelly and Rally Pheromones, sometimes a Diamond Fragment, an Evolution Catalyst or a
 piece of Chitin gear. `/locate structure antcolonies:giant_anthill` finds one.
 
+The **Nether anthill** is the same nest dug into the Nether's floor (nether wastes, the crimson and warped forests and
+soul sand valleys; about one per 24 x 24 chunks): a mound of soul soil and netherrack over tunnels walled in blackstone,
+with any lava around them walled off. Its ants are Fire Ants (Warped Ants in the fungus forests), so its Queen is a way
+to Fire Ants without evolving them. Its chests hold the Nether's materials: Nether ant food, quartz, gold, blaze rods,
+magma cream, Hardened and Infernal Chitin, ghast tears, sometimes a Chitin Shield, netherite scrap or ancient debris.
+`/locate structure antcolonies:nether_anthill` finds one.
+
+## Home nests
+
+Pick up a wild nest with **Silk Touch** and place it anywhere: three worker ants of its species move in, like bees in a
+beehive, and never attack you. In daylight and dry weather they come out (two at a time at most) and work the land
+within 10 blocks of the nest:
+
+- **Tending**: an ant standing by a growing crop, stem, berry bush, nether wart or sapling now and then grows it a stage,
+  a few per trip (the `nestCropGrowth` option).
+- **Harvesting**: an ant finds a ripe crop (wheat, carrots, potatoes, beetroot, nether wart, sweet berries, or a pumpkin
+  or melon on its stem), harvests it, replants it with one of the seeds and carries the rest home in its mandibles (the
+  `nestHarvest` option).
+
+The harvest goes into the nest's store (9 stacks). **Hoppers and pipes** take it out on any side; nothing can be put in.
+At night and in rain the ants stay home. An ant that dies is replaced after a few minutes. Breaking the nest drops the
+store, and the ants inside come out and go wild. With Jade, looking at a home nest shows its ants and how much it holds.
+
 ## Chitin gear
 
 Tools (sword, pickaxe, axe, shovel, hoe) and armor made from Chitin Plates in the usual shapes. They are iron level: they
@@ -133,6 +158,10 @@ and Chitin Plates repair them. **Wearing the full armor set**:
 
 - Wild ants never attack you, including the defenders of giant anthills and the soldiers a raided nest sends out.
 - You dig 20% faster.
+
+The **Chitin Shield** (five Chitin Plates around a plank: `CPC`, `CCC`, ` C `) blocks like a shield but is lighter: it
+is up in 0.15 seconds instead of 0.25, an axe knocks it down for three quarters as long, and it lasts 450 blocks instead
+of 336. Chitin Plates mend it, and it takes Unbreaking and Mending.
 
 ## Guard Ants
 
@@ -158,23 +187,28 @@ as big as a wild soldier.
 
 ## Advancements
 
-Sixteen, under their own tab: from catching your first ants and Queen, through Home Sweet Home (a Terrarium with a
-Queen), colony stages 2 and 4, evolving into a mineral species and raising a hybrid, finding a giant anthill, a full
-Chitin set and a Guard Ant, to three challenges: a Queen with a level-10 trait, a Netherite Ant colony and an Ender Ant
-colony. Colony advancements are checked when you open the Terrarium and every few seconds while you stand within 16
+Twenty-seven, under their own tab: from catching your first ants and Queen, through Home Sweet Home (a Terrarium
+with a Queen), colony stages 2 and 4, evolving into a mineral species and raising a hybrid, finding a giant anthill, a
+full Chitin set and a Guard Ant, to three challenges: a Queen with a level-10 trait, a Netherite Ant colony and an Ender
+Ant colony. A second path leads through the dimensions: Hardened Chitin, a colony in the Nether, a Warped Ant colony, a
+Nether anthill, Infernal Chitin, a colony in the End, a Chorus Ant colony, Void Chitin, a tier IV upgrade, and two
+challenges, the Wither Ant and the Dragon Ant. Colony advancements are checked when you open the Terrarium and every few seconds while you stand within 16
 blocks of it.
 
 ## Species
 
-42 species.
+46 species.
 
 - Wild, with nests in their biomes: Common, Wood, Stone, Snow, Desert, Farmer, Jungle, Swamp, Savanna, Shore (beaches),
-  Blossom (cherry groves and flower meadows), Pale (pale garden), Badlands, Army (plains and savannas; a hunter).
+  Blossom (cherry groves and flower meadows), Pale (pale garden), Badlands, Army (plains and savannas; a hunter); and in
+  the other dimensions Warped (the Nether's warped and crimson forests) and Chorus (the End's outer islands).
 - Hunters, which work at a Hunting Ground: Army (wild: zombies, skeletons, spiders), Bullet (from Jungle, fed gunpowder:
   creepers, witches), Trap-Jaw (from Swamp, fed slime balls: slimes, drowned), Inferno (from Fire, fed blaze powder: blazes,
-  magma cubes, wither skeletons, ghasts).- Evolved: Iron, Copper, Coal, Deepslate, Lapis, Amethyst (from Stone); Redstone and Gold (from Iron; Gold also from
-  Desert); Diamond (from Gold or Lapis); Emerald and Netherite (from Diamond); Fire (from Desert); Soul (from Fire);
-  Ender (from Amethyst).
+  magma cubes, wither skeletons, ghasts).
+- Evolved: Iron, Copper, Coal, Deepslate, Lapis, Amethyst (from Stone); Redstone and Gold (from Iron; Gold also from
+  Desert); Diamond (from Gold or Lapis); Emerald and Netherite (from Diamond); Fire (from Desert or Warped); Soul (from
+  Fire); Ender (from Amethyst or Chorus).
+- Endgame, gated by bosses: Wither (Soul Ants fed a Nether Star) and Dragon (Ender Ants fed dragon's breath).
 - Hybrids: Crystal Wood (Wood x Diamond), Frost Emerald (Snow x Emerald), Mechanical Miner (Stone x Redstone),
   Obsidian (Stone x Fire), Crimson (Farmer x Fire; farms Nether fungus), Honeypot (Blossom x Farmer; farms honey),
   Harvester (Farmer x Savanna; farms crops), Reef (Shore x Jungle; corals), Abyssal (Shore x Lapis; prismarine, sea
@@ -182,6 +216,25 @@ blocks of it.
 
 Species decide what is produced; genetics decide how well. Everything is in JEI or EMI and in the
 Ant Identification Book.
+
+## Progression through the dimensions
+
+The Overworld gets a colony going; the Nether and the End take it further.
+
+- **Evolutions bound to a dimension.** The Nether's line evolves only in a Terrarium standing in the Nether: Fire Ants
+  (from Desert or Warped), Inferno, Soul and Netherite, and the Wither Ant. The End's line evolves only in the End: Ender
+  Ants (from Amethyst or Chorus) and the Dragon Ant. Bring the colony there in its Test Tubes, evolve it, and bring it
+  home: an evolved colony lives anywhere. Fed in the wrong dimension, the Queen keeps the material and the Terrarium
+  says why; the Info page, the tooltips and JEI/EMI show which dimension each evolution needs.
+- **The Chitin ladder.** Chitin Plates bake into **Hardened Chitin** in a Blast Furnace. Four Hardened Chitin with
+  blaze powder, nether wart and a ghast tear make four **Infernal Chitin**; four Infernal Chitin with shulker shells,
+  popped chorus fruit and an eye of ender make four **Void Chitin**.
+- **What needs it.** Tier II upgrades take Hardened Chitin and tier III Infernal Chitin; tier IV, the endgame, takes
+  four Void Chitin and two netherite ingots on top of tier III; the Genetic Laboratory takes
+  Hardened Chitin; raising a trait to level 8 takes Infernal Chitin and to level 9 Void Chitin (level 10 a Nether Star).
+- **Endgame.** Soul Ants fed a Nether Star in the Nether become **Wither Ants** (soul sand, coal, bones, wither roses,
+  skulls and, very rarely, a Nether Star). Ender Ants fed dragon's breath in the End become **Dragon Ants** (pearls,
+  purpur, shulker shells, dragon's breath, a rare dragon head). Their Queens are reared with Infernal and Void Chitin.
 
 ## Genetics
 

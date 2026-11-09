@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "V": "antcolonies:void_chitin",
+    "X": "antcolonies:genetic_circuit",
+    "N": "minecraft:netherite_ingot",
+    "U": "antcolonies:genetic_upgrade_3"
+  },
+  "pattern": ["VXV", "NUN", "VXV"],
+  "result": {
+    "id": "antcolonies:genetic_upgrade_4"
+  }
+}

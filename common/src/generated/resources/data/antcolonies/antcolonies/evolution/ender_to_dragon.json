@@ -1,0 +1,10 @@
+{
+  "from": "antcolonies:ender",
+  "to": "antcolonies:dragon",
+  "item": "minecraft:dragon_breath",
+  "chance": 0.05,
+  "guaranteed_after": 24,
+  "min_stage": 4,
+  "min_population": 4000,
+  "dimension": "minecraft:the_end"
+}

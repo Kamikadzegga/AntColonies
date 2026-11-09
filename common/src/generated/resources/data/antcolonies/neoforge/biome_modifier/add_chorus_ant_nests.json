@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#antcolonies:spawns/chorus",
+  "features": "antcolonies:chorus_ant_nest",
+  "step": "vegetal_decoration"
+}

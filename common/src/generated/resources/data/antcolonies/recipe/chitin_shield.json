@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "antcolonies:chitin_plate",
+    "W": "#minecraft:planks"
+  },
+  "pattern": ["CWC", "CCC", " C "],
+  "result": {
+    "id": "antcolonies:chitin_shield"
+  }
+}

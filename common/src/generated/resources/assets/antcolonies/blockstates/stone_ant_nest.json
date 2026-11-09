@@ -1,9 +1,6 @@
 {
   "variants": {
-    "recovering=false": {
-      "model": "antcolonies:block/stone_ant_nest"
-    },
-    "recovering=true": {
+    "": {
       "model": "antcolonies:block/stone_ant_nest"
     }
   }

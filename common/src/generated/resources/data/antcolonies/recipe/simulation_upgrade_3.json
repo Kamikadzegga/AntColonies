@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "D": "minecraft:diamond",
+    "D": "antcolonies:infernal_chitin",
     "X": "minecraft:comparator",
     "U": "antcolonies:simulation_upgrade_2"
   },

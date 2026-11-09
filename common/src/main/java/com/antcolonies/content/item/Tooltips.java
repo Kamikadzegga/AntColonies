@@ -26,6 +26,12 @@ public final class Tooltips {
     private static final ChatFormatting[] RARITY = {ChatFormatting.WHITE, ChatFormatting.GREEN, ChatFormatting.AQUA, ChatFormatting.LIGHT_PURPLE,
             ChatFormatting.GOLD, ChatFormatting.RED};
 
+    /** A dimension's name for text ("the Nether"); unknown ones by their id. */
+    public static MutableComponent dimension(net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension) {
+        Identifier id = dimension.identifier();
+        return Component.translatableWithFallback("dimension." + id.getNamespace() + "." + id.getPath(), id.toString());
+    }
+
     public static MutableComponent species(Identifier species) {
         return Component.translatable(AntSpecies.translationKey(species));
     }
@@ -118,6 +124,8 @@ public final class Tooltips {
                 ItemStack item = evolution.item().items().findFirst().map(ItemStack::new).orElse(ItemStack.EMPTY);
                 tooltip.accept(Component.translatable("tooltip.antcolonies.species.evolves", species(evolution.to()), item.getHoverName(),
                         evolution.minStage()).withStyle(ChatFormatting.LIGHT_PURPLE));
+                evolution.dimension().ifPresent(dimension -> tooltip.accept(Component.translatable("tooltip.antcolonies.species.evolves_in",
+                        dimension(dimension)).withStyle(ChatFormatting.RED)));
             }
         }));
     }

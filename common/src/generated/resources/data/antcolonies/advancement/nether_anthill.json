@@ -1,0 +1,35 @@
+{
+  "parent": "antcolonies:nether_colony",
+  "criteria": {
+    "nether_anthill": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "player": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:location": {
+              "structures": "antcolonies:nether_anthill"
+            }
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:soul_soil"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.nether_anthill.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.nether_anthill.description"
+    }
+  },
+  "requirements": [
+    [
+      "nether_anthill"
+    ]
+  ]
+}

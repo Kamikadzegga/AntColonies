@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "D": "minecraft:diamond",
+    "D": "antcolonies:infernal_chitin",
     "X": "minecraft:iron_sword",
     "U": "antcolonies:hunting_upgrade_2"
   },

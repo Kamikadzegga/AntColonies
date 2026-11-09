@@ -5,6 +5,11 @@
         "texture": "antcolonies:chitin"
       }
     ],
+    "humanoid_baby": [
+      {
+        "texture": "antcolonies:chitin"
+      }
+    ],
     "humanoid_leggings": [
       {
         "texture": "antcolonies:chitin"

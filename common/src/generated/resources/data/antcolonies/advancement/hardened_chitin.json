@@ -1,0 +1,31 @@
+{
+  "parent": "antcolonies:first_colony",
+  "criteria": {
+    "hardened_chitin": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:hardened_chitin"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:hardened_chitin"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.hardened_chitin.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.hardened_chitin.description"
+    }
+  },
+  "requirements": [
+    [
+      "hardened_chitin"
+    ]
+  ]
+}
