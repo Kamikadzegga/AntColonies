@@ -6,6 +6,29 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-11-09
+
+### Added
+
+- Climate blocks take their variants: every terracotta colour (glazed too), every sand and sandstone, every ice, dirt,
+  grass, mud and moss block, polished stones and cobblestone, polished and smooth basalt and polished blackstone. The
+  Info page shows one icon per family that cycles through its variants, with how many there are in its tooltip.
+- More Storage: a Storage starts with 18 slots and each Storage Upgrade tier adds 18 (Storage IV: 90, two Storage IV:
+  162). The screen shows six rows and scrolls, and shift-clicking fills the whole Storage, rows off screen too.
+
+### Changed
+
+- Colony upgrade tooltips read like vanilla's: a heading per block ("In Storage:") with short values under it
+  ("90 slots (+72)", "5 stacks per slot", "+100,000 food room"), no line long enough to wrap.
+- A Storage Upgrade can't be taken out while the Storage holds more than would fit without it (stacks bigger than a
+  slot would take, or items in rows that would close); its tooltip says why.
+- The config option `storageSlotsPerUpgrade` is now `storageSlotsPerTier` (default 18).
+
+### Fixed
+
+- Genetic Laboratory: the cost card and the Upgrade tooltip showed the first trait's materials whatever trait was
+  selected, so other traits seemed impossible to upgrade. They now show the selected trait's cost.
+
 ## [0.0.1] - 2026-11-09
 
 The first release, for Minecraft 26.3 and NeoForge 26.3.0.101 (Java 25).
@@ -22,17 +45,14 @@ The first release, for Minecraft 26.3 and NeoForge 26.3.0.101 (Java 25).
   Foraging Sites (workers bring finds), Harvesting Sites (farmer species grow food), Hunting Grounds (hunter species kill
   mobs for their drops; no mob is ever spawned), Storage and Queen Chambers (raising and crossing Queens).
 - Climate: each species likes temperate, cold, hot, underground or nether conditions, and a block under the Terrarium
-  sets its climate (block tags `antcolonies:climate/*`). Every variant counts (any terracotta colour, glazed too; any
-  sandstone, ice, dirt or stone); the Info page shows one icon per family that cycles through them.
+  sets its climate (block tags `antcolonies:climate/*`).
 - Colony stages 1 to 4: bigger colonies find rarer things.
 - Colonies move in Test Tubes: an empty tube takes the Queen out, others fill with up to 1,000 ants each.
 - Colonies feed themselves from their stores: food items in Storage and Foraging Sites are eaten whenever there is
   room for them (feeding comes first), worth what the feed slot gives. Royal Jelly is kept for raising Queens (item tag
   `antcolonies:kept_in_storage`); the `storageFeeding` option turns it off. The Colony page shows the food from Storage.
-- Storage compacts: a Storage starts with 18 slots, and each Storage Upgrade tier adds 18 more (Storage IV: 90; two
-  Storage IV: 162, in a screen that scrolls), a stack per slot (tier II: three stacks in each slot) and 25,000 food room.
-  Hoppers, pipes and the ants use the bigger slots; the screen hands out a normal stack at a time, and shift-clicking
-  fills the whole Storage. A Storage Upgrade can't be taken out while the Storage holds more than would fit without it.
+- Storage compacts: each Storage Upgrade tier adds slots, a stack per slot (tier II: three stacks in each slot) and
+  25,000 food room. Hoppers, pipes and the ants use the bigger slots; the screen hands out a normal stack at a time.
 
 **Species and progression**
 
@@ -80,8 +100,7 @@ The first release, for Minecraft 26.3 and NeoForge 26.3.0.101 (Java 25).
   detailed tooltips, and an in-game config screen with an explanation for every option.
 - JEI and EMI recipe categories for the whole progression, including a Colony Upgrades page for every upgrade and tier
   (where it goes and what it does), and Jade tooltips for colonies, machines, wild ants and nests.
-- Colony upgrade tooltips say in numbers what the upgrade does at its tier, under a heading for each block it goes in
-  ("In Storage:" then "54 slots (+36)", "3 stacks per slot", "+50,000 food room").
+- Colony upgrade tooltips say in numbers what the upgrade does at its tier in each block it goes in.
 - 27 advancements, including a path through the Nether and the End, and the `antcolonies:colony` trigger for modpacks
   and quest mods.
 - Comparator outputs and redstone control. Items and FE move through any mod's pipes and cables.
@@ -89,5 +108,6 @@ The first release, for Minecraft 26.3 and NeoForge 26.3.0.101 (Java 25).
   and KubeJS guide.
 - Tested together with MachinaOpus and its Tools Addon: no clashing recipes or names.
 
-[Unreleased]: https://github.com/Kamikadzegga/AntColonies/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/Kamikadzegga/AntColonies/compare/v0.0.2...HEAD
+[0.0.2]: https://github.com/Kamikadzegga/AntColonies/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.0.1

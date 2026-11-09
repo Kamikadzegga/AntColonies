@@ -57,7 +57,7 @@ base {
     archivesName = mod_id
 }
 
-// Jar naming: <mod_id>-<minecraft_version>.<mod_version>.jar (e.g. antcolonies-26.3.0.0.1.jar)
+// Jar naming: <mod_id>-<minecraft_version>.<mod_version>.jar (e.g. antcolonies-26.3.0.0.2.jar)
 tasks.withType(Jar).configureEach {
     archiveVersion = "${minecraft_version}.${mod_version}"
 }

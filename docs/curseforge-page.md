@@ -167,14 +167,15 @@ Upload these from `docs/images/screenshots/`, in this order:
 | Field | Value |
 |---|---|
 | File | `build/libs/antcolonies-26.3.0.0.1.jar` |
-| Display name | `Ant Colonies 0.0.1` |
+| Display name | `Ant Colonies 0.0.2` |
 | Release type | Beta (or Release once it has been played for a while) |
 | Game version | 26.3 |
 | Mod loader | NeoForge |
 | Java | Java 25 |
 | Environment | Client and Server |
 | Related projects | Optional: JEI, EMI, Jade, MachinaOpus (if published) |
-| Changelog | The `[0.0.1]` section of `CHANGELOG.md` |
+| Changelog | The `[0.0.2]` section of `CHANGELOG.md` |
 
-The version is 0.0.1 (`mod_version` in `gradle.properties`), and `CHANGELOG.md` has a single 0.0.1 entry listing
-everything the mod has. If you also want a GitHub release, tag the commit `v0.0.1` (the changelog links to that tag).
+The version is 0.0.2 (`mod_version` in `gradle.properties`). `CHANGELOG.md` lists what 0.0.2 changed and, under 0.0.1,
+everything the mod has. If you also want GitHub releases, tag the commits `v0.0.1` and `v0.0.2` (the changelog links
+to those tags).
