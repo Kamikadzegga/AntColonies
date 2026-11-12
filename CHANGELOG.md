@@ -8,129 +8,36 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [0.1.0] - 2026-11-12
 
-The colony update: founding colonies from a single Queen, food as what keeps colonies working, Foraging Site modes and
-job priorities, expeditions into the Nether and the End, Colony Connectors between colonies, anthills planned in seven
-layouts, a building-block palette, and a new Terrarium screen.
+The colony update.
 
 ### Added
 
-**Founding and food**
-
-- Queen-only founding: a single Queen put into a completely empty Terrarium waits (eating nothing) until its food bar is
-  full, then lays her first brood; once her first 10 workers are grown the colony is founded. Only that case: a Queen
-  put in with workers, eggs or larvae, a colony moved tube by tube, or a Queen added to a colony with ants runs normally
-  at once (ants put in at any time end founding). Saved with the colony; colonies from older worlds load as normal
-  colonies. Config `[founding] foundingFoodShare` (1.0) and `foundingWorkers` (10).
-- Food holds up work: below `lowFoodMinutes` (10) of food at what the colony eats, work, egg laying and larvae growth
-  slow evenly to `lowFoodFactor` (60%), and the Terrarium says "Food running low". The jobs that bring food in
-  (Harvesting Sites, Hunting Grounds) never slow below `hungryFoodWorkFactor` (80%), so a hungry colony can always feed
-  itself again.
-
-**Production**
-
-- Foraging Site modes: Balanced (as before), Mineral Gathering and Organic Gathering, which pick finds of their kind
-  three times as often (item tag `antcolonies:foraging/mineral`; `focusedForagingBoost`, `focusedForagingPenalty`). The
-  species still decides what can be found; biomes never change production.
-- Every working site has a priority (Low, Normal, High: higher ones get their ants first) and can be turned off, from its
-  own screen or the Terrarium's Jobs page.
-- Nether Foraging Site and End Foraging Site: two new chambers with a little portal on their floor. Nether-adapted ants
-  (species tag `antcolonies:nether_adapted`: Warped, Fire, Inferno, Soul, Netherite, Wither, Crimson) and End-adapted
-  ants (`antcolonies:end_adapted`: Chorus, Ender, Dragon) go on simulated expeditions and bring back finds from the
-  expedition tables (`data/<namespace>/antcolonies/expedition/*.json`, a new datapack registry). No power, no chunk
-  loading, no ant entities; other species leave them alone and the site names the ants it needs. Their portals glow
-  while ants are out.
-- Nether Trail Pheromone and End Trail Pheromone: found now and then by the ordinary Foraging Sites of a colony living
-  in the Nether or the End (2% of finds); the expedition sites are made from them, with Infernal or Void Chitin.
-- Ant Resin, which Wood Ants now find, for the Amber building blocks.
-
-**Colony Connectors**
-
-- A new chamber that links colonies on the same channel (16 colours) in one dimension, up to 30 blocks apart on x and z (`connectorRange`): Supply gives the food above a
-  reserve, Request takes food up to a target, the hungriest colony first, up to a rate limit; Send moves the items in
-  its filter out of its colony's Storage to colonies that Receive. Food and items are moved, never made or lost; only
-  loaded colonies take part; a redstone signal stops a connector; no power. Config `[connectors]`.
-
-**Anthills**
-
-- Every anthill has exactly one Queen, who can't be hurt, never despawns and can only leave in a Test Tube.
-- Anthills are planned in seven layouts (branching, deep, multi-level, spiral, central chamber, wings, abandoned) from a
-  dozen kinds of room (Queen's chamber, nursery, egg store, larval chamber, food store, fungus garden, barracks, chitin
-  store, treasure chamber, rare-find chamber, gallery, hall), always joined to the entrance. New loot tables
-  `chests/anthill_treasure` and `chests/anthill_food`.
-- The End anthill: a Chorus Ant nest in the End's outer islands (`antcolonies:end_anthill`, loot `chests/end_anthill`).
-
-**Building blocks**
-
-- 26 blocks in five families (Anthill, Chitin, Amber, Fungal, Royal) plus the Nest Door and Trapdoor, the Pheromone
-  Lamp, Ant Egg and Larva Clusters and Terrarium Glass; stairs and slabs for 8 of them and walls for 4; crafting and
-  stonecutter recipes.
-
-**Chitin gear tiers**
-
-- Three new tiers of chitin tools (sword, pickaxe, axe, shovel, hoe) and armor, each harder to make and stronger:
-  - **Hardened Chitin**: crafted like Chitin gear from Hardened Chitin. Past iron: armor 2/7/5/2 with toughness 1,
-    900-use tools, still no obsidian. Set bonus: dig 25% faster.
-  - **Infernal Chitin**: a Hardened piece, an **Infernal Reinforcement** and an Infernal Chitin at a smithing table.
-    Diamond level (3/8/6/3, toughness 2.5, 1800 uses, mines obsidian); doesn't burn. Set bonus: dig 30% faster and Fire
-    Resistance.
-  - **Void Chitin**: an Infernal piece, a **Void Reinforcement** and a netherite ingot at a smithing table. Past
-    netherite (3/8/7/3, toughness 3.5, knockback resistance 0.15, 2400 uses, speed 9.5, +4.5 damage); doesn't burn.
-    Set bonus: dig 40% faster and Fire Resistance.
-- Reinforcements (smithing templates) are crafted two at a time: Infernal from Infernal Chitin, blaze rods, magma cream
-  and a ghast tear; Void from Void Chitin, shulker shells, popped chorus fruit and an eye of ender.
-- A full set of any chitin, tiers mixed, still makes wild ants leave you alone; its other bonuses follow its lowest
-  tier. Each tier is repaired with its own chitin. Every helmet is the 3D ant's head, now with a pair of jaws, in its
-  tier's colours; Hardened and Infernal chestplates carry two spines on the back and the Void chestplate a Queen's
-  folded wings.
-- An advancement for a full Void set: Carapace of the Void (35 in all).
-
-**Queens grow, and a food slot**
-
-- A Queen grows with her colony, in her own time: after 10, 20 and 30 minutes (config `queenGrowthMinutes`) at a
-  bigger colony stage she grows into stage 2, 3 and 4, one at a time, and two random traits go up by one, up to level 7. Saved with her (moving her doesn't grow her again); shown in her tooltip and on the Genetics page,
-  with a note to players nearby.
-- The Terrarium has a food slot beside the feed slot. Food goes there (by hand, shift-click, right-click or hopper) and
-  waits quietly while the food bar is full, so Test Tubes, ants and evolution materials always fit in the feed slot.
-
-**Colony GUI 2.0**
-
-- The Terrarium's screen has eight tabs with icons: Overview, Colony (cards for the Queen, eggs, larvae, workers and the
-  ants at work), Jobs, Production (finds per minute from the sites' real rates, and the Storage's contents), Genetics,
-  Network (the linked colonies and the food between them), Statistics (charts of the last half hour) and Info.
-- Visual Mode (pictures, bars, short notes) and Detailed Mode (exact numbers and rates), switched at the top left and
-  remembered (client config `detailedColonyView`).
-- The Colony Connector's screen; mode, priority and on/off buttons on every working site's screen.
-- JEI and EMI: an Expeditions category. Jade: connectors (channel, settings, flow), expedition sites (active or dark),
-  Foraging Site modes.
-- Seven advancements: From a Single Queen, Trail Network, Scent of Sulphur, Portal Foragers, Scent of the Void, Beyond the
-  Rift, Island Hoppers.
+- **Founding:** a lone Queen in an empty Terrarium starts a colony on her own once you fill her food bar.
+- **Queens grow:** after some time at each new colony stage, a Queen gains two trait levels (up to level 7).
+- **Food matters:** colonies low on food slow down. The Terrarium has its own food slot.
+- **Site modes and priorities:** focus a Foraging Site on mineral or organic finds; give sites a priority or turn them
+  off.
+- **Expeditions:** Nether and End Foraging Sites let Nether and End ants bring back that dimension's finds from home.
+- **Colony Connectors:** link colonies up to 30 blocks apart to share food and items.
+- **Anthills:** seven new layouts, an End anthill, and a Queen to catch in every one.
+- **Building blocks:** 26 new blocks in five families (anthill, chitin, amber, fungal, royal) with stairs, slabs and
+  walls.
+- **Chitin gear tiers:** Hardened, Infernal and Void tools and armor, upgraded at a smithing table. The armor has jaws,
+  spines and wings.
+- **New colony screen:** eight tabs, with a Visual and a Detailed mode, including production, network and statistics.
+- JEI and EMI expeditions category, Jade info for the new blocks, and 8 new advancements.
 
 ### Changed
 
-- **Chitin comes only from ants.** Chitin Plates, Hardened, Infernal and Void Chitin can no longer be crafted or
-  smelted. Wild ants drop Chitin Plates (35%) and Hardened Chitin (5%) anywhere, Infernal Chitin (15%) only in the
-  Nether and Void Chitin (12%) only in the End, more with Looting. Foraging colonies bring chitin home with their
-  finds (config `chitinFindChance`, 4%): plates, Hardened Chitin from stage 2, Infernal or Void Chitin when they live
-  in the Nether or the End.
-- Chitin Bricks redrawn: dark, glossy carapace plates overlapping like an ant's abdomen, instead of a basket weave.
-- The Generator and the Genetic Laboratory redrawn in a modern look of their own: brushed steel and white enamel,
-  shaded evenly. The Generator is a coal generator with a firebox window (coal glowing and flames while it burns); the
-  lab has a double-helix display, a glowing sample cylinder and a glass sample hatch.
-- Anthill walls use the new Anthill Soil blocks. Anthills generated before this version keep their old layout.
-- The Terrarium screen is larger (252 x 238) and its slots for Queen, food and upgrades stay where they were.
-- Easier to read: status chips and numbers sit on solid dark plates or have a shadow, never straight on a coloured bar;
-  the Production cards put the stored count under the icon and the rate bar under the count; the Statistics chart
-  keeps its scale outside the chart (top value and time span above it, bottom value under it) and fills evenly.
+- **Chitin comes only from ants:** wild ants drop it (Infernal Chitin in the Nether, Void Chitin in the End) and
+  foraging colonies find it. It can no longer be crafted.
+- New look for the Generator (a steel coal generator) and the Genetic Laboratory (white).
+- Chitin Bricks redrawn.
+- The colony screen is easier to read: no numbers over coloured bars, no text outside the window.
 
 ### Fixed
 
-- An anthill's chitin storage room sometimes had no chest (a Chitin Block was placed on its spot).
-
-### Notes
-
-- Colonies still have no soldiers (they became workers in 0.0.1); the Colony page shows the ants at work by job instead.
-- The resin blocks are named Amber (Amber Block, Amber Bricks, Amber Glass, Reinforced Amber) so they never clash with
-  vanilla's Resin Block and Resin Bricks.
+- Some anthills were missing the chest in their chitin storage room.
 
 ## [0.0.2] - 2026-11-09
 
