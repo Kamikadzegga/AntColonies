@@ -1,5 +1,8 @@
 {
   "values": [
-    "antcolonies:chitin_pickaxe"
+    "antcolonies:chitin_pickaxe",
+    "antcolonies:hardened_chitin_pickaxe",
+    "antcolonies:infernal_chitin_pickaxe",
+    "antcolonies:void_chitin_pickaxe"
   ]
 }

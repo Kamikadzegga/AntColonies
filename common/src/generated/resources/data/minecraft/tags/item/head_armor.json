@@ -1,5 +1,8 @@
 {
   "values": [
-    "antcolonies:chitin_helmet"
+    "antcolonies:chitin_helmet",
+    "antcolonies:hardened_chitin_helmet",
+    "antcolonies:infernal_chitin_helmet",
+    "antcolonies:void_chitin_helmet"
   ]
 }

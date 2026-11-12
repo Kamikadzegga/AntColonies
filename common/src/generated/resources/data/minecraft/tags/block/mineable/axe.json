@@ -1,5 +1,7 @@
 {
   "values": [
+    "antcolonies:nest_door",
+    "antcolonies:nest_trapdoor",
     "antcolonies:terrarium",
     "antcolonies:storage",
     "antcolonies:upgrade_station"

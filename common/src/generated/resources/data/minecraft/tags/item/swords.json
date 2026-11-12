@@ -1,5 +1,8 @@
 {
   "values": [
-    "antcolonies:chitin_sword"
+    "antcolonies:chitin_sword",
+    "antcolonies:hardened_chitin_sword",
+    "antcolonies:infernal_chitin_sword",
+    "antcolonies:void_chitin_sword"
   ]
 }

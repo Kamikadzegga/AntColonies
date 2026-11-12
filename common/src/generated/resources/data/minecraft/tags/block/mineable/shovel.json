@@ -20,6 +20,8 @@
     "antcolonies:badlands_ant_nest",
     "antcolonies:army_ant_nest",
     "antcolonies:warped_ant_nest",
-    "antcolonies:chorus_ant_nest"
+    "antcolonies:chorus_ant_nest",
+    "antcolonies:colony_connector",
+    "antcolonies:anthill_soil"
   ]
 }

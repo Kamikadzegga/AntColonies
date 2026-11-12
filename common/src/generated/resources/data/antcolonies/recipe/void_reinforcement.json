@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "V": "antcolonies:void_chitin",
+    "S": "minecraft:shulker_shell",
+    "P": "minecraft:popped_chorus_fruit",
+    "E": "minecraft:ender_eye"
+  },
+  "pattern": ["VSV", "PEP", "VSV"],
+  "result": {
+    "count": 2,
+    "id": "antcolonies:void_reinforcement"
+  }
+}

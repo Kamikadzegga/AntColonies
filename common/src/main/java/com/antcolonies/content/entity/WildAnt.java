@@ -282,6 +282,29 @@ public class WildAnt extends PathfinderMob implements AntLike {
         return caste() != Caste.QUEEN && !guardian && nest == null;
     }
 
+    /**
+     * Whether this is an anthill's Queen: every generated anthill has exactly one, and she is its guaranteed prize. She
+     * can't be hurt (lava, falls, mobs and players alike; only the void and /kill end her) and never despawns, so the
+     * only way she leaves is in a Test Tube, caught with Tweezers.
+     */
+    public boolean isAnthillQueen() {
+        return guardian && caste() == Caste.QUEEN;
+    }
+
+    @Override
+    public boolean isInvulnerableTo(ServerLevel level, DamageSource source) {
+        if (isAnthillQueen() && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+            return true;
+        }
+        return super.isInvulnerableTo(level, source);
+    }
+
+    @Override
+    public boolean isPushable() {
+        // Nothing shoves the anthill's Queen out of her chamber.
+        return !isAnthillQueen() && super.isPushable();
+    }
+
     // --- Home nests: ants that live in a nest a player placed, working the land around it like bees ---
 
     /** Makes it an ant of the home nest at {@code pos}: it works within {@link #NEST_RANGE} blocks and goes back in. */

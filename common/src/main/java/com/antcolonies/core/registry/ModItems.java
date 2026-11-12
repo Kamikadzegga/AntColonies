@@ -70,6 +70,16 @@ public final class ModItems {
     public static final DeferredItem<DescribedItem> INFERNAL_CHITIN = ITEMS.registerItem("infernal_chitin", DescribedItem::new, p -> p.fireResistant());
     public static final DeferredItem<DescribedItem> VOID_CHITIN = ITEMS.registerItem("void_chitin", DescribedItem::new, p -> p.rarity(net.minecraft.world.item.Rarity.UNCOMMON));
     public static final DeferredItem<DescribedItem> UPGRADE_BASE = ITEMS.registerItem("upgrade_base", DescribedItem::new);
+    /**
+     * Trail pheromones: the scent of a route into another dimension. Only a colony living there finds them (its ordinary
+     * Foraging Sites, now and then); they are what the Nether and End Foraging Sites are made from.
+     */
+    public static final DeferredItem<DescribedItem> NETHER_TRAIL_PHEROMONE = ITEMS.registerItem("nether_trail_pheromone", DescribedItem::new,
+            p -> p.fireResistant().rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<DescribedItem> END_TRAIL_PHEROMONE = ITEMS.registerItem("end_trail_pheromone", DescribedItem::new,
+            p -> p.rarity(Rarity.UNCOMMON));
+    /** Tree resin that Wood Ants gather: the Resin building blocks are made from it. */
+    public static final DeferredItem<DescribedItem> ANT_RESIN = ITEMS.registerItem("ant_resin", DescribedItem::new);
     /** Only the creative tab's icon: the ant's head from the mod's logo. Not in the tab, no recipe. */
     public static final DeferredItem<Item> ANT_HEAD = ITEMS.registerSimpleItem("ant_head");
     public static final DeferredItem<DescribedItem> GENETIC_CIRCUIT = ITEMS.registerItem("genetic_circuit", DescribedItem::new);
@@ -155,12 +165,67 @@ public final class ModItems {
     public static final DeferredItem<com.antcolonies.content.item.ChitinShieldItem> CHITIN_SHIELD = ITEMS.registerItem("chitin_shield",
             com.antcolonies.content.item.ChitinShieldItem::new, com.antcolonies.content.item.ChitinShieldItem::properties);
 
+    public static final String[] GEAR_PIECES = {"helmet", "chestplate", "leggings", "boots", "sword", "pickaxe", "axe", "shovel", "hoe"};
+
+    /**
+     * The higher chitin tiers (Hardened, Infernal, Void): armor and the five tools each, by tier and piece name
+     * ({@code helmet} ... {@code hoe}). Infernal and Void don't burn; Void is uncommon.
+     */
+    public static final java.util.Map<ChitinGear.Tier, java.util.Map<String, DeferredItem<ChitinGear.Piece>>> CHITIN_TIERS = tiers();
+    /** Smithing templates: Hardened chitin gear to Infernal (with Infernal Chitin), Infernal to Void (with a netherite ingot). */
+    public static final DeferredItem<DescribedItem> INFERNAL_REINFORCEMENT = ITEMS.registerItem("infernal_reinforcement", DescribedItem::new,
+            p -> p.fireResistant());
+    public static final DeferredItem<DescribedItem> VOID_REINFORCEMENT = ITEMS.registerItem("void_reinforcement", DescribedItem::new,
+            p -> p.fireResistant().rarity(Rarity.UNCOMMON));
+
+    private static java.util.Map<ChitinGear.Tier, java.util.Map<String, DeferredItem<ChitinGear.Piece>>> tiers() {
+        java.util.Map<ChitinGear.Tier, java.util.Map<String, DeferredItem<ChitinGear.Piece>>> tiers = new java.util.EnumMap<>(ChitinGear.Tier.class);
+        ArmorType[] armor = {ArmorType.HELMET, ArmorType.CHESTPLATE, ArmorType.LEGGINGS, ArmorType.BOOTS};
+        for (ChitinGear.Tier tier : ChitinGear.Tier.values()) {
+            if (tier == ChitinGear.Tier.CHITIN) {
+                continue;
+            }
+            java.util.Map<String, DeferredItem<ChitinGear.Piece>> pieces = new java.util.LinkedHashMap<>();
+            java.util.function.UnaryOperator<Item.Properties> extra = p -> tier == ChitinGear.Tier.VOID ? p.fireResistant().rarity(Rarity.UNCOMMON)
+                    : tier.fireproof ? p.fireResistant() : p;
+            for (int i = 0; i < armor.length; i++) {
+                ArmorType type = armor[i];
+                pieces.put(GEAR_PIECES[i], ITEMS.registerItem(tier.id(GEAR_PIECES[i]), p -> new ChitinGear.Piece(true, tier, p),
+                        p -> extra.apply(p.humanoidArmor(tier.armor, type))));
+            }
+            pieces.put("sword", ITEMS.registerItem(tier.id("sword"), p -> new ChitinGear.Piece(false, tier, p),
+                    p -> extra.apply(p.sword(tier.tools, 3.0F, -2.4F))));
+            pieces.put("pickaxe", ITEMS.registerItem(tier.id("pickaxe"), p -> new ChitinGear.Piece(false, tier, p),
+                    p -> extra.apply(p.pickaxe(tier.tools, 1.0F, -2.8F))));
+            pieces.put("axe", ITEMS.registerItem(tier.id("axe"), p -> new ChitinGear.Piece(false, tier, p),
+                    p -> extra.apply(tier == ChitinGear.Tier.HARDENED ? p.axe(tier.tools, 6.0F, -3.1F) : p.axe(tier.tools, 5.0F, -3.0F))));
+            pieces.put("shovel", ITEMS.registerItem(tier.id("shovel"), p -> new ChitinGear.Piece(false, tier, p),
+                    p -> extra.apply(p.shovel(tier.tools, 1.5F, -3.0F))));
+            pieces.put("hoe", ITEMS.registerItem(tier.id("hoe"), p -> new ChitinGear.Piece(false, tier, p),
+                    p -> extra.apply(p.hoe(tier.tools, -tier.tools.attackDamageBonus(), tier == ChitinGear.Tier.HARDENED ? -1.0F : 0.0F))));
+            tiers.put(tier, java.util.Collections.unmodifiableMap(pieces));
+        }
+        return java.util.Collections.unmodifiableMap(tiers);
+    }
+
     private static DeferredItem<ChitinGear.Piece> armor(String name, ArmorType type) {
         return ITEMS.registerItem(name, p -> new ChitinGear.Piece(true, p), p -> p.humanoidArmor(ChitinGear.ARMOR, type));
     }
 
     private static DeferredItem<BlockItem> block(DeferredBlock<?> block) {
         return ITEMS.registerSimpleBlockItem(block);
+    }
+
+    static {
+        // The nest-building palette, after everything else in the creative tab.
+        for (DeferredBlock<? extends net.minecraft.world.level.block.Block> block : ModDecor.ALL.values()) {
+            if (block == ModDecor.NEST_DOOR) {
+                ITEMS.registerItem(block.getId().getPath(), p -> new net.minecraft.world.item.DoubleHighBlockItem(block.get(), p),
+                        p -> p.useBlockDescriptionPrefix());
+            } else {
+                ITEMS.registerSimpleBlockItem(block);
+            }
+        }
     }
 
     /** A block item with a line saying what the block is for ({@code tooltip.antcolonies.<block>}). */

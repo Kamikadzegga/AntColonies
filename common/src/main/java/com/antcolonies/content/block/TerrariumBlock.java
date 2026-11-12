@@ -84,7 +84,7 @@ public class TerrariumBlock extends ColonyPartBlock {
             }
             return InteractionResult.SUCCESS;
         }
-        slot = TerrariumBlockEntity.SLOT_FEED;
+        slot = terrarium.isFeed(stack) ? TerrariumBlockEntity.SLOT_FEED : TerrariumBlockEntity.SLOT_FOOD;
         ItemStack inSlot = terrarium.getItem(slot);
         boolean feedable = stack.has(ModDataComponents.ANTS.get()) || stack.is(ModItems.ANT_EGG.get()) || stack.is(ModItems.ANT_LARVA.get())
                 || stack.is(ModItems.EVOLUTION_CATALYST.get()) || com.antcolonies.core.registry.ModDataMaps.food(stack) != null

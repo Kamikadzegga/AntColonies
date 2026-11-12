@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "antcolonies:packed_anthill_soil",
+  "result": {
+    "count": 1,
+    "id": "antcolonies:anthill_bricks"
+  }
+}

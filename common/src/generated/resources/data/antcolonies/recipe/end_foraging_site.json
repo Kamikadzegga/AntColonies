@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": "minecraft:end_stone_bricks",
+    "P": "antcolonies:end_trail_pheromone",
+    "V": "antcolonies:void_chitin",
+    "F": "antcolonies:foraging_site",
+    "Y": "minecraft:ender_eye"
+  },
+  "pattern": ["EPE", "VFV", "EYE"],
+  "result": {
+    "id": "antcolonies:end_foraging_site"
+  }
+}

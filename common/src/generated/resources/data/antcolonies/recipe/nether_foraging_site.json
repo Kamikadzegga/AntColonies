@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": "minecraft:obsidian",
+    "P": "antcolonies:nether_trail_pheromone",
+    "I": "antcolonies:infernal_chitin",
+    "F": "antcolonies:foraging_site"
+  },
+  "pattern": ["OPO", "IFI", "OPO"],
+  "result": {
+    "id": "antcolonies:nether_foraging_site"
+  }
+}

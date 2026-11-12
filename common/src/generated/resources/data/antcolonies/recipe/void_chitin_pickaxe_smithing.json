@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": "minecraft:netherite_ingot",
+  "base": "antcolonies:infernal_chitin_pickaxe",
+  "result": {
+    "id": "antcolonies:void_chitin_pickaxe"
+  },
+  "template": "antcolonies:void_reinforcement"
+}

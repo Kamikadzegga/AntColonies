@@ -1,0 +1,33 @@
+{
+  "parent": "antcolonies:end_colony",
+  "criteria": {
+    "end_anthill": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "player": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:location": {
+              "structures": "antcolonies:end_anthill"
+            }
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:end_stone_bricks"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.end_anthill.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.end_anthill.description"
+    }
+  },
+  "requirements": [
+    ["end_anthill"]
+  ]
+}

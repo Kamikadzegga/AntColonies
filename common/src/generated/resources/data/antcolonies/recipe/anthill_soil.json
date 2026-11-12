@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:coarse_dirt",
+    "minecraft:coarse_dirt",
+    "minecraft:packed_mud",
+    "minecraft:packed_mud"
+  ],
+  "result": {
+    "count": 4,
+    "id": "antcolonies:anthill_soil"
+  }
+}

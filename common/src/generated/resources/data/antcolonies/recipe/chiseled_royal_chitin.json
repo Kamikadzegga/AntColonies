@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "antcolonies:royal_chitin_brick_slab"
+  },
+  "pattern": ["S", "S"],
+  "result": {
+    "id": "antcolonies:chiseled_royal_chitin"
+  }
+}

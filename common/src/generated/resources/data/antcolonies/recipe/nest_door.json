@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "antcolonies:chitin_plate",
+    "P": "antcolonies:packed_anthill_soil"
+  },
+  "pattern": ["CC", "PP", "CC"],
+  "result": {
+    "count": 3,
+    "id": "antcolonies:nest_door"
+  }
+}

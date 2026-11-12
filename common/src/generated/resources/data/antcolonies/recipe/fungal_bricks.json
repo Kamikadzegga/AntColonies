@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": "antcolonies:fungal_block"
+  },
+  "pattern": ["FF", "FF"],
+  "result": {
+    "count": 4,
+    "id": "antcolonies:fungal_bricks"
+  }
+}

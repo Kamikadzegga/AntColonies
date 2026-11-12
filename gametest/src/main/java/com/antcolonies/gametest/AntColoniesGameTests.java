@@ -114,6 +114,7 @@ public class AntColoniesGameTests {
 
     public AntColoniesGameTests(IEventBus modEventBus) {
         TESTS.register(modEventBus);
+        UpdateGameTests.register(modEventBus);
         modEventBus.addListener(AntColoniesGameTests::registerTests);
         modEventBus.addListener(AntColoniesGameTests::addGuidePack);
     }
@@ -130,6 +131,7 @@ public class AntColoniesGameTests {
             event.registerTest(test.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, test.getId()),
                     spaced(environment, 200)));
         }
+        UpdateGameTests.registerTests(event, environment);
         event.registerTest(LAB.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, LAB.getId()),
                 spaced(environment, 600)));
         event.registerTest(HOME_NEST_ALONE.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, HOME_NEST_ALONE.getId()),
@@ -142,23 +144,25 @@ public class AntColoniesGameTests {
      * A test's data with 20 blocks of padding: tests build up to 16 blocks from their corner, and without the padding a
      * colony could reach into a neighbouring test's blocks (its structures joined the other colony and broke both).
      */
-    private static TestData<Holder<TestEnvironmentDefinition<?>>> spaced(Holder<TestEnvironmentDefinition<?>> environment, int ticks) {
+    static TestData<Holder<TestEnvironmentDefinition<?>>> spaced(Holder<TestEnvironmentDefinition<?>> environment, int ticks) {
         return new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, EMPTY, ticks, 0, true, net.minecraft.world.level.block.Rotation.NONE,
                 false, 1, 1, false, 20);
     }
 
-    private static TerrariumBlockEntity terrarium(GameTestHelper helper, BlockPos pos, Identifier species, double workers, double soldiers, double food) {
+    static TerrariumBlockEntity terrarium(GameTestHelper helper, BlockPos pos, Identifier species, double workers, double soldiers, double food) {
         helper.setBlock(pos, ModBlocks.TERRARIUM.get());
         TerrariumBlockEntity terrarium = helper.getBlockEntity(pos, TerrariumBlockEntity.class);
         Colony colony = terrarium.colony();
-        colony.setQueen(Genetics.wildQueen(species, RandomSource.create(5)));
+        // Fully grown (stage 4), so the tests of other things see a Queen whose genes don't change as her colony grows.
+        QueenData wild = Genetics.wildQueen(species, RandomSource.create(5));
+        colony.setQueen(new QueenData(wild.species(), wild.genome(), 4));
         // Colonies have no soldiers: any asked for join the workers.
         colony.setPopulation(0, 0, workers + soldiers);
         colony.setFood(food);
         return terrarium;
     }
 
-    private static StructureBlockEntity structure(GameTestHelper helper, BlockPos pos, StructureKind kind) {
+    static StructureBlockEntity structure(GameTestHelper helper, BlockPos pos, StructureKind kind) {
         helper.setBlock(pos, ModBlocks.STRUCTURES.get(kind).get());
         return helper.getBlockEntity(pos, StructureBlockEntity.class);
     }
@@ -182,7 +186,7 @@ public class AntColoniesGameTests {
         return placed;
     }
 
-    private static void step(GameTestHelper helper, TerrariumBlockEntity terrarium, double minutes) {
+    static void step(GameTestHelper helper, TerrariumBlockEntity terrarium, double minutes) {
         ServerLevel level = helper.getLevel();
         terrarium.rescan(level);
         ColonySimulator.step(terrarium, level, minutes);
@@ -197,7 +201,7 @@ public class AntColoniesGameTests {
         }
     }
 
-    private static int count(StructureBlockEntity pile) {
+    static int count(StructureBlockEntity pile) {
         int total = 0;
         for (int slot = 0; slot < pile.getContainerSize(); slot++) {
             total += pile.getItem(slot).getCount();
@@ -389,7 +393,9 @@ public class AntColoniesGameTests {
         for (int slot = 0; slot < pile.getContainerSize(); slot++) {
             ItemStack stack = pile.getItem(slot);
             if (!stack.isEmpty()) {
-                helper.assertTrue(common.production().outputs().stream().anyMatch(o -> o.create(1).is(stack.getItem())),
+                // Its own finds, and the chitin every foraging colony brings home now and then.
+                boolean chitin = stack.is(ModItems.CHITIN_PLATE.get()) || stack.is(ModItems.HARDENED_CHITIN.get());
+                helper.assertTrue(chitin || common.production().outputs().stream().anyMatch(o -> o.create(1).is(stack.getItem())),
                         "Found something Common Ants don't find: " + stack);
             }
         }
@@ -689,10 +695,10 @@ public class AntColoniesGameTests {
         }
         helper.assertTrue(colony.species().equals(AntColonies.id("fire")), "In the Nether the colony should become Fire Ants, is " + colony.species());
 
-        // The Chitin ladder's recipes and what they take.
+        // The Chitin ladder: no recipes (chitin comes only from ants), and what the upgrades take.
         var recipes = helper.getLevel().getServer().getRecipeManager();
-        for (String id : List.of("hardened_chitin", "infernal_chitin", "void_chitin")) {
-            helper.assertTrue(recipes.byKey(ResourceKey.create(Registries.RECIPE, AntColonies.id(id))).isPresent(), "No recipe for " + id);
+        for (String id : List.of("chitin_plate", "hardened_chitin", "infernal_chitin", "void_chitin")) {
+            helper.assertTrue(recipes.byKey(ResourceKey.create(Registries.RECIPE, AntColonies.id(id))).isEmpty(), "Chitin is crafted again: " + id);
         }
         String infernal = recipes.byKey(ResourceKey.create(Registries.RECIPE, AntColonies.id("speed_upgrade_3"))).orElseThrow().value().toString();
         helper.assertTrue(recipes.byKey(ResourceKey.create(Registries.RECIPE, AntColonies.id("speed_upgrade_3"))).orElseThrow().value()
@@ -900,7 +906,7 @@ public class AntColoniesGameTests {
     }
 
     /** A grid holding the first item of each ingredient of a shaped or shapeless recipe; null for other kinds. */
-    private static net.minecraft.world.item.crafting.CraftingInput craftingInput(net.minecraft.world.item.crafting.CraftingRecipe recipe) {
+    static net.minecraft.world.item.crafting.CraftingInput craftingInput(net.minecraft.world.item.crafting.CraftingRecipe recipe) {
         if (recipe instanceof net.minecraft.world.item.crafting.ShapedRecipe shaped) {
             List<ItemStack> items = shaped.getIngredients().stream().map(o -> o.map(AntColoniesGameTests::first).orElse(ItemStack.EMPTY)).toList();
             return net.minecraft.world.item.crafting.CraftingInput.of(shaped.getWidth(), shaped.getHeight(), items);
@@ -917,7 +923,7 @@ public class AntColoniesGameTests {
         return null;
     }
 
-    private static ItemStack first(net.minecraft.world.item.crafting.Ingredient ingredient) {
+    static ItemStack first(net.minecraft.world.item.crafting.Ingredient ingredient) {
         return ingredient.items().findFirst().map(item -> new ItemStack(item)).orElse(ItemStack.EMPTY);
     }
 
@@ -1503,7 +1509,8 @@ public class AntColoniesGameTests {
                 } else {
                     barrels++;
                 }
-            } else if (state.is(net.minecraft.world.level.block.Blocks.PACKED_MUD)) {
+            } else if (state.is(net.minecraft.world.level.block.Blocks.PACKED_MUD) || state.is(com.antcolonies.core.registry.ModDecor.PACKED_ANTHILL_SOIL.get())
+                    || state.is(com.antcolonies.core.registry.ModDecor.ANTHILL_SOIL.get())) {
                 lining++;
             }
         }

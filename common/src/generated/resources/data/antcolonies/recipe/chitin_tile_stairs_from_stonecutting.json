@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "antcolonies:chitin_tiles",
+  "result": {
+    "count": 1,
+    "id": "antcolonies:chitin_tile_stairs"
+  }
+}

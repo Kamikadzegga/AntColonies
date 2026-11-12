@@ -1,5 +1,8 @@
 {
   "values": [
-    "antcolonies:chitin_chestplate"
+    "antcolonies:chitin_chestplate",
+    "antcolonies:hardened_chitin_chestplate",
+    "antcolonies:infernal_chitin_chestplate",
+    "antcolonies:void_chitin_chestplate"
   ]
 }

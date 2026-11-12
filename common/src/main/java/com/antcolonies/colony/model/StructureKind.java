@@ -30,7 +30,20 @@ public enum StructureKind implements StringRepresentable {
     /** More room for what the colony finds, and food room. */
     STORAGE("storage", Job.NONE, 162, 2, EnumSet.of(UpgradeType.STORAGE, UpgradeType.AUTOMATION)),
     /** Raises new Queens, and hybrids when a Genetic Sample is crossed in. */
-    QUEEN_CHAMBER("queen_chamber", Job.NONE, 7, 2, EnumSet.of(UpgradeType.BREEDING, UpgradeType.GENETIC, UpgradeType.SPEED));
+    QUEEN_CHAMBER("queen_chamber", Job.NONE, 7, 2, EnumSet.of(UpgradeType.BREEDING, UpgradeType.GENETIC, UpgradeType.SPEED)),
+    /**
+     * Nether-adapted ants (species tag antcolonies:nether_adapted) go on simulated expeditions through its little portal:
+     * finds from the Nether expedition's table (data/.../antcolonies/expedition/nether.json). Other ants leave it alone.
+     */
+    NETHER_FORAGING_SITE("nether_foraging_site", Job.FORAGING, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
+    /** The same for End-adapted ants (antcolonies:end_adapted) and the End expedition's table. */
+    END_FORAGING_SITE("end_foraging_site", Job.FORAGING, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
+    /**
+     * Links its colony to the other colonies on the same channel in this dimension: food moves from colonies with spare
+     * food to colonies that ask for it, and items its filter names move between their Storage (see ConnectorNetwork).
+     * Its slots are the item filter.
+     */
+    COLONY_CONNECTOR("colony_connector", Job.NONE, 9, 0, EnumSet.noneOf(UpgradeType.class));
 
     public static final Codec<StructureKind> CODEC = StringRepresentable.fromEnum(StructureKind::values);
 
@@ -88,10 +101,23 @@ public enum StructureKind implements StringRepresentable {
         return this == FORAGING_SITE;
     }
 
-    /** Whether finds can be kept here (Storage, and the Foraging Site's small store). */
+    /** Whether finds can be kept here (Storage, and the Foraging Sites' small stores). */
     public boolean stores() {
-        return this == STORAGE || this == FORAGING_SITE;
+        return this == STORAGE || foraging();
     }
+
+    /** The three Foraging Sites: the ordinary one and the Nether and End expedition sites. */
+    public boolean foraging() {
+        return job == Job.FORAGING;
+    }
+
+    /** The Nether and End Foraging Sites: their finds come from an expedition table, not the species' own outputs. */
+    public boolean expedition() {
+        return this == NETHER_FORAGING_SITE || this == END_FORAGING_SITE;
+    }
+
+    /** All the Foraging Site kinds, in the order the colony hands out its workers to them. */
+    public static final java.util.List<StructureKind> FORAGING_KINDS = java.util.List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE);
 
     public String translationKey() {
         return "block.antcolonies." + name;

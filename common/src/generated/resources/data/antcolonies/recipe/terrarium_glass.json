@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:glass",
+    "minecraft:glass",
+    "minecraft:glass",
+    "minecraft:glass",
+    "#minecraft:planks"
+  ],
+  "result": {
+    "count": 4,
+    "id": "antcolonies:terrarium_glass"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "antcolonies:polished_chitin"
+  },
+  "pattern": ["BBB"],
+  "result": {
+    "count": 6,
+    "id": "antcolonies:polished_chitin_slab"
+  }
+}

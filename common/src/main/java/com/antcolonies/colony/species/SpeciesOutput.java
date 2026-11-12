@@ -25,6 +25,23 @@ import net.minecraft.world.item.ItemStack;
  */
 public record SpeciesOutput(Optional<Holder<Item>> item, Optional<TagKey<Item>> tag, int count, double weight, int minStage, boolean special,
                             Optional<Holder<Item>> processed, int ratio) {
+    /** The fields alone, for records that add their own (expedition finds). Check {@link #validate} on the whole. */
+    public static final com.mojang.serialization.MapCodec<SpeciesOutput> MAP_CODEC = RecordCodecBuilder.<SpeciesOutput>mapCodec(i -> i.group(
+            Item.CODEC.optionalFieldOf("item").forGetter(SpeciesOutput::item),
+            TagKey.codec(Registries.ITEM).optionalFieldOf("tag").forGetter(SpeciesOutput::tag),
+            Codec.intRange(1, 64).optionalFieldOf("count", 1).forGetter(SpeciesOutput::count),
+            Codec.doubleRange(0.0001, 100000).optionalFieldOf("weight", 10.0).forGetter(SpeciesOutput::weight),
+            Codec.intRange(1, 4).optionalFieldOf("min_stage", 1).forGetter(SpeciesOutput::minStage),
+            Codec.BOOL.optionalFieldOf("special", false).forGetter(SpeciesOutput::special),
+            Item.CODEC.optionalFieldOf("processed").forGetter(SpeciesOutput::processed),
+            Codec.intRange(1, 64).optionalFieldOf("ratio", 9).forGetter(SpeciesOutput::ratio)
+    ).apply(i, SpeciesOutput::new));
+
+    public static DataResult<SpeciesOutput> validate(SpeciesOutput output) {
+        return output.item.isPresent() != output.tag.isPresent()
+                ? DataResult.success(output) : DataResult.error(() -> "A species output needs exactly one of \"item\" and \"tag\"");
+    }
+
     public static final Codec<SpeciesOutput> CODEC = RecordCodecBuilder.<SpeciesOutput>create(i -> i.group(
             Item.CODEC.optionalFieldOf("item").forGetter(SpeciesOutput::item),
             TagKey.codec(Registries.ITEM).optionalFieldOf("tag").forGetter(SpeciesOutput::tag),

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "antcolonies:hardened_chitin"
+  },
+  "pattern": ["C C", "C C"],
+  "result": {
+    "id": "antcolonies:hardened_chitin_boots"
+  }
+}

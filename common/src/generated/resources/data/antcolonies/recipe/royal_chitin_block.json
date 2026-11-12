@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "antcolonies:chitin_block",
+    "G": "minecraft:gold_nugget",
+    "J": "antcolonies:royal_jelly"
+  },
+  "pattern": ["CGC", "GJG", "CGC"],
+  "result": {
+    "count": 4,
+    "id": "antcolonies:royal_chitin_block"
+  }
+}

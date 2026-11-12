@@ -57,6 +57,8 @@ public class AntColonies {
         // Any colony block placed or broken makes nearby Terrariums look at their network again.
         NeoForge.EVENT_BUS.addListener(ColonyNetwork::onLevelUnload);
         NeoForge.EVENT_BUS.addListener(com.antcolonies.content.item.ChitinGear::onPlayerTick);
+        // Colony Connectors move food and items between the colonies on their channels.
+        NeoForge.EVENT_BUS.addListener(com.antcolonies.colony.network.ConnectorNetwork::onLevelTick);
     }
 
     public static Identifier id(String path) {

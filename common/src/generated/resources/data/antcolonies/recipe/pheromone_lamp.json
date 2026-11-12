@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "antcolonies:chitin_plate",
+    "R": "antcolonies:ant_resin",
+    "G": "minecraft:glowstone"
+  },
+  "pattern": [" C ", "RGR", " C "],
+  "result": {
+    "id": "antcolonies:pheromone_lamp"
+  }
+}

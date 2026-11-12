@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "R": "antcolonies:ant_resin"
+  },
+  "pattern": ["RR", "RR"],
+  "result": {
+    "id": "antcolonies:amber_block"
+  }
+}

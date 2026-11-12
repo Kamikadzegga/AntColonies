@@ -1,0 +1,27 @@
+{
+  "parent": "antcolonies:stage_2",
+  "criteria": {
+    "linked_colonies": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "linked": true
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:colony_connector"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.linked_colonies.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.linked_colonies.description"
+    }
+  },
+  "requirements": [
+    [
+      "linked_colonies"
+    ]
+  ]
+}

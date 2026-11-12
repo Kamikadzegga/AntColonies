@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "antcolonies:block/chitin_tile_slab"
+    },
+    "type=double": {
+      "model": "antcolonies:block/chitin_tiles"
+    },
+    "type=top": {
+      "model": "antcolonies:block/chitin_tile_slab_top"
+    }
+  }
+}

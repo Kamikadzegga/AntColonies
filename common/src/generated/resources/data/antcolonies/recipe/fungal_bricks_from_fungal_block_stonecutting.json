@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "antcolonies:fungal_block",
+  "result": {
+    "count": 1,
+    "id": "antcolonies:fungal_bricks"
+  }
+}

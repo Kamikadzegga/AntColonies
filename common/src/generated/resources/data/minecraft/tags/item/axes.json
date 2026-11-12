@@ -1,5 +1,8 @@
 {
   "values": [
-    "antcolonies:chitin_axe"
+    "antcolonies:chitin_axe",
+    "antcolonies:hardened_chitin_axe",
+    "antcolonies:infernal_chitin_axe",
+    "antcolonies:void_chitin_axe"
   ]
 }

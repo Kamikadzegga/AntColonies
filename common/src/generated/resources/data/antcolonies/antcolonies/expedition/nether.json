@@ -1,0 +1,111 @@
+{
+  "site": "nether_foraging_site",
+  "adapted": "antcolonies:nether_adapted",
+  "rate": 0.8,
+  "home": "minecraft:the_nether",
+  "trail": {
+    "item": "antcolonies:nether_trail_pheromone",
+    "chance": 0.02
+  },
+  "outputs": [
+    {
+      "item": "minecraft:quartz",
+      "weight": 20
+    },
+    {
+      "item": "minecraft:glowstone_dust",
+      "weight": 15
+    },
+    {
+      "item": "minecraft:nether_wart",
+      "weight": 14
+    },
+    {
+      "item": "minecraft:blackstone",
+      "weight": 10
+    },
+    {
+      "item": "minecraft:soul_sand",
+      "weight": 10
+    },
+    {
+      "item": "minecraft:basalt",
+      "weight": 8
+    },
+    {
+      "item": "minecraft:magma_cream",
+      "weight": 8
+    },
+    {
+      "item": "minecraft:soul_soil",
+      "weight": 6
+    },
+    {
+      "item": "minecraft:crimson_fungus",
+      "weight": 5
+    },
+    {
+      "item": "minecraft:warped_fungus",
+      "weight": 5
+    },
+    {
+      "item": "minecraft:blaze_powder",
+      "weight": 6,
+      "min_stage": 2
+    },
+    {
+      "item": "minecraft:shroomlight",
+      "weight": 3,
+      "min_stage": 2
+    },
+    {
+      "item": "minecraft:gold_nugget",
+      "count": 2,
+      "weight": 6,
+      "min_stage": 2
+    },
+    {
+      "item": "minecraft:blaze_rod",
+      "weight": 1.5,
+      "min_stage": 3
+    },
+    {
+      "item": "minecraft:gilded_blackstone",
+      "weight": 0.6,
+      "min_stage": 3,
+      "special": true
+    },
+    {
+      "item": "minecraft:ghast_tear",
+      "weight": 0.6,
+      "min_stage": 3,
+      "special": true
+    },
+    {
+      "item": "antcolonies:infernal_chitin",
+      "weight": 0.8,
+      "min_stage": 3,
+      "special": true
+    },
+    {
+      "item": "minecraft:ancient_debris",
+      "weight": 0.08,
+      "min_stage": 4,
+      "special": true,
+      "species": [
+        "antcolonies:netherite",
+        "antcolonies:wither"
+      ]
+    },
+    {
+      "item": "minecraft:wither_rose",
+      "weight": 0.3,
+      "min_stage": 3,
+      "special": true,
+      "species": [
+        "antcolonies:wither",
+        "antcolonies:soul"
+      ]
+    }
+  ]
+}

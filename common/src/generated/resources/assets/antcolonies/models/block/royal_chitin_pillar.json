@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "antcolonies:block/royal_chitin_pillar_top",
+    "side": "antcolonies:block/royal_chitin_pillar"
+  }
+}

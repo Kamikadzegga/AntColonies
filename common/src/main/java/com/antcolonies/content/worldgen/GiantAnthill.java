@@ -55,7 +55,10 @@ public class GiantAnthill extends Structure {
         }
         // The ground's top block is one below the first free one.
         BlockPos center = new BlockPos(cx, middle - 1, cz);
-        return Optional.of(new GenerationStub(center, builder -> builder.addPiece(new AnthillPiece(center, false))));
+        // A layout planned from the world seed and the spot: the same anthill whichever chunk asks.
+        AnthillPiece piece = AnthillPiece.plan(center, AnthillPiece.Kind.OVERWORLD, context.seed() ^ center.asLong() * 0x9E3779B97F4A7C15L,
+                context.heightAccessor().getMinY() + 4);
+        return Optional.of(new GenerationStub(center, builder -> builder.addPiece(piece)));
     }
 
     @Override

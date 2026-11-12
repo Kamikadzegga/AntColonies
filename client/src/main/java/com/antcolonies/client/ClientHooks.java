@@ -91,6 +91,15 @@ public final class ClientHooks {
                     burst(level, ModParticles.SPARKLE.get(), 0xFFE070, pos, random, 0.03);
                 }
             }
+            case TerrariumBlockEntity.EVENT_QUEEN_GREW -> {
+                // The Queen grew: genes in her colours, and gold sparkles.
+                for (int i = 0; i < 16; i++) {
+                    burst(level, ModParticles.GENE.get(), color, pos, random, 0.04);
+                }
+                for (int i = 0; i < 16; i++) {
+                    burst(level, ModParticles.SPARKLE.get(), 0xFFE070, pos, random, 0.04);
+                }
+            }
             default -> {
             }
         }

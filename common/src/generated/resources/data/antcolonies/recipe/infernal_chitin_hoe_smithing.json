@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": "antcolonies:infernal_chitin",
+  "base": "antcolonies:hardened_chitin_hoe",
+  "result": {
+    "id": "antcolonies:infernal_chitin_hoe"
+  },
+  "template": "antcolonies:infernal_reinforcement"
+}

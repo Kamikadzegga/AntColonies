@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "antcolonies:anthill_soil",
+    "minecraft:wheat"
+  ],
+  "result": {
+    "id": "antcolonies:packed_anthill_soil"
+  }
+}

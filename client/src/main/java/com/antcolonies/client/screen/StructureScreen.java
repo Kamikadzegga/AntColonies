@@ -106,6 +106,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
     @Override
     protected void extractPage(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         clipped.clear();
+        channelSwatches.clear();
         boolean linked = menu.data(StructureBlockEntity.DATA_LINKED) != 0;
         int x = 8;
         int y = kind == StructureKind.STORAGE ? 130 : 18;
@@ -138,8 +139,13 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         }
         label(graphics, linkLine(linked), x, y, linked ? GOOD : BAD);
         y += 10;
+        if (kind == StructureKind.COLONY_CONNECTOR) {
+            connectorPage(graphics, x, y, mouseX, mouseY);
+            return;
+        }
         if (kind.job().any()) {
             y = jobRow(graphics, x, y);
+            y = settingsRow(x, y);
         }
         int status = menu.data(StructureBlockEntity.DATA_STATUS) | (kind == StructureKind.QUEEN_CHAMBER ? menu.data(StructureBlockEntity.DATA_REARING_STATUS) : 0);
         boolean slotted = kind == StructureKind.QUEEN_CHAMBER;
@@ -149,9 +155,22 @@ public class StructureScreen extends AntScreen<StructureMenu> {
             y = nestRoom(graphics, x, y);
         } else if (!kind.job().any()) {
             y = wrapped(graphics, Component.translatable("gui.antcolonies.effect." + kind.getSerializedName()), x, y, 170, 9, DIM);
-        } else if (kind == StructureKind.FORAGING_SITE) {
+        } else if (kind.foraging()) {
             // Its store's slots come next (their tooltip says what they are); the problems go under them.
             y = StructureMenu.STORE_Y + 20;
+        }
+        if (kind.expedition()) {
+            // Which ants it needs, named, when the colony's are not among them.
+            int flags = menu.data(StructureBlockEntity.DATA_STATUS);
+            if (ColonyStatus.INCOMPATIBLE_SPECIES.in(flags)) {
+                String needs = Component.translatable("gui.antcolonies.expedition.needs." + kind.getSerializedName(), adaptedNames()).getString();
+                String shown = fit(needs, 170);
+                if (!shown.equals(needs)) {
+                    clipped.add(new Clipped(x, y, 170, needs));
+                }
+                label(graphics, shown, x, y, BAD);
+                y += 9;
+            }
         }
         // Problems and work state: under the link line. Slotted structures have room for one line above their slots.
         int line = slotted ? 28 : y;
@@ -159,6 +178,9 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         for (ColonyStatus flag : ColonyStatus.of(status)) {
             if (line > last) {
                 break;
+            }
+            if (kind.expedition() && flag == ColonyStatus.INCOMPATIBLE_SPECIES) {
+                continue; // said above, with the species it needs
             }
             String full = Component.translatable(flag.translationKey()).getString();
             String shown = fit(full, 170);
@@ -233,6 +255,137 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         return y + 11;
     }
 
+    /**
+     * A job site's settings: what a Foraging Site looks for (its mode), its priority among the colony's sites, and a
+     * switch to turn it off. The tooltips explain each; the server applies the click and syncs back.
+     */
+    private int settingsRow(int x, int y) {
+        int bx = x;
+        if (kind == StructureKind.FORAGING_SITE) {
+            com.antcolonies.colony.model.ForagingMode mode = com.antcolonies.colony.model.ForagingMode.byId(menu.data(StructureBlockEntity.DATA_MODE));
+            String text = Component.translatable(mode.translationKey()).getString();
+            int w = buttonWidth(text);
+            button(bx, y, w, 12, text, StructureMenu.CYCLE_MODE, List.of(Component.translatable("gui.antcolonies.mode"),
+                    Component.translatable(mode.translationKey() + ".hint").withStyle(ChatFormatting.GRAY),
+                    Component.translatable("gui.antcolonies.mode.click").withStyle(ChatFormatting.DARK_GRAY)), true);
+            bx += w + 3;
+        }
+        int priority = menu.data(StructureBlockEntity.DATA_PRIORITY);
+        String priorityText = Component.translatable("gui.antcolonies.priority.short." + priority).getString();
+        int pw = buttonWidth(priorityText);
+        button(bx, y, pw, 12, priorityText, StructureMenu.CYCLE_PRIORITY, List.of(Component.translatable("gui.antcolonies.priority." + priority),
+                Component.translatable("gui.antcolonies.priority.hint").withStyle(ChatFormatting.GRAY)), true);
+        bx += pw + 3;
+        boolean enabled = menu.data(StructureBlockEntity.DATA_ENABLED) != 0;
+        String onOff = Component.translatable(enabled ? "gui.antcolonies.site.on" : "gui.antcolonies.site.off").getString();
+        toggle(bx, y, buttonWidth(onOff), 12, onOff, StructureMenu.TOGGLE, List.of(Component.translatable("gui.antcolonies.site.toggle.hint")), enabled);
+        return y + 15;
+    }
+
+    /** The species an expedition site takes, from the synced species tag (names, comma-separated). */
+    private String adaptedNames() {
+        var expedition = com.antcolonies.colony.expedition.Expedition.forSite(minecraft.level == null ? null : minecraft.level.registryAccess(), kind);
+        if (expedition == null || minecraft.level == null) {
+            return "?";
+        }
+        StringBuilder names = new StringBuilder();
+        for (var id : expedition.adaptedSpecies(minecraft.level.registryAccess())) {
+            if (!names.isEmpty()) {
+                names.append(", ");
+            }
+            names.append(com.antcolonies.content.item.Tooltips.species(id).getString());
+        }
+        return names.toString();
+    }
+
+    /**
+     * A Colony Connector: its channel (a colour), what it does with food (keep a reserve and supply the rest, or ask for food
+     * up to a target), how fast, what it does with the items its filter names, and what it moved lately.
+     */
+    private void connectorPage(GuiGraphicsExtractor graphics, int x, int y, int mouseX, int mouseY) {
+        int channel = menu.data(StructureBlockEntity.DATA_CHANNEL);
+        label(graphics, Component.translatable("gui.antcolonies.connector.channel"), x, y + 2, LABEL);
+        int sx = x + 44;
+        for (int c = 0; c < 16; c++) {
+            int bx = sx + c * 8;
+            button(bx, y, 7, 11, "", StructureMenu.CHANNEL + c, List.of(Component.translatable("color.minecraft." + net.minecraft.world.item.DyeColor.byId(c).getName())), true);
+            channelSwatches.add(new int[] {bx, y, c, c == channel ? 1 : 0});
+        }
+        y += 14;
+        int foodMode = menu.data(StructureBlockEntity.DATA_FOOD_MODE);
+        label(graphics, Component.translatable("gui.antcolonies.connector.food"), x, y + 2, LABEL);
+        int bx = x + 44;
+        String[] foodModes = {"off", "supply", "request"};
+        for (int i = 0; i < 3; i++) {
+            String text = Component.translatable("gui.antcolonies.connector.food." + foodModes[i]).getString();
+            int w = buttonWidth(text);
+            toggle(bx, y, w, 12, text, StructureMenu.FOOD_MODE + i, List.of(Component.translatable("gui.antcolonies.connector.food." + foodModes[i] + ".hint")),
+                    foodMode == i);
+            bx += w + 2;
+        }
+        y += 15;
+        int reserve = menu.data(StructureBlockEntity.DATA_RESERVE);
+        int target = menu.data(StructureBlockEntity.DATA_TARGET);
+        boolean supply = foodMode == com.antcolonies.content.blockentity.ConnectorSettings.SUPPLY;
+        String amountKey = supply ? "gui.antcolonies.connector.keep" : "gui.antcolonies.connector.until";
+        int amount = supply ? reserve : target;
+        label(graphics, Component.translatable(amountKey), x, y + 2, foodMode == 0 ? DIM : LABEL);
+        int ax = x + 44;
+        button(ax, y, 12, 12, "-", supply ? StructureMenu.RESERVE_LESS : StructureMenu.TARGET_LESS, null, foodMode != 0);
+        label(graphics, amount + "%", ax + 16, y + 2, foodMode == 0 ? DIM : LABEL);
+        button(ax + 40, y, 12, 12, "+", supply ? StructureMenu.RESERVE_MORE : StructureMenu.TARGET_MORE, null, foodMode != 0);
+        int rate = com.antcolonies.content.blockentity.ConnectorSettings.RATES[Math.clamp(menu.data(StructureBlockEntity.DATA_RATE_LIMIT), 0, 3)];
+        String rateText = rate < 0 ? Component.translatable("gui.antcolonies.connector.rate.max").getString()
+                : Component.translatable("gui.antcolonies.connector.rate", rate).getString();
+        int rw = buttonWidth(rateText);
+        button(x + 170 - rw, y, rw, 12, rateText, StructureMenu.CYCLE_RATE, List.of(Component.translatable("gui.antcolonies.connector.rate.hint")), true);
+        y += 15;
+        int itemMode = menu.data(StructureBlockEntity.DATA_ITEM_MODE);
+        label(graphics, Component.translatable("gui.antcolonies.connector.items"), x, y + 2, LABEL);
+        bx = x + 44;
+        String[] itemModes = {"off", "send", "receive"};
+        for (int i = 0; i < 3; i++) {
+            String text = Component.translatable("gui.antcolonies.connector.items." + itemModes[i]).getString();
+            int w = buttonWidth(text);
+            toggle(bx, y, w, 12, text, StructureMenu.ITEM_MODE + i, List.of(Component.translatable("gui.antcolonies.connector.items." + itemModes[i] + ".hint")),
+                    itemMode == i);
+            bx += w + 2;
+        }
+        y += 15;
+        label(graphics, Component.translatable("gui.antcolonies.connector.filter"), x, StructureMenu.FILTER_Y - 10, itemMode == 1 ? LABEL : DIM);
+        // What it moved, under the filter.
+        int line = y + 1;
+        double in = menu.data(StructureBlockEntity.DATA_FOOD_IN) / 10.0;
+        double out = menu.data(StructureBlockEntity.DATA_FOOD_OUT) / 10.0;
+        double items = menu.data(StructureBlockEntity.DATA_ITEMS_MOVED) / 10.0;
+        int members = menu.data(StructureBlockEntity.DATA_MEMBERS);
+        boolean paused = ColonyStatus.PAUSED.in(menu.data(StructureBlockEntity.DATA_STATUS));
+        String summary = paused ? Component.translatable("status.antcolonies.paused").getString()
+                : Component.translatable("gui.antcolonies.connector.flow", members, rate(in), rate(out), rate(items)).getString();
+        String shown = fit(summary, 170);
+        if (!shown.equals(summary)) {
+            clipped.add(new Clipped(x, line, 170, summary));
+        }
+        label(graphics, shown, x, line, paused ? WARN : members > 0 ? GOOD : DIM);
+    }
+
+    /** The channel swatches drawn this frame: x, y, colour id, selected. */
+    private final List<int[]> channelSwatches = new ArrayList<>();
+
+    @Override
+    protected void drawButton(GuiGraphicsExtractor graphics, Button button, boolean hovered) {
+        super.drawButton(graphics, button, hovered);
+        for (int[] swatch : channelSwatches) {
+            if (button.x() == leftPos + swatch[0] && button.y() == topPos + swatch[1]) {
+                int color = 0xFF000000 | net.minecraft.world.item.DyeColor.byId(swatch[2]).getTextureDiffuseColor();
+                graphics.fill(button.x() + 1, button.y() + 1, button.x() + button.w() - 1, button.y() + button.h() - 1, color);
+                if (swatch[3] == 1) {
+                    graphics.outline(button.x() - 1, button.y() - 1, button.w() + 2, button.h() + 2, 0xFFFFFFFF);
+                }
+            }
+        }
+    }
+
     /** Queen Chamber slot roles: materials, the tube, the sample, the output; null for any other slot. */
     private @Nullable String chamberSlot(net.minecraft.world.inventory.Slot slot) {
         if (kind != StructureKind.QUEEN_CHAMBER || slot.container != menu.structure()) {
@@ -269,7 +422,12 @@ public class StructureScreen extends AntScreen<StructureMenu> {
                 return;
             }
         }
-        if (hoveredSlot != null && kind == StructureKind.FORAGING_SITE && hoveredSlot.container == menu.structure() && !hoveredSlot.hasItem()) {
+        if (hoveredSlot != null && kind == StructureKind.COLONY_CONNECTOR && hoveredSlot.container == menu.structure() && !hoveredSlot.hasItem()) {
+            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.connector.filter"),
+                    Component.translatable("gui.antcolonies.connector.filter.hint").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
+            return;
+        }
+        if (hoveredSlot != null && kind.foraging() && hoveredSlot.container == menu.structure() && !hoveredSlot.hasItem()) {
             graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.site.store")), mouseX, mouseY);
             return;
         }

@@ -1,5 +1,8 @@
 {
   "values": [
-    "antcolonies:chitin_leggings"
+    "antcolonies:chitin_leggings",
+    "antcolonies:hardened_chitin_leggings",
+    "antcolonies:infernal_chitin_leggings",
+    "antcolonies:void_chitin_leggings"
   ]
 }

@@ -89,10 +89,21 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
                 graphics.fill(cx - 1, cy + 5, cx + 1, cy + 6, c);
                 graphics.fill(cx - 1, cy + 1, cx + 1, cy + 5, c);
             }
-            case "feed" -> {
+            case "food" -> {
+                // A heap of food.
                 graphics.fill(cx - 4, cy - 1, cx + 4, cy + 3, c);
                 graphics.fill(cx - 3, cy - 3, cx + 2, cy - 1, c);
                 graphics.fill(cx - 2, cy + 3, cx + 3, cy + 4, c);
+            }
+            case "feed" -> {
+                // A tube lying on its side with three ants in it.
+                graphics.fill(cx - 6, cy - 3, cx + 5, cy - 2, c);
+                graphics.fill(cx - 6, cy + 2, cx + 5, cy + 3, c);
+                graphics.fill(cx + 5, cy - 2, cx + 6, cy + 2, c);
+                graphics.fill(cx - 7, cy - 4, cx - 6, cy + 4, c);
+                for (int i = 0; i < 3; i++) {
+                    graphics.fill(cx - 4 + i * 3, cy - 1, cx - 2 + i * 3, cy + 1, c);
+                }
             }
             case "output" -> {
                 graphics.fill(cx - 5, cy - 1, cx + 2, cy + 1, c);

@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "antcolonies:block/royal_chitin_pillar_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "antcolonies:block/royal_chitin_pillar"
+    },
+    "axis=z": {
+      "model": "antcolonies:block/royal_chitin_pillar_horizontal",
+      "x": 90
+    }
+  }
+}

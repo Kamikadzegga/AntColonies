@@ -18,7 +18,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * {@code antcolonies:colony}: a player is near (or opens) a Terrarium whose colony matches. Every condition is optional:
  * {@code has_queen}, {@code stage} (bounds), {@code adults} (bounds), {@code species} (an id), {@code category}
- * ("base", "mineral", "hybrid"...), {@code best_trait} (bounds on the Queen's highest trait level).
+ * ("base", "mineral", "hybrid"...), {@code best_trait} (bounds on the Queen's highest trait level), {@code queen_founded} (grown
+ * from a single Queen through founding), {@code linked} (another colony online on one of its Colony Connector channels).
  */
 public class ColonyTrigger extends SimpleCriterionTrigger<ColonyTrigger.TriggerInstance> {
     @Override
@@ -31,7 +32,8 @@ public class ColonyTrigger extends SimpleCriterionTrigger<ColonyTrigger.TriggerI
     }
 
     public record TriggerInstance(Optional<Holder<LootItemCondition>> player, Optional<Boolean> hasQueen, MinMaxBounds.Ints stage,
-                                  MinMaxBounds.Doubles adults, Optional<Identifier> species, Optional<String> category, MinMaxBounds.Ints bestTrait)
+                                  MinMaxBounds.Doubles adults, Optional<Identifier> species, Optional<String> category, MinMaxBounds.Ints bestTrait,
+                                  Optional<Boolean> queenFounded, Optional<Boolean> linked)
             implements SimpleCriterionTrigger.SimpleInstance {
         public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create(i -> i.group(
                 LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player),
@@ -40,7 +42,9 @@ public class ColonyTrigger extends SimpleCriterionTrigger<ColonyTrigger.TriggerI
                 MinMaxBounds.Doubles.CODEC.optionalFieldOf("adults", MinMaxBounds.Doubles.ANY).forGetter(TriggerInstance::adults),
                 Identifier.CODEC.optionalFieldOf("species").forGetter(TriggerInstance::species),
                 Codec.STRING.optionalFieldOf("category").forGetter(TriggerInstance::category),
-                MinMaxBounds.Ints.CODEC.optionalFieldOf("best_trait", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::bestTrait)
+                MinMaxBounds.Ints.CODEC.optionalFieldOf("best_trait", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::bestTrait),
+                Codec.BOOL.optionalFieldOf("queen_founded").forGetter(TriggerInstance::queenFounded),
+                Codec.BOOL.optionalFieldOf("linked").forGetter(TriggerInstance::linked)
         ).apply(i, TriggerInstance::new));
 
         boolean matches(Colony colony, @Nullable AntSpecies data) {
@@ -54,6 +58,13 @@ public class ColonyTrigger extends SimpleCriterionTrigger<ColonyTrigger.TriggerI
                 return false;
             }
             if (category.isPresent() && (data == null || !category.get().equals(data.category().getSerializedName()))) {
+                return false;
+            }
+            if (queenFounded.isPresent() && queenFounded.get() != colony.queenFounded()) {
+                return false;
+            }
+            // Linked: another colony is online on one of its Colony Connector channels.
+            if (linked.isPresent() && linked.get() != colony.network().stream().anyMatch(link -> link.online() && !link.self())) {
                 return false;
             }
             if (!bestTrait.isAny()) {

@@ -34,17 +34,28 @@ hunters to work, evolve mineral species and engineer their genes.
   evolve from them, and eleven hybrids come from crossing Queens. The endgame Wither and Dragon Ants need a Nether Star
   and the dragon's breath.
 - **Progression through the dimensions.** The Nether's ants evolve only in the Nether and the End's only in the End, and
-  the Chitin ladder (Hardened, Infernal, Void) gates tier III upgrades and high genetics behind both. Thirteen more
+  the Chitin ladder (Hardened, Infernal, Void) gates tier III upgrades and high genetics behind both. Chitin is never
+  crafted: it comes only from ants, wild ones and your colonies. Thirteen more
   species turn on when MachinaOpus, Mekanism, Create, Thermal, Immersive Engineering or AE2 add their ores.
-- **Genetics.** Each Queen has ten traits, and daughters inherit them with variation. There are 31 mutations, including
+- **Genetics.** Each Queen has ten traits, and daughters inherit them with variation. A Queen grows with her colony:
+  after some time at each bigger stage, two of her traits go up. There are 31 mutations, including
   flaws. The FE-powered **Genetic Laboratory** upgrades traits, rerolls, mutates and purges Queens and copies their
   genes.
-- **Giant anthills.** A rare world-generation structure: a mound over tunnels and chambers dug deep into the ground,
-  with loot, a Queen to catch and soldiers that defend it.
+- **Founding and food.** Start a colony from a single Queen in an empty Terrarium: fill her food bar and she raises her
+  first workers. Food keeps a colony working: running low slows it, and Farmer colonies can feed the others. Food has
+  its own slot in the Terrarium.
+- **Expeditions.** Nether- and End-adapted ants go on simulated expeditions from home, through the little portals of the
+  Nether and End Foraging Sites, built from the trail pheromones a colony living in that dimension finds.
+- **Colony Connectors.** Link colonies on a channel: food flows from colonies with food to spare to the hungriest ones,
+  and filtered items move between their Storage. No power.
+- **Giant anthills.** Rare world-generation structures in the Overworld, the Nether and the End, planned in seven
+  layouts from a dozen kinds of room, with loot, soldiers, and always one Queen to catch.
+- **Building blocks.** Anthill soil and bricks, chitin scales and tiles, amber with an ant caught inside, fungal and
+  royal blocks, a nest door, a pheromone lamp and more, with stairs, slabs and walls.
 - **Home nests.** Pick up a wild nest with Silk Touch and place it at home: its ants tend and harvest your crops and
   carry the harvest in, for hoppers and pipes to take out.
-- **Chitin gear and Guard Ants.** Iron-tier tools, armor and a quick shield made from Chitin Plates; the helmet is an
-  ant's head with antennae, and with the full set, wild ants take you for one of their own. A hunter colony can also give up some of its ants for a **Guard Ant** that follows you and fights for
+- **Chitin gear and Guard Ants.** Tools, armor and a quick shield made from Chitin Plates, then three stronger tiers
+  (Hardened, Infernal, Void, the last past netherite); the helmet is an ant's head with antennae, and with the full set, wild ants take you for one of their own. A hunter colony can also give up some of its ants for a **Guard Ant** that follows you and fights for
   you, as strong as the colony's genetics.
 - **Built for automation and modpacks.** Comparator outputs and redstone control. Items and FE move through any mod's
   pipes and cables. Species, evolutions, hybrids, mutations, lab costs, ant food and loot are all data packs, and a
@@ -53,7 +64,9 @@ hunters to work, evolve mineral species and engineer their genes.
   block that fixes it) and what they evolve into. Tube tooltips and the Ant Identification Book say the same, and the
   book has how-to-play pages.
 - **Integrations.** JEI and EMI recipe categories for the whole progression, Jade tooltips (colonies, wild ants and
-  nests), and 27 advancements, with a path through the Nether and the End.
+  nests, connectors and expedition sites), and 35 advancements, with a path through the Nether and the End.
+- **A colony screen for everyone.** Eight tabs (overview, colony, jobs, production, genetics, network, statistics,
+  info) in a Visual Mode of pictures and bars or a Detailed Mode of exact numbers and charts.
 
 ## Screenshots
 
@@ -61,14 +74,20 @@ hunters to work, evolve mineral species and engineer their genes.
 |:---:|:---:|
 | ![Terrarium](docs/images/screenshots/terrarium.png) | ![Colony screen](docs/images/screenshots/colony-screen.png) |
 | A living Terrarium | The colony screen |
+| ![Jobs](docs/images/screenshots/jobs-screen.png) | ![Statistics](docs/images/screenshots/statistics-screen.png) |
+| Jobs: ants, priority and modes per site | Statistics: the colony over the last half hour |
 | ![Genetic Laboratory](docs/images/screenshots/genetic-laboratory.png) | ![Recipe viewer](docs/images/screenshots/recipe-viewer.png) |
-| The Genetic Laboratory at work | The whole progression in JEI and EMI |
+| The Genetic Laboratory at work | Expeditions and the whole progression in JEI and EMI |
+| ![Expedition sites](docs/images/screenshots/expedition-sites.png) | ![Connected colonies](docs/images/screenshots/connected-colonies.png) |
+| Nether and End Foraging Sites | Colonies linked by Colony Connectors |
+| ![Chitin armor tiers](docs/images/screenshots/chitin-tiers.png) | ![Chitin armor from behind](docs/images/screenshots/chitin-tiers-back.png) |
+| Chitin, Hardened, Infernal and Void armor | Spines and a Queen's wings on the back |
 | ![Giant anthill](docs/images/screenshots/giant-anthill.png) | ![Inside a giant anthill](docs/images/screenshots/anthill-queen-chamber.png) |
-| A giant anthill | The Queen's chamber below it |
-| ![Guard Ant and Chitin armor](docs/images/screenshots/guard-ant-and-chitin.png) | ![Jade tooltip](docs/images/screenshots/jade.png) |
-| A Guard Ant and a full set of Chitin armor | A Terrarium at a glance with Jade |
-| ![Ant Identification Book](docs/images/screenshots/identification-book.png) | |
-| The Ant Identification Book: how to play, and every species | |
+| A giant anthill | Inside it |
+| ![Building blocks](docs/images/screenshots/building-blocks.png) | ![Guard Ant and Chitin armor](docs/images/screenshots/guard-ant-and-chitin.png) |
+| Building blocks: anthill, chitin, amber, fungal and royal | A Guard Ant and Chitin armor |
+| ![Ant Identification Book](docs/images/screenshots/identification-book.png) | ![Jade tooltip](docs/images/screenshots/jade.png) |
+| The Ant Identification Book: how to play, and every species | A Terrarium at a glance with Jade |
 
 ## Installation
 

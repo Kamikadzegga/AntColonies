@@ -75,7 +75,7 @@ public class IngameShowcase {
     private BlockPos origin;
 
     public IngameShowcase(IEventBus modEventBus) {
-        if (Files.exists(MARKER) || Files.exists(GUI_MARKER)) {
+        if (Files.exists(MARKER) || Files.exists(GUI_MARKER) || Files.exists(UPDATE_MARKER) || Files.exists(STRESS_MARKER)) {
             LOGGER.info("[Showcase] marker found");
             NeoForge.EVENT_BUS.addListener(this::onClientTick);
         } else if (Files.exists(CONFIG_MARKER)) {
@@ -188,6 +188,178 @@ public class IngameShowcase {
         structure(level, origin.offset(3, 0, -6), StructureKind.FORAGING_SITE);
     }
 
+    // ------------------------------------------------------------------ Stress test (marker "stress-test")
+
+    /**
+     * A file named {@code stress-test} in the run folder: 30 seconds of an empty world for a baseline, then 100 big
+     * colonies (2000 workers and a full ring of eight chambers each: Foraging or Harvesting Sites, Storage, Nest and Queen
+     * Chambers and a Colony Connector, 4 channels, all in range of many others) and 100 wild ants; 20 seconds to settle,
+     * then five minutes measured: the server's tick time and the client's frames per second, once a second. The results go
+     * to {@code ingame-showcase-result.txt}. While it runs, frames are not capped (no vsync, no limit, no slowing down in
+     * the background); the player's own settings are put back before it quits.
+     */
+    private static final Path STRESS_MARKER = FMLPaths.GAMEDIR.get().resolve("stress-test");
+    private final boolean stressTest = Files.exists(STRESS_MARKER);
+    private static final int STRESS_BASELINE_END = 700;
+    private static final int STRESS_MEASURE_START = 1100;
+    private static final int STRESS_MEASURE_END = STRESS_MEASURE_START + 5 * 60 * 20;
+    private final List<double[]> baseline = new ArrayList<>();
+    private final List<double[]> loaded = new ArrayList<>();
+    private Object[] savedOptions;
+
+    private void stressStep(Minecraft minecraft, IntegratedServer server) {
+        if (ticks == 60) {
+            origin = minecraft.player.blockPosition();
+            minecraft.options.pauseOnLostFocus = false;
+            if (!minecraft.gui.hud.isHidden()) {
+                minecraft.gui.hud.toggle();
+            }
+            savedOptions = new Object[] {minecraft.options.enableVsync().get(), minecraft.options.framerateLimit().get(),
+                    minecraft.options.inactivityFpsLimit().get()};
+            minecraft.options.enableVsync().set(false);
+            minecraft.options.framerateLimit().set(net.minecraft.client.Options.UNLIMITED_FRAMERATE_CUTOFF);
+            minecraft.options.inactivityFpsLimit().set(net.minecraft.client.InactivityFpsLimit.MINIMIZED);
+            result("stress: render distance " + minecraft.options.getEffectiveRenderDistance() + ", simulation distance "
+                    + minecraft.options.simulationDistance().get() + ", window " + minecraft.getWindow().getWidth() + "x" + minecraft.getWindow().getHeight());
+            server.execute(() -> {
+                command(server, "difficulty peaceful");
+                command(server, "time set noon");
+            });
+            camera(server, 28.5, 14 - 1.62, -6.0, 0, 32);
+            return;
+        }
+        if (ticks > 100 && ticks <= STRESS_BASELINE_END && ticks % 20 == 0) {
+            baseline.add(sample(minecraft, server));
+        }
+        if (ticks == STRESS_BASELINE_END) {
+            screenshot(minecraft, "stress_0_empty");
+            server.execute(() -> {
+                long start = System.nanoTime();
+                buildStress(server);
+                result(String.format(java.util.Locale.ROOT, "stress: built in %.0f ms", (System.nanoTime() - start) / 1e6));
+            });
+        }
+        if (ticks > STRESS_MEASURE_START && ticks <= STRESS_MEASURE_END && ticks % 20 == 0) {
+            loaded.add(sample(minecraft, server));
+            if ((ticks - STRESS_MEASURE_START) % 1200 == 0) {
+                double[] s = loaded.getLast();
+                result(String.format(java.util.Locale.ROOT, "stress: minute %d: tick %.2f ms (worst %.2f), %d fps",
+                        (ticks - STRESS_MEASURE_START) / 1200, s[0], s[1], (int) s[2]));
+            }
+        }
+        if (ticks == STRESS_MEASURE_START + 100) {
+            screenshot(minecraft, "stress_1_start");
+        } else if (ticks == STRESS_MEASURE_START + 3000) {
+            screenshot(minecraft, "stress_2_middle");
+        } else if (ticks == STRESS_MEASURE_END - 20) {
+            screenshot(minecraft, "stress_3_end");
+        }
+        if (ticks == STRESS_MEASURE_END + 1) {
+            // Block entities can only be read on the server's own thread: count there, and wait for it.
+            server.submit(() -> stressCount(server)).join();
+        }
+        if (ticks == STRESS_MEASURE_END + 2) {
+            finishStress(minecraft);
+        }
+    }
+
+    private void stressCount(IntegratedServer server) {
+        {
+            ServerLevel level = server.overworld();
+            int colonies = 0;
+            double workers = 0;
+            long found = 0;
+            for (int gx = 0; gx < 10; gx++) {
+                for (int gz = 0; gz < 10; gz++) {
+                    if (level.getBlockEntity(stressPos(gx, gz)) instanceof TerrariumBlockEntity t) {
+                        colonies++;
+                        workers += t.colony().workers();
+                        found += t.colony().totalFound();
+                    }
+                }
+            }
+            int ants = level.getEntitiesOfClass(com.antcolonies.content.entity.WildAnt.class, new net.minecraft.world.phys.AABB(origin).inflate(120)).size();
+            result(String.format(java.util.Locale.ROOT, "stress: after 5 minutes: %d colonies, %.0f workers, %d finds in all, %d wild ants",
+                    colonies, workers, found, ants));
+        }
+    }
+
+    private void finishStress(Minecraft minecraft) {
+        {
+            result("stress: baseline (empty world, " + baseline.size() + " s): " + summary(baseline));
+            result("stress: loaded (5 minutes, " + loaded.size() + " s): " + summary(loaded));
+            minecraft.options.enableVsync().set((Boolean) savedOptions[0]);
+            minecraft.options.framerateLimit().set((Integer) savedOptions[1]);
+            minecraft.options.inactivityFpsLimit().set((net.minecraft.client.InactivityFpsLimit) savedOptions[2]);
+            finish(minecraft);
+        }
+    }
+
+    private BlockPos stressPos(int gx, int gz) {
+        return origin.offset(6 + gx * 5, 0, 6 + gz * 5);
+    }
+
+    /** One second's sample: the server's average tick (last 100 ticks), its worst tick (last 100), the frames per second. */
+    private static double[] sample(Minecraft minecraft, IntegratedServer server) {
+        long worst = 0;
+        for (long nanos : server.getTickTimesNanos()) {
+            worst = Math.max(worst, nanos);
+        }
+        return new double[] {server.getAverageTickTimeNanos() / 1e6, worst / 1e6, minecraft.getFps()};
+    }
+
+    private static String summary(List<double[]> samples) {
+        double tick = 0;
+        double worst = 0;
+        double fps = 0;
+        double minFps = Double.MAX_VALUE;
+        List<Double> ticks = new ArrayList<>();
+        for (double[] s : samples) {
+            tick += s[0];
+            worst = Math.max(worst, s[1]);
+            fps += s[2];
+            minFps = Math.min(minFps, s[2]);
+            ticks.add(s[0]);
+        }
+        int n = Math.max(1, samples.size());
+        ticks.sort(Double::compare);
+        double p95 = ticks.isEmpty() ? 0 : ticks.get(Math.min(ticks.size() - 1, (int) Math.floor(ticks.size() * 0.95)));
+        return String.format(java.util.Locale.ROOT, "server tick %.2f ms average (95th percentile %.2f ms, worst single tick %.2f ms); %.0f fps average, %.0f lowest",
+                tick / n, p95, worst, fps / n, minFps == Double.MAX_VALUE ? 0 : minFps);
+    }
+
+    /** 100 big colonies in a 10 x 10 grid, every one with a Colony Connector, and 100 wild ants among them. */
+    private void buildStress(IntegratedServer server) {
+        ServerLevel level = server.overworld();
+        StructureKind[] mine = {StructureKind.FORAGING_SITE, StructureKind.FORAGING_SITE, StructureKind.STORAGE, StructureKind.NEST_CHAMBER,
+                StructureKind.FORAGING_SITE, StructureKind.NEST_CHAMBER, StructureKind.QUEEN_CHAMBER};
+        StructureKind[] farm = {StructureKind.HARVESTING_SITE, StructureKind.FORAGING_SITE, StructureKind.STORAGE, StructureKind.NEST_CHAMBER,
+                StructureKind.HARVESTING_SITE, StructureKind.NEST_CHAMBER, StructureKind.QUEEN_CHAMBER};
+        int i = 0;
+        for (int gx = 0; gx < 10; gx++) {
+            for (int gz = 0; gz < 10; gz++) {
+                BlockPos pos = stressPos(gx, gz);
+                boolean farmer = i % 2 == 0;
+                colony(level, pos, farmer ? "farmer" : "stone", 2000, 20000);
+                List<BlockPos> places = places(pos);
+                StructureKind[] kinds = farmer ? farm : mine;
+                for (int p = 0; p < kinds.length; p++) {
+                    structure(level, places.get(p), kinds[p]);
+                }
+                connector(level, places.get(7), i % 4, farmer ? com.antcolonies.content.blockentity.ConnectorSettings.SUPPLY
+                        : com.antcolonies.content.blockentity.ConnectorSettings.REQUEST, 40, 75, 0, ItemStack.EMPTY);
+                i++;
+            }
+        }
+        RandomSource random = RandomSource.create(99);
+        for (int n = 0; n < 100; n++) {
+            var ant = com.antcolonies.core.registry.ModEntities.WILD_ANT.get().create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            BlockPos at = origin.offset(4 + random.nextInt(50), 0, 4 + random.nextInt(50));
+            ant.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, random.nextFloat() * 360, 0);
+            level.addFreshEntity(ant);
+        }
+    }
+
     private void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         try {
@@ -196,7 +368,11 @@ public class IngameShowcase {
                 return;
             }
             ticks++;
-            if (guiCheck) {
+            if (stressTest) {
+                stressStep(minecraft, minecraft.getSingleplayerServer());
+            } else if (updateCheck) {
+                updateStep(minecraft, minecraft.getSingleplayerServer());
+            } else if (guiCheck) {
                 guiStep(minecraft, minecraft.getSingleplayerServer());
             } else {
                 step(minecraft, minecraft.getSingleplayerServer());
@@ -236,6 +412,279 @@ public class IngameShowcase {
         }
     }
 
+
+    // ------------------------------------------------------------------ The colony update's own check (marker "update-check")
+
+    /** A file named {@code update-check} in the run folder: build the update's demo, screenshot its screens and blocks, quit. */
+    private static final Path UPDATE_MARKER = FMLPaths.GAMEDIR.get().resolve("update-check");
+    private final boolean updateCheck = Files.exists(UPDATE_MARKER);
+    /** Screens of the update check: picture name, block offset from the origin, Terrarium page (or -1), Detailed Mode. */
+    private static final Object[][] UPDATE_SCREENS = {
+            {"u01_overview_visual", 0, 0, 5, 0, false}, {"u02_overview_detailed", 0, 0, 5, 0, true},
+            {"u03_colony_visual", 0, 0, 5, 1, false}, {"u04_colony_detailed", 0, 0, 5, 1, true},
+            {"u05_jobs_visual", 0, 0, 5, 2, false}, {"u06_jobs_detailed", 0, 0, 5, 2, true},
+            {"u07_production_visual", 0, 0, 5, 3, false}, {"u08_production_detailed", 0, 0, 5, 3, true},
+            {"u09_genetics_visual", 0, 0, 5, 4, false}, {"u10_genetics_detailed", 0, 0, 5, 4, true},
+            {"u11_network_visual", 8, 0, 5, 5, false}, {"u12_network_detailed", 8, 0, 5, 5, true},
+            {"u13_statistics_visual", 0, 0, 5, 6, false}, {"u14_statistics_detailed", 0, 0, 5, 6, true},
+            {"u15_info", 0, 0, 5, 7, false},
+            {"u16_founding_feeding", 4, 0, 12, 0, false}, {"u17_founding_detailed", 4, 0, 12, 0, true},
+            {"u18_empty_network", 0, 0, 5, 5, false},
+            {"u19_connector_supply", 9, 0, 5, -1, false}, {"u20_connector_request", 11, 0, 5, -1, false},
+            {"u21_foraging_site_modes", -1, 0, 4, -1, false}, {"u22_nether_site", 16, 0, 6, -1, false},
+            {"u23_end_site", 20, 0, 6, -1, false}, {"u24_end_site_wrong_ants", 24, 0, 6, -1, false},
+            {"u25_hunting_ground_settings", -5, 0, 5, -1, false}};
+
+    private void updateStep(Minecraft minecraft, IntegratedServer server) {
+        if (ticks == 60) {
+            origin = minecraft.player.blockPosition();
+            minecraft.options.pauseOnLostFocus = false;
+            if (!minecraft.gui.hud.isHidden()) {
+                minecraft.gui.hud.toggle();
+            }
+            server.execute(() -> {
+                command(server, "difficulty peaceful");
+                build(server);
+                buildUpdate(server);
+            });
+            return;
+        }
+        if (ticks < 160 || origin == null) {
+            return;
+        }
+        int t = ticks - 160;
+        int index = t / 30;
+        int phase = t % 30;
+        if (index < UPDATE_SCREENS.length) {
+            Object[] target = UPDATE_SCREENS[index];
+            BlockPos pos = origin.offset((int) target[1], (int) target[2], (int) target[3]);
+            int page = (int) target[4];
+            if (phase == 0) {
+                com.antcolonies.client.screen.TerrariumScreen.showDetailed((boolean) target[5]);
+                if (page >= 0) {
+                    com.antcolonies.client.screen.TerrariumScreen.showPage(page);
+                }
+                server.execute(() -> {
+                    command(server, String.format(java.util.Locale.ROOT, "tp @s %.1f %d %.1f", pos.getX() + 0.5, pos.getY(), pos.getZ() - 2.5));
+                    open(server, pos);
+                });
+            } else if (phase == 26) {
+                screenshot(minecraft, (String) target[0]);
+            } else if (phase == 28) {
+                minecraft.gui.setScreen(null);
+            }
+            return;
+        }
+        int w = t - UPDATE_SCREENS.length * 30;
+        switch (w) {
+            case 0 -> {
+                com.antcolonies.client.screen.TerrariumScreen.showDetailed(false);
+                camera(server, 18.5, 2.4 - 1.62, 2.6, 0, 30);
+            }
+            case 40 -> screenshot(minecraft, "u30_expedition_sites");
+            case 45 -> camera(server, 10, 2.6 - 1.62, 3.0, 0, 35);
+            case 85 -> screenshot(minecraft, "u31_connected_colonies");
+            case 90 -> camera(server, -0.5, 3.4 - 1.62, -6.5, 180, 22);
+            case 130 -> screenshot(minecraft, "u32_building_blocks");
+            case 135 -> camera(server, -8.5, 3.4 - 1.62, -6.5, 180, 22);
+            case 175 -> screenshot(minecraft, "u33_building_blocks_left");
+            case 180 -> camera(server, 8.5, 3.4 - 1.62, -6.5, 180, 22);
+            case 220 -> screenshot(minecraft, "u34_building_blocks_right");
+            case 225 -> jei(com.antcolonies.compat.jei.AntColoniesJeiPlugin.EXPEDITION);
+            case 250 -> screenshot(minecraft, "u35_jei_expedition");
+            case 255 -> emi(minecraft, "expedition");
+            case 285 -> screenshot(minecraft, "u35b_emi_expedition");
+            case 290 -> {
+                minecraft.gui.setScreen(null);
+                look(server, 9.5, 1.0, 3.2, 0, 34);
+            }
+            case 320 -> screenshot(minecraft, "u36_jade_connector");
+            case 325 -> look(server, 16.5, 1.0, 4.3, 0, 42);
+            case 355 -> screenshot(minecraft, "u37_jade_nether_site");
+            case 360 -> camera(server, 32.5, 1.3 - 1.62, 2.4, 0, 10);
+            case 400 -> screenshot(minecraft, "u38_chitin_tiers");
+            case 405 -> camera(server, 32.5, 1.3 - 1.62, 10.0, 180, 10);
+            case 445 -> screenshot(minecraft, "u39_chitin_tiers_back");
+            case 450 -> camera(server, 27.6, 1.75 - 1.62, 4.4, -50, 8);
+            case 490 -> screenshot(minecraft, "u40_chitin_jaws");
+            case 495 -> {
+                server.execute(() -> updateReport(server));
+                finish(minecraft);
+            }
+            default -> {
+            }
+        }
+    }
+
+    /**
+     * The update's demo next to the usual one: two colonies linked by Colony Connectors (a Farmer colony supplying a Stone
+     * colony), a Fire colony at a Nether Foraging Site, a Chorus colony at an End Foraging Site and a Common colony at
+     * one (wrong ants), a Queen founding alone, settings on the Diamond colony's sites, half an hour of history, and a
+     * gallery of the building blocks behind the player.
+     */
+    private void buildUpdate(IntegratedServer server) {
+        ServerLevel level = server.overworld();
+        // The Diamond colony's sites: one looking for minerals at high priority, one turned off.
+        StructureBlockEntity mineral = (StructureBlockEntity) level.getBlockEntity(origin.offset(-1, 0, 4));
+        mineral.setMode(com.antcolonies.colony.model.ForagingMode.MINERAL);
+        mineral.setPriority(StructureBlockEntity.PRIORITY_HIGH);
+        if (level.getBlockEntity(origin.offset(1, 0, 4)) instanceof StructureBlockEntity organic && organic.kind() == StructureKind.FORAGING_SITE) {
+            organic.setMode(com.antcolonies.colony.model.ForagingMode.ORGANIC);
+        }
+        if (level.getBlockEntity(origin.offset(-1, 0, 6)) instanceof StructureBlockEntity off && off.kind().job().any()) {
+            off.setEnabled(false);
+        }
+        // Linked colonies: a Farmer colony gives its spare food to a Stone colony.
+        TerrariumBlockEntity farm = colony(level, origin.offset(8, 0, 5), "farmer", 900, 15000);
+        structure(level, origin.offset(8, 0, 6), StructureKind.HARVESTING_SITE);
+        structure(level, origin.offset(8, 0, 4), StructureKind.STORAGE);
+        connector(level, origin.offset(9, 0, 5), 4, com.antcolonies.content.blockentity.ConnectorSettings.SUPPLY, 40, 75,
+                com.antcolonies.content.blockentity.ConnectorSettings.SEND, new ItemStack(Items.WHEAT_SEEDS));
+        TerrariumBlockEntity mine = colony(level, origin.offset(12, 0, 5), "stone", 1200, 300);
+        structure(level, origin.offset(12, 0, 6), StructureKind.FORAGING_SITE);
+        structure(level, origin.offset(12, 0, 4), StructureKind.STORAGE);
+        connector(level, origin.offset(11, 0, 5), 4, com.antcolonies.content.blockentity.ConnectorSettings.REQUEST, 40, 75,
+                com.antcolonies.content.blockentity.ConnectorSettings.RECEIVE, ItemStack.EMPTY);
+        // The expedition sites.
+        TerrariumBlockEntity fire = colony(level, origin.offset(16, 0, 5), "fire", 1500, 20000);
+        StructureBlockEntity nether = structure(level, origin.offset(16, 0, 6), StructureKind.NETHER_FORAGING_SITE);
+        structure(level, origin.offset(16, 0, 4), StructureKind.STORAGE);
+        TerrariumBlockEntity chorus = colony(level, origin.offset(20, 0, 5), "chorus", 1500, 20000);
+        structure(level, origin.offset(20, 0, 6), StructureKind.END_FORAGING_SITE);
+        structure(level, origin.offset(20, 0, 4), StructureKind.STORAGE);
+        TerrariumBlockEntity wrong = colony(level, origin.offset(24, 0, 5), "common", 500, 5000);
+        structure(level, origin.offset(24, 0, 6), StructureKind.END_FORAGING_SITE);
+        // A Queen alone: founding, half fed.
+        BlockPos alone = origin.offset(4, 0, 12);
+        place(level, alone, ModBlocks.TERRARIUM.get().defaultBlockState().setValue(ColonyEntityBlock.FACING, Direction.NORTH));
+        TerrariumBlockEntity founding = (TerrariumBlockEntity) level.getBlockEntity(alone);
+        founding.setItem(TerrariumBlockEntity.SLOT_QUEEN, TweezersItemAccess.queenTube(AntColonies.id("blossom")));
+        founding.processSlots(level);
+        founding.colony().setFood(1200);
+        // Run them a while: each simulation step, the connectors' passes, and a history sample (half an hour squeezed in).
+        TerrariumBlockEntity diamond = (TerrariumBlockEntity) level.getBlockEntity(origin.offset(0, 0, 5));
+        List<TerrariumBlockEntity> all = List.of(diamond, farm, mine, fire, chorus, wrong, founding);
+        long time = level.getGameTime();
+        RandomSource random = RandomSource.create(12);
+        for (int i = 0; i < 40; i++) {
+            for (TerrariumBlockEntity terrarium : all) {
+                terrarium.rescan(level);
+                ColonySimulator.step(terrarium, level, 0.5);
+                if (terrarium != founding) {
+                    terrarium.colony().setFood(Math.max(terrarium.colony().food(), terrarium == mine ? 0 : 400));
+                }
+            }
+            if (i % 3 == 0) {
+                diamond.colony().setFood(diamond.colony().food() * (0.85 + random.nextDouble() * 0.2));
+            }
+            for (int pass = 0; pass < 30; pass++) {
+                com.antcolonies.colony.network.ConnectorNetwork.tick(level);
+            }
+            for (TerrariumBlockEntity terrarium : all) {
+                terrarium.colony().history().sample(time + i * com.antcolonies.colony.model.ColonyHistory.INTERVAL, terrarium.colony());
+            }
+        }
+        all.forEach(TerrariumBlockEntity::syncNow);
+        result("nether site: " + nether.assigned() + " ants, status " + com.antcolonies.colony.model.ColonyStatus.of(nether.siteStatus())
+                + "; network links " + farm.colony().network().size() + "; founding " + founding.colony().founding());
+        // The building blocks, in rows behind the player (north): blocks, then stairs, slabs and walls.
+        BlockPos gallery = origin.offset(-12, 0, -13);
+        int x = 0;
+        for (var entry : com.antcolonies.core.registry.ModDecor.ALL.entrySet()) {
+            BlockPos pos = gallery.offset(x, 0, 0);
+            BlockState state = entry.getValue().get().defaultBlockState();
+            if (entry.getKey().equals("nest_door")) {
+                level.setBlock(pos, state, Block.UPDATE_ALL);
+                level.setBlock(pos.above(), state.setValue(net.minecraft.world.level.block.DoorBlock.HALF,
+                        net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER), Block.UPDATE_ALL);
+            } else {
+                level.setBlock(pos, state, Block.UPDATE_ALL);
+                if (!entry.getKey().endsWith("cluster") && !entry.getKey().endsWith("trapdoor")) {
+                    level.setBlock(pos.above(), state, Block.UPDATE_ALL);
+                }
+            }
+            x++;
+        }
+        int sx = 0;
+        for (String id : com.antcolonies.core.registry.ModDecor.WITH_STAIRS) {
+            String stem = com.antcolonies.core.registry.ModDecor.stem(id);
+            BlockPos row = gallery.offset(sx, 0, -2);
+            level.setBlock(row, block(stem + "_stairs").defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(row.offset(1, 0, 0), block(stem + "_slab").defaultBlockState(), Block.UPDATE_ALL);
+            if (com.antcolonies.core.registry.ModDecor.WITH_WALLS.contains(id)) {
+                level.setBlock(row.offset(2, 0, 0), block(stem + "_wall").defaultBlockState(), Block.UPDATE_ALL);
+            }
+            sx += 3;
+        }
+        // The four chitin tiers on armor stands, a sword in each hand-side and a pickaxe in the other.
+        net.minecraft.world.entity.EquipmentSlot[] slots = {net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
+                net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
+        com.antcolonies.content.item.ChitinGear.Tier[] tiers = com.antcolonies.content.item.ChitinGear.Tier.values();
+        for (int i = 0; i < tiers.length; i++) {
+            BlockPos spot = origin.offset(29 + i * 2, 0, 6);
+            var stand = net.minecraft.world.entity.EntityTypes.ARMOR_STAND.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            stand.snapTo(spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, 180, 0);
+            stand.setYBodyRot(180);
+            stand.setYHeadRot(180);
+            for (int p = 0; p < 4; p++) {
+                stand.setItemSlot(slots[p], new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(
+                        AntColonies.id(tiers[i].id(ModItems.GEAR_PIECES[p])))));
+            }
+            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
+                    new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(AntColonies.id(tiers[i].id("pickaxe")))));
+            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND,
+                    new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(AntColonies.id(tiers[i].id("sword")))));
+            stand.setShowArms(true);
+            level.addFreshEntity(stand);
+        }
+    }
+
+    private static Block block(String id) {
+        return net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(AntColonies.id(id));
+    }
+
+    private TerrariumBlockEntity colony(ServerLevel level, BlockPos pos, String species, double workers, double food) {
+        place(level, pos, ModBlocks.TERRARIUM.get().defaultBlockState().setValue(ColonyEntityBlock.FACING, Direction.NORTH));
+        TerrariumBlockEntity terrarium = (TerrariumBlockEntity) level.getBlockEntity(pos);
+        terrarium.colony().setQueen(Genetics.wildQueen(AntColonies.id(species), RandomSource.create(species.hashCode())));
+        terrarium.colony().setPopulation(20, 30, workers);
+        terrarium.colony().setFood(food);
+        return terrarium;
+    }
+
+    private static void connector(ServerLevel level, BlockPos pos, int channel, int foodMode, int reserve, int target, int itemMode, ItemStack filter) {
+        StructureBlockEntity connector = structure(level, pos, StructureKind.COLONY_CONNECTOR);
+        var settings = connector.connector();
+        settings.channel = channel;
+        settings.foodMode = foodMode;
+        settings.reserve = reserve;
+        settings.target = target;
+        settings.itemMode = itemMode;
+        if (!filter.isEmpty()) {
+            connector.setItem(0, filter);
+        }
+        connector.connectorChanged();
+    }
+
+    /** Queen tubes for the demo (TweezersItem.queenTube with a fixed seed). */
+    private static final class TweezersItemAccess {
+        static ItemStack queenTube(net.minecraft.resources.Identifier species) {
+            return com.antcolonies.content.item.TweezersItem.queenTube(Genetics.wildQueen(species, RandomSource.create(21)));
+        }
+    }
+
+    private void updateReport(IntegratedServer server) {
+        ServerLevel level = server.overworld();
+        for (int[] offset : new int[][] {{0, 0, 5}, {8, 0, 5}, {12, 0, 5}, {16, 0, 5}, {20, 0, 5}, {24, 0, 5}, {4, 0, 12}}) {
+            if (level.getBlockEntity(origin.offset(offset[0], offset[1], offset[2])) instanceof TerrariumBlockEntity terrarium) {
+                Colony colony = terrarium.colony();
+                result(colony.species().getPath() + ": workers " + colony.workers() + ", food " + (long) colony.food() + ", founding " + colony.founding()
+                        + ", status " + com.antcolonies.colony.model.ColonyStatus.of(colony.status()) + ", history " + colony.history().count()
+                        + ", network " + colony.network().size());
+            }
+        }
+        result("done");
+    }
     private void step(Minecraft minecraft, IntegratedServer server) {
         switch (ticks) {
             case 60 -> {
@@ -271,13 +720,13 @@ public class IngameShowcase {
                 server.execute(() -> open(server, origin.offset(0, 0, 5)));
             }
             case 510 -> screenshot(minecraft, "09_gui_overview");
-            case 512 -> clickTab(minecraft, 1);
+            case 512 -> clickTab(minecraft, 4);
             case 530 -> screenshot(minecraft, "10_gui_genetics");
             case 532 -> clickTab(minecraft, 2);
             case 550 -> screenshot(minecraft, "11_gui_jobs");
             case 552 -> clickTab(minecraft, 3);
             case 570 -> screenshot(minecraft, "12_gui_stats");
-            case 571 -> clickTab(minecraft, 4);
+            case 571 -> clickTab(minecraft, 7);
             case 574 -> screenshot(minecraft, "12b_gui_species");
             case 575 -> {
                 server.execute(() -> open(server, origin.offset(-1, 0, 4)));
@@ -769,7 +1218,7 @@ public class IngameShowcase {
             }
             String name = (String) screens[t / AUDIT_STEP][0];
             if (name.endsWith("_info")) {
-                clickTab(minecraft, 4);
+                clickTab(minecraft, 7);
             } else if (name.endsWith("_other_trait") && minecraft.player.containerMenu instanceof com.antcolonies.content.menu.GeneticLabMenu lab) {
                 // Select Soldier Strength (trait 5) as the trait list does: the cost card should follow it.
                 minecraft.gameMode.handleInventoryButtonClick(lab.containerId, 5);

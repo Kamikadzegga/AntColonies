@@ -270,6 +270,30 @@ public final class AntRecipes {
         return list;
     }
 
+    /**
+     * The Nether and End expeditions: for each species that may go, its ants and the site in, the finds it can bring back
+     * out (the expedition table, filtered to that species).
+     */
+    public List<AntRecipe> expeditions() {
+        List<AntRecipe> list = new ArrayList<>();
+        double base = AntConfig.get(AntConfig.EXPEDITION_ROLLS);
+        for (com.antcolonies.colony.expedition.Expedition expedition : com.antcolonies.colony.expedition.Expedition.all(registries)) {
+            ItemStack site = new ItemStack(com.antcolonies.core.registry.ModBlocks.STRUCTURES.get(expedition.site()).get());
+            for (Identifier id : expedition.adaptedSpecies(registries)) {
+                List<SpeciesOutput> finds = expedition.outputsFor(id);
+                if (finds.isEmpty()) {
+                    continue;
+                }
+                list.add(new AntRecipe(id("expedition", AntColonies.id(expedition.site().getSerializedName() + "_" + id.getNamespace() + "_" + id.getPath())),
+                        List.of(List.of(ants(id, Caste.WORKER)), List.of(site)), outputs(finds),
+                        List.of(line("rate", String.format(Locale.ROOT, "%.3f", base * expedition.rate())),
+                                line("expedition_dimension", Component.translatable("dimension." + expedition.home().identifier().getNamespace() + "."
+                                        + expedition.home().identifier().getPath())).withStyle(ChatFormatting.DARK_PURPLE))));
+            }
+        }
+        return list;
+    }
+
     public List<AntRecipe> farming() {
         List<AntRecipe> list = new ArrayList<>();
         double base = AntConfig.get(AntConfig.FARMER_FOOD);

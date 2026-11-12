@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "antcolonies:chitin_plate",
+    "A": "antcolonies:ant_food",
+    "P": "minecraft:packed_mud",
+    "T": "antcolonies:test_tube"
+  },
+  "pattern": ["CAC", "PTP", "CCC"],
+  "result": {
+    "id": "antcolonies:colony_connector"
+  }
+}

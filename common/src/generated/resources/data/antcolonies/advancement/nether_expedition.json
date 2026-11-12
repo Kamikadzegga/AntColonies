@@ -1,0 +1,32 @@
+{
+  "parent": "antcolonies:nether_trail",
+  "criteria": {
+    "nether_expedition": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:nether_foraging_site"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:nether_foraging_site"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.nether_expedition.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.nether_expedition.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "nether_expedition"
+    ]
+  ]
+}

@@ -12,6 +12,9 @@ import com.antcolonies.colony.model.Colony;
 import com.antcolonies.colony.model.ColonyAccess;
 import com.antcolonies.colony.model.ColonyLayout;
 import com.antcolonies.colony.model.ColonyStatus;
+import com.antcolonies.colony.model.Founding;
+import com.antcolonies.colony.model.ForagingMode;
+import com.antcolonies.colony.expedition.Expedition;
 import com.antcolonies.colony.model.StructureKind;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.colony.genetics.Genome;
@@ -69,6 +72,8 @@ public final class ColonySimulator {
         int status;
         double healthFactor;
         double foodFactor = 1;
+        /** Speed of the jobs that bring food in (farming, hunting): never below hungryFoodWorkFactor. */
+        double foodWork = 1;
         /** Work per assigned ant, per kind of job: diminishing returns over all the colony's sites of that kind. */
         final Map<StructureKind, Double> perAnt = new EnumMap<>(StructureKind.class);
         @Nullable Allocation allocation;
@@ -88,6 +93,26 @@ public final class ColonySimulator {
 
         List<StructureBlockEntity> of(StructureKind kind) {
             return sites.getOrDefault(kind, List.of());
+        }
+
+        private @Nullable List<Expedition> expeditions;
+
+        /** The loaded expedition tables (looked up once per step). */
+        List<Expedition> expeditions() {
+            if (expeditions == null) {
+                expeditions = Expedition.all(level.registryAccess());
+            }
+            return expeditions;
+        }
+
+        /** The expedition a Nether or End Foraging Site runs, if its table is loaded. */
+        @Nullable Expedition expedition(StructureKind kind) {
+            for (Expedition expedition : expeditions()) {
+                if (expedition.site() == kind) {
+                    return expedition;
+                }
+            }
+            return null;
         }
 
         int count(StructureKind kind) {
@@ -186,7 +211,23 @@ public final class ColonySimulator {
             step.status |= ColonyStatus.LOW_HEALTH.bit();
         }
         step.healthFactor = ProductionMath.healthFactor(health);
-        step.foodFactor = starving ? AntConfig.get(AntConfig.STARVED_FACTOR) : 1;
+        // Food holds up work, laying and growth: fully while there is enough for a while, less as it runs low, little
+        // when it is out. What the colony ate per minute in its last step tells how long the food lasts.
+        double lowFood = lowFoodFactor(ColonyAccess.food(colony), colony.stats().foodOut());
+        step.foodFactor = starving ? AntConfig.get(AntConfig.STARVED_FACTOR) : lowFood;
+        if (!starving && lowFood < 0.999) {
+            step.status |= ColonyStatus.LOW_FOOD.bit();
+        }
+        // The jobs that bring food in keep going while food is short, so a hungry colony can always feed itself again.
+        step.foodWork = Math.max(step.foodFactor, AntConfig.get(AntConfig.HUNGRY_FOOD_WORK));
+
+        // --- Queen-only founding: the Queen waits for her food before her first brood ---
+        if (colony.founding() == Founding.FEEDING && ColonyAccess.food(colony) >= foundingFood() - 0.5) {
+            ColonyAccess.beginFoundingBrood(colony);
+        }
+        if (colony.founding().active()) {
+            step.status |= ColonyStatus.FOUNDING.bit();
+        }
 
         // --- Ants to jobs ---
         Allocation allocation = Allocation.allocate(step, workerCount - maintenance);
@@ -222,6 +263,11 @@ public final class ColonySimulator {
 
         // --- Eggs, larvae and adults ---
         Breeding.Result bred = Breeding.run(step, adultCapacity, larvaeCapacity);
+        if (colony.founding() == Founding.BROOD
+                && ColonyAccess.countFoundingRaised(colony, bred.raised()) >= AntConfig.get(AntConfig.FOUNDING_WORKERS)) {
+            // The first workers are grown: the colony is founded.
+            ColonyAccess.completeFounding(colony);
+        }
 
         // --- Deaths ---
         double deaths = Breeding.deaths(step);
@@ -230,9 +276,11 @@ public final class ColonySimulator {
         double finds = 0;
         double hunts = 0;
         double hunted = 0;
-        for (Allocation.Site site : allocation.of(StructureKind.FORAGING_SITE)) {
-            Scavenging.run(step, site);
-            finds += site.rate();
+        for (StructureKind kind : StructureKind.FORAGING_KINDS) {
+            for (Allocation.Site site : allocation.of(kind)) {
+                Scavenging.run(step, site);
+                finds += site.rate();
+            }
         }
         for (Allocation.Site site : allocation.of(StructureKind.HUNTING_GROUND)) {
             // Hunters feed on what they catch: food for the colony, besides the mobs' loot.
@@ -248,8 +296,10 @@ public final class ColonySimulator {
         allocation.publish(step);
 
         // What waits in the Foraging Sites' stores moves on to Storage.
-        for (StructureBlockEntity site : step.of(StructureKind.FORAGING_SITE)) {
-            ColonyStorage.moveToStorage(level, colony, site);
+        for (StructureKind kind : StructureKind.FORAGING_KINDS) {
+            for (StructureBlockEntity site : step.of(kind)) {
+                ColonyStorage.moveToStorage(level, colony, site);
+            }
         }
 
         // --- Queen Chambers ---
@@ -259,10 +309,22 @@ public final class ColonySimulator {
 
         // --- Stage and status ---
         int stage = stage(step, colony.exactAdults());
+        // The Queen grows with her colony, in her own time: after a while at a bigger stage she grows into it, and two of her
+        // traits go up (see QueenData.growTo).
+        if (colony.queen() != null) {
+            List<Trait> raised = new ArrayList<>();
+            com.antcolonies.colony.genetics.QueenData grown = colony.queen().growTo(stage, step.dt, step.random, raised);
+            if (grown != colony.queen()) {
+                colony.setQueen(grown);
+                if (!raised.isEmpty()) {
+                    step.terrarium.queenGrew(step.level, grown.grown(), raised);
+                }
+            }
+        }
         if (colony.queen() == null) {
             step.status |= ColonyStatus.NO_QUEEN.bit();
         }
-        if (!step.of(StructureKind.FORAGING_SITE).isEmpty() || !step.of(StructureKind.HARVESTING_SITE).isEmpty()) {
+        if (StructureKind.FORAGING_KINDS.stream().anyMatch(kind -> !step.of(kind).isEmpty()) || !step.of(StructureKind.HARVESTING_SITE).isEmpty()) {
             if (allocation.assignedWorkers() == 0) {
                 step.status |= ColonyStatus.NO_WORKERS.bit();
             }
@@ -271,7 +333,7 @@ public final class ColonySimulator {
             step.status |= ColonyStatus.NO_NEST_CHAMBER.bit();
         }
         if (allocation.assigned(StructureKind.HARVESTING_SITE) > 0 && !step.species.farming().harvest().isEmpty()
-                && step.of(StructureKind.STORAGE).isEmpty() && step.of(StructureKind.FORAGING_SITE).isEmpty()) {
+                && step.of(StructureKind.STORAGE).isEmpty() && StructureKind.FORAGING_KINDS.stream().allMatch(kind -> step.of(kind).isEmpty())) {
             // The harvest needs somewhere to go: a Storage, or a Foraging Site's small store.
             step.status |= ColonyStatus.NO_STORAGE.bit();
         }
@@ -286,7 +348,7 @@ public final class ColonySimulator {
         }
         double adultsNow = Math.max(1, colony.exactAdults());
         Colony.Activity activity = new Colony.Activity(
-                (float) (allocation.assigned(StructureKind.FORAGING_SITE) / adultsNow),
+                (float) (StructureKind.FORAGING_KINDS.stream().mapToInt(allocation::assigned).sum() / adultsNow),
                 (float) (allocation.assigned(StructureKind.HUNTING_GROUND) / adultsNow),
                 (float) (allocation.assigned(StructureKind.HARVESTING_SITE) / adultsNow),
                 0F,
@@ -298,6 +360,8 @@ public final class ColonySimulator {
                 finds, hunts, deaths / step.dt, (long) adultCapacity, (long) larvaeCapacity,
                 foodCapacity, structureCount, intake.food() / step.dt);
         ColonyAccess.finish(colony, stage, step.status, stats, activity, allocation.assignments(), maintenance);
+        ColonyAccess.setFoodFactor(colony, step.foodFactor);
+        colony.history().sample(level.getGameTime(), colony);
         // Structures show their part of the colony's state (problems that concern them, and the link itself).
         for (List<StructureBlockEntity> list : step.sites.values()) {
             for (StructureBlockEntity site : list) {
@@ -321,13 +385,36 @@ public final class ColonySimulator {
         }
     }
 
+    /** The food a founding Queen waits for before her first brood: foundingFoodShare of the Terrarium's own food room. */
+    public static double foundingFood() {
+        return AntConfig.get(AntConfig.FOUNDING_FOOD_SHARE) * AntConfig.get(AntConfig.TERRARIUM_FOOD_CAPACITY);
+    }
+
+    /**
+     * How a colony's food holds up its work: 1 with at least lowFoodMinutes of food left at what it eats per minute,
+     * falling evenly to lowFoodFactor as the food runs out (starving is worse: starvedFactor).
+     */
+    public static double lowFoodFactor(double food, double perMinute) {
+        double minutes = AntConfig.get(AntConfig.LOW_FOOD_MINUTES);
+        if (minutes <= 0 || perMinute <= 0) {
+            return 1;
+        }
+        double left = food / perMinute;
+        if (left >= minutes) {
+            return 1;
+        }
+        double low = AntConfig.get(AntConfig.LOW_FOOD_FACTOR);
+        return low + (1 - low) * Math.max(0, left) / minutes;
+    }
+
     /** Food per minute the whole colony eats right now. */
     private static double foodUse(Step step, Allocation allocation, int maintenance) {
         Colony colony = step.colony;
         double worker = AntConfig.get(AntConfig.WORKER_FOOD);
         double hunter = AntConfig.get(AntConfig.HUNTER_FOOD);
         double idle = AntConfig.get(AntConfig.IDLE_ACTIVITY);
-        double use = colony.queen() != null ? AntConfig.get(AntConfig.QUEEN_FOOD) : 0;
+        // A founding Queen waiting for her food lives on her own reserves, as real founding Queens do.
+        double use = colony.queen() != null && colony.founding() != Founding.FEEDING ? AntConfig.get(AntConfig.QUEEN_FOOD) : 0;
         use += maintenance * worker;
         for (Allocation.Site site : allocation.all()) {
             double saving = site.entity().upgradeTier(UpgradeType.FOOD_EFFICIENCY)
@@ -374,10 +461,103 @@ public final class ColonySimulator {
             double bonus = ProductionMath.bonus(step.trait(Trait.WORKER_PRODUCTIVITY) * step.effects.production()
                     * ProductionMath.speed(entity.upgradeTier(UpgradeType.SPEED))
                     * (1 + AntConfig.get(AntConfig.SPECIES_UPGRADE_BONUS) * entity.speciesUpgradeTier(speciesId, SpeciesUpgradeKind.EXTRACTION)));
+            if (entity.kind().expedition()) {
+                // A Nether or End Foraging Site: its workers bring back the expedition's finds, not the species' own.
+                Expedition expedition = step.expedition(entity.kind());
+                if (expedition == null) {
+                    return 0;
+                }
+                double rate = AntConfig.get(AntConfig.EXPEDITION_ROLLS) * expedition.rate() * step.effective(site) * bonus
+                        * step.healthFactor * step.foodFactor;
+                site.setRate(rate);
+                return rollOutputs(step, entity, rate, site, from -> expedition.outputsFor(speciesId), false, ForagingMode.BALANCED);
+            }
             double rate = AntConfig.get(AntConfig.SCAVENGE_ROLLS) * step.species.production().rate() * step.effective(site) * bonus
                     * step.healthFactor * step.foodFactor;
             site.setRate(rate);
-            return rollOutputs(step, entity, rate, site, false);
+            ForagingMode mode = entity.mode();
+            if (mode != ForagingMode.BALANCED && step.species.production().outputs().stream()
+                    .noneMatch(output -> output.minStage() <= ColonyAccess.stage(step.colony) && output.available() && mode.wants(output))) {
+                // Nothing of the kind it looks for: it gathers as if Balanced, and says so.
+                site.addStatus(ColonyStatus.NOTHING_TO_FOCUS);
+            }
+            double rolls = rollOutputs(step, entity, rate, site, from -> from.production().outputs(), false, mode);
+            trail(step, entity, (int) rolls);
+            chitin(step, entity, (int) rolls);
+            return rolls;
+        }
+
+        /**
+         * Chitin comes only from ants: now and then a find comes back with chitin (shed skins and the remains of dead
+         * ants), one chance per find ({@code chitinFindChance}). Mostly Chitin Plates; Hardened Chitin from colony stage
+         * 2, more at stage 3 and up; in the Nether Infernal Chitin and in the End Void Chitin instead of some of the plates.
+         */
+        static void chitin(Step step, StructureBlockEntity entity, int rolls) {
+            double chance = AntConfig.get(AntConfig.CHITIN_FIND_CHANCE);
+            if (rolls <= 0 || chance <= 0) {
+                return;
+            }
+            int stage = ColonyAccess.stage(step.colony);
+            double hardened = stage >= 3 ? 0.25 : stage == 2 ? 0.1 : 0;
+            net.minecraft.world.item.Item dimensional = step.level.dimension() == net.minecraft.world.level.Level.NETHER
+                    ? com.antcolonies.core.registry.ModItems.INFERNAL_CHITIN.get()
+                    : step.level.dimension() == net.minecraft.world.level.Level.END ? com.antcolonies.core.registry.ModItems.VOID_CHITIN.get() : null;
+            double dimensionalShare = dimensional != null ? 0.3 : 0;
+            int[] counts = new int[3];
+            for (int i = 0; i < rolls; i++) {
+                if (step.random.nextDouble() >= chance) {
+                    continue;
+                }
+                double kind = step.random.nextDouble();
+                if (kind < dimensionalShare) {
+                    counts[2]++;
+                } else if (kind < dimensionalShare + hardened) {
+                    counts[1]++;
+                } else {
+                    counts[0]++;
+                }
+            }
+            net.minecraft.world.item.Item[] items = {com.antcolonies.core.registry.ModItems.CHITIN_PLATE.get(),
+                    com.antcolonies.core.registry.ModItems.HARDENED_CHITIN.get(), dimensional};
+            for (int k = 0; k < 3; k++) {
+                if (counts[k] <= 0 || items[k] == null) {
+                    continue;
+                }
+                ItemStack stack = new ItemStack(items[k], counts[k]);
+                if (ColonyStorage.canFit(step.level, step.colony, List.of(stack), entity)) {
+                    ColonyStorage.insert(step.level, step.colony, stack, entity);
+                    ColonyAccess.countFound(step.colony, counts[k]);
+                }
+            }
+        }
+
+        /**
+         * A colony living in another dimension sometimes finds that dimension's trail pheromone while it forages there (the
+         * material its expedition site is crafted from): one chance per find.
+         */
+        private static void trail(Step step, StructureBlockEntity entity, int rolls) {
+            if (rolls <= 0) {
+                return;
+            }
+            for (Expedition expedition : step.expeditions()) {
+                if (expedition.trail().isEmpty() || !expedition.home().equals(step.level.dimension())) {
+                    continue;
+                }
+                Expedition.Trail trail = expedition.trail().get();
+                int found = 0;
+                for (int i = 0; i < rolls; i++) {
+                    if (step.random.nextDouble() < trail.chance()) {
+                        found++;
+                    }
+                }
+                if (found > 0) {
+                    ItemStack stack = new ItemStack(trail.item(), found);
+                    if (ColonyStorage.canFit(step.level, step.colony, List.of(stack), entity)) {
+                        ColonyStorage.insert(step.level, step.colony, stack, entity);
+                        ColonyAccess.countFound(step.colony, found);
+                    }
+                }
+            }
         }
     }
 
@@ -389,7 +569,7 @@ public final class ColonySimulator {
             }
             double rate = AntConfig.get(AntConfig.FARMER_FOOD) * step.species.farming().foodPerMinute() * step.effective(site)
                     * ProductionMath.bonus(step.trait(Trait.FARMER_PRODUCTIVITY) * step.effects.farming()
-                    * ProductionMath.speed(site.entity().upgradeTier(UpgradeType.SPEED))) * step.healthFactor * step.foodFactor;
+                    * ProductionMath.speed(site.entity().upgradeTier(UpgradeType.SPEED))) * step.healthFactor * step.foodWork;
             site.setRate(rate);
             return rate;
         }
@@ -401,8 +581,8 @@ public final class ColonySimulator {
             }
             double rolls = AntConfig.get(AntConfig.FARMER_BYPRODUCT_ROLLS) * step.effective(site)
                     * ProductionMath.bonus(step.trait(Trait.FARMER_PRODUCTIVITY) * ProductionMath.speed(site.entity().upgradeTier(UpgradeType.SPEED)))
-                    * step.healthFactor * step.foodFactor;
-            return rollOutputs(step, site.entity(), rolls, site, true);
+                    * step.healthFactor * step.foodWork;
+            return rollOutputs(step, site.entity(), rolls, site, from -> from.farming().harvest(), true, ForagingMode.BALANCED);
         }
     }
 
@@ -417,7 +597,7 @@ public final class ColonySimulator {
             int huntingTiers = entity.upgradeTier(UpgradeType.HUNTING);
             double rate = AntConfig.get(AntConfig.HUNT_ROLLS) * step.effective(site)
                     * ProductionMath.bonus(strength * (1 + 0.25 * huntingTiers) * ProductionMath.speed(entity.upgradeTier(UpgradeType.SPEED)))
-                    * step.healthFactor * step.foodFactor;
+                    * step.healthFactor * step.foodWork;
             site.setRate(rate);
             List<AntSpecies.Combat.Target> targets = step.species.combat().targets().isEmpty() ? DEFAULT_TARGETS : step.species.combat().targets();
             int total = targets.stream().mapToInt(AntSpecies.Combat.Target::weight).sum();
@@ -462,7 +642,9 @@ public final class ColonySimulator {
      * Finds from a species' output list (or its harvest) at {@code rate} per minute, into the site's own store first, then
      * the colony's Storage. While the colony is still partly its former species, some finds come from the former species' list.
      */
-    private static double rollOutputs(Step step, StructureBlockEntity entity, double rate, Allocation.Site site, boolean harvest) {
+    private static double rollOutputs(Step step, StructureBlockEntity entity, double rate, Allocation.Site site,
+                                      java.util.function.Function<AntSpecies, List<SpeciesOutput>> source, boolean harvest,
+                                      ForagingMode mode) {
         double progress = entity.progress() + rate * step.dt;
         int rolls = 0;
         Identifier speciesId = step.colony.species();
@@ -473,8 +655,8 @@ public final class ColonySimulator {
         int stage = ColonyAccess.stage(step.colony);
         while (progress >= 1 && rolls < MAX_ROLLS) {
             AntSpecies from = step.former != null && step.random.nextDouble() >= step.colony.conversion() ? step.former : step.species;
-            List<SpeciesOutput> outputs = harvest ? from.farming().harvest() : from.production().outputs();
-            SpeciesOutput output = pickOutput(outputs, stage, specialWeight, step.random);
+            List<SpeciesOutput> outputs = source.apply(from);
+            SpeciesOutput output = pickOutput(outputs, stage, specialWeight, step.random, mode);
             if (output == null) {
                 progress = Math.min(progress, 1);
                 break;
@@ -516,10 +698,20 @@ public final class ColonySimulator {
     }
 
     public static @Nullable SpeciesOutput pickOutput(List<SpeciesOutput> outputs, int stage, double specialWeight, RandomSource random) {
+        return pickOutput(outputs, stage, specialWeight, random, ForagingMode.BALANCED);
+    }
+
+    /** An output's weight in a pick by a Foraging Site in this mode (Mineral or Organic Gathering favour their kind). */
+    public static double pickWeight(SpeciesOutput output, double specialWeight, ForagingMode mode) {
+        return pickWeight(output, specialWeight) * mode.weight(output);
+    }
+
+    public static @Nullable SpeciesOutput pickOutput(List<SpeciesOutput> outputs, int stage, double specialWeight, RandomSource random,
+                                                     ForagingMode mode) {
         double total = 0;
         for (SpeciesOutput output : outputs) {
             if (output.minStage() <= stage && output.available()) {
-                total += pickWeight(output, specialWeight);
+                total += pickWeight(output, specialWeight, mode);
             }
         }
         if (total <= 0) {
@@ -528,7 +720,7 @@ public final class ColonySimulator {
         double pick = random.nextDouble() * total;
         for (SpeciesOutput output : outputs) {
             if (output.minStage() <= stage && output.available()) {
-                pick -= pickWeight(output, specialWeight);
+                pick -= pickWeight(output, specialWeight, mode);
                 if (pick < 0) {
                     return output;
                 }

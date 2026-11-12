@@ -27,6 +27,9 @@ public final class ModRegistries {
     public static final ResourceKey<Registry<Hybrid>> HYBRID = ResourceKey.createRegistryKey(AntColonies.id("hybrid"));
     public static final ResourceKey<Registry<Mutation>> MUTATION = ResourceKey.createRegistryKey(AntColonies.id("mutation"));
     public static final ResourceKey<Registry<TraitUpgrade>> TRAIT_UPGRADE = ResourceKey.createRegistryKey(AntColonies.id("trait_upgrade"));
+    /** The Nether and End Foraging Sites' expedition tables. */
+    public static final ResourceKey<Registry<com.antcolonies.colony.expedition.Expedition>> EXPEDITION =
+            ResourceKey.createRegistryKey(AntColonies.id("expedition"));
 
     /** The species every new player starts with, and the fallback of unknown ids. */
     public static final Identifier COMMON = AntColonies.id("common");
@@ -37,6 +40,7 @@ public final class ModRegistries {
         event.worldRegistry(HYBRID, Hybrid.CODEC, Hybrid.CODEC);
         event.worldRegistry(MUTATION, Mutation.CODEC, Mutation.CODEC);
         event.worldRegistry(TRAIT_UPGRADE, TraitUpgrade.CODEC, TraitUpgrade.CODEC);
+        event.worldRegistry(EXPEDITION, com.antcolonies.colony.expedition.Expedition.CODEC, com.antcolonies.colony.expedition.Expedition.CODEC);
     }
 
     public static @Nullable AntSpecies species(HolderLookup.@Nullable Provider registries, @Nullable Identifier id) {

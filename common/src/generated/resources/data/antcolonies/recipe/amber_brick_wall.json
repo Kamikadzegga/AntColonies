@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "antcolonies:amber_bricks"
+  },
+  "pattern": ["BBB", "BBB"],
+  "result": {
+    "count": 6,
+    "id": "antcolonies:amber_brick_wall"
+  }
+}

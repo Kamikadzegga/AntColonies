@@ -47,6 +47,8 @@ public class AntColoniesEmiPlugin implements EmiPlugin {
                 new Kind("larvae", structure(StructureKind.NEST_CHAMBER), 1, 2, AntRecipes::larvae, structure(StructureKind.NEST_CHAMBER)),
                 new Kind("production", structure(StructureKind.FORAGING_SITE), 2, 1, AntRecipes::production, structure(StructureKind.FORAGING_SITE),
                         structure(StructureKind.STORAGE)),
+                new Kind("expedition", structure(StructureKind.NETHER_FORAGING_SITE), 3, 2, AntRecipes::expeditions,
+                        structure(StructureKind.NETHER_FORAGING_SITE), structure(StructureKind.END_FORAGING_SITE)),
                 new Kind("farming", structure(StructureKind.HARVESTING_SITE), 2, 1, AntRecipes::farming, structure(StructureKind.HARVESTING_SITE),
                         structure(StructureKind.STORAGE)),
                 new Kind("fighting", structure(StructureKind.HUNTING_GROUND), 2, 2, AntRecipes::fighting, structure(StructureKind.HUNTING_GROUND)),

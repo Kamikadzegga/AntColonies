@@ -59,6 +59,18 @@ public final class Tooltips {
         tooltip.accept(Component.translatable("tooltip.antcolonies.queen.genetics", rarity(genome.rarity()),
                 String.format(java.util.Locale.ROOT, "%.1f", genome.averageLevel())).withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable("tooltip.antcolonies.queen.generation", genome.lineage().generation()).withStyle(ChatFormatting.GRAY));
+        // How far she has grown with a colony, and how she grows.
+        if (queen.grown() > 1) {
+            tooltip.accept(Component.translatable("tooltip.antcolonies.queen_grown", queen.grown()).withStyle(ChatFormatting.GREEN));
+        }
+        if (queen.grown() > 0 && queen.grown() < 4 && queen.growth() > 0) {
+            tooltip.accept(Component.translatable("tooltip.antcolonies.queen_growing", queen.grown() + 1, (int) Math.ceil(queen.minutesToNext()))
+                    .withStyle(ChatFormatting.DARK_GREEN));
+        }
+        if (detailed && queen.grown() < 4) {
+            tooltip.accept(Component.translatable("tooltip.antcolonies.queen_grows", (int) Math.round(QueenData.minutesFor(2)), QueenData.GROWTH_CAP)
+                    .withStyle(ChatFormatting.DARK_GRAY));
+        }
         speciesFacts(registries, queen.species(), tooltip, detailed);
         if (!detailed) {
             bestTraits(genome, tooltip);

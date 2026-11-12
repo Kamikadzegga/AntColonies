@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "antcolonies:packed_anthill_soil"
+  },
+  "pattern": ["PP", "PP"],
+  "result": {
+    "count": 4,
+    "id": "antcolonies:anthill_bricks"
+  }
+}

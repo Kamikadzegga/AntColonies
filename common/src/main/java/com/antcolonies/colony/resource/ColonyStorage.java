@@ -24,10 +24,11 @@ public final class ColonyStorage {
         if (from != null && from.kind().stores() && !piles.contains(from)) {
             piles.add(from);
         }
-        for (BlockPos pos : colony.layout().of(StructureKind.FORAGING_SITE)) {
-            if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof StructureBlockEntity site && site.kind() == StructureKind.FORAGING_SITE
-                    && site != from) {
-                piles.add(site);
+        for (StructureKind kind : StructureKind.FORAGING_KINDS) {
+            for (BlockPos pos : colony.layout().of(kind)) {
+                if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof StructureBlockEntity site && site.kind() == kind && site != from) {
+                    piles.add(site);
+                }
             }
         }
         return piles;
@@ -72,12 +73,59 @@ public final class ColonyStorage {
         return piles(level, colony, null);
     }
 
+    /**
+     * Counts what the colony's Storage chambers hold, by item (most first), and how many of their open slots are taken,
+     * for the Terrarium's Production page. Only run while someone has the Terrarium's screen open.
+     */
+    public static void summarize(ServerLevel level, Colony colony) {
+        List<Colony.StoredItem> items = new ArrayList<>();
+        int used = 0;
+        int slots = 0;
+        for (StructureBlockEntity storage : storages(level, colony)) {
+            slots += storage.unlockedSlots();
+            for (int slot = 0; slot < storage.unlockedSlots(); slot++) {
+                ItemStack stack = storage.getItem(slot);
+                if (stack.isEmpty()) {
+                    continue;
+                }
+                used++;
+                boolean merged = false;
+                for (int i = 0; i < items.size(); i++) {
+                    Colony.StoredItem item = items.get(i);
+                    if (ItemStack.isSameItemSameComponents(item.item(), stack)) {
+                        items.set(i, new Colony.StoredItem(item.item(), item.count() + stack.getCount()));
+                        merged = true;
+                        break;
+                    }
+                }
+                if (!merged) {
+                    items.add(new Colony.StoredItem(stack.copyWithCount(1), stack.getCount()));
+                }
+            }
+        }
+        items.sort((a, b) -> Long.compare(b.count(), a.count()));
+        com.antcolonies.colony.model.ColonyAccess.setStored(colony, items, used, slots);
+    }
+
     /** Whether all of the stacks would fit (checked before a find, so nothing is ever lost). */
     public static boolean canFit(ServerLevel level, Colony colony, List<ItemStack> stacks, @Nullable StructureBlockEntity from) {
+        return canFitInto(piles(level, colony, from), stacks);
+    }
+
+    /** Whether a stack fits whole into the colony's Storage chambers alone (Colony Connectors deliver only there). */
+    public static boolean canFitStorage(ServerLevel level, Colony colony, ItemStack stack) {
+        return canFitInto(storages(level, colony), List.of(stack));
+    }
+
+    /** Puts a stack into the colony's Storage chambers alone; returns what didn't fit. */
+    public static ItemStack insertIntoStorage(ServerLevel level, Colony colony, ItemStack stack) {
+        return insertInto(storages(level, colony), stack);
+    }
+
+    private static boolean canFitInto(List<StructureBlockEntity> piles, List<ItemStack> stacks) {
         if (stacks.isEmpty()) {
             return true;
         }
-        List<StructureBlockEntity> piles = piles(level, colony, from);
         if (piles.isEmpty()) {
             return false;
         }

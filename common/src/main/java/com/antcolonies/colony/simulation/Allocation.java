@@ -9,6 +9,7 @@ import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.colony.model.Colony;
 import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.colony.model.StructureKind;
+import com.antcolonies.colony.expedition.Expedition;
 
 /**
  * Puts the colony's ants to work. Workers kept for maintenance are taken out first; the rest go to Harvesting Sites and
@@ -21,7 +22,8 @@ import com.antcolonies.colony.model.StructureKind;
  */
 public final class Allocation {
     /** The order workers are handed out in. */
-    private static final List<StructureKind> WORKER_ORDER = List.of(StructureKind.HARVESTING_SITE, StructureKind.HUNTING_GROUND, StructureKind.FORAGING_SITE);
+    private static final List<StructureKind> WORKER_ORDER = List.of(StructureKind.HARVESTING_SITE, StructureKind.HUNTING_GROUND, StructureKind.FORAGING_SITE,
+            StructureKind.NETHER_FORAGING_SITE, StructureKind.END_FORAGING_SITE);
 
     /** One working site and the ants it got this step. */
     public static final class Site {
@@ -80,33 +82,50 @@ public final class Allocation {
     static Allocation allocate(ColonySimulator.Step step, int workers) {
         Allocation allocation = new Allocation();
         int freeWorkers = Math.max(0, workers);
+        List<StructureBlockEntity> order = new ArrayList<>();
         for (StructureKind kind : WORKER_ORDER) {
-            for (StructureBlockEntity entity : step.of(kind)) {
-                int status = 0;
-                int capacity = entity.capacity();
-                int wanted = entity.requested() < 0 ? capacity : Math.min(entity.requested(), capacity);
-                if (kind == StructureKind.HARVESTING_SITE && !step.species.canFarm()) {
-                    // A Harvesting Site needs Farmer Ants (or a species that farms); other ants leave it alone.
-                    wanted = 0;
-                    status |= ColonyStatus.INCOMPATIBLE_SPECIES.bit();
-                }
-                if (kind == StructureKind.HUNTING_GROUND && !step.species.canHunt()) {
-                    // A Hunting Ground needs a hunter species; others leave it alone.
-                    wanted = 0;
-                    status |= ColonyStatus.INCOMPATIBLE_SPECIES.bit();
-                }
-                if (paused(step, entity)) {
-                    wanted = 0;
-                    status |= ColonyStatus.PAUSED.bit();
-                }
-                int given = Math.min(wanted, freeWorkers);
-                freeWorkers -= given;
-                allocation.assignedWorkers += given;
-                if (given == 0 && wanted > 0) {
-                    status |= ColonyStatus.NO_WORKERS.bit();
-                }
-                allocation.sites.computeIfAbsent(kind, k -> new ArrayList<>()).add(new Site(entity, given, entity.requested(), capacity, status));
+            order.addAll(step.of(kind));
+        }
+        // Higher priority first; within a priority the fixed order above (food first) and the scan's order (a stable sort).
+        order.sort(java.util.Comparator.comparingInt(StructureBlockEntity::priority).reversed());
+        for (StructureBlockEntity entity : order) {
+            StructureKind kind = entity.kind();
+            int status = 0;
+            int capacity = entity.capacity();
+            int wanted = entity.requested() < 0 ? capacity : Math.min(entity.requested(), capacity);
+            if (kind == StructureKind.HARVESTING_SITE && !step.species.canFarm()) {
+                // A Harvesting Site needs Farmer Ants (or a species that farms); other ants leave it alone.
+                wanted = 0;
+                status |= ColonyStatus.INCOMPATIBLE_SPECIES.bit();
             }
+            if (kind == StructureKind.HUNTING_GROUND && !step.species.canHunt()) {
+                // A Hunting Ground needs a hunter species; others leave it alone.
+                wanted = 0;
+                status |= ColonyStatus.INCOMPATIBLE_SPECIES.bit();
+            }
+            if (kind.expedition()) {
+                // Only ants adapted to that dimension go on its expeditions.
+                Expedition expedition = step.expedition(kind);
+                if (expedition == null || !expedition.adapted(step.level.registryAccess(), step.colony.species())) {
+                    wanted = 0;
+                    status |= ColonyStatus.INCOMPATIBLE_SPECIES.bit();
+                }
+            }
+            if (!entity.enabled()) {
+                wanted = 0;
+                status |= ColonyStatus.DISABLED.bit();
+            }
+            if (paused(step, entity)) {
+                wanted = 0;
+                status |= ColonyStatus.PAUSED.bit();
+            }
+            int given = Math.min(wanted, freeWorkers);
+            freeWorkers -= given;
+            allocation.assignedWorkers += given;
+            if (given == 0 && wanted > 0) {
+                status |= ColonyStatus.NO_WORKERS.bit();
+            }
+            allocation.sites.computeIfAbsent(kind, k -> new ArrayList<>()).add(new Site(entity, given, entity.requested(), capacity, status));
         }
         if (allocation.assignedWorkers > Math.max(0, workers)) {
             throw new IllegalStateException("Ant allocation handed out more ants than the colony has");
@@ -144,7 +163,7 @@ public final class Allocation {
         List<Colony.Assignment> list = new ArrayList<>();
         for (Site site : all()) {
             list.add(new Colony.Assignment(site.entity.getBlockPos(), site.kind(), site.assigned, site.requested, site.capacity,
-                    site.status, site.rate));
+                    site.status, site.rate, site.entity.mode().ordinal(), site.entity.priority(), site.entity.enabled()));
         }
         return list;
     }

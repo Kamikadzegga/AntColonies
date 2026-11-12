@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": "minecraft:netherite_ingot",
+  "base": "antcolonies:infernal_chitin_boots",
+  "result": {
+    "id": "antcolonies:void_chitin_boots"
+  },
+  "template": "antcolonies:void_reinforcement"
+}

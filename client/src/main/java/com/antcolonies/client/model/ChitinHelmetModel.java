@@ -21,15 +21,26 @@ import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The worn Chitin Helmet: vanilla's helmet box, painted as an ant's head, with two elbowed antennae on top. Each antenna
- * rises from the front of the head and leans out, then bends forward at the elbow and ends in a club, like a real ant's.
- * The hat layer is left empty: its part of the armor texture (32,0 to 64,16) holds the antennae's skins instead (see
- * TexGen's {@code antHead}).
+ * The worn chitin armor's extra parts, all skinned from the armor texture's spare corners (the hat layer is left empty;
+ * see TexGen's {@code antennaSkins}):
+ * <ul>
+ * <li>Every Chitin Helmet: vanilla's helmet box painted as an ant's head, two elbowed antennae on top (each rises from
+ * the front of the head, leans out, bends forward at the elbow and ends in a club) and a pair of jaws under the face,
+ * curving in towards each other, a tooth at each tip.</li>
+ * <li>Hardened and Infernal chestplates: two thorn-like spines on the upper back, pointing back and up and a little
+ * apart, like a spiny ant's.</li>
+ * <li>The Void chestplate: a Queen's two wings, folded down the back past the waist.</li>
+ * </ul>
+ * Babies keep the plain shapes.
  */
 public final class ChitinHelmetModel {
     public static final ModelLayerLocation LAYER = new ModelLayerLocation(AntColonies.id("chitin_helmet"), "main");
+    public static final ModelLayerLocation SPINES = new ModelLayerLocation(AntColonies.id("chitin_chestplate_spines"), "main");
+    public static final ModelLayerLocation WINGS = new ModelLayerLocation(AntColonies.id("chitin_chestplate_wings"), "main");
 
-    private static @Nullable HumanoidModel<HumanoidRenderState> model;
+    private static @Nullable HumanoidModel<HumanoidRenderState> helmet;
+    private static @Nullable HumanoidModel<HumanoidRenderState> spines;
+    private static @Nullable HumanoidModel<HumanoidRenderState> wings;
 
     private ChitinHelmetModel() {}
 
@@ -49,23 +60,64 @@ public final class ChitinHelmetModel {
                     CubeListBuilder.create().texOffs(36, 0).addBox(-0.5F, -0.5F, -6.0F, 1.0F, 1.0F, 6.0F)
                             .texOffs(50, 0).addBox(-1.0F, -1.0F, -7.2F, 2.0F, 2.0F, 2.0F, new CubeDeformation(-0.3F)),
                     PartPose.offsetAndRotation(0.0F, -6.0F, 0.0F, -0.75F, side * -0.3F, 0.0F));
+            // A jaw: from under the face, forward, a little down and in towards the other; a tooth on its inner side at the tip.
+            head.addOrReplaceChild(name + "_jaw",
+                    CubeListBuilder.create().texOffs(32, 8).addBox(-0.5F, -0.5F, -4.0F, 1.0F, 1.0F, 4.0F)
+                            .texOffs(54, 8).addBox(side < 0 ? 0.5F : -1.5F, -0.5F, -4.0F, 1.0F, 1.0F, 1.0F),
+                    PartPose.offsetAndRotation(side * 2.5F, -0.5F, -4.8F, 0.15F, side * 0.5F, 0.0F));
         }
         return LayerDefinition.create(mesh, 64, 32);
     }
 
-    /** Bakes the model; called whenever entity models are (re)loaded. */
-    public static void bake(EntityModelSet models) {
-        model = new HumanoidModel<>(models.bakeLayer(LAYER));
+    /** The chestplate with two spines on the upper back. */
+    public static LayerDefinition createSpines() {
+        MeshDefinition mesh = HumanoidModel.createArmorMeshSet(LayerDefinitions.INNER_ARMOR_DEFORMATION, LayerDefinitions.OUTER_ARMOR_DEFORMATION).chest();
+        PartDefinition body = mesh.getRoot().getChild("body");
+        for (int side : new int[] {-1, 1}) {
+            body.addOrReplaceChild((side < 0 ? "right" : "left") + "_spine",
+                    CubeListBuilder.create().texOffs(44, 8).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 4.0F),
+                    PartPose.offsetAndRotation(side * 2.0F, 3.0F, 2.6F, 0.55F, side * 0.4F, 0.0F));
+        }
+        return LayerDefinition.create(mesh, 64, 32);
     }
 
-    /** Swaps in the antennae for the Chitin Helmet on adult humanoids and armor stands; babies keep the plain helmet. */
-    public static final IClientItemExtensions EXTENSIONS = new IClientItemExtensions() {
-        @Override
-        public Model getHumanoidArmorModel(ItemStack stack, EquipmentClientInfo.LayerType layerType, Model original) {
-            if (model == null || layerType != EquipmentClientInfo.LayerType.HUMANOID || !(original instanceof HumanoidModel<?>)) {
-                return original;
-            }
-            return model;
+    /** The chestplate with a Queen's folded wings down the back. */
+    public static LayerDefinition createWings() {
+        MeshDefinition mesh = HumanoidModel.createArmorMeshSet(LayerDefinitions.INNER_ARMOR_DEFORMATION, LayerDefinitions.OUTER_ARMOR_DEFORMATION).chest();
+        PartDefinition body = mesh.getRoot().getChild("body");
+        for (int side : new int[] {-1, 1}) {
+            // A flat wing 4 wide and 13 long, from the shoulders down past the waist, its tip a little out and back.
+            body.addOrReplaceChild((side < 0 ? "right" : "left") + "_wing",
+                    CubeListBuilder.create().texOffs(56, 16).addBox(side < 0 ? -4.0F : 0.0F, 0.0F, 0.0F, 4.0F, 13.0F, 0.0F),
+                    PartPose.offsetAndRotation(side * 0.5F, 0.5F, 3.1F, 0.2F, 0.0F, -side * 0.2F));
         }
-    };
+        return LayerDefinition.create(mesh, 64, 32);
+    }
+
+    /** Bakes the models; called whenever entity models are (re)loaded. */
+    public static void bake(EntityModelSet models) {
+        helmet = new HumanoidModel<>(models.bakeLayer(LAYER));
+        spines = new HumanoidModel<>(models.bakeLayer(SPINES));
+        wings = new HumanoidModel<>(models.bakeLayer(WINGS));
+    }
+
+    private static IClientItemExtensions extensions(java.util.function.Supplier<@Nullable HumanoidModel<HumanoidRenderState>> model) {
+        return new IClientItemExtensions() {
+            @Override
+            public Model getHumanoidArmorModel(ItemStack stack, EquipmentClientInfo.LayerType layerType, Model original) {
+                HumanoidModel<HumanoidRenderState> replacement = model.get();
+                if (replacement == null || layerType != EquipmentClientInfo.LayerType.HUMANOID || !(original instanceof HumanoidModel<?>)) {
+                    return original;
+                }
+                return replacement;
+            }
+        };
+    }
+
+    /** Every chitin helmet on adult humanoids and armor stands: the antennae and jaws. */
+    public static final IClientItemExtensions EXTENSIONS = extensions(() -> helmet);
+    /** Hardened and Infernal chestplates: the spines. */
+    public static final IClientItemExtensions SPINE_EXTENSIONS = extensions(() -> spines);
+    /** The Void chestplate: the wings. */
+    public static final IClientItemExtensions WING_EXTENSIONS = extensions(() -> wings);
 }

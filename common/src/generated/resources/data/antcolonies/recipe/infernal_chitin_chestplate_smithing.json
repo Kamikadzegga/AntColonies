@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": "antcolonies:infernal_chitin",
+  "base": "antcolonies:hardened_chitin_chestplate",
+  "result": {
+    "id": "antcolonies:infernal_chitin_chestplate"
+  },
+  "template": "antcolonies:infernal_reinforcement"
+}

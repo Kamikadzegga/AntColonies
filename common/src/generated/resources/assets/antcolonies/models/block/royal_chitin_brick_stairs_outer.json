@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/outer_stairs",
+  "textures": {
+    "bottom": "antcolonies:block/royal_chitin_bricks",
+    "top": "antcolonies:block/royal_chitin_bricks",
+    "side": "antcolonies:block/royal_chitin_bricks"
+  }
+}

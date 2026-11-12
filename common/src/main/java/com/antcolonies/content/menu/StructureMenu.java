@@ -28,9 +28,25 @@ public class StructureMenu extends BaseMenu {
     public static final int AUTO = 4;
     public static final int LESS_100 = 5;
     public static final int MORE_100 = 6;
+    /** Job sites: the Foraging Site's next mode, turning the site on or off, the next priority. */
+    public static final int CYCLE_MODE = 7;
+    public static final int TOGGLE = 8;
+    public static final int CYCLE_PRIORITY = 9;
+    /** Colony Connectors: channel (CHANNEL + colour), food mode, reserve and target -/+, rate limit, item mode. */
+    public static final int CHANNEL = 20;
+    public static final int FOOD_MODE = 40;
+    public static final int RESERVE_LESS = 43;
+    public static final int RESERVE_MORE = 44;
+    public static final int TARGET_LESS = 45;
+    public static final int TARGET_MORE = 46;
+    public static final int CYCLE_RATE = 47;
+    public static final int ITEM_MODE = 50;
+    private static final int LAST_ACTION = 52;
     public static final int UPGRADE_X = 184;
     /** Where a Foraging Site's store slots are. */
-    public static final int STORE_Y = 72;
+    public static final int STORE_Y = 88;
+    /** Where a Colony Connector's filter slots are. */
+    public static final int FILTER_Y = 112;
 
     /** Menu button ids from here on scroll a Storage: SCROLL + the first row to show. */
     public static final int SCROLL = 100;
@@ -59,9 +75,15 @@ public class StructureMenu extends BaseMenu {
                             () -> window.storageSlot(s) < data.get(StructureBlockEntity.DATA_UNLOCKED)));
                 }
             }
-            case FORAGING_SITE -> {
+            case FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE -> {
                 for (int slot = 0; slot < kind.slots(); slot++) {
                     addSlot(new FilteredSlot(structure, slot, 8 + slot * 18, STORE_Y, stack -> true, 64));
+                }
+            }
+            case COLONY_CONNECTOR -> {
+                // The filter: one of each item to send (they stay in the connector).
+                for (int slot = 0; slot < kind.slots(); slot++) {
+                    addSlot(new FilteredSlot(structure, slot, 8 + slot * 18, FILTER_Y, stack -> true, 1));
                 }
             }
             case QUEEN_CHAMBER -> {
@@ -90,7 +112,10 @@ public class StructureMenu extends BaseMenu {
     }
 
     public static int inventoryY(StructureKind kind) {
-        return kind == StructureKind.STORAGE ? 152 : kind == StructureKind.FORAGING_SITE ? 116 : 84;
+        if (kind == StructureKind.STORAGE || kind == StructureKind.COLONY_CONNECTOR) {
+            return 152;
+        }
+        return kind.foraging() ? 136 : kind.job().any() ? 104 : 84;
     }
 
     public static StructureMenu fromNetwork(int containerId, Inventory inventory, RegistryFriendlyByteBuf buffer) {
@@ -187,8 +212,57 @@ public class StructureMenu extends BaseMenu {
             case AUTO -> current < 0 ? site.capacity() : -1;
             default -> current;
         };
+        switch (action) {
+            case CYCLE_MODE -> {
+                if (site.kind() == StructureKind.FORAGING_SITE) {
+                    site.setMode(site.mode().next());
+                }
+                return;
+            }
+            case TOGGLE -> {
+                site.setEnabled(!site.enabled());
+                return;
+            }
+            case CYCLE_PRIORITY -> {
+                site.setPriority((site.priority() + 1) % 3);
+                return;
+            }
+            default -> {
+            }
+        }
+        if (action >= CHANNEL && action <= LAST_ACTION) {
+            connector(site, action);
+            return;
+        }
         site.setRequested(wanted);
         site.contentsChanged();
+    }
+
+    /** A Colony Connector's buttons. */
+    private static void connector(StructureBlockEntity site, int action) {
+        com.antcolonies.content.blockentity.ConnectorSettings settings = site.connector();
+        if (settings == null) {
+            return;
+        }
+        if (action >= CHANNEL && action < CHANNEL + 16) {
+            settings.channel = action - CHANNEL;
+        } else if (action >= FOOD_MODE && action <= FOOD_MODE + 2) {
+            settings.foodMode = action - FOOD_MODE;
+        } else if (action >= ITEM_MODE && action <= ITEM_MODE + 2) {
+            settings.itemMode = action - ITEM_MODE;
+        } else {
+            switch (action) {
+                case RESERVE_LESS -> settings.reserve = Math.max(0, settings.reserve - 5);
+                case RESERVE_MORE -> settings.reserve = Math.min(100, settings.reserve + 5);
+                case TARGET_LESS -> settings.target = Math.max(0, settings.target - 5);
+                case TARGET_MORE -> settings.target = Math.min(100, settings.target + 5);
+                case CYCLE_RATE -> settings.rateLimit = (settings.rateLimit + 1) % com.antcolonies.content.blockentity.ConnectorSettings.RATES.length;
+                default -> {
+                    return;
+                }
+            }
+        }
+        site.connectorChanged();
     }
 
     /** Swapping a hotbar slot with a Storage slot that holds more than a stack would put it all in the hotbar: not allowed. */
@@ -209,7 +283,14 @@ public class StructureMenu extends BaseMenu {
             sendAllDataToRemote();
             return true;
         }
-        if (!structure.kind().job().any() || id < 0 || id > MORE_100) {
+        if (structure.kind() == StructureKind.COLONY_CONNECTOR) {
+            if (id < CHANNEL || id > LAST_ACTION) {
+                return false;
+            }
+            adjust(structure, id);
+            return true;
+        }
+        if (!structure.kind().job().any() || id < 0 || id > CYCLE_PRIORITY) {
             return false;
         }
         adjust(structure, id);

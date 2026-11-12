@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "antcolonies:anthill_bricks"
+  },
+  "pattern": ["BB", "BB"],
+  "result": {
+    "count": 4,
+    "id": "antcolonies:polished_anthill_bricks"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "antcolonies:chitin_bricks",
+  "result": {
+    "count": 1,
+    "id": "antcolonies:chitin_brick_wall"
+  }
+}

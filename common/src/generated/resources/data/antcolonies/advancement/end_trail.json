@@ -1,0 +1,29 @@
+{
+  "parent": "antcolonies:end_colony",
+  "criteria": {
+    "end_trail": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:end_trail_pheromone"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:end_trail_pheromone"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.end_trail.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.end_trail.description"
+    }
+  },
+  "requirements": [
+    ["end_trail"]
+  ]
+}

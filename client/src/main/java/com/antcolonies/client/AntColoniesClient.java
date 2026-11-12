@@ -43,6 +43,8 @@ public final class AntColoniesClient {
         event.registerLayerDefinition(AntModel.QUEEN, () -> AntModel.create(Caste.QUEEN));
         event.registerLayerDefinition(CarryModel.LAYER, CarryModel::create);
         event.registerLayerDefinition(ChitinHelmetModel.LAYER, ChitinHelmetModel::create);
+        event.registerLayerDefinition(ChitinHelmetModel.SPINES, ChitinHelmetModel::createSpines);
+        event.registerLayerDefinition(ChitinHelmetModel.WINGS, ChitinHelmetModel::createWings);
     }
 
     /** Fires on every resource reload, after the model layers are baked. */
@@ -54,6 +56,13 @@ public final class AntColoniesClient {
     @SubscribeEvent
     static void registerItemExtensions(RegisterClientExtensionsEvent event) {
         event.registerItem(ChitinHelmetModel.EXTENSIONS, ModItems.CHITIN_HELMET.get());
+        // Every tier's helmet is the same ant's head, in its own skin.
+        ModItems.CHITIN_TIERS.values().forEach(tier -> event.registerItem(ChitinHelmetModel.EXTENSIONS, tier.get("helmet").get()));
+        // Spines on the Hardened and Infernal chestplates, a Queen's wings on the Void one.
+        var tiers = ModItems.CHITIN_TIERS;
+        event.registerItem(ChitinHelmetModel.SPINE_EXTENSIONS, tiers.get(com.antcolonies.content.item.ChitinGear.Tier.HARDENED).get("chestplate").get(),
+                tiers.get(com.antcolonies.content.item.ChitinGear.Tier.INFERNAL).get("chestplate").get());
+        event.registerItem(ChitinHelmetModel.WING_EXTENSIONS, tiers.get(com.antcolonies.content.item.ChitinGear.Tier.VOID).get("chestplate").get());
     }
 
     @SubscribeEvent

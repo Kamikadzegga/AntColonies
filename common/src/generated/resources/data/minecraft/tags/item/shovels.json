@@ -1,5 +1,8 @@
 {
   "values": [
-    "antcolonies:chitin_shovel"
+    "antcolonies:chitin_shovel",
+    "antcolonies:hardened_chitin_shovel",
+    "antcolonies:infernal_chitin_shovel",
+    "antcolonies:void_chitin_shovel"
   ]
 }

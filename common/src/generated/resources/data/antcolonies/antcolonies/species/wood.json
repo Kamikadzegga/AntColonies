@@ -50,6 +50,10 @@
         "weight": 4,
         "min_stage": 3,
         "special": true
+      },
+      {
+        "item": "antcolonies:ant_resin",
+        "weight": 7
       }
     ]
   },

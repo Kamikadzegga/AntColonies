@@ -439,8 +439,55 @@ The giant anthill structure is ordinary world-generation data, so a data pack ca
 | `data/antcolonies/loot_table/chests/giant_anthill.json` | What its chest and barrel hold. |
 
 The ants in an anthill are the local wild species (the same `spawns/...` biome tags as above), and the nest block in the
-Queen's chamber is that species' nest when it has one. The layout itself (the mound, tunnels and chambers) is built in
-code and can't be changed with data.
+Queen's chamber is that species' nest when it has one. The layouts (seven styles of rooms and tunnels, picked from the
+world seed) are built in code and can't be changed with data; the Nether anthill (`nether_anthills`, `has_structure/nether_anthill`,
+`chests/nether_anthill`) and the End anthill (`end_anthills`, `has_structure/end_anthill`, `chests/end_anthill`) work the same way.
+Their rooms also use `chests/anthill_treasure` and `chests/anthill_food`.
+
+### Expeditions (Nether and End Foraging Sites)
+
+The Nether and End Foraging Sites take their finds from **expedition tables**, a datapack registry like species:
+`data/<namespace>/antcolonies/expedition/<name>.json`. The mod ships `nether.json` and `end.json`; replace them at the
+same path to change their finds.
+
+```json
+{
+  "site": "nether_foraging_site",
+  "adapted": "antcolonies:nether_adapted",
+  "rate": 0.8,
+  "home": "minecraft:the_nether",
+  "trail": { "item": "antcolonies:nether_trail_pheromone", "chance": 0.02 },
+  "outputs": [
+    { "item": "minecraft:quartz", "weight": 20 },
+    { "item": "minecraft:blaze_rod", "weight": 1.5, "min_stage": 3 },
+    { "item": "minecraft:ancient_debris", "weight": 0.08, "min_stage": 4, "special": true,
+      "species": ["antcolonies:netherite", "antcolonies:wither"] }
+  ]
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `site` | `nether_foraging_site` or `end_foraging_site`: the chamber that runs it |
+| `adapted` | A **species tag** (`data/<namespace>/tags/antcolonies/species/<name>.json`): only these species go |
+| `rate` | Finds compared to an ordinary Foraging Site (times `expeditionRolls` in the config) |
+| `home` | The dimension: an ordinary Foraging Site of a colony **living** there finds the `trail` item |
+| `trail` | The trail pheromone and its chance per find (leave it out for none) |
+| `outputs` | Finds, with the same fields as species outputs (`item` or `tag`, `count`, `weight`, `min_stage`, `special`), and an optional `species` list: only those species find it |
+
+To let your own species go on the Nether's expeditions, add it to the tag:
+
+```json
+// data/antcolonies/tags/antcolonies/species/nether_adapted.json
+{ "values": ["mypack:copper"] }
+```
+
+### Foraging Site modes
+
+Mineral Gathering favours the finds in the item tag **`antcolonies:foraging/mineral`** (it includes `#c:ores`,
+`#c:raw_materials`, `#c:ingots`, `#c:nuggets`, `#c:gems`, `#c:dusts` and stone-like items); Organic Gathering favours
+everything else. Add your modded finds to the tag if they don't fall under those common tags. How strongly a mode
+favours its kind is `focusedForagingBoost` and `focusedForagingPenalty` in the server config.
 
 ## 12. Names (language files)
 
@@ -462,8 +509,10 @@ The key is `species.<namespace>.<id>` and `mutation.<namespace>.<id>`, matching 
 `config/antcolonies/server.toml` is created on first launch and synced to players. It holds the numbers that are not
 per species: simulation interval and offline catch-up, capacities, egg and growth times, food use and starvation,
 production rates, upgrade strengths, trait multipliers and starting weights, mutation, evolution and hybrid chance
-multipliers, wild Queen and soldier chances, the Generator's output (`[power]`) and the ants a Guard Ant
-costs (`[guards] antCost`). To make every rare
+multipliers, wild Queen and soldier chances, the Generator's output (`[power]`), the ants a Guard Ant
+costs (`[guards] antCost`), Queen-only founding (`[founding]`), how low food slows a colony (`lowFoodMinutes`, `lowFoodFactor`,
+`hungryFoodWorkFactor`), the Foraging Site modes and expeditions (`focusedForagingBoost`, `focusedForagingPenalty`,
+`expeditionRolls`) and Colony Connectors (`[connectors]`: `transferInterval`, `maxFoodPerMinute`, `maxItemsPerMinute`, `connectorRange`). To make every rare
 find (outputs marked `special`) rarer or more common at once, change `rareFindMultiplier` under `[production]` (default
 1.0; 0.5 halves them, 0 turns them off) instead of editing each species. Every option has a comment in the file. For a modpack,
 ship the edited file as `config/antcolonies/server.toml` in your pack. It is a global file (not per world).
@@ -526,7 +575,7 @@ Identification Book.
 
 ## 15. Advancements and the colony trigger
 
-The mod's 27 advancements are ordinary data files in `data/antcolonies/advancement/`. Replace one with a data pack
+The mod's 35 advancements are ordinary data files in `data/antcolonies/advancement/`. Replace one with a data pack
 file at the same path to change it.
 
 For your own advancements, and for quest mods that complete quests from advancements (FTB Quests, Heracles), use the
@@ -542,6 +591,8 @@ colony counts.
 | `species` | species id | The colony's species, e.g. `"antcolonies:diamond"` or one of yours |
 | `category` | string | The species' category: `"base"`, `"farmer"`, `"mineral"`, `"hybrid"` or `"endgame"` |
 | `best_trait` | number or `{"min": .., "max": ..}` | The Queen's highest trait level, 1 to 10 |
+| `queen_founded` | true / false | The colony grew from a single Queen through Queen-only founding |
+| `linked` | true / false | Another colony is online on one of its Colony Connector channels |
 | `player` | predicate | The usual player conditions of any trigger |
 
 A pack's "1,000 Diamond Ants" goal (`data/mypack/advancement/diamond_thousand.json`):

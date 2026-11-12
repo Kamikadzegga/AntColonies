@@ -4,12 +4,13 @@ Ant Colonies needs nothing but NeoForge. Everything below is optional.
 
 ## Recipe viewers and look-at tooltips
 
-- **JEI** (31.17+): thirteen categories, from species and evolutions to production rates and lab costs.
-- **EMI**: the same thirteen categories, with the same layout and workstations. EMI itself has no official 26.3 build; the
+- **JEI** (31.17+): fifteen categories, from species and evolutions to production rates, expeditions and lab costs.
+- **EMI**: the same fifteen categories, with the same layout and workstations. EMI itself has no official 26.3 build; the
   plugin was made against **PF-EMI** 1.1 ("EMI - Port Forward", an unofficial port on Modrinth). Tested in game with it
   (and with JEI installed alongside: EMI takes over and nothing shows twice).
 - **Jade** (26.3.5+): look at a Terrarium for its species, stage, adults, food and problems; at a job site for its ants,
-  output per minute and status; at a Generator or the Genetic Laboratory for what it is doing (Jade draws the FE bar).
+  output per minute and status (and a Foraging Site's mode, whether an expedition site's portal is active); at a Colony Connector
+  for its channel, settings and what it moved; at a Generator or the Genetic Laboratory for what it is doing (Jade draws the FE bar).
   Each part can be turned off in Jade's plugin settings. **WTHIT** has no NeoForge build for 26.x, so there is no WTHIT
   plugin.
 

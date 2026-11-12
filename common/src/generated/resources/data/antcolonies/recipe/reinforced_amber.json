@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": "antcolonies:hardened_chitin",
+    "A": "antcolonies:amber_block"
+  },
+  "pattern": ["HAH", "A A", "HAH"],
+  "result": {
+    "count": 4,
+    "id": "antcolonies:reinforced_amber"
+  }
+}

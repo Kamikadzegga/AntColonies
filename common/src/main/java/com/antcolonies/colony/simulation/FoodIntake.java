@@ -43,7 +43,9 @@ final class FoodIntake {
         if (AntConfig.get(AntConfig.STORAGE_FEEDING)) {
             String diet = step.species.diet().specialKind();
             List<StructureBlockEntity> stores = new ArrayList<>(step.of(StructureKind.STORAGE));
-            stores.addAll(step.of(StructureKind.FORAGING_SITE));
+            for (StructureKind kind : StructureKind.FORAGING_KINDS) {
+                stores.addAll(step.of(kind));
+            }
             for (StructureBlockEntity store : stores) {
                 boolean changed = false;
                 for (int slot = 0; slot < store.unlockedSlots(); slot++) {

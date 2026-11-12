@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "antcolonies:block/chitin_tiles",
+    "top": "antcolonies:block/chitin_tiles",
+    "side": "antcolonies:block/chitin_tiles"
+  }
+}

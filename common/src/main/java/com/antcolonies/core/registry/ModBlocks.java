@@ -31,7 +31,9 @@ public final class ModBlocks {
 
     static {
         for (StructureKind kind : StructureKind.values()) {
-            STRUCTURES.put(kind, BLOCKS.registerBlock(kind.getSerializedName(), p -> new StructureBlock(kind, p), p -> structureProperties(kind, p)));
+            STRUCTURES.put(kind, BLOCKS.registerBlock(kind.getSerializedName(),
+                    p -> kind.expedition() ? new com.antcolonies.content.block.ExpeditionSiteBlock(kind, p) : new StructureBlock(kind, p),
+                    p -> structureProperties(kind, p)));
         }
     }
 
@@ -40,6 +42,14 @@ public final class ModBlocks {
             case STORAGE -> p.mapColor(MapColor.WOOD).strength(1.5F).sound(SoundType.WOOD).noOcclusion();
             case HARVESTING_SITE -> p.mapColor(MapColor.COLOR_GREEN).strength(0.8F).sound(SoundType.ROOTED_DIRT).noOcclusion();
             case FORAGING_SITE -> p.mapColor(MapColor.DIRT).strength(0.8F).sound(SoundType.ROOTED_DIRT).noOcclusion();
+            // Their little portals glow while ants are out on expeditions.
+            case NETHER_FORAGING_SITE -> p.mapColor(MapColor.NETHER).strength(1.5F, 6.0F).sound(SoundType.NETHERRACK).noOcclusion()
+                    .lightLevel(state -> state.hasProperty(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE)
+                            && state.getValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE) ? 9 : 0);
+            case END_FORAGING_SITE -> p.mapColor(MapColor.SAND).strength(1.5F, 6.0F).sound(SoundType.STONE).noOcclusion()
+                    .lightLevel(state -> state.hasProperty(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE)
+                            && state.getValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE) ? 9 : 0);
+            case COLONY_CONNECTOR -> p.mapColor(MapColor.WOOD).strength(1.2F).sound(SoundType.WOOD).noOcclusion();
             default -> p.mapColor(MapColor.DIRT).strength(1.2F).sound(SoundType.PACKED_MUD).noOcclusion();
         };
     }
@@ -68,6 +78,11 @@ public final class ModBlocks {
             NESTS.put(species, BLOCKS.registerBlock(species + "_ant_nest", p -> new WildNestBlock(species, p),
                     p -> p.mapColor(MapColor.DIRT).strength(0.5F).sound(SoundType.ROOTED_DIRT).randomTicks()));
         }
+    }
+
+    static {
+        // The nest-building palette registers with the other blocks.
+        ModDecor.init();
     }
 
     private ModBlocks() {}

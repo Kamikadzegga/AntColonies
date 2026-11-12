@@ -9,8 +9,93 @@
         }
       ],
       "condition": {
-        "type": "minecraft:random_chance",
-        "chance": 0.35
+        "type": "minecraft:random_chance_with_enchanted_bonus",
+        "enchantment": "minecraft:looting",
+        "unenchanted_chance": 0.35,
+        "enchanted_chance": {
+          "type": "minecraft:linear",
+          "base": 0.45,
+          "per_level_above_first": 0.1
+        }
+      },
+      "rolls": 1
+    },
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "antcolonies:hardened_chitin"
+        }
+      ],
+      "condition": {
+        "type": "minecraft:random_chance_with_enchanted_bonus",
+        "enchantment": "minecraft:looting",
+        "unenchanted_chance": 0.05,
+        "enchanted_chance": {
+          "type": "minecraft:linear",
+          "base": 0.08,
+          "per_level_above_first": 0.03
+        }
+      },
+      "rolls": 1
+    },
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "antcolonies:infernal_chitin"
+        }
+      ],
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:random_chance_with_enchanted_bonus",
+            "enchantment": "minecraft:looting",
+            "unenchanted_chance": 0.15,
+            "enchanted_chance": {
+              "type": "minecraft:linear",
+              "base": 0.2,
+              "per_level_above_first": 0.05
+            }
+          },
+          {
+            "type": "minecraft:location_check",
+            "predicate": {
+              "dimension": "minecraft:the_nether"
+            }
+          }
+        ]
+      },
+      "rolls": 1
+    },
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "antcolonies:void_chitin"
+        }
+      ],
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:random_chance_with_enchanted_bonus",
+            "enchantment": "minecraft:looting",
+            "unenchanted_chance": 0.12,
+            "enchanted_chance": {
+              "type": "minecraft:linear",
+              "base": 0.17,
+              "per_level_above_first": 0.05
+            }
+          },
+          {
+            "type": "minecraft:location_check",
+            "predicate": {
+              "dimension": "minecraft:the_end"
+            }
+          }
+        ]
       },
       "rolls": 1
     }

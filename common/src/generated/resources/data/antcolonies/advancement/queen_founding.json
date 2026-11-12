@@ -1,0 +1,28 @@
+{
+  "parent": "antcolonies:first_colony",
+  "criteria": {
+    "queen_founding": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "queen_founded": true
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:queen_test_tube"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.queen_founding.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.queen_founding.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "queen_founding"
+    ]
+  ]
+}

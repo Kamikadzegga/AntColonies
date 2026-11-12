@@ -1,5 +1,8 @@
 {
   "values": [
-    "antcolonies:chitin_hoe"
+    "antcolonies:chitin_hoe",
+    "antcolonies:hardened_chitin_hoe",
+    "antcolonies:infernal_chitin_hoe",
+    "antcolonies:void_chitin_hoe"
   ]
 }

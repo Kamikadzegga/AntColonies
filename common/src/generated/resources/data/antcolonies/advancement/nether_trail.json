@@ -1,0 +1,31 @@
+{
+  "parent": "antcolonies:nether_colony",
+  "criteria": {
+    "nether_trail": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:nether_trail_pheromone"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:nether_trail_pheromone"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.nether_trail.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.nether_trail.description"
+    }
+  },
+  "requirements": [
+    [
+      "nether_trail"
+    ]
+  ]
+}

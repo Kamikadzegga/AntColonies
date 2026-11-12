@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": "antcolonies:amber_block"
+  },
+  "pattern": ["AA", "AA"],
+  "result": {
+    "count": 4,
+    "id": "antcolonies:amber_bricks"
+  }
+}

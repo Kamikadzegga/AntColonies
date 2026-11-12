@@ -31,7 +31,15 @@ public enum ColonyStatus {
     /** A redstone signal has paused this working chamber: it takes no ants. */
     PAUSED(false),
     /** The Queen is fed an evolution material, but this evolution happens only in another dimension (the Nether or the End). */
-    WRONG_DIMENSION(true);
+    WRONG_DIMENSION(true),
+    /** Queen-only founding: the Queen waits for her food bar, or raises her first brood. */
+    FOUNDING(false),
+    /** Food is running low: the colony works, lays and grows more slowly (see lowFoodMinutes). */
+    LOW_FOOD(false),
+    /** A focused Foraging Site's species has no finds of the kind it looks for: it works as if Balanced. */
+    NOTHING_TO_FOCUS(false),
+    /** The job site is turned off (its screen or the Terrarium's Jobs page): it takes no ants. */
+    DISABLED(false);
 
     private final boolean problem;
 

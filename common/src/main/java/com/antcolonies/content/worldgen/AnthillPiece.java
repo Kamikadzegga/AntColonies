@@ -4,6 +4,7 @@ import com.antcolonies.AntColonies;
 import com.antcolonies.content.block.WildNestBlock;
 import com.antcolonies.content.entity.WildAnt;
 import com.antcolonies.core.registry.ModBlocks;
+import com.antcolonies.core.registry.ModDecor;
 import com.antcolonies.core.registry.ModEntities;
 import com.antcolonies.core.registry.ModStructures;
 import com.antcolonies.colony.species.Caste;
@@ -33,56 +34,110 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.neoforged.neoforge.common.Tags;
 
 /**
- * The whole anthill in one piece, built from its center (the ground's top block under the mound's peak): a mound of
- * earth with a shaft down through it, a gallery, a storage chamber with a chest, and the Queen's chamber at the bottom
- * with a barrel, a nest of the species and its defenders. Every choice comes from the world seed and the center, so each
- * chunk builds its part of the same anthill. The layout is mirrored at random so anthills don't all look alike.
+ * A whole anthill in one piece, built from its center (the ground's top block under the mound's peak): a mound with
+ * a shaft down through it into a nest dug from an {@link AnthillLayout} plan (rooms of a dozen kinds joined by tunnels,
+ * in one of seven layouts). Every choice comes from the plan's seed and the center, so each chunk builds its part of
+ * the same anthill, and the Queen's chamber is always there and joined to the entrance.
+ *
+ * <p>Every anthill has exactly one Queen, spawned in her chamber by the chunk she stands in: an anthill Queen can't be
+ * hurt and never despawns (see {@link WildAnt#isAnthillQueen}), so she is always there to be caught with Tweezers.
+ *
+ * <p>Three kinds: the Overworld's (earth, or sand in deserts and badlands), the Nether's (soul soil and blackstone, lava
+ * walled off) and the End's (end stone and purpur). Pieces saved before the plans existed have no seed and build the
+ * old fixed layout ({@link AnthillLayout.Style#CLASSIC}), so anthills half-generated in an old world finish the same.
  */
 public class AnthillPiece extends StructurePiece {
     public static final ResourceKey<LootTable> LOOT = ResourceKey.create(Registries.LOOT_TABLE, AntColonies.id("chests/giant_anthill"));
     public static final ResourceKey<LootTable> NETHER_LOOT = ResourceKey.create(Registries.LOOT_TABLE, AntColonies.id("chests/nether_anthill"));
-    /** Mound radius and height, and how deep the nest goes below the ground. */
+    public static final ResourceKey<LootTable> END_LOOT = ResourceKey.create(Registries.LOOT_TABLE, AntColonies.id("chests/end_anthill"));
+    public static final ResourceKey<LootTable> TREASURE = ResourceKey.create(Registries.LOOT_TABLE, AntColonies.id("chests/anthill_treasure"));
+    public static final ResourceKey<LootTable> FOOD = ResourceKey.create(Registries.LOOT_TABLE, AntColonies.id("chests/anthill_food"));
+    /** Mound radius and height, and how deep the old fixed nest went. */
     static final int RADIUS = 7;
     static final int HEIGHT = 5;
     static final int DEPTH = 18;
-    private static final int HALF_WIDTH = 10;
 
-    /** Chambers: center x, y, z and radii x, y, z (relative to the center, before mirroring). */
-    private static final double[][] CHAMBERS = {
-            {3, -5, 1, 3, 2, 2.5},       // gallery
-            {-4, -9, 3, 3, 2, 3},        // storage
-            {1, -14, -2, 4.5, 2.5, 4}};  // the Queen's chamber
-    private static final int GALLERY = 0;
-    private static final int STORAGE = 1;
-    private static final int QUEEN = 2;
-    /** Tunnels: from x, y, z to x, y, z, radius. The first is the shaft down through the mound. */
-    private static final double[][] TUNNELS = {
-            {0, HEIGHT + 1, 0, 0, -3, 0, 0.6},
-            {0, -3, 0, 3, -5, 1, 1.1},
-            {2, -5, 1, -4, -9, 3, 1.1},
-            {-4, -9, 3, 1, -14, -2, 1.1},
-            {4, -5, 1, 7, -7, -3, 1.0}};
+    /** Where an anthill stands: it decides its materials, its ants and its loot. */
+    public enum Kind {
+        OVERWORLD, NETHER, END;
+
+        static Kind byId(int id) {
+            return id >= 0 && id < values().length ? values()[id] : OVERWORLD;
+        }
+    }
 
     private final BlockPos center;
-    /** Dug into the Nether's floor: blackstone and soul soil, Nether loot, Fire (or Warped) Ants, lava walled off. */
-    private final boolean nether;
+    private final Kind kind;
+    private final AnthillLayout.Style style;
+    private final long seed;
+    /** The plan, made again from the seed after loading (never saved). */
+    private final AnthillLayout layout;
 
+    /** An anthill of the old fixed layout (game tests, and pieces saved before layouts were planned). */
     public AnthillPiece(BlockPos center, boolean nether) {
-        super(ModStructures.ANTHILL_PIECE.get(), 0, box(center));
+        this(center, nether ? Kind.NETHER : Kind.OVERWORLD, AnthillLayout.Style.CLASSIC, center.asLong());
+    }
+
+    public AnthillPiece(BlockPos center, Kind kind, AnthillLayout.Style style, long seed) {
+        this(center, kind, style, seed, AnthillLayout.create(style, seed));
+    }
+
+    private AnthillPiece(BlockPos center, Kind kind, AnthillLayout.Style style, long seed, AnthillLayout layout) {
+        super(ModStructures.ANTHILL_PIECE.get(), 0, box(center, layout));
         this.center = center;
-        this.nether = nether;
+        this.kind = kind;
+        this.style = style;
+        this.seed = seed;
+        this.layout = layout;
         setOrientation(null);
     }
 
     public AnthillPiece(CompoundTag tag) {
         super(ModStructures.ANTHILL_PIECE.get(), tag);
         this.center = new BlockPos(tag.getIntOr("CX", 0), tag.getIntOr("CY", 0), tag.getIntOr("CZ", 0));
-        this.nether = tag.getBooleanOr("Nether", false);
+        boolean nether = tag.getBooleanOr("Nether", false);
+        this.kind = tag.getInt("Kind").map(Kind::byId).orElse(nether ? Kind.NETHER : Kind.OVERWORLD);
+        // No style saved: an anthill planned before layouts existed.
+        this.style = AnthillLayout.Style.byName(tag.getStringOr("Style", "classic"));
+        this.seed = tag.getLongOr("Seed", center.asLong());
+        this.layout = AnthillLayout.create(style, seed);
     }
 
-    private static BoundingBox box(BlockPos center) {
-        return new BoundingBox(center.getX() - HALF_WIDTH, center.getY() - DEPTH - 1, center.getZ() - HALF_WIDTH,
-                center.getX() + HALF_WIDTH, center.getY() + HEIGHT + 2, center.getZ() + HALF_WIDTH);
+    /**
+     * Plans an anthill at {@code center}: a layout style from the seed, tried again with other styles (up to four) while
+     * the plan would reach below {@code lowestY} (the world's bottom, the Nether's lava sea, the underside of an End
+     * island). Falls back to the shallow old layout, so an anthill that may generate always has its Queen's chamber.
+     */
+    public static AnthillPiece plan(BlockPos center, Kind kind, long seed, int lowestY) {
+        for (int attempt = 0; attempt < 4; attempt++) {
+            long tried = seed + attempt * 0x9E3779B97F4A7C15L;
+            AnthillLayout.Style style = styleFor(tried);
+            AnthillLayout layout = AnthillLayout.create(style, tried);
+            if (center.getY() + layout.minY() > lowestY) {
+                return new AnthillPiece(center, kind, style, tried, layout);
+            }
+        }
+        return new AnthillPiece(center, kind, AnthillLayout.Style.ABANDONED, seed, AnthillLayout.create(AnthillLayout.Style.ABANDONED, seed));
+    }
+
+    /** A plan's style picked from its seed (the same seed gives the same anthill). */
+    public static AnthillLayout.Style styleFor(long seed) {
+        RandomSource random = RandomSource.create(seed ^ 0x2545F4914F6CDD1DL);
+        return AnthillLayout.Style.RANDOM[random.nextInt(AnthillLayout.Style.RANDOM.length)];
+    }
+
+    private static BoundingBox box(BlockPos center, AnthillLayout layout) {
+        return new BoundingBox(center.getX() + Math.min(-RADIUS - 2, layout.minX()), center.getY() + layout.minY() - 1,
+                center.getZ() + Math.min(-RADIUS - 2, layout.minZ()), center.getX() + Math.max(RADIUS + 2, layout.maxX()),
+                center.getY() + HEIGHT + 2, center.getZ() + Math.max(RADIUS + 2, layout.maxZ()));
+    }
+
+    public AnthillLayout layout() {
+        return layout;
+    }
+
+    public BlockPos center() {
+        return center;
     }
 
     @Override
@@ -90,53 +145,15 @@ public class AnthillPiece extends StructurePiece {
         tag.putInt("CX", center.getX());
         tag.putInt("CY", center.getY());
         tag.putInt("CZ", center.getZ());
-        tag.putBoolean("Nether", nether);
-    }
-
-    // --- Shape ---
-
-    /** Whether a spot (relative, before mirroring) is dug out: inside a chamber or a tunnel. */
-    static boolean carved(double x, double y, double z) {
-        return inside(x, y, z, 0);
-    }
-
-    /** The walls: one block around what is dug out. */
-    static boolean shell(double x, double y, double z) {
-        return !carved(x, y, z) && inside(x, y, z, 1);
-    }
-
-    private static boolean inside(double x, double y, double z, double grow) {
-        for (double[] c : CHAMBERS) {
-            double dx = (x - c[0]) / (c[3] + grow);
-            double dy = (y - c[1]) / (c[4] + grow);
-            double dz = (z - c[2]) / (c[5] + grow);
-            if (dx * dx + dy * dy + dz * dz <= 1) {
-                return true;
-            }
-        }
-        for (double[] t : TUNNELS) {
-            if (segmentDistance(x, y, z, t) <= t[6] + grow) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static double segmentDistance(double x, double y, double z, double[] t) {
-        double vx = t[3] - t[0];
-        double vy = t[4] - t[1];
-        double vz = t[5] - t[2];
-        double length = vx * vx + vy * vy + vz * vz;
-        double f = length == 0 ? 0 : Math.clamp(((x - t[0]) * vx + (y - t[1]) * vy + (z - t[2]) * vz) / length, 0, 1);
-        double dx = x - (t[0] + vx * f);
-        double dy = y - (t[1] + vy * f);
-        double dz = z - (t[2] + vz * f);
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+        tag.putBoolean("Nether", kind == Kind.NETHER);
+        tag.putInt("Kind", kind.ordinal());
+        tag.putString("Style", style.getSerializedName());
+        tag.putLong("Seed", seed);
     }
 
     /** The mound's height over a column (0 outside it): a rounded cone, a little uneven. */
-    private int moundHeight(long seed, int x, int z) {
-        double distance = Math.sqrt(x * x + z * z) + (hash(seed, x, 0, z) - 0.5) * 1.4;
+    private int moundHeight(long hashSeed, int x, int z) {
+        double distance = Math.sqrt(x * x + z * z) + (hash(hashSeed, x, 0, z) - 0.5) * 1.4;
         if (distance >= RADIUS) {
             return 0;
         }
@@ -149,84 +166,187 @@ public class AnthillPiece extends StructurePiece {
     @Override
     public void postProcess(WorldGenLevel level, StructureManager structureManager, ChunkGenerator generator, RandomSource random,
                             BoundingBox chunkBB, ChunkPos chunkPos, BlockPos referencePos) {
-        long seed = level.getSeed() ^ center.asLong() * 0x9E3779B97F4A7C15L;
-        RandomSource layout = RandomSource.create(seed);
-        int sx = layout.nextBoolean() ? 1 : -1;
-        int sz = layout.nextBoolean() ? 1 : -1;
-        Soil soil = nether ? Soil.NETHER : Soil.of(level, center);
-        for (int x = boundingBox.minX(); x <= boundingBox.maxX(); x++) {
-            for (int z = boundingBox.minZ(); z <= boundingBox.maxZ(); z++) {
-                int rx = (x - center.getX()) * sx;
-                int rz = (z - center.getZ()) * sz;
-                int mound = moundHeight(seed, rx, rz);
+        long hashSeed = style == AnthillLayout.Style.CLASSIC ? level.getSeed() ^ center.asLong() * 0x9E3779B97F4A7C15L : seed;
+        Soil soil = kind == Kind.NETHER ? Soil.NETHER : kind == Kind.END ? Soil.END : Soil.of(level, center);
+        for (int x = Math.max(boundingBox.minX(), chunkBB.minX()); x <= Math.min(boundingBox.maxX(), chunkBB.maxX()); x++) {
+            for (int z = Math.max(boundingBox.minZ(), chunkBB.minZ()); z <= Math.min(boundingBox.maxZ(), chunkBB.maxZ()); z++) {
+                int rx = x - center.getX();
+                int rz = z - center.getZ();
+                int mound = moundHeight(hashSeed, rx, rz);
                 for (int y = boundingBox.minY(); y <= boundingBox.maxY(); y++) {
                     BlockPos pos = new BlockPos(x, y, z);
-                    if (!chunkBB.isInside(pos)) {
+                    if (!chunkBB.isInside(pos) || level.isOutsideBuildHeight(pos)) {
                         continue;
                     }
                     int ry = y - center.getY();
-                    boolean carved = carved(rx, ry, rz);
+                    boolean carved = layout.carved(rx, ry, rz);
                     if (ry > 0) {
                         if (ry <= mound) {
-                            level.setBlock(pos, carved ? Blocks.AIR.defaultBlockState() : soil.mound(hash(seed, x, y, z)), Block.UPDATE_CLIENTS);
+                            level.setBlock(pos, carved ? Blocks.AIR.defaultBlockState() : soil.mound(hash(hashSeed, x, y, z)), Block.UPDATE_CLIENTS);
                         } else if (mound > 0 && ry <= mound + 2 && !level.getBlockState(pos).isAir() && level.getBlockState(pos).canBeReplaced()) {
                             level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS); // grass left floating
                         }
+                        continue;
+                    }
+                    BlockState here = level.getBlockState(pos);
+                    if (here.is(Blocks.BEDROCK)) {
                         continue;
                     }
                     if (carved) {
                         level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
                         continue;
                     }
-                    BlockState here = level.getBlockState(pos);
-                    if (shell(rx, ry, rz)) {
-                        // Ant-dug walls, but caves and water stay as they are.
-                        // In the Nether lava is walled off too, so it never pours into the tunnels.
-                        boolean wallOff = here.getFluidState().isEmpty() || nether && here.getFluidState().is(net.minecraft.tags.FluidTags.LAVA);
-                        if (!here.isAir() && wallOff && !here.is(Blocks.BEDROCK)) {
-                            boolean floor = carved(rx, ry + 1, rz);
-                            level.setBlock(pos, soil.wall(hash(seed, x, y, z), floor), Block.UPDATE_CLIENTS);
+                    if (layout.shell(rx, ry, rz)) {
+                        // Ant-dug walls; caves and water stay as they are. Lava is walled off too, so it never pours in.
+                        boolean wallOff = here.getFluidState().isEmpty() || here.getFluidState().is(net.minecraft.tags.FluidTags.LAVA);
+                        if ((!here.isAir() || kind == Kind.END) && wallOff) {
+                            boolean floor = layout.carved(rx, ry + 1, rz);
+                            AnthillLayout.Room room = floor ? layout.roomAt(rx, ry + 1, rz) : null;
+                            level.setBlock(pos, soil.wall(hash(hashSeed, x, y, z), floor, room == null ? null : room.type()), Block.UPDATE_CLIENTS);
                         }
                     } else if (mound > 0 && ry >= -2 && here.canBeReplaced() && here.getFluidState().isEmpty()) {
-                        level.setBlock(pos, soil.mound(hash(seed, x, y, z)), Block.UPDATE_CLIENTS); // fill dips under the mound
+                        level.setBlock(pos, soil.mound(hash(hashSeed, x, y, z)), Block.UPDATE_CLIENTS); // fill dips under the mound
                     }
                 }
             }
         }
-        furnish(level, chunkBB, seed, sx, sz);
+        furnish(level, chunkBB, hashSeed);
     }
 
-    /** The chests, the nest and the ants, each only by the chunk it stands in. */
-    private void furnish(WorldGenLevel level, BoundingBox chunkBB, long seed, int sx, int sz) {
-        RandomSource random = RandomSource.create(seed + 1);
-        Identifier species = nether ? netherSpecies(level) : WildAnt.speciesFor(level, center, random);
-        ResourceKey<LootTable> loot = nether ? NETHER_LOOT : LOOT;
-        BlockPos storageChest = floor(STORAGE, 1, 0, sx, sz);
-        BlockPos queenBarrel = floor(QUEEN, -2, 1, sx, sz);
-        BlockPos nest = floor(QUEEN, 3, 0, sx, sz);
-        if (chunkBB.isInside(storageChest)) {
-            level.setBlock(storageChest, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(random)),
-                    Block.UPDATE_CLIENTS);
-            RandomizableContainer.setBlockEntityLootTable(level, random, storageChest, loot);
+    /** What lies in each room, and who lives there; each only by the chunk it stands in. */
+    private void furnish(WorldGenLevel level, BoundingBox chunkBB, long hashSeed) {
+        RandomSource random = RandomSource.create(hashSeed + 1);
+        Identifier species = switch (kind) {
+            case NETHER -> netherSpecies(level);
+            case END -> AntColonies.id("chorus");
+            case OVERWORLD -> WildAnt.speciesFor(level, center, random);
+        };
+        ResourceKey<LootTable> loot = switch (kind) {
+            case NETHER -> NETHER_LOOT;
+            case END -> END_LOOT;
+            case OVERWORLD -> LOOT;
+        };
+        AnthillLayout.Room queen = layout.queen();
+        BlockPos home = floor(queen, 0, 0);
+        boolean abandoned = style == AnthillLayout.Style.ABANDONED;
+        for (AnthillLayout.Room room : layout.rooms()) {
+            RandomSource roomRandom = RandomSource.create(hashSeed ^ (long) (room.x() * 31 + room.y() * 977 + room.z() * 7919));
+            switch (room.type()) {
+                case QUEEN -> {
+                    // The Queen, her nest, a barrel of the colony's riches, and her guard (an abandoned nest's Queen is alone).
+                    container(level, chunkBB, floor(room, -2, 1), Blocks.BARREL.defaultBlockState(), loot, roomRandom);
+                    var nestBlock = AntColonies.MODID.equals(species.getNamespace()) ? ModBlocks.NESTS.get(species.getPath()) : null;
+                    BlockPos nest = floor(room, 3, 0);
+                    if (nestBlock != null && chunkBB.isInside(nest)) {
+                        level.setBlock(nest, nestBlock.get().defaultBlockState().setValue(WildNestBlock.RECOVERING, false), Block.UPDATE_CLIENTS);
+                    }
+                    place(level, chunkBB, floor(room, -3, -1), kind == Kind.OVERWORLD ? ModDecor.PHEROMONE_LAMP.get().defaultBlockState()
+                            : kind == Kind.NETHER ? Blocks.SHROOMLIGHT.defaultBlockState() : Blocks.END_ROD.defaultBlockState());
+                    spawn(level, chunkBB, home, species, Caste.QUEEN, home);
+                    if (!abandoned) {
+                        int[][] soldiers = {{2, 2}, {-2, 2}, {2, -2}, {-2, -2}, {3, -1}};
+                        for (int[] spot : soldiers) {
+                            spawn(level, chunkBB, floor(room, spot[0], spot[1]), species, Caste.SOLDIER, home);
+                        }
+                    }
+                }
+                case NURSERY, EGG_STORAGE, LARVAL -> {
+                    // Eggs and larvae in piles on the floor; nurses among them.
+                    int piles = room.type() == AnthillLayout.RoomType.NURSERY ? 4 : 5;
+                    for (int i = 0; i < piles; i++) {
+                        boolean eggs = room.type() == AnthillLayout.RoomType.EGG_STORAGE || room.type() == AnthillLayout.RoomType.NURSERY && i % 2 == 0;
+                        place(level, chunkBB, floor(room, roomRandom.nextInt(5) - 2, roomRandom.nextInt(5) - 2),
+                                (eggs ? ModDecor.ANT_EGG_CLUSTER : ModDecor.LARVA_CLUSTER).get().defaultBlockState());
+                    }
+                    spawn(level, chunkBB, floor(room, 1, 1), species, Caste.WORKER, home);
+                }
+                case FOOD_STORAGE -> {
+                    container(level, chunkBB, floor(room, 1, 0), Blocks.BARREL.defaultBlockState(), FOOD, roomRandom);
+                    spawn(level, chunkBB, floor(room, -1, 1), species, Caste.WORKER, home);
+                }
+                case FUNGAL_GARDEN -> {
+                    // A fungus garden: fungal beds on the floor, mushrooms on them, glowing fungus in the walls' light.
+                    for (int i = 0; i < 6; i++) {
+                        BlockPos bed = floor(room, roomRandom.nextInt(5) - 2, roomRandom.nextInt(5) - 2).below();
+                        if (chunkBB.isInside(bed) && !level.getBlockState(bed).isAir()) {
+                            level.setBlock(bed, (i == 0 ? ModDecor.GLOWING_FUNGAL_BLOCK : ModDecor.FUNGAL_BLOCK).get().defaultBlockState(), Block.UPDATE_CLIENTS);
+                            BlockState plant = kind == Kind.NETHER ? (i % 2 == 0 ? Blocks.CRIMSON_FUNGUS : Blocks.WARPED_FUNGUS).defaultBlockState()
+                                    : (i % 2 == 0 ? Blocks.BROWN_MUSHROOM : Blocks.RED_MUSHROOM).defaultBlockState();
+                            if (kind != Kind.END) {
+                                place(level, chunkBB, bed.above(), plant);
+                            }
+                        }
+                    }
+                    spawn(level, chunkBB, floor(room, 0, 0), species, Caste.WORKER, home);
+                }
+                case BARRACKS -> {
+                    if (!abandoned) {
+                        for (int i = 0; i < 3; i++) {
+                            spawn(level, chunkBB, floor(room, i - 1, roomRandom.nextInt(3) - 1), species, Caste.SOLDIER, home);
+                        }
+                    }
+                    place(level, chunkBB, floor(room, 2, 1), Blocks.BONE_BLOCK.defaultBlockState());
+                }
+                case CHITIN_STORAGE -> {
+                    for (int i = 0; i < 3; i++) {
+                        int dx = roomRandom.nextInt(5) - 2;
+                        int dz = roomRandom.nextInt(3) - 1;
+                        if (dx != 0 || dz != 1) { // never on the chest's spot
+                            place(level, chunkBB, floor(room, dx, dz), ModDecor.CHITIN_BLOCK.get().defaultBlockState());
+                        }
+                    }
+                    container(level, chunkBB, floor(room, 0, 1), Blocks.CHEST.defaultBlockState()
+                            .setValue(ChestBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(roomRandom)), loot, roomRandom);
+                }
+                case TREASURE -> {
+                    container(level, chunkBB, floor(room, 0, 0), Blocks.CHEST.defaultBlockState()
+                            .setValue(ChestBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(roomRandom)), TREASURE, roomRandom);
+                    place(level, chunkBB, floor(room, 1, 1), ModDecor.ROYAL_CHITIN_BLOCK.get().defaultBlockState());
+                }
+                case RARE -> {
+                    // Where the ants dug into something precious: a few ore and crystal blocks left in the walls and floor.
+                    BlockState[] finds = switch (kind) {
+                        case NETHER -> new BlockState[] {Blocks.NETHER_GOLD_ORE.defaultBlockState(), Blocks.NETHER_QUARTZ_ORE.defaultBlockState(),
+                                Blocks.GILDED_BLACKSTONE.defaultBlockState()};
+                        case END -> new BlockState[] {Blocks.PURPUR_PILLAR.defaultBlockState(), Blocks.OBSIDIAN.defaultBlockState(),
+                                ModDecor.AMBER_BLOCK.get().defaultBlockState()};
+                        case OVERWORLD -> new BlockState[] {Blocks.IRON_ORE.defaultBlockState(), Blocks.COPPER_ORE.defaultBlockState(),
+                                ModDecor.AMBER_BLOCK.get().defaultBlockState(), Blocks.AMETHYST_BLOCK.defaultBlockState()};
+                    };
+                    for (int i = 0; i < 3; i++) {
+                        BlockPos spot = floor(room, roomRandom.nextInt(3) - 1, roomRandom.nextInt(3) - 1).below();
+                        if (chunkBB.isInside(spot)) {
+                            level.setBlock(spot, finds[roomRandom.nextInt(finds.length)], Block.UPDATE_CLIENTS);
+                        }
+                    }
+                }
+                case ABANDONED -> {
+                    // Left long ago: cobwebs, bones and fallen earth.
+                    place(level, chunkBB, floor(room, 1, 0), Blocks.COBWEB.defaultBlockState());
+                    place(level, chunkBB, floor(room, -1, 1), Blocks.BONE_BLOCK.defaultBlockState());
+                    place(level, chunkBB, floor(room, 0, -1), kind == Kind.OVERWORLD ? ModDecor.ANTHILL_SOIL.get().defaultBlockState()
+                            : Blocks.GRAVEL.defaultBlockState());
+                }
+                case GALLERY, HALL -> {
+                    spawn(level, chunkBB, floor(room, 0, 0), species, Caste.SOLDIER, home);
+                    spawn(level, chunkBB, floor(room, 1, 1), species, Caste.WORKER, home);
+                    spawn(level, chunkBB, floor(room, -1, 0), species, Caste.WORKER, home);
+                }
+            }
         }
-        if (chunkBB.isInside(queenBarrel)) {
-            level.setBlock(queenBarrel, Blocks.BARREL.defaultBlockState(), Block.UPDATE_CLIENTS);
-            RandomizableContainer.setBlockEntityLootTable(level, random, queenBarrel, loot);
+    }
+
+    private static void place(WorldGenLevel level, BoundingBox chunkBB, BlockPos pos, BlockState state) {
+        if (chunkBB.isInside(pos) && level.getBlockState(pos).isAir() && !level.getBlockState(pos.below()).isAir()) {
+            level.setBlock(pos, state, Block.UPDATE_CLIENTS);
         }
-        var nestBlock = AntColonies.MODID.equals(species.getNamespace()) ? ModBlocks.NESTS.get(species.getPath()) : null;
-        if (nestBlock != null && chunkBB.isInside(nest)) {
-            level.setBlock(nest, nestBlock.get().defaultBlockState().setValue(WildNestBlock.RECOVERING, false), Block.UPDATE_CLIENTS);
+    }
+
+    private static void container(WorldGenLevel level, BoundingBox chunkBB, BlockPos pos, BlockState state, ResourceKey<LootTable> loot, RandomSource random) {
+        if (chunkBB.isInside(pos) && level.getBlockState(pos).isAir()) {
+            level.setBlock(pos, state, Block.UPDATE_CLIENTS);
+            RandomizableContainer.setBlockEntityLootTable(level, random, pos, loot);
         }
-        BlockPos home = floor(QUEEN, 0, 0, sx, sz);
-        spawn(level, chunkBB, home, species, Caste.QUEEN, home);
-        int[][] soldiers = {{2, 2}, {-2, 2}, {2, -2}, {-2, -2}, {3, -1}};
-        for (int[] spot : soldiers) {
-            spawn(level, chunkBB, floor(QUEEN, spot[0], spot[1], sx, sz), species, Caste.SOLDIER, home);
-        }
-        spawn(level, chunkBB, floor(GALLERY, 0, 0, sx, sz), species, Caste.SOLDIER, home);
-        spawn(level, chunkBB, floor(GALLERY, 1, 1, sx, sz), species, Caste.WORKER, home);
-        spawn(level, chunkBB, floor(GALLERY, -1, 0, sx, sz), species, Caste.WORKER, home);
-        spawn(level, chunkBB, floor(STORAGE, -1, 1, sx, sz), species, Caste.WORKER, home);
     }
 
     /** A Nether anthill's ants: Warped Ants in the fungus forests, Fire Ants elsewhere. */
@@ -236,16 +356,24 @@ public class AnthillPiece extends StructurePiece {
         return AntColonies.id(forest ? "warped" : "fire");
     }
 
-    /** The lowest dug-out spot of a chamber's column (offset from its center), in the world. */
-    private BlockPos floor(int chamber, int dx, int dz, int sx, int sz) {
-        double[] c = CHAMBERS[chamber];
-        int x = (int) c[0] + dx;
-        int z = (int) c[2] + dz;
-        int y = (int) c[1];
-        while (carved(x, y - 1, z) && y > c[1] - c[4] - 1) {
+    /** The lowest dug-out spot of a room's column (offset from its center), in the world. */
+    public BlockPos floor(AnthillLayout.Room room, int dx, int dz) {
+        int x = (int) Math.round(room.x()) + dx;
+        int z = (int) Math.round(room.z()) + dz;
+        int y = (int) Math.round(room.y());
+        while (layout.carved(x, y - 1, z) && y > room.y() - room.ry() - 1) {
             y--;
         }
-        return new BlockPos(center.getX() + x * sx, center.getY() + y, center.getZ() + z * sz);
+        if (!layout.carved(x, y, z)) {
+            // Off the room's floor: fall back to its middle.
+            x = (int) Math.round(room.x());
+            z = (int) Math.round(room.z());
+            y = (int) Math.round(room.y());
+            while (layout.carved(x, y - 1, z) && y > room.y() - room.ry() - 1) {
+                y--;
+            }
+        }
+        return new BlockPos(center.getX() + x, center.getY() + y, center.getZ() + z);
     }
 
     private static void spawn(WorldGenLevel level, BoundingBox chunkBB, BlockPos pos, Identifier species, Caste caste, BlockPos home) {
@@ -262,7 +390,7 @@ public class AnthillPiece extends StructurePiece {
         ant.setCaste(caste);
         ant.setGuardian(true);
         ant.setPersistenceRequired();
-        ant.setHomeTo(home, 14);
+        ant.setHomeTo(home, 24);
         level.addFreshEntityWithPassengers(ant);
     }
 
@@ -274,24 +402,9 @@ public class AnthillPiece extends StructurePiece {
         return (h >>> 11) * 0x1.0p-53;
     }
 
-    /** The anthill's earth, from its biome: sandy in deserts and badlands, dark earth elsewhere. */
+    /** The anthill's earth: anthill soil (sandy in deserts and badlands), the Nether's or the End's. */
     private enum Soil {
-        EARTH(Blocks.COARSE_DIRT, Blocks.DIRT, Blocks.ROOTED_DIRT, Blocks.GRAVEL),
-        DESERT(Blocks.SAND, Blocks.SANDSTONE, Blocks.COARSE_DIRT, Blocks.GRAVEL),
-        BADLANDS(Blocks.RED_SAND, Blocks.TERRACOTTA, Blocks.COARSE_DIRT, Blocks.GRAVEL),
-        NETHER(Blocks.SOUL_SOIL, Blocks.NETHERRACK, Blocks.BLACKSTONE, Blocks.MAGMA_BLOCK);
-
-        private final Block main;
-        private final Block second;
-        private final Block third;
-        private final Block grit;
-
-        Soil(Block main, Block second, Block third, Block grit) {
-            this.main = main;
-            this.second = second;
-            this.third = third;
-            this.grit = grit;
-        }
+        EARTH, DESERT, BADLANDS, NETHER, END;
 
         static Soil of(WorldGenLevel level, BlockPos pos) {
             var biome = level.getBiome(pos);
@@ -299,20 +412,41 @@ public class AnthillPiece extends StructurePiece {
         }
 
         BlockState mound(double roll) {
-            return (roll < 0.5 ? main : roll < 0.75 ? second : roll < 0.9 ? third : grit).defaultBlockState();
+            Block block = switch (this) {
+                case EARTH -> roll < 0.45 ? ModDecor.ANTHILL_SOIL.get() : roll < 0.7 ? Blocks.COARSE_DIRT : roll < 0.9 ? Blocks.ROOTED_DIRT : Blocks.GRAVEL;
+                case DESERT -> roll < 0.5 ? Blocks.SAND : roll < 0.75 ? Blocks.SANDSTONE : roll < 0.9 ? ModDecor.ANTHILL_SOIL.get() : Blocks.GRAVEL;
+                case BADLANDS -> roll < 0.5 ? Blocks.RED_SAND : roll < 0.75 ? Blocks.TERRACOTTA : roll < 0.9 ? ModDecor.ANTHILL_SOIL.get() : Blocks.GRAVEL;
+                case NETHER -> roll < 0.5 ? Blocks.SOUL_SOIL : roll < 0.75 ? Blocks.NETHERRACK : roll < 0.9 ? Blocks.BLACKSTONE : Blocks.MAGMA_BLOCK;
+                case END -> roll < 0.6 ? Blocks.END_STONE : roll < 0.85 ? Blocks.END_STONE_BRICKS : Blocks.PURPUR_BLOCK;
+            };
+            return block.defaultBlockState();
         }
 
-        /** Tunnel walls: packed earth, with a softer floor. */
-        BlockState wall(double roll, boolean floor) {
-            if (this == NETHER) {
-                return (floor ? roll < 0.06 ? Blocks.BONE_BLOCK : roll < 0.6 ? Blocks.SOUL_SOIL : Blocks.SOUL_SAND
+        /** Tunnel walls: earth the ants packed hard, with a softer floor (a little special in some rooms). */
+        BlockState wall(double roll, boolean floor, AnthillLayout.RoomType room) {
+            if (floor && room == AnthillLayout.RoomType.QUEEN && roll < 0.6) {
+                return (this == END ? Blocks.PURPUR_BLOCK : ModDecor.ROYAL_CHITIN_BLOCK.get()).defaultBlockState();
+            }
+            if (floor && room == AnthillLayout.RoomType.FUNGAL_GARDEN && this != END && roll < 0.5) {
+                return (this == NETHER ? Blocks.CRIMSON_NYLIUM : Blocks.MYCELIUM).defaultBlockState();
+            }
+            if (floor && room == AnthillLayout.RoomType.ABANDONED && roll < 0.35) {
+                return Blocks.GRAVEL.defaultBlockState();
+            }
+            return switch (this) {
+                case NETHER -> (floor ? roll < 0.06 ? Blocks.BONE_BLOCK : roll < 0.6 ? Blocks.SOUL_SOIL : Blocks.SOUL_SAND
                         : roll < 0.45 ? Blocks.POLISHED_BLACKSTONE_BRICKS : roll < 0.8 ? Blocks.BLACKSTONE : Blocks.BASALT).defaultBlockState();
-            }
-            if (floor) {
-                return (roll < 0.06 ? Blocks.BONE_BLOCK : roll < 0.5 ? Blocks.ROOTED_DIRT : main == Blocks.COARSE_DIRT ? Blocks.COARSE_DIRT : main)
-                        .defaultBlockState();
-            }
-            return (roll < 0.45 ? Blocks.PACKED_MUD : roll < 0.8 ? Blocks.COARSE_DIRT : Blocks.DIRT).defaultBlockState();
+                case END -> (floor ? roll < 0.7 ? Blocks.END_STONE : Blocks.END_STONE_BRICKS
+                        : roll < 0.5 ? Blocks.END_STONE_BRICKS : roll < 0.85 ? Blocks.END_STONE : Blocks.PURPUR_BLOCK).defaultBlockState();
+                default -> {
+                    if (floor) {
+                        Block soft = this == DESERT ? Blocks.SAND : this == BADLANDS ? Blocks.RED_SAND : ModDecor.ANTHILL_SOIL.get();
+                        yield (roll < 0.06 ? Blocks.BONE_BLOCK : roll < 0.5 ? Blocks.ROOTED_DIRT : soft).defaultBlockState();
+                    }
+                    yield (roll < 0.45 ? ModDecor.PACKED_ANTHILL_SOIL.get() : roll < 0.6 ? Blocks.PACKED_MUD : roll < 0.85 ? Blocks.COARSE_DIRT
+                            : ModDecor.ANTHILL_SOIL.get()).defaultBlockState();
+                }
+            };
         }
     }
 }

@@ -42,6 +42,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
     public static final IRecipeType<AntRecipe> EGGS = AntCategory.type("eggs");
     public static final IRecipeType<AntRecipe> LARVAE = AntCategory.type("larvae");
     public static final IRecipeType<AntRecipe> PRODUCTION = AntCategory.type("production");
+    public static final IRecipeType<AntRecipe> EXPEDITION = AntCategory.type("expedition");
     public static final IRecipeType<AntRecipe> FARMING = AntCategory.type("farming");
     public static final IRecipeType<AntRecipe> FIGHTING = AntCategory.type("fighting");
     public static final IRecipeType<AntRecipe> LAB = AntCategory.type("lab");
@@ -110,6 +111,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
                 new AntCategory(EGGS, "eggs", structure(StructureKind.NEST_CHAMBER), gui, 1, 3),
                 new AntCategory(LARVAE, "larvae", structure(StructureKind.NEST_CHAMBER), gui, 1, 2),
                 new AntCategory(PRODUCTION, "production", structure(StructureKind.FORAGING_SITE), gui, 2, 1),
+                new AntCategory(EXPEDITION, "expedition", structure(StructureKind.NETHER_FORAGING_SITE), gui, 3, 2),
                 new AntCategory(FARMING, "farming", structure(StructureKind.HARVESTING_SITE), gui, 2, 1),
                 new AntCategory(FIGHTING, "fighting", structure(StructureKind.HUNTING_GROUND), gui, 2, 2),
                 new AntCategory(LAB, "lab", ModItems.GENETIC_LAB.get(), gui, 1, 4),
@@ -134,6 +136,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
         registration.addRecipes(EGGS, recipes.eggs());
         registration.addRecipes(LARVAE, recipes.larvae());
         registration.addRecipes(PRODUCTION, recipes.production());
+        registration.addRecipes(EXPEDITION, recipes.expeditions());
         registration.addRecipes(FARMING, recipes.farming());
         registration.addRecipes(FIGHTING, recipes.fighting());
         registration.addRecipes(LAB, recipes.lab());
@@ -152,6 +155,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
         registration.addCraftingStation(EGGS, ModItems.TERRARIUM.get(), structure(StructureKind.NEST_CHAMBER));
         registration.addCraftingStation(LARVAE, structure(StructureKind.NEST_CHAMBER));
         registration.addCraftingStation(PRODUCTION, structure(StructureKind.FORAGING_SITE), structure(StructureKind.STORAGE));
+        registration.addCraftingStation(EXPEDITION, structure(StructureKind.NETHER_FORAGING_SITE), structure(StructureKind.END_FORAGING_SITE));
         registration.addCraftingStation(FARMING, structure(StructureKind.HARVESTING_SITE), structure(StructureKind.STORAGE));
         registration.addCraftingStation(FIGHTING, structure(StructureKind.HUNTING_GROUND));
         registration.addCraftingStation(LAB, ModItems.GENETIC_LAB.get());

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:glass",
+    "R": "antcolonies:ant_resin"
+  },
+  "pattern": [" G ", "GRG", " G "],
+  "result": {
+    "count": 4,
+    "id": "antcolonies:amber_glass"
+  }
+}

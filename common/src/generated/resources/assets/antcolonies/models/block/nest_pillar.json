@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "antcolonies:block/nest_pillar_top",
+    "side": "antcolonies:block/nest_pillar"
+  }
+}

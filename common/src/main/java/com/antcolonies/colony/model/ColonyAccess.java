@@ -99,6 +99,41 @@ public final class ColonyAccess {
 
     public static void killQueen(Colony colony) {
         colony.queen = null;
+        colony.endFounding();
+    }
+
+    /** The founding Queen's food is in: she begins her first brood. */
+    public static void beginFoundingBrood(Colony colony) {
+        if (colony.founding == Founding.FEEDING) {
+            colony.founding = Founding.BROOD;
+            colony.foundingRaised = 0;
+        }
+    }
+
+    /** The founding Queen's first brood is grown: the colony is founded and runs like any other from now on. */
+    public static void completeFounding(Colony colony) {
+        colony.endFounding();
+        colony.queenFounded = true;
+    }
+
+    /** Counts adults raised during founding's first brood; returns the total so far. */
+    public static double countFoundingRaised(Colony colony, double raised) {
+        colony.foundingRaised += Math.max(0, raised);
+        return colony.foundingRaised;
+    }
+
+    public static void setFoodFactor(Colony colony, double factor) {
+        colony.foodFactor = factor;
+    }
+
+    public static void setNetwork(Colony colony, List<Colony.NetworkLink> links) {
+        colony.network = List.copyOf(links);
+    }
+
+    public static void setStored(Colony colony, List<Colony.StoredItem> stored, int used, int slots) {
+        colony.stored = List.copyOf(stored);
+        colony.storageUsed = used;
+        colony.storageSlots = slots;
     }
 
     public static void finish(Colony colony, int stage, int status, Colony.Stats stats, Colony.Activity activity,

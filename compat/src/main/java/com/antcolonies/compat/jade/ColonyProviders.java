@@ -89,6 +89,23 @@ final class ColonyProviders {
             data.putInt("capacity", structure.capacity());
             data.putDouble("rate", structure.rate());
             data.putInt("status", structure.siteStatus() | structure.rearingStatus());
+            if (structure.kind() == com.antcolonies.colony.model.StructureKind.FORAGING_SITE) {
+                data.putInt("mode", structure.mode().ordinal());
+            }
+            if (structure.kind().expedition()) {
+                // Active (ants out through the portal), or which ants it needs.
+                data.putBoolean("expedition", true);
+            }
+            var connector = structure.connector();
+            if (connector != null) {
+                data.putInt("channel", connector.channel);
+                data.putInt("food_mode", connector.foodMode);
+                data.putInt("item_mode", connector.itemMode);
+                data.putInt("members", connector.members);
+                data.putDouble("food_in", connector.foodIn);
+                data.putDouble("food_out", connector.foodOut);
+                data.putDouble("items", connector.itemsMoved);
+            }
         }
 
     };
@@ -104,6 +121,29 @@ final class ColonyProviders {
                 tooltip.add(Component.translatable(data.getBooleanOr("contested", false) ? "status.antcolonies.two_colonies"
                         : "status.antcolonies.missing_connection").withStyle(ChatFormatting.RED));
                 return;
+            }
+            if (data.contains("channel")) {
+                // A Colony Connector: its channel, what it does, what it moved.
+                tooltip.add(Component.translatable("gui.antcolonies.network.channel", Component.translatable("color.minecraft."
+                        + net.minecraft.world.item.DyeColor.byId(data.getIntOr("channel", 0)).getName())).withStyle(ChatFormatting.GRAY));
+                String[] foodModes = {"off", "supply", "request"};
+                String[] itemModes = {"off", "send", "receive"};
+                tooltip.add(Component.translatable("gui.antcolonies.connector.food").append(": ")
+                        .append(Component.translatable("gui.antcolonies.connector.food." + foodModes[Math.clamp(data.getIntOr("food_mode", 0), 0, 2)]))
+                        .append(", ").append(Component.translatable("gui.antcolonies.connector.items")).append(": ")
+                        .append(Component.translatable("gui.antcolonies.connector.items." + itemModes[Math.clamp(data.getIntOr("item_mode", 0), 0, 2)]))
+                        .withStyle(ChatFormatting.AQUA));
+                tooltip.add(Component.translatable("gui.antcolonies.connector.flow", data.getIntOr("members", 0), rate(data.getDoubleOr("food_in", 0)),
+                        rate(data.getDoubleOr("food_out", 0)), rate(data.getDoubleOr("items", 0))).withStyle(ChatFormatting.GRAY));
+            }
+            if (data.contains("mode")) {
+                tooltip.add(Component.translatable(com.antcolonies.colony.model.ForagingMode.byId(data.getIntOr("mode", 0)).translationKey())
+                        .withStyle(ChatFormatting.AQUA));
+            }
+            if (data.getBooleanOr("expedition", false)) {
+                boolean active = data.getIntOr("assigned", 0) > 0;
+                tooltip.add(Component.translatable(active ? "jade.antcolonies.expedition.active" : "jade.antcolonies.expedition.idle")
+                        .withStyle(active ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.DARK_GRAY));
             }
             if (data.getBooleanOr("job", false)) {
                 tooltip.add(Component.translatable("gui.antcolonies.job_workers", data.getIntOr("assigned", 0), data.getIntOr("capacity", 0))

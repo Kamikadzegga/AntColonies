@@ -25,7 +25,7 @@ final class Breeding {
 
         // Laying.
         double laid = 0;
-        if (colony.queen() != null) {
+        if (colony.queen() != null && colony.founding() != com.antcolonies.colony.model.Founding.FEEDING) {
             int chambers = step.count(StructureKind.NEST_CHAMBER);
             double chamberFactor = chambers == 0 ? AntConfig.get(AntConfig.NO_NEST_FACTOR)
                     : ProductionMath.diminishing(chambers - 1, AntConfig.get(AntConfig.NEST_LAYING_BONUS));

@@ -23,6 +23,9 @@ public final class ModStructures {
     /** The same nest dug into the Nether's floor (its pieces are the giant anthill's, with a Nether flag). */
     public static final DeferredHolder<StructureType<?>, StructureType<com.antcolonies.content.worldgen.NetherAnthill>> NETHER_ANTHILL =
             STRUCTURE_TYPES.register("nether_anthill", () -> () -> com.antcolonies.content.worldgen.NetherAnthill.CODEC);
+    /** Chorus Ants' nests in the End's outer islands. */
+    public static final DeferredHolder<StructureType<?>, StructureType<com.antcolonies.content.worldgen.EndAnthill>> END_ANTHILL =
+            STRUCTURE_TYPES.register("end_anthill", () -> () -> com.antcolonies.content.worldgen.EndAnthill.CODEC);
     public static final DeferredHolder<StructurePieceType, StructurePieceType> ANTHILL_PIECE =
             STRUCTURE_PIECES.register("giant_anthill", () -> (context, tag) -> new AnthillPiece(tag));
 

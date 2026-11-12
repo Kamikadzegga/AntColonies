@@ -16,15 +16,15 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The colony overview. Its slots are the Terrarium's (Queen, feed, empty tubes) and its upgrades; everything shown about
+ * The colony overview. Its slots are the Terrarium's (Queen, food, feed, output) and its upgrades; everything shown about
  * the colony comes from the client's copy of the Terrarium, which the server keeps in sync.
  */
 public class TerrariumMenu extends BaseMenu {
     public static final int BUTTON_TAKE_WORKERS = 3;
     /** Assignment buttons: base + site index * 20 + action (see {@link StructureMenu#adjust}). */
     public static final int BUTTON_ASSIGNMENT = 1000;
-    public static final int INVENTORY_X = 44;
-    public static final int INVENTORY_Y = 140;
+    public static final int INVENTORY_X = 66;
+    public static final int INVENTORY_Y = 154;
 
     private final TerrariumBlockEntity terrarium;
 
@@ -33,7 +33,8 @@ public class TerrariumMenu extends BaseMenu {
         this.terrarium = terrarium;
         addSlot(new FilteredSlot(terrarium, TerrariumBlockEntity.SLOT_QUEEN, 8, 20,
                 stack -> stack.is(ModItems.QUEEN_TEST_TUBE.get()) || stack.is(ModItems.TEST_TUBE.get()), 1));
-        addSlot(new FilteredSlot(terrarium, TerrariumBlockEntity.SLOT_FEED, 8, 44, stack -> true, 64));
+        addSlot(new FilteredSlot(terrarium, TerrariumBlockEntity.SLOT_FOOD, 26, 44, TerrariumBlockEntity::isFood, 64));
+        addSlot(new FilteredSlot(terrarium, TerrariumBlockEntity.SLOT_FEED, 8, 44, terrarium::isFeed, 64));
         addSlot(new FilteredSlot(terrarium, TerrariumBlockEntity.SLOT_OUTPUT, 8, 68, stack -> false, 64));
         for (int i = 0; i < TerrariumBlockEntity.UPGRADE_SLOTS; i++) {
             addUpgradeSlot(new FilteredSlot(terrarium.upgrades(), i, 8 + (i % 2) * 18, 94 + (i / 2) * 18, TerrariumBlockEntity::acceptsUpgrade, 1));

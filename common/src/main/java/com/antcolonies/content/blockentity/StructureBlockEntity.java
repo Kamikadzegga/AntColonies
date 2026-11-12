@@ -79,7 +79,27 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     public static final int DATA_CONTESTED = 11;
     /** A bit per upgrade slot whose upgrade can't come out now (canRemoveUpgrade). */
     public static final int DATA_UPGRADES_HELD = 12;
-    public static final int DATA_COUNT = 13;
+    /** Job sites: the Foraging Site's mode, whether the site is turned on, and its priority (0 low, 1 normal, 2 high). */
+    public static final int DATA_MODE = 13;
+    public static final int DATA_ENABLED = 14;
+    public static final int DATA_PRIORITY = 15;
+    /** Colony Connectors: their settings and what they moved (food and items per minute, times 10). */
+    public static final int DATA_CHANNEL = 16;
+    public static final int DATA_FOOD_MODE = 17;
+    public static final int DATA_RESERVE = 18;
+    public static final int DATA_TARGET = 19;
+    public static final int DATA_RATE_LIMIT = 20;
+    public static final int DATA_ITEM_MODE = 21;
+    public static final int DATA_FOOD_IN = 22;
+    public static final int DATA_FOOD_OUT = 23;
+    public static final int DATA_ITEMS_MOVED = 24;
+    public static final int DATA_MEMBERS = 25;
+    public static final int DATA_COUNT = 26;
+
+    /** Job site priorities: the colony hands out its workers to higher ones first. */
+    public static final int PRIORITY_LOW = 0;
+    public static final int PRIORITY_NORMAL = 1;
+    public static final int PRIORITY_HIGH = 2;
 
     private final StructureKind kind;
     private NonNullList<ItemStack> items;
@@ -102,6 +122,13 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     private final Map<SpeciesOutput, Double> processingCredit = new HashMap<>();
     private boolean syncPending;
     private int queensRaised;
+    /** An ordinary Foraging Site's mode (what its workers look for). */
+    private com.antcolonies.colony.model.ForagingMode mode = com.antcolonies.colony.model.ForagingMode.BALANCED;
+    /** A job site turned off in the Jobs page takes no ants (like a redstone signal). */
+    private boolean enabled = true;
+    private int priority = PRIORITY_NORMAL;
+    /** A Colony Connector's settings (null for every other chamber). */
+    private final @Nullable ConnectorSettings connector;
 
     private final ContainerData data = new ContainerData() {
         @Override
@@ -120,6 +147,19 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
                 case DATA_UNLOCKED -> unlockedSlots();
                 case DATA_CONTESTED -> isContested() ? 1 : 0;
                 case DATA_UPGRADES_HELD -> upgradesHeld();
+                case DATA_MODE -> mode.ordinal();
+                case DATA_ENABLED -> enabled ? 1 : 0;
+                case DATA_PRIORITY -> priority;
+                case DATA_CHANNEL -> connector == null ? 0 : connector.channel;
+                case DATA_FOOD_MODE -> connector == null ? 0 : connector.foodMode;
+                case DATA_RESERVE -> connector == null ? 0 : connector.reserve;
+                case DATA_TARGET -> connector == null ? 0 : connector.target;
+                case DATA_RATE_LIMIT -> connector == null ? 0 : connector.rateLimit;
+                case DATA_ITEM_MODE -> connector == null ? 0 : connector.itemMode;
+                case DATA_FOOD_IN -> connector == null ? 0 : (int) Math.round(connector.foodIn * 10);
+                case DATA_FOOD_OUT -> connector == null ? 0 : (int) Math.round(connector.foodOut * 10);
+                case DATA_ITEMS_MOVED -> connector == null ? 0 : (int) Math.round(connector.itemsMoved * 10);
+                case DATA_MEMBERS -> connector == null ? 0 : connector.members;
                 default -> 0;
             };
         }
@@ -138,6 +178,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         super(ModBlockEntities.STRUCTURE.get(), pos, state);
         this.kind = state.getBlock() instanceof StructureBlock block ? block.structureKind() : StructureKind.STORAGE;
         this.items = NonNullList.withSize(kind.slots(), ItemStack.EMPTY);
+        this.connector = kind == StructureKind.COLONY_CONNECTOR ? new ConnectorSettings() : null;
         this.upgrades = new SimpleContainer(kind.upgradeSlots()) {
             @Override
             public boolean canPlaceItem(int slot, ItemStack stack) {
@@ -258,10 +299,55 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
             contentsChanged();
         }
         setChanged();
+        // A Nether or End Foraging Site's portal glows while ants are out on expeditions through it.
+        if (kind.expedition() && level != null && getBlockState().hasProperty(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE)) {
+            boolean active = assigned > 0;
+            if (getBlockState().getValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE) != active) {
+                level.setBlock(worldPosition, getBlockState().setValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE, active), Block.UPDATE_CLIENTS);
+            }
+        }
     }
 
     public int siteStatus() {
         return siteStatus;
+    }
+
+    /** What an ordinary Foraging Site's workers look for (other sites: Balanced). */
+    public com.antcolonies.colony.model.ForagingMode mode() {
+        return kind == StructureKind.FORAGING_SITE ? mode : com.antcolonies.colony.model.ForagingMode.BALANCED;
+    }
+
+    public void setMode(com.antcolonies.colony.model.ForagingMode mode) {
+        this.mode = mode;
+        setChanged();
+        contentsChanged();
+    }
+
+    /** Whether this job site is turned on (the Jobs page and its own screen turn it off; it then takes no ants). */
+    public boolean enabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        setChanged();
+        contentsChanged();
+    }
+
+    /** Its priority: higher ones get their ants first. */
+    public int priority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = Math.clamp(priority, PRIORITY_LOW, PRIORITY_HIGH);
+        setChanged();
+        contentsChanged();
+    }
+
+    /** A Colony Connector's settings; null for other chambers. */
+    public @Nullable ConnectorSettings connector() {
+        return connector;
     }
 
     // --- The link to a colony ---
@@ -350,6 +436,9 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
      * II: three stacks, so 192 cobblestone or 48 ender pearls). Other chambers hold normal stacks.
      */
     public int slotLimit(ItemStack stack) {
+        if (kind == StructureKind.COLONY_CONNECTOR) {
+            return 1; // a filter names an item; one is enough
+        }
         return kind == StructureKind.STORAGE ? slotLimit(stack, upgradeTier(UpgradeType.STORAGE)) : Math.max(1, stack.getMaxStackSize());
     }
 
@@ -506,7 +595,9 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
         return switch (kind) {
-            case STORAGE, FORAGING_SITE -> slot < unlockedSlots();
+            case STORAGE, FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE -> slot < unlockedSlots();
+            // A Colony Connector's filter: one of each item it should send.
+            case COLONY_CONNECTOR -> slot < items.size();
             case QUEEN_CHAMBER -> slot < StructureKind.QUEEN_CHAMBER_MATERIALS
                     || slot == StructureKind.QUEEN_CHAMBER_TUBE && stack.is(ModItems.TEST_TUBE.get())
                     || slot == StructureKind.QUEEN_CHAMBER_SAMPLE && stack.is(ModItems.GENETIC_SAMPLE.get());
@@ -529,7 +620,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     public int[] getSlotsForFace(Direction side) {
         return switch (kind) {
-            case STORAGE, FORAGING_SITE -> range(0, unlockedSlots());
+            case STORAGE, FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE -> range(0, unlockedSlots());
             case QUEEN_CHAMBER -> range(0, items.size());
             default -> NO_SLOTS;
         };
@@ -579,7 +670,28 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         if (level != null) {
             Containers.dropContents(level, pos, items);
             Containers.dropContents(level, pos, upgrades);
+            if (connector != null && level instanceof ServerLevel serverLevel) {
+                com.antcolonies.colony.network.ConnectorNetwork.unregister(serverLevel, pos);
+            }
         }
+    }
+
+    /** A Colony Connector joins its channel's network when it loads (the network remembers it while unloaded too). */
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (connector != null && level instanceof ServerLevel serverLevel) {
+            com.antcolonies.colony.network.ConnectorNetwork.register(serverLevel, worldPosition, connector.channel);
+        }
+    }
+
+    /** A Colony Connector's settings changed (its screen): saved, sent, and its channel known to the network. */
+    public void connectorChanged() {
+        if (connector != null && level instanceof ServerLevel serverLevel) {
+            com.antcolonies.colony.network.ConnectorNetwork.register(serverLevel, worldPosition, connector.channel);
+        }
+        setChanged();
+        contentsChanged();
     }
 
     // --- Saving and syncing ---
@@ -606,6 +718,13 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         rearingProgress = input.getDoubleOr("rearing", 0);
         rearingStatus = input.getIntOr("rearing_status", 0);
         queensRaised = input.getIntOr("queens_raised", 0);
+        // Chambers saved before modes, switches and priorities existed load as Balanced, on and normal.
+        mode = com.antcolonies.colony.model.ForagingMode.byId(input.getIntOr("mode", 0));
+        enabled = input.getBooleanOr("enabled", true);
+        priority = Math.clamp(input.getIntOr("priority", PRIORITY_NORMAL), PRIORITY_LOW, PRIORITY_HIGH);
+        if (connector != null) {
+            connector.load(input);
+        }
         // Synced only: what the colony gave it.
         assigned = input.getIntOr("assigned", 0);
         if (input.getBooleanOr("contested", false)) {
@@ -642,6 +761,14 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         output.putDouble("rearing", rearingProgress);
         output.putInt("rearing_status", rearingStatus);
         output.putInt("queens_raised", queensRaised);
+        if (kind.job().any()) {
+            output.putInt("mode", mode.ordinal());
+            output.putBoolean("enabled", enabled);
+            output.putInt("priority", priority);
+        }
+        if (connector != null) {
+            connector.save(output);
+        }
     }
 
     @Override

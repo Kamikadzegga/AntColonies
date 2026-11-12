@@ -1737,6 +1737,58 @@ public class TexGen {
                 img.set(x, y, y == 0 ? CH_LIGHT : CH_BASE);
             }
         }
+        // The jaws (a 1x1x4 box at 32,8): darker than the face so they stand out against it, a lit ridge on top
+        // brightening to the tip, black underneath; a pale tooth (a 1x1x1 box at 54,8).
+        int[] ridge = {CH_DARK, CH_BASE, CH_LIGHT, CH_LIGHT};
+        for (int z = 0; z < 4; z++) {
+            img.set(36, 8 + z, ridge[z]);
+            img.set(37, 8 + z, CH_OUT);
+            img.set(32 + z, 12, z % 2 == 0 ? CH_DARK : CH_OUT);
+            img.set(37 + z, 12, z % 2 == 0 ? CH_DARK : CH_OUT);
+        }
+        img.set(36, 12, CH_LIGHT);
+        img.set(41, 12, CH_OUT);
+        img.set(55, 8, CH_SHINE);
+        img.set(56, 8, CH_LIGHT);
+        for (int x = 54; x < 58; x++) {
+            img.set(x, 9, x == 55 ? CH_SHINE : CH_LIGHT);
+        }
+        // The spines (a 1x1x4 box at 44,8): dark at the root, lighter to a bright point at the back face (53,12).
+        int[] thorn = {CH_DARK, CH_BASE, CH_LIGHT, CH_SHINE};
+        for (int z = 0; z < 4; z++) {
+            img.set(48, 8 + z, thorn[z]);
+            img.set(49, 8 + z, CH_OUT);
+            img.set(44 + z, 12, thorn[3 - z] == CH_SHINE ? CH_LIGHT : thorn[3 - z]);
+            img.set(49 + z, 12, thorn[z] == CH_SHINE ? CH_LIGHT : thorn[z]);
+        }
+        img.set(48, 12, CH_OUT);
+        img.set(53, 12, CH_SHINE);
+        // The wings (4 x 13 planes at 56,16, front and back side by side): a pale membrane, a dark leading edge on the
+        // outside, veins from the root (one along, two across, one fork), the tip rounded off.
+        for (int face = 0; face < 2; face++) {
+            int u = 56 + face * 4;
+            for (int y = 0; y < 13; y++) {
+                for (int x = 0; x < 4; x++) {
+                    int outer = face == 0 ? 0 : 3;   // the wings' outer edges, as each face is seen
+                    int inner = 3 - outer;
+                    int along = face == 0 ? 2 : 1;   // the long vein, nearer the outer edge
+                    int color;
+                    if (x == outer) {
+                        color = y < 9 ? CH_DARK : CH_BASE;
+                    } else if (y == 0) {
+                        color = CH_DARK;
+                    } else if (x == along && y < 10 || y == 4 && x != inner || y == 8 && x == along) {
+                        color = CH_BASE;
+                    } else {
+                        color = y < 2 ? CH_LIGHT : CH_SHINE;
+                    }
+                    if (y == 12 && x != along || y == 11 && x == outer) {
+                        color = 0;
+                    }
+                    img.set(u + x, 16 + y, color);
+                }
+            }
+        }
     }
 
     /**
@@ -1826,6 +1878,1168 @@ public class TexGen {
         }
     }
 
+    // ------------------------------------------------------------------ The nest-building palette and the new chambers
+    //
+    // Painted on a tone map: each pixel is an index into the material's ramp (dark to light), so shading is +-1 tone and
+    // the clusters stay on the ramp. Clusters come from tileable value noise on the 16 px torus (two octaves, quantized),
+    // which gives vanilla's 2-4 px blotches without single-pixel noise. Every material has a signature of its own:
+    // soil pellets (what ants carry out of their tunnels), adobe bricks with rounded corners, overlapping chitin scales,
+    // an ant caught in amber, fungus gardens with gongylidia knobs, royal plum chitin set in gold.
+
+    static int[] ramp(int... rgb) {
+        int[] out = new int[rgb.length];
+        for (int i = 0; i < rgb.length; i++) {
+            out[i] = 0xFF000000 | rgb[i];
+        }
+        return out;
+    }
+
+    /** Tileable value noise, 0..1, lattice every {@code cell} px (a divisor of 16), smoothstep between lattice points. */
+    static double[][] valueNoise(long seed, int cell) {
+        Random random = new Random(seed);
+        int n = 16 / cell;
+        double[][] lattice = new double[n][n];
+        for (int y = 0; y < n; y++) {
+            for (int x = 0; x < n; x++) {
+                lattice[y][x] = random.nextDouble();
+            }
+        }
+        double[][] out = new double[16][16];
+        for (int y = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                double gx = x / (double) cell;
+                double gy = y / (double) cell;
+                int x0 = (int) Math.floor(gx);
+                int y0 = (int) Math.floor(gy);
+                double tx = gx - x0;
+                double ty = gy - y0;
+                tx = tx * tx * (3 - 2 * tx);
+                ty = ty * ty * (3 - 2 * ty);
+                double a = lattice[y0 % n][x0 % n];
+                double b = lattice[y0 % n][(x0 + 1) % n];
+                double c = lattice[(y0 + 1) % n][x0 % n];
+                double d = lattice[(y0 + 1) % n][(x0 + 1) % n];
+                out[y][x] = (a * (1 - tx) + b * tx) * (1 - ty) + (c * (1 - tx) + d * tx) * ty;
+            }
+        }
+        return out;
+    }
+
+    /** A tone map from two octaves of noise and a little per-pixel jitter, spread over {@code tones} tones. */
+    static int[][] clusters(long seed, int tones, double jitter, double bias) {
+        double[][] big = valueNoise(seed, 8);
+        double[][] small = valueNoise(seed * 31 + 7, 4);
+        double[][] fine = valueNoise(seed * 17 + 3, 2);
+        Random random = new Random(seed ^ 0x5DEECE66DL);
+        int[][] t = new int[16][16];
+        for (int y = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                double v = big[y][x] * 0.45 + small[y][x] * 0.35 + fine[y][x] * 0.2 + (random.nextDouble() - 0.5) * jitter + bias;
+                // Stretch the middle so all tones get used.
+                v = Math.clamp((v - 0.5) * 1.9 + 0.5, 0, 0.9999);
+                t[y][x] = (int) (v * tones);
+            }
+        }
+        return t;
+    }
+
+    static void render(Img img, int[][] t, int[] ramp) {
+        for (int y = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                img.set(x, y, ramp[Math.clamp(t[y][x], 0, ramp.length - 1)]);
+            }
+        }
+    }
+
+    static void tone(int[][] t, int x, int y, int delta, int max) {
+        int wx = Math.floorMod(x, 16);
+        int wy = Math.floorMod(y, 16);
+        t[wy][wx] = Math.clamp(t[wy][wx] + delta, 0, max);
+    }
+
+    /**
+     * Soil pellets: the balls of earth ants carry out of their tunnels. A 2x2 crumb lit at its top left, with a contact
+     * shadow under its right; wraps across the edges so the block tiles.
+     */
+    static void pellets(int[][] t, int max, long seed, int count) {
+        Random random = new Random(seed);
+        for (int i = 0; i < count; i++) {
+            int x = random.nextInt(16);
+            int y = random.nextInt(16);
+            int base = max - 1 - random.nextInt(2);
+            t[y][x] = Math.min(max, base + 1);
+            t[y][(x + 1) % 16] = base;
+            t[(y + 1) % 16][x] = base;
+            t[(y + 1) % 16][(x + 1) % 16] = base - 1;
+            tone(t, x + 1, y + 2, -2, max);
+            tone(t, x + 2, y + 1, -1, max);
+        }
+    }
+
+    /**
+     * Brick courses: each brick is its own cluster field (a little lighter or darker than its neighbours), lit along its
+     * top, shaded along its bottom; the mortar is the last row and column of each brick. {@code rounded} knocks the
+     * corners off (hand-pressed adobe).
+     */
+    static int[][] bricks(long seed, int tones, int[] rows, int[] widths, int[] offsets, boolean rounded, int[][] mortar) {
+        int[][] t = new int[16][16];
+        Random random = new Random(seed);
+        int y0 = 0;
+        for (int row = 0; row < rows.length; row++) {
+            int h = rows[row];
+            int w = widths[row];
+            for (int bx = offsets[row]; bx < offsets[row] + 16; bx += w) {
+                double bias = (random.nextDouble() - 0.5) * 0.22;
+                int[][] field = clusters(random.nextLong(), tones, 0.18, bias);
+                for (int dy = 0; dy < h; dy++) {
+                    for (int dx = 0; dx < w; dx++) {
+                        int x = Math.floorMod(bx + dx, 16);
+                        int y = y0 + dy;
+                        boolean seamRow = dy == h - 1;
+                        boolean seamCol = dx == w - 1;
+                        boolean corner = rounded && (dx == 0 || dx == w - 2) && (dy == 0 || dy == h - 2);
+                        if (seamRow || seamCol) {
+                            mortar[y][x] = 1;
+                            t[y][x] = 0;
+                        } else if (corner) {
+                            mortar[y][x] = 2;
+                            t[y][x] = 1;
+                        } else {
+                            int v = field[y][x];
+                            if (dy == 0) {
+                                v += 1;
+                            } else if (dy == h - 2) {
+                                v -= 1;
+                            }
+                            if (dx == w - 2 && dy > 0) {
+                                v -= 1;
+                            }
+                            t[y][x] = Math.clamp(v, 1, tones - 1);
+                        }
+                    }
+                }
+            }
+            y0 += h;
+        }
+        return t;
+    }
+
+    /**
+     * Overlapping scales, like the chitin of the armour: 8 px wide, a new row every 4, each row shifted half a scale.
+     * Each scale is an arch: its top edge curves down at the sides, where the scale above overlaps it (a shadow pocket);
+     * a lit crest runs along the arch, and the scale darkens towards its lower rim.
+     *
+     * @param base  tone of a scale's body in {@code body} (it varies by one with the clusters and darkens downwards)
+     */
+    static Img scales(long seed, int[] body, int base, int crest, int crestEdge, int glint, int pocket, int seam) {
+        Img img = new Img(16, 16);
+        int[][] t = clusters(seed, 3, 0.2, 0);
+        Random random = new Random(seed + 1);
+        // Two rows of scales 8 px square per block, the second shifted half a scale: big enough to read as arches.
+        for (int y = 0; y < 16; y++) {
+            int row = y / 8;
+            int dy = y % 8;
+            for (int x = 0; x < 16; x++) {
+                int dx = Math.floorMod(x + row * 4, 8);
+                double edge = Math.abs(dx - 3.5) / 3.5;
+                // Each scale's lower rim is a U: low in the middle, rising at the sides, and it overlaps the scales of the
+                // next row (shifted half a scale), which lie in its shadow there.
+                int rim = 7 - (int) Math.round(edge * edge * 3.2);
+                int c;
+                if (dy > rim) {
+                    c = dy == rim + 1 ? pocket : seam;
+                } else if (dy == rim) {
+                    c = edge > 0.8 ? crestEdge : crest;
+                } else if (dx == 0) {
+                    c = seam;
+                } else {
+                    // Shaded where the row above overlaps it, fullest in its middle.
+                    int shade = dy == 0 ? -2 : dy == 1 ? -1 : dy >= 3 && dy <= 4 && edge < 0.6 ? 1 : 0;
+                    c = body[Math.clamp(base + t[y][x] - 1 + shade, 0, body.length - 1)];
+                }
+                img.set(x, y, c);
+            }
+        }
+        // A glint on the crest of two of the four scales.
+        for (int row = 0; row < 2; row++) {
+            int dx = 2 + random.nextInt(3);
+            img.set(Math.floorMod(dx - row * 4, 8) + random.nextInt(2) * 8, row * 8 + 3, glint);
+        }
+        return img;
+    }
+
+    static int[][] grid(int value) {
+        int[][] g = new int[16][16];
+        for (int[] row : g) {
+            java.util.Arrays.fill(row, value);
+        }
+        return g;
+    }
+
+    /** A brick texture: bricks in the ramp, mortar (1) and rounded corners (2) in their own colours. */
+    static Img brickImg(int[][] t, int[][] mortar, int[] ramp, int mortarColor, int cornerColor) {
+        Img img = new Img(16, 16);
+        render(img, t, ramp);
+        for (int y = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                if (mortar[y][x] == 1) {
+                    img.set(x, y, mortarColor);
+                } else if (mortar[y][x] == 2) {
+                    img.set(x, y, cornerColor);
+                }
+            }
+        }
+        return img;
+    }
+
+    static final int[] SOIL = ramp(0x3B2416, 0x553520, 0x6E462A, 0x875834, 0x9F6B40, 0xB7814F);
+    static final int[] ADOBE = ramp(0x5A3923, 0x70482C, 0x865936, 0x9C6A41, 0xB27D50);
+    static final int[] CHITIN = ramp(0x341E10, 0x4E2C17, 0x683A1E, 0x804A26, 0x985C30, 0xB0713E, 0xC6864E, 0xDDA466, 0xEEC082);
+    static final int[] ROYAL = ramp(0x1C0E1C, 0x2F1630, 0x432042, 0x572B55, 0x6C3868, 0x84487D, 0x9C5C92);
+    static final int[] GOLD = ramp(0x5E420F, 0x8E6A1A, 0xBF962B, 0xE2BF4A, 0xF8E28A);
+    static final int[] AMBER = ramp(0x3E1C05, 0x5A2A08, 0x7A3D0B, 0x9A520F, 0xB66816, 0xCC7F20, 0xE09A34, 0xF0BE62);
+    static final int[] FUNGUS = ramp(0x6E604C, 0x8C7D64, 0xAA9B7E, 0xC5B797, 0xDCCFB0, 0xEEE4CA, 0xFAF4E2);
+    static final int[] GLOW = ramp(0x16221E, 0x1F322C, 0x2A453B, 0x34604F, 0x3F8A6F, 0x5DBE97, 0x97EBC6, 0xDBFFEE);
+
+    static void nestBlocks() {
+        // --- Anthill: soil, packed soil, adobe bricks, polished bricks, a pillar ---
+        {
+            // Calm earth in the middle tones, so the pellets on it read: lit crumbs with a shadow under them.
+            int[][] t = clusters(101, 3, 0.25, 0);
+            for (int[] row : t) {
+                for (int x = 0; x < 16; x++) {
+                    row[x] += 1;
+                }
+            }
+            pellets(t, SOIL.length - 1, 102, 9);
+            Img img = new Img(16, 16);
+            render(img, t, SOIL);
+            img.save("block/anthill_soil");
+        }
+        {
+            // Pellets pressed flat: thin horizontal laminae, every few rows a darker seam.
+            int[][] t = clusters(111, 5, 0.2, 0);
+            double[][] wave = valueNoise(112, 8);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    int band = (y + (int) Math.round(wave[0][x] * 2)) % 4;
+                    if (band == 0) {
+                        t[y][x] = Math.max(0, t[y][x] - 2);
+                    } else if (band == 1) {
+                        t[y][x] = Math.min(4, t[y][x] + 1);
+                    }
+                }
+            }
+            Img img = new Img(16, 16);
+            render(img, t, ramp(0x3A2417, 0x4F321F, 0x654129, 0x7B5034, 0x91623F));
+            img.save("block/packed_anthill_soil");
+        }
+        {
+            int[][] mortar = new int[16][16];
+            int[][] t = bricks(121, ADOBE.length, new int[] {4, 4, 4, 4}, new int[] {8, 8, 8, 8}, new int[] {0, 4, 0, 4}, true, mortar);
+            pellets(t, ADOBE.length - 1, 122, 2);
+            brickImg(t, mortar, ADOBE, hex(0x3B2416), hex(0x4A2F1C)).save("block/anthill_bricks");
+        }
+        {
+            // Two big pressed slabs per row, their faces smoothed by the ants' mandibles: calm clusters, a lit rim.
+            int[][] mortar = new int[16][16];
+            int[][] t = bricks(131, ADOBE.length, new int[] {8, 8}, new int[] {16, 16}, new int[] {0, 8}, false, mortar);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    if (mortar[y][x] == 0 && (y % 8 == 1 || y % 8 == 6)) {
+                        t[y][x] = Math.clamp(t[y][x] + (y % 8 == 1 ? 1 : -1), 1, ADOBE.length - 1);
+                    }
+                }
+            }
+            brickImg(t, mortar, ramp(0x6A4429, 0x7F5333, 0x94633E, 0xA9744B, 0xBC875B), hex(0x452B19), hex(0x452B19))
+                    .save("block/polished_anthill_bricks");
+        }
+        {
+            // Nest pillar: a column the ants built up in rings of pellets, ring seams every 4 rows, lit left.
+            int[][] t = clusters(141, ADOBE.length, 0.15, 0);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    int v = t[y][x];
+                    v += x < 3 ? 1 : x > 12 ? -1 : 0;
+                    if (y % 4 == 3) {
+                        v = 0;
+                    } else if (y % 4 == 0) {
+                        v += 1;
+                    }
+                    t[y][x] = Math.clamp(v, 0, ADOBE.length - 1);
+                }
+            }
+            Img side = new Img(16, 16);
+            render(side, t, ADOBE);
+            for (int y = 0; y < 16; y++) {
+                side.set(0, y, hex(0x452B19));
+                side.set(15, y, hex(0x452B19));
+            }
+            side.save("block/nest_pillar");
+            Img top = new Img(16, 16);
+            int[][] rings = clusters(142, ADOBE.length, 0.15, 0);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    double r = Math.hypot(x - 7.5, y - 7.5);
+                    int v = rings[y][x];
+                    if ((int) r % 3 == 2) {
+                        v -= 2;
+                    }
+                    rings[y][x] = Math.clamp(v, 0, ADOBE.length - 1);
+                }
+            }
+            render(top, rings, ADOBE);
+            border(top, 0, 0, 16, 16, hex(0x452B19));
+            top.save("block/nest_pillar_top");
+        }
+
+        // --- Chitin: scales, polished, bricks, tiles ---
+        {
+            scales(201, CHITIN, 5, CHITIN[7], CHITIN[5], CHITIN[8], CHITIN[0], CHITIN[2]).save("block/chitin_block");
+        }
+        {
+            // Polished: one calm plate per block face, a lit rim at the top and left, a dark rim at the bottom and right.
+            int[][] t = clusters(211, 3, 0.12, 0);
+            Img img = new Img(16, 16);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    int v = 3 + t[y][x];
+                    if (y == 0 || x == 0) {
+                        v = 7;
+                    } else if (y == 15 || x == 15) {
+                        v = 1;
+                    } else if (y == 1 || x == 1) {
+                        v = 6;
+                    } else if (y == 14 || x == 14) {
+                        v = 2;
+                    }
+                    img.set(x, y, CHITIN[v]);
+                }
+            }
+            // A soft sheen in the plate's upper left, where the light catches the gloss.
+            for (int[] p : new int[][] {{3, 3}, {4, 3}, {5, 3}, {3, 4}, {4, 4}, {3, 5}, {6, 3}, {3, 6}}) {
+                img.set(p[0], p[1], CHITIN[p[0] + p[1] <= 7 ? 6 : 5]);
+            }
+            img.set(4, 3, CHITIN[7]);
+            img.set(0, 0, CHITIN[8]);
+            img.save("block/polished_chitin");
+        }
+        {
+            // Chitin bricks: plates of dark, glossy carapace (darker than the other chitin blocks: an ant's cuticle, not
+            // wood), laid in courses of uneven height (5, 5 and 6 rows), staggered, each course overlapping the one below
+            // like the segments of an ant's abdomen: its lower lip catches the light and throws a shadow onto the plate
+            // under it. Narrow sutures between the plates, a lit edge after each; a short curved highlight in each plate's
+            // upper part where the gloss catches the light, and a hair pit or two in the cuticle. No mortar.
+            int[] carapace = {hex(0x150C07), CHITIN[0], CHITIN[1], CHITIN[2], CHITIN[3], CHITIN[4], CHITIN[5], CHITIN[7], CHITIN[8]};
+            Img img = new Img(16, 16);
+            int[][] t = clusters(221, 2, 0.2, 0);
+            int[][] courses = {{0, 5, 0, 9}, {5, 5, 4, 13}, {10, 6, 2, 11}}; // top row, height, the two sutures' x
+            for (int ci = 0; ci < courses.length; ci++) {
+                int[] course = courses[ci];
+                int h = course[1];
+                for (int b = 0; b < 2; b++) {
+                    int joint = course[2 + b];
+                    int start = joint + 1;
+                    int end = course[2 + (1 - b)] + (b == 1 ? 16 : 0); // the next suture, wrapping round the tile
+                    int w = end - start;
+                    for (int r = 0; r < h; r++) {
+                        int y = course[0] + r;
+                        img.set(joint, y, carapace[r == h - 1 ? 3 : 0]);
+                        for (int c = 0; c < w; c++) {
+                            int x = Math.floorMod(start + c, 16);
+                            int v;
+                            if (r == 0) {
+                                v = 1;                                 // the shadow of the plate above
+                            } else if (r == h - 1) {
+                                v = c == w - 1 ? 4 : 6;                // the lower lip, lit
+                            } else if (c == 0) {
+                                v = 5;                                 // the lit edge after the suture
+                            } else if (c == w - 1) {
+                                v = 2;                                 // turning into the next suture
+                            } else {
+                                v = (r == 1 ? 3 : 4) + t[y][x] - (r == h - 2 ? 1 : 0); // the dome
+                            }
+                            img.set(x, y, carapace[Math.clamp(v, 0, 8)]);
+                        }
+                    }
+                    // The highlight: a short arc over the dome, its brightest pixel off-centre to the left; shifted per
+                    // plate so the highlights never line up.
+                    int hx = start + 1 + (ci + b) % 2;
+                    int hy = course[0] + 2;
+                    img.set(Math.floorMod(hx, 16), hy, carapace[7]);
+                    img.set(Math.floorMod(hx + 1, 16), hy - 1, carapace[8]);
+                    img.set(Math.floorMod(hx + 2, 16), hy - 1, carapace[7]);
+                    if (w >= 8) {
+                        img.set(Math.floorMod(hx + 3, 16), hy - 1, carapace[6]);
+                    }
+                    // Hair pits.
+                    int[] pits = w >= 8 ? new int[] {w - 3, 5} : new int[] {w - 2};
+                    for (int i = 0; i < pits.length; i++) {
+                        img.set(Math.floorMod(start + pits[i], 16), course[0] + (i == 0 ? h - 2 : 3), carapace[1]);
+                    }
+                }
+            }
+            img.save("block/chitin_bricks");
+        }
+        {
+            // Tiles: octagonal plates 8x8 with amber-chitin studs where four corners meet.
+            Img img = new Img(16, 16);
+            int[][] t = clusters(231, 3, 0.15, 0);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    int dx = x % 8;
+                    int dy = y % 8;
+                    int cx = Math.min(dx, 7 - dx);
+                    int cy = Math.min(dy, 7 - dy);
+                    int v;
+                    if (cx + cy <= 1) {
+                        v = -1; // the stud between four tiles
+                    } else if (dx == 7 || dy == 7 || cx + cy == 2) {
+                        v = 1;
+                    } else if (dy == 0 || dx == 0 || cx + cy == 3 && (dx < 4 || dy < 4)) {
+                        v = 6;
+                    } else {
+                        v = 3 + t[y][x];
+                    }
+                    img.set(x, y, v < 0 ? hex(0xD9922A) : CHITIN[v]);
+                }
+            }
+            for (int[] p : new int[][] {{0, 0}, {8, 8}, {8, 0}, {0, 8}}) {
+                img.set(p[0], p[1], hex(0xF2BB4C));
+                img.set(Math.floorMod(p[0] - 1, 16), Math.floorMod(p[1] - 1, 16), hex(0x82430C));
+            }
+            img.save("block/chitin_tiles");
+        }
+
+        // --- Amber: a block with an ant caught in it, bricks, glass, reinforced ---
+        {
+            int[][] t = clusters(301, AMBER.length, 0.15, 0.05);
+            // Light comes through: brighter towards the middle, deeper at the rim.
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    double r = Math.hypot(x - 7.5, y - 7.5);
+                    t[y][x] = Math.clamp(t[y][x] + (r < 4 ? 1 : r > 8 ? -1 : 0), 1, AMBER.length - 2);
+                }
+            }
+            Img img = new Img(16, 16);
+            render(img, t, AMBER);
+            // The ant inside: a tiny side-on silhouette, dark and slightly blurred into the amber.
+            int ant = hex(0x2A1204);
+            int haze = hex(0x5E2D08);
+            int[][] body = {{5, 8}, {6, 8}, {7, 7}, {8, 7}, {9, 8}, {10, 8}, {10, 7}, {11, 8}, {6, 9}};
+            for (int[] p : body) {
+                img.set(p[0], p[1], ant);
+            }
+            for (int[] p : new int[][] {{4, 7}, {4, 6}, {6, 10}, {8, 9}, {9, 10}, {11, 9}, {12, 10}}) {
+                img.set(p[0], p[1], haze);
+            }
+            // Bubbles caught with it.
+            img.set(3, 3, AMBER[7]);
+            img.set(12, 4, AMBER[7]);
+            img.set(13, 12, AMBER[6]);
+            img.set(2, 12, AMBER[6]);
+            img.save("block/amber_block");
+        }
+        {
+            int[][] mortar = new int[16][16];
+            int[][] t = bricks(313, 6, new int[] {5, 5, 6}, new int[] {16, 8, 16}, new int[] {5, 2, 11}, false, mortar);
+            Img img = new Img(16, 16);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    img.set(x, y, mortar[y][x] != 0 ? CHITIN[1] : AMBER[Math.min(7, 2 + t[y][x])]);
+                }
+            }
+            // A glossy streak on each brick's upper left.
+            for (int[] brick : new int[][] {{5, 0}, {2, 5}, {10, 5}, {11, 10}}) {
+                img.set(Math.floorMod(brick[0] + 1, 16), brick[1], AMBER[7]);
+                img.set(Math.floorMod(brick[0] + 2, 16), brick[1], AMBER[6]);
+                img.set(Math.floorMod(brick[0] + 3, 16), brick[1], AMBER[6]);
+                img.set(Math.floorMod(brick[0] + 1, 16), brick[1] + 1, AMBER[6]);
+            }
+            img.save("block/amber_bricks");
+        }
+        {
+            // Amber glass: clear amber you can see through (semi-transparent, so it renders translucent), a deeper rim and
+            // a few streaks. 26.x picks the render type from the alpha.
+            Img img = new Img(16, 16);
+            int[][] t = clusters(321, 3, 0.1, 0);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    boolean rim = x == 0 || y == 0 || x == 15 || y == 15;
+                    int c = rim ? AMBER[3] : AMBER[5 + Math.min(1, t[y][x])];
+                    img.set(x, y, (rim ? 220 : 110 + t[y][x] * 10) << 24 | (c & 0xFFFFFF));
+                }
+            }
+            for (int i = 0; i < 4; i++) {
+                img.set(3 + i, 5 - i, 0xD0000000 | (AMBER[7] & 0xFFFFFF));
+                img.set(9 + i, 13 - i, 0xC0000000 | (AMBER[7] & 0xFFFFFF));
+            }
+            img.save("block/amber_glass");
+        }
+        {
+            // Reinforced: four amber panes in a lattice of Hardened Chitin, studded where the bars cross.
+            Img img = new Img(16, 16);
+            int[][] t = clusters(331, 4, 0.15, 0);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    boolean bar = x <= 1 || y <= 1 || x == 8 || x == 7 || y == 7 || y == 8;
+                    if (bar) {
+                        boolean lit = x == 0 || y == 0 || x == 7 && y > 1 || y == 7 && x > 1;
+                        img.set(x, y, lit ? CHITIN[3] : CHITIN[1]);
+                    } else {
+                        int v = 3 + t[y][x];
+                        int px = x % 8;
+                        int py = y % 8;
+                        if (px == 2 || py == 2) {
+                            v -= 2; // pane shadow under the bars
+                        } else if (px == 3 && py == 3) {
+                            v = 7;
+                        }
+                        img.set(x, y, AMBER[Math.clamp(v, 0, AMBER.length - 1)]);
+                    }
+                }
+            }
+            for (int[] p : new int[][] {{0, 0}, {7, 0}, {0, 7}, {7, 7}}) {
+                img.set(p[0], p[1], CHITIN[6]);
+                img.set(p[0] + 1, p[1] + 1, CHITIN[0]);
+            }
+            img.save("block/reinforced_amber");
+        }
+
+        // --- Fungal: a fungus garden, its bricks, and the glowing kind ---
+        {
+            int[][] t = clusters(401, FUNGUS.length - 1, 0.25, 0.05);
+            Img img = new Img(16, 16);
+            render(img, t, FUNGUS);
+            // Gongylidia: the swollen hyphae tips the ants eat, little yellow-cream knobs in clumps.
+            Random random = new Random(402);
+            for (int i = 0; i < 6; i++) {
+                int x = random.nextInt(16);
+                int y = random.nextInt(16);
+                img.set(x, y, hex(0xF2DC96));
+                img.set((x + 1) % 16, y, hex(0xE2C273));
+                img.set(x, (y + 1) % 16, hex(0xC9A85A));
+            }
+            // Fine hyphae threads in the hollows.
+            for (int i = 0; i < 5; i++) {
+                int x = random.nextInt(16);
+                int y = random.nextInt(16);
+                img.set(x, y, FUNGUS[0]);
+                img.set((x + 1) % 16, (y + 1) % 16, FUNGUS[1]);
+            }
+            img.save("block/fungal_block");
+        }
+        {
+            int[][] mortar = new int[16][16];
+            int[][] t = bricks(411, 5, new int[] {5, 5, 6}, new int[] {8, 8, 8}, new int[] {0, 4, 0}, true, mortar);
+            Img img = brickImg(t, mortar, ramp(0x9B8B70, 0xB9A98A, 0xD3C5A5, 0xE7DCC0, 0xF6EFDC), hex(0x5E5040), hex(0x7A6B55));
+            // Hyphae creeping over the mortar.
+            img.set(3, 4, hex(0xC5B797));
+            img.set(12, 9, hex(0xC5B797));
+            img.set(7, 15, hex(0xC5B797));
+            img.save("block/fungal_bricks");
+        }
+        {
+            // Glowing fungus: bioluminescent clumps on a dark substrate.
+            int[][] t = clusters(421, GLOW.length - 1, 0.3, -0.1);
+            Img img = new Img(16, 16);
+            render(img, t, GLOW);
+            Random random = new Random(422);
+            for (int i = 0; i < 3; i++) {
+                int x = random.nextInt(16);
+                int y = random.nextInt(16);
+                img.set(x, y, GLOW[7]);
+                img.set((x + 1) % 16, y, GLOW[6]);
+                img.set(x, (y + 1) % 16, GLOW[6]);
+                img.set(Math.floorMod(x - 1, 16), y, GLOW[5]);
+            }
+            img.save("block/glowing_fungal_block");
+        }
+
+        // --- Royal: plum chitin set in gold, for a Queen's chamber ---
+        {
+            // The same arched scales, plum, each crest gilded.
+            scales(501, ROYAL, 4, ROYAL[6], ROYAL[4], GOLD[3], ROYAL[0], ROYAL[1]).save("block/royal_chitin_block");
+        }
+        {
+            int[][] mortar = new int[16][16];
+            int[][] t = bricks(511, 5, new int[] {4, 4, 4, 4}, new int[] {8, 8, 8, 8}, new int[] {0, 4, 0, 4}, false, mortar);
+            Img img = new Img(16, 16);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    img.set(x, y, mortar[y][x] != 0 ? GOLD[(x + y) % 5 == 0 ? 2 : 1] : ROYAL[1 + t[y][x]]);
+                }
+            }
+            img.save("block/royal_chitin_bricks");
+        }
+        {
+            // Pillar: plum fluting between gold bands at the ends; the top a gold ring on plum.
+            Img side = new Img(16, 16);
+            int[][] t = clusters(521, 3, 0.15, 0);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    int c;
+                    if (y <= 1 || y >= 14) {
+                        c = y == 0 || y == 14 ? GOLD[3] : GOLD[1];
+                    } else if (x % 4 == 0) {
+                        c = ROYAL[1];
+                    } else {
+                        c = ROYAL[Math.clamp(2 + t[y][x] + (x % 4 == 1 ? 1 : 0), 0, ROYAL.length - 1)];
+                    }
+                    side.set(x, y, c);
+                }
+            }
+            side.set(5, 0, GOLD[4]);
+            side.set(10, 14, GOLD[4]);
+            side.save("block/royal_chitin_pillar");
+            Img top = new Img(16, 16);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    double r = Math.hypot(x - 7.5, y - 7.5);
+                    int c = r > 6.5 ? ROYAL[1] : r > 5.3 ? GOLD[r > 6 ? 1 : 3] : ROYAL[Math.clamp(2 + t[y][x] + (r < 2.5 ? 1 : 0), 0, 6)];
+                    top.set(x, y, c);
+                }
+            }
+            top.set(5, 3, GOLD[4]);
+            top.save("block/royal_chitin_pillar_top");
+        }
+        {
+            // Chiseled: a gold-framed panel with the Queen: a crowned ant seen from above.
+            Img img = new Img(16, 16);
+            int[][] t = clusters(531, 3, 0.15, 0);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    boolean frame = x <= 1 || y <= 1 || x >= 14 || y >= 14;
+                    int c = frame ? (x == 0 || y == 0 ? GOLD[3] : x == 15 || y == 15 ? GOLD[0] : GOLD[2]) : ROYAL[Math.clamp(1 + t[y][x], 0, 6)];
+                    img.set(x, y, c);
+                }
+            }
+            // The Queen's crown inlaid in gold, set with a Royal Jelly cabochon; lit on its left, shaded on its right.
+            String[] crown = {
+                    "............",
+                    "..g...g...g.",
+                    ".gGg.gGg.gGg",
+                    ".GGG.GGG.GGG",
+                    ".GGGGGGGGGGd",
+                    ".GGGGJJGGGGd",
+                    ".GGGJjjJGGGd",
+                    ".GGGGJJGGGGd",
+                    ".dddddddddd.",
+                    "..ssssssss..",
+                    "............"};
+            for (int y = 0; y < crown.length; y++) {
+                for (int x = 0; x < 12; x++) {
+                    int c = switch (crown[y].charAt(x)) {
+                        case 'g' -> GOLD[4];
+                        case 'G' -> x < 5 ? GOLD[3] : GOLD[2];
+                        case 'd' -> GOLD[1];
+                        case 's' -> ROYAL[0];
+                        case 'J' -> hex(0xE8C878);
+                        case 'j' -> hex(0xFFF4C8);
+                        default -> 0;
+                    };
+                    if (c != 0) {
+                        img.set(2 + x, 3 + y, c);
+                    }
+                }
+            }
+            img.save("block/chiseled_royal_chitin");
+        }
+
+        // --- Fittings ---
+        doorAndTrapdoor();
+        {
+            // Pheromone Lamp: four glowing gland sacs held in a chitin cage.
+            Img img = new Img(16, 16);
+            int[] glow = ramp(0x9A520C, 0xD07A14, 0xF2A42A, 0xFFCF52, 0xFFEC98, 0xFFFBE2);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    img.set(x, y, (x == 0 || y == 0) ? CHITIN[3] : (x == 15 || y == 15) ? CHITIN[0] : CHITIN[1]);
+                }
+            }
+            for (int[] c : new int[][] {{4, 4}, {11, 4}, {4, 11}, {11, 11}}) {
+                for (int y = -3; y <= 3; y++) {
+                    for (int x = -3; x <= 3; x++) {
+                        double r = Math.hypot(x + 0.5, y + 0.5);
+                        if (r <= 3.3) {
+                            int v = r > 2.6 ? 1 : r > 1.8 ? 2 : r > 1.0 ? 3 : 4;
+                            if (x <= -1 && y <= -1 && r < 2.0) {
+                                v = 5;
+                            }
+                            img.set(c[0] + x, c[1] + y, glow[v]);
+                        }
+                    }
+                }
+            }
+            // Bars of the cage between the sacs.
+            for (int i = 1; i < 15; i++) {
+                img.set(i, 8, CHITIN[2]);
+                img.set(8, i, CHITIN[2]);
+                img.set(i, 7, CHITIN[4]);
+                img.set(7, i, CHITIN[4]);
+            }
+            img.save("block/pheromone_lamp");
+        }
+        {
+            // Eggs: pearly ovals; larvae: creamy segmented grubs. Shared by the cluster models (8x8 patches).
+            Img eggs = new Img(16, 16);
+            int[] pearl = ramp(0xB8AE96, 0xD2C9B2, 0xE6E0CF, 0xF4F1E8, 0xFFFFFF);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    int dx = x % 8;
+                    int dy = y % 8;
+                    int v = dy < 2 ? 3 : dy > 5 ? 1 : 2;
+                    if (dx == 0 || dx == 7) {
+                        v -= 1;
+                    }
+                    if (dx == 2 && dy == 1) {
+                        v = 4;
+                    }
+                    eggs.set(x, y, pearl[Math.clamp(v, 0, 4)]);
+                }
+            }
+            eggs.save("block/ant_egg_cluster");
+            Img larvae = new Img(16, 16);
+            int[] cream = ramp(0xA89268, 0xC4AE84, 0xDCC8A0, 0xEDDDBB, 0xF8EFD8);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    int v = x % 3 == 2 ? 1 : (y % 8 < 3 ? 3 : 2);
+                    if (y % 8 == 7) {
+                        v = 0;
+                    }
+                    larvae.set(x, y, cream[v]);
+                }
+            }
+            larvae.set(1, 1, cream[4]);
+            larvae.set(9, 9, cream[4]);
+            larvae.save("block/larva_cluster");
+        }
+        {
+            // Terrarium Glass: the colony case's glass with its wooden corner posts (faintly tinted, see-through).
+            Img img = new Img(16, 16);
+            int frame = hex(0x7A5634);
+            int frameDark = hex(0x553B22);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    boolean edge = x == 0 || y == 0 || x == 15 || y == 15;
+                    img.set(x, y, edge ? ((x == 15 || y == 15) ? frameDark : frame) : 0x30D8F0F0);
+                }
+            }
+            for (int i = 0; i < 4; i++) {
+                img.set(3 + i, 7 - i, 0x80FFFFFF);
+                img.set(4 + i, 7 - i, 0x50FFFFFF);
+                img.set(10 + i, 12 - i, 0x60FFFFFF);
+            }
+            img.save("block/terrarium_glass_block");
+        }
+    }
+
+    /** The Nest Door (two halves and its item) and Trapdoor: chitin frames around packed-soil panels, round tunnel windows. */
+    static void doorAndTrapdoor() {
+        int[] panel = ramp(0x4F321F, 0x654129, 0x7B5034, 0x91623F);
+        int[][] soil = clusters(601, 4, 0.2, 0);
+        for (int half = 0; half < 2; half++) {
+            Img img = new Img(16, 16);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    boolean frame = x <= 1 || x >= 14 || (half == 0 ? y >= 14 : y <= 1);
+                    boolean band = y % 8 == 4 || y % 8 == 5;
+                    int c;
+                    if (frame) {
+                        c = x == 0 || (half == 1 && y == 0) ? CHITIN[5] : x == 15 || (half == 0 && y == 15) ? CHITIN[0] : CHITIN[3];
+                    } else if (band) {
+                        c = y % 8 == 4 ? CHITIN[4] : CHITIN[1];
+                    } else {
+                        c = panel[soil[(y + half * 8) % 16][x]];
+                    }
+                    img.set(x, y, c);
+                }
+            }
+            if (half == 0) {
+                // The round tunnel window near the top of the door (see-through: cutout).
+                for (int y = 4; y < 12; y++) {
+                    for (int x = 4; x < 12; x++) {
+                        double r = Math.hypot(x - 7.5, y - 8.5);
+                        if (r < 3.0) {
+                            img.set(x, y, 0);
+                        } else if (r < 3.8) {
+                            img.set(x, y, x + y < 16 ? CHITIN[2] : CHITIN[5]);
+                        }
+                    }
+                }
+            }
+            img.save(half == 0 ? "block/nest_door_top" : "block/nest_door_bottom");
+        }
+        // The item: the whole door, shrunk into an icon.
+        Img item = new Img(16, 16);
+        for (int y = 0; y < 16; y++) {
+            for (int x = 4; x < 12; x++) {
+                boolean frame = x == 4 || x == 11 || y == 0 || y == 15;
+                int c = frame ? (x == 4 || y == 0 ? CHITIN[5] : CHITIN[0]) : y == 8 ? CHITIN[4] : panel[soil[y][x] % 4];
+                item.set(x, y, c);
+            }
+        }
+        disc(item, 8, 4.5, 1.6, 0);
+        item.set(7, 3, CHITIN[2]);
+        item.set(9, 6, CHITIN[5]);
+        item.set(10, 10, GOLD[3]);
+        item.save("item/nest_door");
+        // The trapdoor: frame, a cross band, four round breathing holes.
+        Img trap = new Img(16, 16);
+        for (int y = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                boolean frame = x <= 1 || y <= 1 || x >= 14 || y >= 14;
+                boolean band = x == 7 || x == 8 || y == 7 || y == 8;
+                int c = frame ? (x == 0 || y == 0 ? CHITIN[5] : x == 15 || y == 15 ? CHITIN[0] : CHITIN[3])
+                        : band ? (x == 7 || y == 7 ? CHITIN[4] : CHITIN[1]) : panel[soil[y][x]];
+                trap.set(x, y, c);
+            }
+        }
+        for (int[] c : new int[][] {{4, 4}, {11, 4}, {4, 11}, {11, 11}}) {
+            trap.set(c[0], c[1], 0);
+            trap.set(c[0] - 1, c[1], 0);
+            trap.set(c[0], c[1] - 1, 0);
+            trap.set(c[0] - 1, c[1] - 1, 0);
+            trap.set(c[0] + 1, c[1], CHITIN[5]);
+            trap.set(c[0], c[1] + 1, CHITIN[5]);
+        }
+        trap.save("block/nest_trapdoor");
+    }
+
+    /** The floors of the new chambers and the End portal's animation. */
+    static void newChambers() {
+        {
+            // Nether Foraging Site: netherrack-red earth with soul-soil patches, embers in the cracks.
+            int[][] t = clusters(701, 5, 0.25, 0);
+            Img img = new Img(16, 16);
+            render(img, t, ramp(0x2C0D0C, 0x461714, 0x5E211C, 0x772D24, 0x8F3C2D));
+            Random random = new Random(702);
+            for (int i = 0; i < 5; i++) {
+                int x = random.nextInt(15);
+                int y = random.nextInt(15);
+                img.set(x, y, hex(0x4C3A2E));
+                img.set(x + 1, y, hex(0x3A2B22));
+                img.set(x, y + 1, hex(0x5E4838));
+            }
+            img.set(4, 11, hex(0xF2A33A));
+            img.set(12, 6, hex(0xE07A22));
+            img.save("block/nether_foraging_site_top");
+        }
+        {
+            // End Foraging Site: pale end-stone grit, with violet chorus crumbs.
+            int[][] t = clusters(711, 5, 0.25, 0.05);
+            Img img = new Img(16, 16);
+            render(img, t, ramp(0x8D895E, 0xA8A472, 0xC2BE88, 0xD8D49C, 0xEAE7B4));
+            Random random = new Random(712);
+            for (int i = 0; i < 4; i++) {
+                int x = random.nextInt(15);
+                int y = random.nextInt(15);
+                img.set(x, y, hex(0x8E5E92));
+                img.set(x + 1, y + 1, hex(0x6A4270));
+            }
+            img.save("block/end_foraging_site_top");
+        }
+        {
+            // Colony Connector: the floor around a tunnel mouth going down, a pheromone trail of dots leading to it.
+            int[][] t = clusters(721, SOIL.length - 1, 0.25, 0.05);
+            pellets(t, SOIL.length - 1, 722, 3);
+            Img img = new Img(16, 16);
+            render(img, t, SOIL);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    double r = Math.hypot(x - 7.5, y - 7.5);
+                    if (r < 2.6) {
+                        img.set(x, y, hex(0x140C07));
+                    } else if (r < 3.4) {
+                        img.set(x, y, y < 8 ? hex(0x2B190D) : SOIL[4]);
+                    }
+                }
+            }
+            for (int[] p : new int[][] {{1, 2}, {3, 3}, {13, 12}, {14, 14}, {12, 2}, {2, 13}}) {
+                img.set(p[0], p[1], hex(0xE6C36A));
+            }
+            img.save("block/colony_connector_top");
+        }
+        {
+            // The End rift in the little End portal: a starfield drifting through deep teal-black, eight frames.
+            Img strip = new Img(16, 16 * 8);
+            Random random = new Random(731);
+            int[][] stars = new int[18][3];
+            for (int[] s : stars) {
+                s[0] = random.nextInt(16);
+                s[1] = random.nextInt(16);
+                s[2] = random.nextInt(3);
+            }
+            int[] starColors = {hex(0x2E6E6A), hex(0x5FB7A4), hex(0xC9F5E6)};
+            double[][] haze = valueNoise(732, 8);
+            for (int frame = 0; frame < 8; frame++) {
+                for (int y = 0; y < 16; y++) {
+                    for (int x = 0; x < 16; x++) {
+                        double h = haze[Math.floorMod(y - frame, 16)][Math.floorMod(x + frame, 16)];
+                        strip.set(x, frame * 16 + y, h > 0.62 ? hex(0x0E2026) : h > 0.4 ? hex(0x081419) : hex(0x040A0E));
+                    }
+                }
+                for (int[] s : stars) {
+                    // Near stars move faster than far ones.
+                    int sx = Math.floorMod(s[0] + frame * (s[2] + 1) / 2, 16);
+                    int sy = Math.floorMod(s[1] - frame * (s[2] + 1) / 2, 16);
+                    strip.set(sx, frame * 16 + sy, starColors[s[2]]);
+                }
+            }
+            strip.save("block/end_rift");
+            try {
+                Files.writeString(TEX.resolve("block/end_rift.png.mcmeta"), "{\n  \"animation\": {\n    \"frametime\": 4\n  }\n}\n");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /** Ant Resin and the two trail pheromones. */
+    static void nestItems() {
+        {
+            // Ant Resin: a drop of tree resin, lit at its top left, deep where it pools.
+            Img img = item();
+            for (int y = 2; y < 15; y++) {
+                for (int x = 2; x < 14; x++) {
+                    double dx = x - 7.5;
+                    double dy = y - 9.0;
+                    // A teardrop: round below, drawn to a point above.
+                    double width = y < 9 ? (y - 2) * 0.62 : Math.sqrt(Math.max(0, 25 - dy * dy * 0.9));
+                    if (Math.abs(dx) <= width) {
+                        double light = -dx * 0.12 - dy * 0.16;
+                        int v = (int) Math.round(4 + light * 2);
+                        img.set(x, y, AMBER[Math.clamp(v, 1, 6)]);
+                    }
+                }
+            }
+            img.set(6, 7, AMBER[7]);
+            img.set(5, 8, AMBER[7]);
+            img.set(6, 8, AMBER[6]);
+            img.set(9, 12, AMBER[2]);
+            outline(img, AMBER[0]);
+            img.save("item/ant_resin");
+        }
+        trailPheromone("item/nether_trail_pheromone", ramp(0x5A0E08, 0x8E1E0E, 0xC23E16, 0xEC6E22, 0xFFB04A), hex(0xFFE08A));
+        trailPheromone("item/end_trail_pheromone", ramp(0x1E0F38, 0x3A1E66, 0x5B3896, 0x3FA79A, 0x8FE8D2), hex(0xF4F0FF));
+    }
+
+    /**
+     * A trail pheromone: a sealed glass ampoule (pointed tip, no cork) holding the scent, a dotted trail curling through
+     * it. Not a tube or a bottle, so it reads apart from the Rally and Nuptial Pheromones.
+     */
+    static void trailPheromone(String path, int[] liquid, int trail) {
+        Img img = item();
+        int glass = 0xFFDCEAF0;
+        int glassDark = 0xFF9CB4C0;
+        for (int y = 1; y < 15; y++) {
+            for (int x = 3; x < 13; x++) {
+                double dx = x - 7.5;
+                double width = y < 5 ? (y - 1) * 0.55 : y > 11 ? 4.4 - (y - 11) * 0.9 : 4.4;
+                if (Math.abs(dx) > width) {
+                    continue;
+                }
+                boolean wall = Math.abs(dx) > width - 1;
+                if (y < 6) {
+                    img.set(x, y, wall ? glassDark : glass);
+                } else {
+                    int v = (int) Math.round(2 - dx * 0.25 + (y > 11 ? -1 : 0));
+                    img.set(x, y, wall ? liquid[0] : liquid[Math.clamp(v, 1, 4)]);
+                }
+            }
+        }
+        // The meniscus and a glint on the glass.
+        for (int x = 4; x < 12; x++) {
+            if (img.get(x, 6) != 0) {
+                img.set(x, 6, liquid[4]);
+            }
+        }
+        img.set(6, 3, 0xFFFFFFFF);
+        img.set(5, 8, 0xFFFFFFFF);
+        // The trail: dots curling down through the scent.
+        for (int[] p : new int[][] {{9, 8}, {7, 9}, {6, 11}, {8, 12}, {10, 11}}) {
+            img.set(p[0], p[1], trail);
+        }
+        outline(img, liquid[0]);
+        img.save(path);
+    }
+
+    // ------------------------------------------------------------------ Chitin gear tiers
+
+    /** One tier of chitin gear: its colour ramp (outline to shine), its handle, its eye glint and its surface detail. */
+    record GearTier(String name, int[] ramp, int handle, int handleDark, int eyeShine, char detail) {}
+
+    /**
+     * Hardened (smoky umber, fine dark cracks), Infernal (lava-red, ember seams glowing in its dark joints, a blaze-rod
+     * handle) and Void (night violet, pale star flecks, an end-rod handle). Same shapes as the chitin gear, the way
+     * vanilla's tiers share theirs; each tier's own surface detail on top.
+     */
+    static final GearTier[] GEAR_TIERS = {
+            new GearTier("hardened", new int[] {rgb(42, 30, 24), rgb(74, 58, 48), rgb(110, 90, 74), rgb(149, 128, 112), rgb(200, 180, 158)},
+                    STICK, STICK_DARK, rgb(176, 168, 150), 'c'),
+            new GearTier("infernal", new int[] {rgb(70, 14, 8), rgb(130, 30, 14), rgb(186, 60, 20), rgb(236, 120, 40), rgb(255, 210, 110)},
+                    rgb(250, 196, 60), rgb(196, 112, 22), rgb(255, 150, 40), 'e'),
+            new GearTier("void", new int[] {rgb(16, 8, 26), rgb(40, 20, 66), rgb(70, 40, 110), rgb(120, 80, 170), rgb(214, 170, 255)},
+                    rgb(236, 228, 214), rgb(150, 120, 156), rgb(150, 240, 200), 's')};
+
+    static Img load(String path) {
+        try {
+            BufferedImage image = ImageIO.read(TEX.resolve(path + ".png").toFile());
+            Img img = new Img(image.getWidth(), image.getHeight());
+            for (int y = 0; y < img.h; y++) {
+                for (int x = 0; x < img.w; x++) {
+                    img.set(x, y, image.getRGB(x, y));
+                }
+            }
+            return img;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static double luma(int c) {
+        return 0.299 * ((c >> 16) & 0xFF) + 0.587 * ((c >> 8) & 0xFF) + 0.114 * (c & 0xFF);
+    }
+
+    static int lerp(int a, int b, double t) {
+        return rgb((int) Math.round(((a >> 16) & 0xFF) + (((b >> 16) & 0xFF) - ((a >> 16) & 0xFF)) * t),
+                (int) Math.round(((a >> 8) & 0xFF) + (((b >> 8) & 0xFF) - ((a >> 8) & 0xFF)) * t),
+                (int) Math.round((a & 0xFF) + ((b & 0xFF) - (a & 0xFF)) * t));
+    }
+
+    /** A chitin pixel in a tier's colours: where its brightness falls on the chitin ramp, on the tier's ramp. */
+    static int tierColor(int color, GearTier tier) {
+        int alpha = color >>> 24;
+        if (alpha == 0) {
+            return 0;
+        }
+        int opaque = color | 0xFF000000;
+        if (opaque == STICK) {
+            return tier.handle;
+        }
+        if (opaque == STICK_DARK) {
+            return tier.handleDark;
+        }
+        if (opaque == CH_EYE_SHINE) {
+            return tier.eyeShine;
+        }
+        int[] from = {CH_EYE, CH_OUT, CH_DARK, CH_BASE, CH_LIGHT, CH_SHINE};
+        int[] to = {shade(tier.ramp[0], 0.7), tier.ramp[0], tier.ramp[1], tier.ramp[2], tier.ramp[3], tier.ramp[4]};
+        double l = luma(opaque);
+        int result = to[to.length - 1];
+        if (l <= luma(from[0])) {
+            result = to[0];
+        } else {
+            for (int i = 0; i < from.length - 1; i++) {
+                double a = luma(from[i]);
+                double b = luma(from[i + 1]);
+                if (l <= b) {
+                    result = lerp(to[i], to[i + 1], (l - a) / (b - a));
+                    break;
+                }
+            }
+        }
+        return (result & 0x00FFFFFF) | alpha << 24;
+    }
+
+    /** A stable pseudo-random number for a pixel, so a tier's detail lands in the same places every run. */
+    static int hash(int x, int y, int salt) {
+        int h = x * 73856093 ^ y * 19349663 ^ salt * 83492791;
+        h ^= h >>> 13;
+        h *= 0x5bd1e995;
+        return (h ^ h >>> 15) & 0x7FFFFFFF;
+    }
+
+    static boolean solid(Img img, int x, int y) {
+        return img.get(x, y) >>> 24 != 0;
+    }
+
+    /** The chitin sprite or armor skin at a path in a tier's colours, with the tier's detail. */
+    static Img tiered(String path, GearTier tier, int salt) {
+        Img source = load(path);
+        Img img = new Img(source.w, source.h);
+        for (int y = 0; y < source.h; y++) {
+            for (int x = 0; x < source.w; x++) {
+                img.set(x, y, tierColor(source.get(x, y), tier));
+            }
+        }
+        for (int y = 0; y < source.h; y++) {
+            for (int x = 0; x < source.w; x++) {
+                if (!solid(source, x, y)) {
+                    continue;
+                }
+                int c = source.get(x, y) | 0xFF000000;
+                int h = hash(x, y, salt);
+                boolean inside = solid(source, x, y - 1) && solid(source, x, y + 1) && solid(source, x - 1, y) && solid(source, x + 1, y);
+                switch (tier.detail) {
+                    // Hardened: short hairline cracks across its plain plates.
+                    case 'c' -> {
+                        if (inside && (c == CH_BASE || c == CH_LIGHT) && h % 9 == 0) {
+                            img.set(x, y, tier.ramp[1]);
+                            if ((source.get(x + 1, y + 1) | 0xFF000000) == CH_BASE) {
+                                img.set(x + 1, y + 1, lerp(tier.ramp[1], tier.ramp[2], 0.5));
+                            }
+                        }
+                    }
+                    // Infernal: embers glowing in the dark joints between plates.
+                    case 'e' -> {
+                        if (c == CH_DARK && h % 3 == 0) {
+                            img.set(x, y, h % 2 == 0 ? rgb(255, 168, 48) : rgb(232, 100, 24));
+                        }
+                    }
+                    // Void: pale stars, one here and there, in the plates.
+                    case 's' -> {
+                        if (inside && (c == CH_BASE || c == CH_DARK) && h % 13 == 0) {
+                            img.set(x, y, h % 2 == 0 ? rgb(236, 220, 255) : tier.ramp[4]);
+                        }
+                    }
+                    default -> { }
+                }
+            }
+        }
+        return img;
+    }
+
+    static void chitinTiers() {
+        String[] items = {"helmet", "chestplate", "leggings", "boots", "sword", "pickaxe", "axe", "shovel", "hoe"};
+        for (int t = 0; t < GEAR_TIERS.length; t++) {
+            GearTier tier = GEAR_TIERS[t];
+            for (int i = 0; i < items.length; i++) {
+                tiered("item/chitin_" + items[i], tier, t * 31 + i).save("item/" + tier.name + "_chitin_" + items[i]);
+            }
+            for (String layer : new String[] {"humanoid", "humanoid_leggings", "humanoid_baby"}) {
+                tiered("entity/equipment/" + layer + "/chitin", tier, t * 31 + 17).save("entity/equipment/" + layer + "/" + tier.name + "_chitin");
+            }
+        }
+        reinforcement("infernal_reinforcement", "item/infernal_chitin", GEAR_TIERS[1].handle, GEAR_TIERS[1].handleDark, rgb(255, 236, 160), rgb(255, 140, 40));
+        reinforcement("void_reinforcement", "item/void_chitin", GEAR_TIERS[2].handle, GEAR_TIERS[2].handleDark, rgb(190, 255, 220), rgb(40, 150, 110));
+    }
+
+    /**
+     * A Reinforcement: the tier's chitin plate, bound by a rod (a blaze rod or an end rod) rising across it,
+     * tied on with a glowing knot in the middle, the way a smithing template carries what it adds.
+     */
+    static void reinforcement(String name, String plate, int rod, int rodDark, int knot, int knotDark) {
+        Img img = load(plate);
+        int outline = shade(img.get(8, 8) | 0xFF000000, 0.35);
+        for (int i = 2; i <= 13; i++) {
+            // One rod rising to the right across the plate, with a dark lower edge.
+            int[][] rods = {{i, 15 - i}};
+            for (int[] p : rods) {
+                img.set(p[0], p[1], i == 2 || i == 13 ? rodDark : rod);
+                img.set(p[0], p[1] + 1, rodDark);
+            }
+        }
+        for (int y = 6; y <= 9; y++) {
+            for (int x = 6; x <= 9; x++) {
+                boolean corner = (x == 6 || x == 9) && (y == 6 || y == 9);
+                img.set(x, y, corner ? outline : x + y <= 13 ? knot : knotDark);
+            }
+        }
+        img.set(7, 7, rgb(255, 255, 255));
+        img.save("item/" + name);
+    }
+
     public static void main(String[] args) {
         antSkins();
         terrariumInside();
@@ -1833,9 +3047,13 @@ public class TexGen {
         generator();
         items();
         chitinGear();
+        chitinTiers();
         particles();
         guiSprites();
         sideSprites();
+        nestBlocks();
+        newChambers();
+        nestItems();
         System.out.println("Wrote " + written + " textures.");
     }
 }

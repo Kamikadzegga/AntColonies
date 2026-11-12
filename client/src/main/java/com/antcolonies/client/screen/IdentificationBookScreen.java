@@ -49,7 +49,16 @@ public class IdentificationBookScreen extends Screen {
             new Guide("evolution", () -> stacks(ModItems.EVOLUTION_CATALYST.get(), Items.IRON_INGOT, ModBlocks.STRUCTURES.get(StructureKind.QUEEN_CHAMBER).get().asItem())),
             new Guide("genetics", () -> stacks(ModItems.GENETIC_LAB.get(), ModItems.GENERATOR.get(), ModItems.GENETIC_ANALYZER.get())),
             new Guide("upgrades", () -> stacks(ModItems.UPGRADE_BASE.get(), ModItems.UPGRADE_STATION.get())),
-            new Guide("automation", () -> stacks(Items.HOPPER, Items.COMPARATOR, Items.REDSTONE_BLOCK)));
+            new Guide("automation", () -> stacks(Items.HOPPER, Items.COMPARATOR, Items.REDSTONE_BLOCK)),
+            new Guide("founding", () -> stacks(ModItems.QUEEN_TEST_TUBE.get(), ModItems.TERRARIUM.get(), ModItems.ANT_FOOD.get())),
+            new Guide("expeditions", () -> stacks(ModItems.NETHER_TRAIL_PHEROMONE.get(), ModBlocks.STRUCTURES.get(StructureKind.NETHER_FORAGING_SITE).get(),
+                    ModItems.END_TRAIL_PHEROMONE.get(), ModBlocks.STRUCTURES.get(StructureKind.END_FORAGING_SITE).get())),
+            new Guide("connectors", () -> stacks(ModBlocks.STRUCTURES.get(StructureKind.COLONY_CONNECTOR).get())),
+            new Guide("building", () -> stacks(com.antcolonies.core.registry.ModDecor.ANTHILL_BRICKS.get(), com.antcolonies.core.registry.ModDecor.CHITIN_BRICKS.get(),
+                    com.antcolonies.core.registry.ModDecor.AMBER_BLOCK.get(), com.antcolonies.core.registry.ModDecor.ROYAL_CHITIN_BLOCK.get())),
+            new Guide("gear", () -> stacks(ModItems.CHITIN_CHESTPLATE.get(), ModItems.CHITIN_TIERS.get(com.antcolonies.content.item.ChitinGear.Tier.HARDENED).get("chestplate").get(),
+                    ModItems.CHITIN_TIERS.get(com.antcolonies.content.item.ChitinGear.Tier.INFERNAL).get("chestplate").get(),
+                    ModItems.CHITIN_TIERS.get(com.antcolonies.content.item.ChitinGear.Tier.VOID).get("chestplate").get())));
 
     private final List<Holder.Reference<AntSpecies>> species = new ArrayList<>(ClientSpecies.all());
     private final InfoPanel info = new InfoPanel();

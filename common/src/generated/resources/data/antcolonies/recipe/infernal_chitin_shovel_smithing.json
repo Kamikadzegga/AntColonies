@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": "antcolonies:infernal_chitin",
+  "base": "antcolonies:hardened_chitin_shovel",
+  "result": {
+    "id": "antcolonies:infernal_chitin_shovel"
+  },
+  "template": "antcolonies:infernal_reinforcement"
+}

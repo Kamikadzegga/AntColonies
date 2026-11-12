@@ -1,0 +1,66 @@
+{
+  "site": "end_foraging_site",
+  "adapted": "antcolonies:end_adapted",
+  "rate": 0.7,
+  "home": "minecraft:the_end",
+  "trail": {
+    "item": "antcolonies:end_trail_pheromone",
+    "chance": 0.02
+  },
+  "outputs": [
+    {
+      "item": "minecraft:end_stone",
+      "weight": 25
+    },
+    {
+      "item": "minecraft:chorus_fruit",
+      "weight": 18
+    },
+    {
+      "item": "minecraft:obsidian",
+      "weight": 4
+    },
+    {
+      "item": "minecraft:purpur_block",
+      "weight": 6,
+      "min_stage": 2
+    },
+    {
+      "item": "minecraft:ender_pearl",
+      "weight": 5,
+      "min_stage": 2
+    },
+    {
+      "item": "minecraft:end_rod",
+      "weight": 2,
+      "min_stage": 3
+    },
+    {
+      "item": "minecraft:chorus_flower",
+      "weight": 1,
+      "min_stage": 2,
+      "special": true
+    },
+    {
+      "item": "minecraft:shulker_shell",
+      "weight": 0.4,
+      "min_stage": 3,
+      "special": true
+    },
+    {
+      "item": "antcolonies:void_chitin",
+      "weight": 0.6,
+      "min_stage": 3,
+      "special": true
+    },
+    {
+      "item": "minecraft:dragon_breath",
+      "weight": 0.15,
+      "min_stage": 4,
+      "special": true,
+      "species": [
+        "antcolonies:dragon"
+      ]
+    }
+  ]
+}

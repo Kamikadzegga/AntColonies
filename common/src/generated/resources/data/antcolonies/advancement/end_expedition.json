@@ -1,0 +1,32 @@
+{
+  "parent": "antcolonies:end_trail",
+  "criteria": {
+    "end_expedition": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:end_foraging_site"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:end_foraging_site"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.end_expedition.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.end_expedition.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "end_expedition"
+    ]
+  ]
+}

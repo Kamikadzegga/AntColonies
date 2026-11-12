@@ -51,6 +51,19 @@ public final class AntConfig {
     public static final ModConfigSpec.DoubleValue STARVED_FACTOR;
     public static final ModConfigSpec.BooleanValue STORAGE_FEEDING;
     public static final ModConfigSpec.BooleanValue STARVATION_KILLS_QUEEN;
+    public static final ModConfigSpec.DoubleValue LOW_FOOD_MINUTES;
+    public static final ModConfigSpec.DoubleValue LOW_FOOD_FACTOR;
+    public static final ModConfigSpec.DoubleValue HUNGRY_FOOD_WORK;
+
+    // --- Queen-only founding ---
+    public static final ModConfigSpec.DoubleValue FOUNDING_FOOD_SHARE;
+    public static final ModConfigSpec.IntValue FOUNDING_WORKERS;
+
+    // --- Colony Connectors ---
+    public static final ModConfigSpec.IntValue CONNECTOR_INTERVAL;
+    public static final ModConfigSpec.IntValue CONNECTOR_FOOD_RATE;
+    public static final ModConfigSpec.IntValue CONNECTOR_ITEM_RATE;
+    public static final ModConfigSpec.IntValue CONNECTOR_RANGE;
 
     // --- Production ---
     public static final ModConfigSpec.DoubleValue POPULATION_EXPONENT;
@@ -68,11 +81,16 @@ public final class AntConfig {
     public static final ModConfigSpec.DoubleValue SPECIES_UPGRADE_BONUS;
     public static final ModConfigSpec.DoubleValue RARE_FIND_MULTIPLIER;
     public static final ModConfigSpec.IntValue STORAGE_SLOTS_PER_UPGRADE;
+    public static final ModConfigSpec.DoubleValue FOCUS_BOOST;
+    public static final ModConfigSpec.DoubleValue FOCUS_PENALTY;
+    public static final ModConfigSpec.DoubleValue EXPEDITION_ROLLS;
+    public static final ModConfigSpec.DoubleValue CHITIN_FIND_CHANCE;
 
     // --- Genetics ---
     public static final ModConfigSpec.DoubleValue TRAIT_MIN_MULTIPLIER;
     public static final ModConfigSpec.DoubleValue TRAIT_MAX_MULTIPLIER;
     public static final ModConfigSpec.IntValue MAX_TRAIT_LEVEL;
+    public static final ModConfigSpec.DoubleValue QUEEN_GROWTH_MINUTES;
     public static final ModConfigSpec.ConfigValue<List<? extends Integer>> STARTING_LEVEL_WEIGHTS;
     public static final ModConfigSpec.DoubleValue INHERITANCE_VARIATION;
     public static final ModConfigSpec.DoubleValue BASE_MUTATION_CHANCE;
@@ -108,6 +126,7 @@ public final class AntConfig {
     public static final ModConfigSpec.BooleanValue PARTICLES;
     public static final ModConfigSpec.BooleanValue AMBIENT_SOUNDS;
     public static final ModConfigSpec.DoubleValue VISUAL_DISTANCE;
+    public static final ModConfigSpec.BooleanValue DETAILED_COLONY_VIEW;
 
     static {
         ModConfigSpec.Builder s = new ModConfigSpec.Builder();
@@ -167,6 +186,23 @@ public final class AntConfig {
                 "Items in the tag antcolonies:kept_in_storage (Royal Jelly) are never eaten.").define("storageFeeding", true);
         STARVATION_KILLS_QUEEN = s.comment("Whether a Queen dies once her colony has starved down to nothing.")
                 .define("starvationKillsQueen", false);
+        LOW_FOOD_MINUTES = s.comment("Below this many minutes of food left (food / what the colony eats per minute), a colony works, lays and raises",
+                        "its larvae more slowly, down to lowFoodFactor when the food runs out (0 turns this off; starving uses starvedFactor).")
+                .defineInRange("lowFoodMinutes", 10.0, 0, 100000);
+        LOW_FOOD_FACTOR = s.comment("Work, egg laying and growth speed of a colony whose food is just about gone (but not yet starving).")
+                .defineInRange("lowFoodFactor", 0.6, 0, 1);
+        HUNGRY_FOOD_WORK = s.comment("The least speed of the jobs that bring food in (Harvesting Sites and Hunting Grounds) while food is low or out,",
+                        "so a hungry colony can always feed itself again.")
+                .defineInRange("hungryFoodWorkFactor", 0.8, 0, 1);
+        s.pop();
+
+        s.push("founding");
+        FOUNDING_FOOD_SHARE = s.comment("Queen-only founding (a single Queen put into a completely empty Terrarium): the share of the Terrarium's own",
+                        "food room (terrariumFoodCapacity) the player must fill before the Queen lays her first eggs. 1 = a full food bar.",
+                        "Colonies started or moved with workers, eggs or larvae never need this.")
+                .defineInRange("foundingFoodShare", 1.0, 0.0, 1.0);
+        FOUNDING_WORKERS = s.comment("Adults a founding Queen's first brood must raise before the colony counts as founded and runs like any other.")
+                .defineInRange("foundingWorkers", 10, 1, 100000);
         s.pop();
 
         s.push("production");
@@ -199,12 +235,37 @@ public final class AntConfig {
                 .defineInRange("rareFindMultiplier", 1.0, 0, 100);
         STORAGE_SLOTS_PER_UPGRADE = s.comment("Storage slots each Storage Upgrade tier adds (a Storage starts with 18, at most 162).")
                 .defineInRange("storageSlotsPerTier", 18, 0, 18);
+        FOCUS_BOOST = s.comment("Foraging Site modes: how much more often a Mineral or Organic Gathering site picks the finds of its kind",
+                        "(item tag antcolonies:foraging/mineral; everything else is organic).")
+                .defineInRange("focusedForagingBoost", 3.0, 1, 100);
+        FOCUS_PENALTY = s.comment("Foraging Site modes: how often a focused site still picks the finds of the other kind (1 = as often as Balanced).")
+                .defineInRange("focusedForagingPenalty", 0.25, 0, 1);
+        EXPEDITION_ROLLS = s.comment("Nether and End Foraging Sites: expedition finds per minute per effective worker, before the expedition's own rate",
+                        "(data/<namespace>/antcolonies/expedition/*.json).")
+                .defineInRange("expeditionRolls", 0.6, 0, 10000);
+        CHITIN_FIND_CHANCE = s.comment("Chance per Foraging Site find that the ants also bring back chitin (shed and left by ants): Chitin Plates,",
+                        "Hardened Chitin from colony stage 2 (more at stage 3), Infernal Chitin in the Nether, Void Chitin in the End. 0 turns it off.")
+                .defineInRange("chitinFindChance", 0.04, 0, 1);
+        s.pop();
+
+        s.push("connectors");
+        CONNECTOR_INTERVAL = s.comment("Ticks between Colony Connector transfers.").defineInRange("transferInterval", 20, 5, 1200);
+        CONNECTOR_FOOD_RATE = s.comment("Most food one Colony Connector moves per minute (its own setting can be lower).")
+                .defineInRange("maxFoodPerMinute", 3000, 1, 10_000_000);
+        CONNECTOR_ITEM_RATE = s.comment("Most items one sending Colony Connector moves out of its colony's Storage per minute.")
+                .defineInRange("maxItemsPerMinute", 256, 0, 100_000);
+        CONNECTOR_RANGE = s.comment("How far apart two Colony Connectors may be and still link: at most this many blocks apart on x and on z",
+                        "(height doesn't count). Connectors further apart on the same channel don't trade.")
+                .defineInRange("connectorRange", 30, 1, 100_000);
         s.pop();
 
         s.push("genetics");
         TRAIT_MIN_MULTIPLIER = s.comment("Effect of a level 1 trait.").defineInRange("level1Multiplier", 0.8, 0.01, 100);
         TRAIT_MAX_MULTIPLIER = s.comment("Effect of a trait at the maximum level.").defineInRange("maxLevelMultiplier", 2.0, 0.01, 1000);
         MAX_TRAIT_LEVEL = s.comment("Highest level the Genetic Laboratory can raise a trait to.").defineInRange("maxTraitLevel", 10, 2, 10);
+        QUEEN_GROWTH_MINUTES = s.comment("A Queen grows with her colony: minutes her colony must spend at a bigger stage before she grows into it,",
+                        "times the step (stage 2 takes this, stage 3 twice this, stage 4 three times). Each new stage raises two of her traits.")
+                .defineInRange("queenGrowthMinutes", 10.0, 0, 10000);
         STARTING_LEVEL_WEIGHTS = s.comment("Weights of starting trait levels 1 to 10 for a new wild Queen.")
                 .defineList("startingLevelWeights", List.of(30, 30, 18, 10, 6, 3, 2, 1, 0, 0), () -> 1, o -> o instanceof Integer i && i >= 0);
         INHERITANCE_VARIATION = s.comment("Chance per trait that a daughter Queen's level differs by one from her mother's.")
@@ -262,6 +323,9 @@ public final class AntConfig {
         ANT_DETAIL_DISTANCE = c.comment("Blocks within which the ants on top of a Terrarium are 3D models (if ant3DModels is on); further away (where they are a pixel or",
                         "two) they are 2D sprites, which are far cheaper to draw.")
                 .defineInRange("antDetailDistance", 8.0, 0, 128);
+        DETAILED_COLONY_VIEW = c.comment("The Terrarium screen in Detailed Mode (exact numbers, rates per minute, efficiency) instead of Visual Mode",
+                "(pictures, bars and short notes). The screen's mode button switches it and remembers the choice here.")
+                .define("detailedColonyView", false);
         CLIENT_SPEC = c.build();
     }
 

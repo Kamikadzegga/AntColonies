@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "antcolonies:hardened_chitin",
+    "S": "minecraft:stick"
+  },
+  "pattern": ["CC", " S", " S"],
+  "result": {
+    "id": "antcolonies:hardened_chitin_hoe"
+  }
+}

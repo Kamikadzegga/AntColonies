@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "antcolonies:fungal_block",
+    "minecraft:glow_berries",
+    "minecraft:glowstone_dust"
+  ],
+  "result": {
+    "id": "antcolonies:glowing_fungal_block"
+  }
+}

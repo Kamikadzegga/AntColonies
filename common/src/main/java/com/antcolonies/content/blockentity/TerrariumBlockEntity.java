@@ -79,17 +79,20 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
     public static final int SLOT_QUEEN = 0;
     public static final int SLOT_FEED = 1;
     public static final int SLOT_OUTPUT = 2;
+    /** Food only, so food never blocks the feed slot (Test Tubes, ants, catalysts and evolution materials). */
+    public static final int SLOT_FOOD = 3;
     public static final int UPGRADE_SLOTS = 4;
     /** Block events the client turns into effects. */
     public static final int EVENT_EVOLVED = 1;
     public static final int EVENT_ABSORBED = 2;
     public static final int EVENT_QUEEN = 3;
+    public static final int EVENT_QUEEN_GREW = 4;
     private static final int RESCAN_INTERVAL = 200;
     private static final int FEED_INTERVAL = 10;
     private static final int EVOLUTION_INTERVAL = 40;
 
     private final Colony colony = new Colony();
-    private NonNullList<ItemStack> items = NonNullList.withSize(3, ItemStack.EMPTY);
+    private NonNullList<ItemStack> items = NonNullList.withSize(4, ItemStack.EMPTY);
     private final SimpleContainer upgrades = new SimpleContainer(UPGRADE_SLOTS) {
         @Override
         public boolean canPlaceItem(int slot, ItemStack stack) {
@@ -214,10 +217,15 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         if ((time + Math.floorMod(pos.asLong(), interval)) % interval == 0) {
             be.simulate(serverLevel, time, interval);
         }
-        // Every second while someone has this Terrarium's screen open; otherwise every five seconds is plenty for the
-        // animated ants (each update carries the whole colony, about 3 KB).
-        if (time % 20 == 0 && (time % 100 == 0 || be.hasViewer(serverLevel))) {
-            be.syncIfChanged();
+        // Every second while someone has this Terrarium's screen open (with the details its pages show: the history, the
+        // Storage and the network); otherwise every five seconds is plenty for the animated ants (each update carries the
+        // whole colony, about 3 KB).
+        if (time % 20 == 0) {
+            if (be.hasViewer(serverLevel)) {
+                be.syncNow();
+            } else if (time % 100 == 0) {
+                be.syncIfChanged();
+            }
         }
     }
 
@@ -288,7 +296,13 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         if (queen != null && queenSlot.is(ModItems.QUEEN_TEST_TUBE.get()) && colony.queen() == null && queenMayEnter()
                 && giveBack(new ItemStack(ModItems.TEST_TUBE.get()))) {
             // The Queen moves in; her empty tube goes to the output, so the slot is free for taking her out again.
+            boolean alone = colony.isEmptyOfAnts();
             colony.setQueen(queen);
+            if (alone) {
+                // A single Queen in a completely empty Terrarium: Queen-only founding. Ants, eggs or larvae put in later
+                // (in this same pass too, from the feed slot) end it, so a colony moved with its ants never needs it.
+                colony.startFounding();
+            }
             items.set(SLOT_QUEEN, ItemStack.EMPTY);
             level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_QUEEN, 0);
             level.playSound(null, worldPosition, ModSounds.QUEEN_ACTIVITY.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
@@ -297,9 +311,15 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
             // An empty Test Tube in the Queen slot takes her out, into the output.
             removeQueen();
         }
-        ItemStack feed = items.get(SLOT_FEED);
         feedStatus = 0;
+        // The food slot: eaten as the food bar has room. A full bar is no problem, the food just waits.
+        ItemStack food = items.get(SLOT_FOOD);
+        if (!food.isEmpty() && ModDataMaps.food(food) != null) {
+            eat(level, food);
+        }
+        ItemStack feed = items.get(SLOT_FEED);
         if (feed.isEmpty()) {
+            setChanged();
             return;
         }
         AntSample ants = feed.get(ModDataComponents.ANTS.get());
@@ -373,23 +393,42 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
                 }
             }
         } else {
-            ModDataMaps.AntFood value = ModDataMaps.food(feed);
-            if (value == null) {
+            // Food left in the feed slot (from before the food slot): eaten like the food slot's.
+            if (ModDataMaps.food(feed) == null) {
                 feedStatus = ColonyStatus.INCOMPATIBLE_SPECIES.bit();
                 return;
             }
-            double capacity = colony.stats().foodCapacity() > 0 ? colony.stats().foodCapacity() : AntConfig.get(AntConfig.TERRARIUM_FOOD_CAPACITY);
-            String kind = value.specialKind();
-            boolean special = !kind.isEmpty() && kind.equals(speciesDiet(level));
-            while (!feed.isEmpty() && (colony.food() + value.food() <= capacity || special && value.special() > 0)) {
-                colony.addFood(value.food(), special ? value.special() : 0);
-                feed.shrink(1);
-            }
-            if (!feed.isEmpty()) {
-                feedStatus = ColonyStatus.STORAGE_FULL.bit();
-            }
+            eat(level, feed);
         }
         setChanged();
+    }
+
+    /** Eats from a stack of food while the food bar has room (a special food the species needs, always). */
+    private void eat(ServerLevel level, ItemStack stack) {
+        ModDataMaps.AntFood value = ModDataMaps.food(stack);
+        if (value == null) {
+            return;
+        }
+        double capacity = colony.stats().foodCapacity() > 0 ? colony.stats().foodCapacity() : AntConfig.get(AntConfig.TERRARIUM_FOOD_CAPACITY);
+        String kind = value.specialKind();
+        boolean special = !kind.isEmpty() && kind.equals(speciesDiet(level));
+        while (!stack.isEmpty() && (colony.food() + value.food() <= capacity || special && value.special() > 0)) {
+            colony.addFood(value.food(), special ? value.special() : 0);
+            stack.shrink(1);
+        }
+    }
+
+    /** Whether a stack belongs in the food slot: food the colony eats. */
+    public static boolean isFood(ItemStack stack) {
+        return ModDataMaps.food(stack) != null;
+    }
+
+    /**
+     * Whether a stack belongs in the feed slot: anything but plain food (ants in tubes, empty tubes, eggs, larvae,
+     * catalysts, evolution materials; food only when it is also this colony's evolution material).
+     */
+    public boolean isFeed(ItemStack stack) {
+        return !isFood(stack) || level != null && com.antcolonies.colony.evolution.EvolutionLogic.find(level.registryAccess(), colony, stack) != null;
     }
 
     private String speciesDiet(Level level) {
@@ -397,7 +436,31 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         return data == null ? "" : data.diet().specialKind();
     }
 
-    /** Caught ants join a colony of their own species, or an empty colony without a Queen (which becomes theirs). */
+    /**
+ * The Queen grew with her colony: a shimmer of genes, her sound, and a note to the players nearby saying which traits
+ * went up.
+ */
+public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcolonies.colony.genetics.Trait> raised) {
+    level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_QUEEN_GREW, 0);
+    level.playSound(null, worldPosition, ModSounds.QUEEN_ACTIVITY.get(), SoundSource.BLOCKS, 1.0F, 1.2F);
+    net.minecraft.network.chat.MutableComponent traits = Component.empty();
+    for (int i = 0; i < raised.size(); i++) {
+        if (i > 0) {
+            traits.append(", ");
+        }
+        traits.append(Component.translatable(raised.get(i).translationKey()).withStyle(net.minecraft.ChatFormatting.GREEN));
+    }
+    Component message = Component.translatable("message.antcolonies.queen_grew", com.antcolonies.content.item.Tooltips.species(colony.species()), stage, traits);
+    for (net.minecraft.server.level.ServerPlayer player : level.players()) {
+        if (player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5) < 48 * 48) {
+            player.sendSystemMessage(message);
+        }
+    }
+    syncNow();
+    setChanged();
+}
+
+/** Caught ants join a colony of their own species, or an empty colony without a Queen (which becomes theirs). */
     private boolean accepts(Identifier species) {
         return species.equals(colony.species()) || colony.queen() == null && colony.exactAdults() < 1;
     }
@@ -531,7 +594,8 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
     public boolean canPlaceItem(int slot, ItemStack stack) {
         return switch (slot) {
             case SLOT_QUEEN -> stack.is(ModItems.QUEEN_TEST_TUBE.get()) || stack.is(ModItems.TEST_TUBE.get());
-            case SLOT_FEED -> true;
+            case SLOT_FEED -> isFeed(stack);
+            case SLOT_FOOD -> isFood(stack);
             default -> false;
         };
     }
@@ -546,9 +610,9 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         items.clear();
     }
 
-    private static final int[] FEED = {SLOT_FEED, SLOT_OUTPUT};
+    private static final int[] FEED = {SLOT_FOOD, SLOT_FEED, SLOT_OUTPUT};
 
-    /** Hoppers feed the feed slot and take empty tubes from the output slot. */
+    /** Hoppers put food in the food slot and anything else in the feed slot, and take empty tubes from the output slot. */
     @Override
     public int[] getSlotsForFace(Direction side) {
         return FEED;
@@ -556,7 +620,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
 
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction side) {
-        return slot == SLOT_FEED;
+        return (slot == SLOT_FOOD || slot == SLOT_FEED) && canPlaceItem(slot, stack);
     }
 
     @Override
@@ -601,7 +665,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
-        items = NonNullList.withSize(3, ItemStack.EMPTY);
+        items = NonNullList.withSize(4, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
         upgrades.clearContent();
         int slot = 0;
@@ -637,7 +701,13 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         ContainerHelper.saveAllItems(output, items);
         // The upgrades too: loading clears them, so an update without them would empty the slots on the client.
         saveUpgrades(output);
-        colony.save(output.child("colony"), true);
+        ValueOutput colonyOutput = output.child("colony");
+        colony.save(colonyOutput, true);
+        if (level instanceof ServerLevel serverLevel && hasViewer(serverLevel)) {
+            // The Terrarium's screen is open: its pages need the history, the Storage's contents and the network too.
+            com.antcolonies.colony.resource.ColonyStorage.summarize(serverLevel, colony);
+            colony.saveDetails(colonyOutput);
+        }
         output.putInt("feed_status", feedStatus);
         if (floor != null) {
             output.putString("floor", floor.getSerializedName());

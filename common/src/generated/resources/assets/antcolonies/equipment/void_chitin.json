@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "antcolonies:void_chitin"
+      }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "antcolonies:void_chitin"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "antcolonies:void_chitin"
+      }
+    ]
+  }
+}

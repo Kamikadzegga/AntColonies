@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:slime_ball",
+    "minecraft:sugar",
+    "minecraft:bone_meal"
+  ],
+  "result": {
+    "id": "antcolonies:larva_cluster"
+  }
+}
