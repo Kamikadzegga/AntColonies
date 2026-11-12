@@ -449,71 +449,208 @@ public class TexGen {
         }
     }
 
-    /** A dark metal panel with rivets, for the Genetic Laboratory. */
-    static Img labPanel(int accent, boolean lit, long seed) {
-        Img img = new Img(16, 16);
+    // ------------------------------------------------------------------ The Generator and the Genetic Laboratory
+
+    // The mod's two machines share a modern build of their own (no other block looks like them). Everything is shaded
+    // symmetrically: a gradient from a lighter top to a darker foot, the same edge all round, details centred; the metal is
+    // brushed (fine horizontal streaks over the gradient). The lab in white enamel with a helix display; the Generator in
+    // brushed steel with a firebox window.
+    static final int[] ENAMEL = ramp(0x9AA3A8, 0xB9C1C5, 0xD3D9DC, 0xE4E9EB, 0xF3F6F7);
+    static final int[] GRAPHITE = ramp(0x1C2125, 0x2A3035, 0x3D454B, 0x566067);
+    static final int[] STEEL = ramp(0x2E3338, 0x40474D, 0x545C63, 0x69727A, 0x808991, 0x99A2AA, 0xB4BCC3);
+    static final int[] TEAL = ramp(0x0B3C44, 0x135E68, 0x1F8E99, 0x47C6CF, 0x9EF0F2, 0xE4FFFF);
+    static final int[] FIRE = ramp(0x6E1A07, 0xB23A0E, 0xE06A16, 0xFAA62E, 0xFFDA6E, 0xFFF4C4);
+    static final int[] COAL = ramp(0x151517, 0x232326, 0x333338, 0x4A4A50, 0x62626A);
+    static final int HELIX_A = 0xFF4FE3FF;
+    static final int HELIX_B = 0xFFE04FFF;
+
+    /** A grid of letters as pixels: each letter's colour from the pairs given; '.' leaves the pixel as it is. */
+    static void paint(Img img, int x0, int y0, String[] rows, Object... pairs) {
+        java.util.Map<Character, Integer> colors = new java.util.HashMap<>();
+        for (int i = 0; i < pairs.length; i += 2) {
+            colors.put((Character) pairs[i], (Integer) pairs[i + 1]);
+        }
+        for (int y = 0; y < rows.length; y++) {
+            for (int x = 0; x < rows[y].length(); x++) {
+                Integer c = colors.get(rows[y].charAt(x));
+                if (c != null) {
+                    img.set(x0 + x, y0 + y, c);
+                }
+            }
+        }
+    }
+
+    /**
+     * Brushed metal: a gradient down the area from tone {@code top} to tone {@code bottom} of the ramp, broken by short
+     * horizontal streaks (runs of 2 to 6 pixels a little lighter or darker), the way brushing leaves a surface.
+     * {@code streak} is how strong the streaks are, in tones.
+     */
+    static void brushed(Img img, int x0, int y0, int x1, int y1, int[] ramp, double top, double bottom, double streak, long seed) {
         Random random = new Random(seed);
-        noise(img, 0, 0, 16, 16, rgb(58, 64, 74), 5, random);
-        border(img, 0, 0, 16, 16, rgb(34, 38, 46));
-        border(img, 1, 1, 15, 15, rgb(84, 92, 104));
-        for (int[] rivet : new int[][] {{2, 2}, {13, 2}, {2, 13}, {13, 13}}) {
-            img.set(rivet[0], rivet[1], rgb(150, 158, 170));
+        for (int y = y0; y < y1; y++) {
+            double t = y1 - y0 <= 1 ? top : top + (bottom - top) * (y - y0) / (double) (y1 - y0 - 1);
+            int x = x0;
+            while (x < x1) {
+                int run = 2 + random.nextInt(5);
+                double offset = (random.nextInt(5) - 2) / 2.0 * streak;
+                for (int k = 0; k < run && x < x1; k++, x++) {
+                    img.set(x, y, ramp[Math.clamp((int) Math.round(t + offset), 0, ramp.length - 1)]);
+                }
+            }
+        }
+    }
+
+    /**
+     * A machine face: the panel (brushed, lighter at the top), the same darker edge all round, and a brushed-graphite
+     * kickplate along the foot.
+     */
+    static Img casing(int[] ramp, double top, double bottom, double streak, long seed) {
+        Img img = new Img(16, 16);
+        brushed(img, 0, 0, 16, 13, ramp, top, bottom, streak, seed);
+        brushed(img, 0, 13, 16, 16, GRAPHITE, 2.4, 1, 0.5, seed + 1);
+        for (int i = 0; i < 16; i++) {
+            img.set(i, 0, ramp[Math.max(0, (int) Math.round(bottom) - 1)]);
+            if (i < 13) {
+                img.set(0, i, ramp[Math.max(0, (int) Math.round(bottom) - 1)]);
+                img.set(15, i, ramp[Math.max(0, (int) Math.round(bottom) - 1)]);
+            }
+            img.set(i, 13, GRAPHITE[3]);
         }
         return img;
     }
 
-    static void glassWindow(Img img, int x0, int y0, int x1, int y1, int tint, boolean lit) {
-        for (int y = y0; y < y1; y++) {
-            for (int x = x0; x < x1; x++) {
-                img.set(x, y, lit ? shade(tint, 0.8 + 0.3 * ((x + y) % 5 == 0 ? 1 : 0)) : shade(tint, 0.35));
-            }
+    /** A recessed window: the same dark frame on all four sides. */
+    static void frame(Img img, int x0, int y0, int x1, int y1, int color) {
+        for (int x = x0; x < x1; x++) {
+            img.set(x, y0, color);
+            img.set(x, y1 - 1, color);
         }
-        border(img, x0 - 1, y0 - 1, x1 + 1, y1 + 1, rgb(30, 34, 40));
-        if (lit) {
-            img.set(x0, y0, rgb(255, 255, 255));
+        for (int y = y0; y < y1; y++) {
+            img.set(x0, y, color);
+            img.set(x1 - 1, y, color);
         }
     }
 
-    /** The Generator: the lab's gunmetal panels with a firebox front (a grate that glows while it burns), vents and a copper terminal. */
+    /**
+     * The Generator: a brushed-steel coal generator. Its front is a centred firebox window: coal lying in the bottom, the
+     * firebox dark when idle, flames over glowing coal while it burns; a status light centred over it. Its sides a centred
+     * vent grille; its top a centred exhaust grille.
+     */
     static void generator() {
-        int copper = rgb(196, 112, 64);
         for (boolean on : new boolean[] {false, true}) {
-            Img front = labPanel(copper, on, 71);
-            // Firebox: dark mouth, a warm glow when burning, and a grate of bars over it.
-            for (int y = 5; y < 13; y++) {
+            Img front = casing(STEEL, 5.2, 3.0, 0.6, 71);
+            for (int y = 5; y < 12; y++) {
                 for (int x = 4; x < 12; x++) {
-                    double heat = (y - 5) / 7.0;
-                    front.set(x, y, on ? rgb(200 + (int) (55 * heat), 80 + (int) (110 * heat), 20 + (int) (40 * heat)) : rgb(24, 22, 22));
+                    double heat = (y - 5) / 6.0;
+                    front.set(x, y, on ? FIRE[Math.clamp((int) Math.round(heat * 4.2), 0, 5)] : COAL[0]);
                 }
             }
-            border(front, 3, 4, 13, 14, rgb(30, 32, 38));
-            for (int x = 5; x < 12; x += 2) {
-                line(front, x, 5, x, 12, on ? rgb(90, 50, 30) : rgb(70, 74, 82));
-            }
-            // The status lamp over the mouth.
-            front.set(7, 2, on ? rgb(255, 200, 80) : rgb(80, 70, 50));
-            front.set(8, 2, on ? rgb(255, 230, 140) : rgb(80, 70, 50));
+            // The coal: a low, even heap across the bottom of the firebox.
+            paint(front, 5, 9, new String[] {
+                    ".a.ba.b.",
+                    "abcbabcb"},
+                    'a', on ? FIRE[4] : COAL[3], 'b', on ? FIRE[2] : COAL[2], 'c', on ? FIRE[5] : COAL[4]);
+            frame(front, 3, 4, 13, 13, GRAPHITE[1]);
+            // The status light, centred.
+            front.set(7, 2, on ? 0xFF6CDA4E : 0xFF5A2420);
+            front.set(8, 2, on ? 0xFF6CDA4E : 0xFF5A2420);
             front.save("block/generator_front" + (on ? "_on" : ""));
         }
-        Img side = labPanel(copper, false, 72);
-        for (int y = 4; y < 12; y += 2) {
-            line(side, 3, y, 9, y, rgb(30, 34, 40));
-            line(side, 3, y + 1, 9, y + 1, rgb(96, 104, 116));
+        // The side: a centred vent grille.
+        Img side = casing(STEEL, 5.2, 3.0, 0.6, 72);
+        for (int y = 3; y < 11; y += 2) {
+            for (int x = 4; x < 12; x++) {
+                side.set(x, y, GRAPHITE[0]);
+            }
         }
-        // The FE terminal: a copper socket with two pins.
-        side.fill(10, 5, 14, 11, copper);
-        border(side, 10, 5, 14, 11, shade(copper, 0.6));
-        side.set(11, 7, rgb(40, 30, 24));
-        side.set(12, 8, rgb(40, 30, 24));
         side.save("block/generator_side");
-        Img top = labPanel(copper, false, 73);
-        disc(top, 8, 8, 5.5, rgb(36, 40, 48));
-        for (int i = 0; i < 4; i++) {
-            double a = i * Math.PI / 2 + 0.4;
-            line(top, 8, 8, 8 + (int) Math.round(Math.cos(a) * 4.5), 8 + (int) Math.round(Math.sin(a) * 4.5), rgb(120, 128, 140));
+        // The top: brushed steel, a centred exhaust grille.
+        Img top = new Img(16, 16);
+        brushed(top, 0, 0, 16, 16, STEEL, 4.6, 3.4, 0.6, 73);
+        frame(top, 0, 0, 16, 16, STEEL[2]);
+        for (int y = 4; y < 12; y++) {
+            for (int x = 4; x < 12; x += 2) {
+                top.set(x, y, GRAPHITE[0]);
+            }
         }
-        disc(top, 8, 8, 1.2, copper);
+        frame(top, 3, 3, 13, 13, GRAPHITE[2]);
         top.save("block/generator_top");
+    }
+
+    /**
+     * The Genetic Laboratory: a white lab machine. Its front is a centred dark display with an upright double helix in
+     * the floating helix's cyan and magenta (dim idle, bright with teal rungs while it works) and a status light under it;
+     * its sides a centred glass sample cylinder of teal liquid, rounded by its shading, glowing and bubbling while it
+     * works; its top a centred glass sample hatch.
+     */
+    static void geneticLab() {
+        for (boolean lit : new boolean[] {false, true}) {
+            String suffix = lit ? "_working" : "";
+            // --- Front: the helix display ---
+            Img front = casing(ENAMEL, 4.2, 2.6, 0.35, 81);
+            for (int y = 3; y < 12; y++) {
+                for (int x = 3; x < 13; x++) {
+                    front.set(x, y, GRAPHITE[0]);
+                }
+            }
+            frame(front, 3, 3, 13, 12, GRAPHITE[2]);
+            int a = lit ? HELIX_A : shade(HELIX_A, 0.55);
+            int b = lit ? HELIX_B : shade(HELIX_B, 0.55);
+            int rung = lit ? TEAL[3] : GRAPHITE[3];
+            paint(front, 4, 4, new String[] {
+                    ".arrrrb.",
+                    "..a..b..",
+                    "...ab...",
+                    "...ba...",
+                    "..b..a..",
+                    ".brrrra.",
+                    "..b..a.."},
+                    'a', a, 'b', b, 'r', rung);
+            front.set(7, 12, lit ? 0xFF6CDA4E : GRAPHITE[2]);
+            front.set(8, 12, lit ? 0xFF6CDA4E : GRAPHITE[2]);
+            front.save("block/genetic_laboratory_front" + suffix);
+
+            // --- Side: the sample cylinder ---
+            Img side = casing(ENAMEL, 4.2, 2.6, 0.35, 82);
+            int[] liquid = lit ? new int[] {TEAL[2], TEAL[3], TEAL[4]} : new int[] {TEAL[1], TEAL[2], TEAL[3]};
+            for (int y = 3; y < 12; y++) {
+                for (int x = 5; x < 11; x++) {
+                    int color;
+                    if (y == 3 || y == 11) {
+                        color = GRAPHITE[2];                       // the caps
+                    } else if (x == 5 || x == 10) {
+                        color = GRAPHITE[1];                       // the glass's edge, both sides alike
+                    } else if (y == 4) {
+                        color = lit ? TEAL[1] : TEAL[0];           // the space over the liquid
+                    } else {
+                        color = liquid[x == 7 || x == 8 ? 2 : 1]; // round: lightest in the middle
+                    }
+                    side.set(x, y, color);
+                }
+            }
+            if (lit) {
+                side.set(7, 7, TEAL[5]);
+                side.set(8, 9, TEAL[5]);
+            }
+            side.save("block/genetic_laboratory_side" + suffix);
+
+            // --- Top: the sample hatch ---
+            Img top = new Img(16, 16);
+            brushed(top, 0, 0, 16, 16, ENAMEL, 4.0, 3.0, 0.35, 83);
+            frame(top, 0, 0, 16, 16, ENAMEL[1]);
+            for (int y = 4; y < 12; y++) {
+                for (int x = 4; x < 12; x++) {
+                    top.set(x, y, lit ? TEAL[3] : TEAL[1]);
+                }
+            }
+            for (int y = 6; y < 10; y++) {
+                for (int x = 6; x < 10; x++) {
+                    top.set(x, y, lit ? TEAL[4] : TEAL[2]);  // lighter in the middle of the glass
+                }
+            }
+            frame(top, 3, 3, 13, 13, GRAPHITE[2]);
+            top.save("block/genetic_laboratory_top" + suffix);
+        }
     }
 
     static void blocks() {
@@ -585,40 +722,7 @@ public class TexGen {
         stationTop.fill(10, 11, 14, 14, rgb(60, 110, 50));
         stationTop.save("block/upgrade_station_top");
 
-        // The Genetic Laboratory: a dark panel with a DNA screen; while it works, the windows glow.
-        Object[][] lab = {{"genetic_laboratory", rgb(80, 200, 255)}};
-        for (Object[] part : lab) {
-            String id = (String) part[0];
-            int color = (Integer) part[1];
-            for (boolean lit : new boolean[] {false, true}) {
-                String suffix = lit ? "_working" : "";
-                Img side = labPanel(color, lit, id.hashCode());
-                glassWindow(side, 4, 4, 12, 12, color, lit);
-                side.save("block/" + id + "_side" + suffix);
-                Img top = labPanel(color, lit, id.hashCode() + 1);
-                disc(top, 8, 8, 3.5, lit ? color : shade(color, 0.35));
-                top.save("block/" + id + "_top" + suffix);
-                Img front = labPanel(color, lit, id.hashCode() + 2);
-                switch (id) {
-                    case "genetic_laboratory" -> {
-                        glassWindow(front, 3, 3, 13, 9, color, lit);
-                        for (int x = 4; x < 12; x++) {
-                            int y = 6 + (int) Math.round(Math.sin(x * 0.9) * 2);
-                            front.set(x, y, lit ? rgb(255, 255, 255) : rgb(120, 120, 130));
-                        }
-                        front.fill(4, 11, 12, 13, rgb(30, 34, 40));
-                        front.set(5, 12, lit ? rgb(90, 255, 120) : rgb(60, 80, 60));
-                        front.set(7, 12, lit ? rgb(255, 80, 80) : rgb(80, 60, 60));
-                    }
-                    default -> {
-                        glassWindow(front, 3, 3, 13, 9, color, lit);
-                        line(front, 4, 6, 12, 6, lit ? rgb(255, 255, 255) : rgb(90, 90, 100));
-                        front.fill(5, 11, 11, 13, lit ? shade(color, 0.9) : rgb(40, 44, 52));
-                    }
-                }
-                front.save("block/" + id + "_front" + suffix);
-            }
-        }
+        geneticLab();
         // Wild nests: soil mounds in their biome's colors, with an entrance on top.
         Object[][] nests = {{"common", rgb(118, 86, 58), rgb(96, 134, 64)}, {"wood", rgb(108, 74, 48), rgb(80, 64, 40)},
                 {"stone", rgb(118, 116, 112), rgb(96, 94, 90)}, {"snow", rgb(214, 226, 236), rgb(240, 246, 252)},

@@ -113,6 +113,9 @@ layouts, a building-block palette, and a new Terrarium screen.
   finds (config `chitinFindChance`, 4%): plates, Hardened Chitin from stage 2, Infernal or Void Chitin when they live
   in the Nether or the End.
 - Chitin Bricks redrawn: dark, glossy carapace plates overlapping like an ant's abdomen, instead of a basket weave.
+- The Generator and the Genetic Laboratory redrawn in a modern look of their own: brushed steel and white enamel,
+  shaded evenly. The Generator is a coal generator with a firebox window (coal glowing and flames while it burns); the
+  lab has a double-helix display, a glowing sample cylinder and a glass sample hatch.
 - Anthill walls use the new Anthill Soil blocks. Anthills generated before this version keep their old layout.
 - The Terrarium screen is larger (252 x 238) and its slots for Queen, food and upgrades stay where they were.
 - Easier to read: status chips and numbers sit on solid dark plates or have a shadow, never straight on a coloured bar;

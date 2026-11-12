@@ -89,7 +89,7 @@ Free to use in any modpack (MIT License).
 
 ## 3. Images (Images tab, with the carousel turned on)
 
-Upload these from `docs/images/screenshots/`, in this order (they replace the 0.0.2 images):
+Upload these 17 from `docs/images/screenshots/`, in this order (they replace the 0.0.2 images):
 
 | File | Title | Description |
 |---|---|---|
@@ -105,6 +105,7 @@ Upload these from `docs/images/screenshots/`, in this order (they replace the 0.
 | `building-blocks.png` | Building blocks | Anthill, chitin, amber, fungal and royal blocks |
 | `giant-anthill.png` | A giant anthill | A rare structure with loot and defenders |
 | `anthill-queen-chamber.png` | Inside an anthill | Tunnels and chambers, and a Queen to catch |
+| `machines.png` | The machines | The Genetic Laboratory and the Generator, working and idle |
 | `genetic-laboratory.png` | The Genetic Laboratory | Raise, reroll and mutate a Queen's traits |
 | `recipe-viewer.png` | JEI and EMI | Expeditions and every recipe |
 | `identification-book.png` | The Ant Identification Book | How to play, and every species |

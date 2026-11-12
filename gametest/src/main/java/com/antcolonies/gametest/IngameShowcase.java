@@ -75,7 +75,7 @@ public class IngameShowcase {
     private BlockPos origin;
 
     public IngameShowcase(IEventBus modEventBus) {
-        if (Files.exists(MARKER) || Files.exists(GUI_MARKER) || Files.exists(UPDATE_MARKER) || Files.exists(STRESS_MARKER)) {
+        if (Files.exists(MARKER) || Files.exists(GUI_MARKER) || Files.exists(UPDATE_MARKER) || Files.exists(STRESS_MARKER) || Files.exists(MACHINE_MARKER)) {
             LOGGER.info("[Showcase] marker found");
             NeoForge.EVENT_BUS.addListener(this::onClientTick);
         } else if (Files.exists(CONFIG_MARKER)) {
@@ -360,6 +360,53 @@ public class IngameShowcase {
         }
     }
 
+    // ------------------------------------------------------------------ Machine look check (marker "machine-check")
+
+    /**
+     * A file named {@code machine-check} in the run folder: a Generator and a Genetic Laboratory, each idle and running,
+     * side by side (ticking frozen, so they keep their looks), photographed from the front, at an angle and from above.
+     */
+    private static final Path MACHINE_MARKER = FMLPaths.GAMEDIR.get().resolve("machine-check");
+    private final boolean machineCheck = Files.exists(MACHINE_MARKER);
+
+    private void machineStep(Minecraft minecraft, IntegratedServer server) {
+        switch (ticks) {
+            case 60 -> {
+                origin = minecraft.player.blockPosition();
+                minecraft.options.pauseOnLostFocus = false;
+                if (!minecraft.gui.hud.isHidden()) {
+                    minecraft.gui.hud.toggle();
+                }
+                server.execute(() -> {
+                    ServerLevel level = server.overworld();
+                    command(server, "time set noon");
+                    var generator = ModBlocks.GENERATOR.get().defaultBlockState().setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH);
+                    var lab = ModBlocks.GENETIC_LAB.get().defaultBlockState().setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH);
+                    place(level, origin.offset(3, 0, 4), generator);
+                    place(level, origin.offset(5, 0, 4), generator.setValue(com.antcolonies.content.block.GeneratorBlock.LIT, true));
+                    place(level, origin.offset(8, 0, 4), lab);
+                    place(level, origin.offset(10, 0, 4), lab.setValue(com.antcolonies.content.block.GeneticLabBlock.WORKING, true));
+                    command(server, "tick freeze");
+                });
+            }
+            case 80 -> camera(server, 6.9, 2.3 - 1.62, 0.6, 0, 24);
+            case 120 -> screenshot(minecraft, "m1_machines_front");
+            case 125 -> camera(server, 13.2, 2.6 - 1.62, 1.4, 52, 26);
+            case 165 -> screenshot(minecraft, "m2_machines_angle");
+            case 170 -> camera(server, 0.4, 2.6 - 1.62, 7.6, -128, 26);
+            case 210 -> screenshot(minecraft, "m3_machines_back");
+            case 215 -> camera(server, 7.0, 5.2 - 1.62, 4.5, 0, 90);
+            case 255 -> screenshot(minecraft, "m4_machines_top");
+            case 260 -> camera(server, 7.0, 1.7 - 1.62, 2.4, 0, 8);
+            case 300 -> screenshot(minecraft, "m5_machines_close");
+            case 305 -> {
+                server.execute(() -> command(server, "tick unfreeze"));
+                finish(minecraft);
+            }
+            default -> { }
+        }
+    }
+
     private void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         try {
@@ -368,7 +415,9 @@ public class IngameShowcase {
                 return;
             }
             ticks++;
-            if (stressTest) {
+            if (machineCheck) {
+                machineStep(minecraft, minecraft.getSingleplayerServer());
+            } else if (stressTest) {
                 stressStep(minecraft, minecraft.getSingleplayerServer());
             } else if (updateCheck) {
                 updateStep(minecraft, minecraft.getSingleplayerServer());

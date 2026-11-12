@@ -76,8 +76,8 @@ hunters to work, evolve mineral species and engineer their genes.
 | A living Terrarium | The colony screen |
 | ![Jobs](docs/images/screenshots/jobs-screen.png) | ![Statistics](docs/images/screenshots/statistics-screen.png) |
 | Jobs: ants, priority and modes per site | Statistics: the colony over the last half hour |
-| ![Genetic Laboratory](docs/images/screenshots/genetic-laboratory.png) | ![Recipe viewer](docs/images/screenshots/recipe-viewer.png) |
-| The Genetic Laboratory at work | Expeditions and the whole progression in JEI and EMI |
+| ![Generator and Genetic Laboratory](docs/images/screenshots/machines.png) | ![Genetic Laboratory](docs/images/screenshots/genetic-laboratory.png) |
+| The Genetic Laboratory and the Generator, working and idle | The Genetic Laboratory at work |
 | ![Expedition sites](docs/images/screenshots/expedition-sites.png) | ![Connected colonies](docs/images/screenshots/connected-colonies.png) |
 | Nether and End Foraging Sites | Colonies linked by Colony Connectors |
 | ![Chitin armor tiers](docs/images/screenshots/chitin-tiers.png) | ![Chitin armor from behind](docs/images/screenshots/chitin-tiers-back.png) |
@@ -86,8 +86,10 @@ hunters to work, evolve mineral species and engineer their genes.
 | A giant anthill | Inside it |
 | ![Building blocks](docs/images/screenshots/building-blocks.png) | ![Guard Ant and Chitin armor](docs/images/screenshots/guard-ant-and-chitin.png) |
 | Building blocks: anthill, chitin, amber, fungal and royal | A Guard Ant and Chitin armor |
-| ![Ant Identification Book](docs/images/screenshots/identification-book.png) | ![Jade tooltip](docs/images/screenshots/jade.png) |
-| The Ant Identification Book: how to play, and every species | A Terrarium at a glance with Jade |
+| ![Ant Identification Book](docs/images/screenshots/identification-book.png) | ![Recipe viewer](docs/images/screenshots/recipe-viewer.png) |
+| The Ant Identification Book: how to play, and every species | Expeditions and the whole progression in JEI and EMI |
+| ![Jade tooltip](docs/images/screenshots/jade.png) | |
+| A Terrarium at a glance with Jade | |
 
 ## Installation
 
