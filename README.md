@@ -91,6 +91,15 @@ hunters to work, evolve mineral species and engineer their genes.
 | ![Jade tooltip](docs/images/screenshots/jade.png) | |
 | A Terrarium at a glance with Jade | |
 
+## Versions
+
+Each Minecraft version has its own branch. You are reading the **26.3** branch.
+
+| Minecraft | Branch | |
+|---|---|---|
+| 26.3 | [`main`](https://github.com/Kamikadzegga/AntColonies/tree/main) | The main version: new features land here first |
+| 26.1.2 | [`26.1.2`](https://github.com/Kamikadzegga/AntColonies/tree/26.1.2) | The same mod for 26.1.2 modpacks, tested with KubeJS |
+
 ## Installation
 
 1. Install [NeoForge](https://neoforged.net) **26.3.0.101** or newer for Minecraft **26.3** (Java 25).
