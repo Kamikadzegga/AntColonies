@@ -72,10 +72,10 @@ public class WildAntRenderer<T extends net.minecraft.world.entity.Mob & AntLike>
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
         poseStack.pushPose();
-        poseStack.rotate(Axis.YP.rotationDegrees(180 - state.bodyRot));
+        poseStack.mulPose(Axis.YP.rotationDegrees(180 - state.bodyRot));
         if (state.deathTime > 0) {
             float roll = Math.min(1, Mth.sqrt((state.deathTime - 1) / 20.0F * 1.6F));
-            poseStack.rotate(Axis.ZP.rotationDegrees(roll * 180));
+            poseStack.mulPose(Axis.ZP.rotationDegrees(roll * 180));
             poseStack.translate(0, -0.15F * roll, 0);
         }
         pose.reset();

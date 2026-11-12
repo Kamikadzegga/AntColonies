@@ -73,6 +73,11 @@ java tools/BrandGen.java
 - `./gradlew runClient` with an empty file named `ingame-showcase` in `run/` builds a demo world, takes screenshots of
   the colonies, every screen, the recipe viewers, the anthill and the new items into `run/screenshots`, writes what it
   saw to `run/ingame-showcase-result.txt`, and quits. Use it to check anything visual.
+- The KubeJS check runs the modpack guide's KubeJS examples (`gametest/kubejs_example/kubejs`, copied in by the run
+  tasks) on a dedicated server with a player: put KubeJS, Rhino and Better Advanced Tooltips (and JEI) in
+  `runs/kubejs-server/mods` and `runs/kubejs-client/mods`, an empty `kubejs-check` file in both folders, then start
+  `./gradlew runKubejsServer` and, once it is up, `./gradlew runKubejsClient`. Each folder gets a
+  `kubejs-check-result.txt`; lines starting with FAIL are problems. Keep the guide's code blocks and these files the same.
 
 ## Pull requests
 

@@ -4,9 +4,11 @@ How to change Ant Colonies for a modpack: recipes, ant food, species, evolutions
 costs, wild ant spawns and the server config. Everything here is plain JSON (a data pack) or a config file; KubeJS is
 optional.
 
-> **KubeJS status (November 2026):** KubeJS has no build for Minecraft 26.3 yet (the newest is for 26.1.2), so the
-> KubeJS parts of this guide could not be tested. They are written for the KubeJS 7/8 API and may need small changes
-> when a 26.3 build comes out. Everything done with plain JSON files works today with any data pack.
+> **KubeJS status (November 2026):** every KubeJS example in this guide was tested in game with KubeJS 8.0.8 (Rhino
+> 2101.2.8) on Minecraft 26.1.2, on a dedicated server with a player, before and after `/reload` (the mod's
+> `runKubejsServer` + `runKubejsClient` check runs the files in `gametest/kubejs_example/`). One KubeJS limit to know:
+> scripts can **add** to biome tags but can't **remove** from them (see section 11). Everything done with plain JSON files
+> works with any data pack.
 
 ## Contents
 
@@ -41,14 +43,14 @@ All paths below start with `data/`. Put that `data/` folder in one of these:
 | KubeJS | `kubejs/data/...` | KubeJS loads this folder as a data pack; no `pack.mcmeta` needed. |
 | Language files (names) | `assets/<namespace>/lang/en_us.json` | In a resource pack, or `kubejs/assets/...` with KubeJS. |
 
-A world data pack's `pack.mcmeta` for Minecraft 26.3 (data pack format 121):
+A world data pack's `pack.mcmeta` for Minecraft 26.1.2 (data pack format 101):
 
 ```json
 {
   "pack": {
     "description": "My Ant Colonies changes",
-    "min_format": 121,
-    "max_format": 121
+    "min_format": 101,
+    "max_format": 101
   }
 }
 ```
@@ -84,7 +86,7 @@ any vanilla recipe: replace the file with the same name, or remove and add recip
 The mod has **no custom recipe types**. The lab, Queen rearing, evolution and the Colony Upgrade Station read their costs from
 the files in sections 5 to 9, not from recipes. JEI shows those costs in its own categories.
 
-KubeJS (untested on 26.3, see the note at the top):
+KubeJS (tested, see the note at the top):
 
 ```js
 // kubejs/server_scripts/antcolonies_recipes.js
@@ -106,7 +108,26 @@ ServerEvents.recipes(event => {
 ```
 
 The recipe ids are the file names, e.g. `antcolonies:terrarium`, `antcolonies:speed_upgrade_2`. To remove by id use
-`event.remove({ id: 'antcolonies:speed_upgrade_2' })`.
+`event.remove({ id: 'antcolonies:speed_upgrade_2' })`. Other changes that work the same way (also tested):
+
+```js
+ServerEvents.recipes(event => {
+  // A new recipe that makes a mod item.
+  event.shapeless(Item.of('antcolonies:ant_food', 2), ['minecraft:sugar', 'minecraft:wheat_seeds', 'minecraft:bone_meal'])
+    .id('mypack:cheap_ant_food')
+  // Change an ingredient inside one of the mod's recipes.
+  event.replaceInput({ id: 'antcolonies:tweezers' }, 'minecraft:iron_ingot', 'minecraft:copper_ingot')
+})
+
+ServerEvents.tags('item', event => {
+  // Mineral Gathering also favours amethyst shards (section 11).
+  event.add('antcolonies:foraging/mineral', 'minecraft:amethyst_shard')
+})
+```
+
+**JEI on a server:** since Minecraft 26.1 the server no longer sends recipes to players, so JEI on a player's game shows
+the *default* recipes (with a red notice) unless JEI is installed **on the server too**. With JEI on both sides it shows
+the recipes as KubeJS changed them.
 
 ## 4. Ant food
 
@@ -417,15 +438,25 @@ Players catch wild ants with Tweezers into empty Test Tubes; some are Queens (th
 To move or stop built-in nests, add biomes to or replace `data/antcolonies/tags/worldgen/biome/spawns/<species>.json`
 (with `"replace": true` to drop the built-in biomes). Nest changes only affect newly generated chunks.
 
-With KubeJS (untested on 26.3):
+With KubeJS (tested), adding biomes:
 
 ```js
 ServerEvents.tags('worldgen/biome', event => {
   event.add('mypack:spawns/copper', ['minecraft:dripstone_caves', 'minecraft:stony_peaks'])
   event.add('antcolonies:has_wild_ants', '#mypack:spawns/copper')
-  event.removeAll('antcolonies:spawns/desert') // no Desert Ant nests or wild Desert Ants
 })
 ```
+
+Removing biomes does **not** work from a KubeJS script: in KubeJS 8.0.8 `remove`, `removeAll` and `replace` in a
+`worldgen/biome` tag event change nothing (no error either), while the same calls work on item tags. Use a tag file
+instead, which KubeJS loads from `kubejs/data/` like any data pack. No Desert Ant nests or wild Desert Ants:
+`kubejs/data/antcolonies/tags/worldgen/biome/spawns/desert.json`
+
+```json
+{ "replace": true, "values": [] }
+```
+
+To keep some biomes, list them in `values` (with `"replace": true` the built-in ones are dropped).
 
 
 ### Giant anthills

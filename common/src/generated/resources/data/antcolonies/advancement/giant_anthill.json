@@ -4,15 +4,17 @@
     "giant_anthill": {
       "trigger": "minecraft:location",
       "conditions": {
-        "player": {
-          "type": "minecraft:entity_properties",
-          "entity": "this",
-          "predicate": {
-            "minecraft:location": {
-              "structures": "antcolonies:giant_anthill"
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "location": {
+                "structures": "antcolonies:giant_anthill"
+              }
             }
           }
-        }
+        ]
       }
     }
   },

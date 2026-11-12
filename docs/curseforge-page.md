@@ -75,7 +75,7 @@ into thousands of workers that mine, farm, hunt and evolve.
 
 ## Requirements
 
-Minecraft **26.3**, NeoForge **26.3.0.101** or newer, Java 25. Install it on both the client and the server.
+Minecraft **26.1.2**, NeoForge **26.1.2.122** or newer, Java 25. Install it on both the client and the server.
 Optional: JEI, EMI, Jade, MachinaOpus.
 
 ## Links
@@ -115,10 +115,10 @@ Upload these 17 from `docs/images/screenshots/`, in this order (they replace the
 
 | Field | Value |
 |---|---|
-| File | `build/libs/antcolonies-26.3.0.1.0.jar` |
+| File | `build/libs/antcolonies-26.1.2.0.1.0.jar` |
 | Display name | `Ant Colonies 0.1.0` |
 | Release type | Beta (or Release once it has been played for a while) |
-| Game version | 26.3 |
+| Game version | 26.1.2 |
 | Mod loader | NeoForge |
 | Java | Java 25 |
 | Environment | Client and Server |

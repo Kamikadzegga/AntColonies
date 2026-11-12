@@ -184,7 +184,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             }
             poseStack.pushPose();
             poseStack.translate(x / 16, top / 16, z / 16);
-            poseStack.rotate(Axis.YP.rotation(yaw));
+            poseStack.mulPose(Axis.YP.rotation(yaw));
             Caste caste = soldier ? Caste.SOLDIER : Caste.WORKER;
             drawer.draw(collector, poseStack, caste, state.look, pose, LENGTH * AntDrawer.casteScale(caste), state.lightCoords,
                     OverlayTexture.NO_OVERLAY, carry, 0);
@@ -201,8 +201,8 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             for (int layer = 0; layer < layers; layer++) {
                 poseStack.pushPose();
                 poseStack.translate(spots[i][0] / 16, (FLOOR + 0.2F + layer * 0.9F + (i == 0 ? 0.8F : 0)) / 16, spots[i][1] / 16);
-                poseStack.rotate(Axis.YP.rotationDegrees((i * 67 + layer * 41) % 360));
-                poseStack.rotate(Axis.XP.rotationDegrees(90));
+                poseStack.mulPose(Axis.YP.rotationDegrees((i * 67 + layer * 41) % 360));
+                poseStack.mulPose(Axis.XP.rotationDegrees(90));
                 poseStack.scale(0.42F, 0.42F, 0.42F);
                 item.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
                 poseStack.popPose();

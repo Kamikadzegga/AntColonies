@@ -7,12 +7,12 @@ import com.antcolonies.colony.species.AntSpecies;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.advancements.predicates.MinMaxBounds;
-import net.minecraft.advancements.triggers.SimpleCriterionTrigger;
-import net.minecraft.core.Holder;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -31,12 +31,12 @@ public class ColonyTrigger extends SimpleCriterionTrigger<ColonyTrigger.TriggerI
         trigger(player, instance -> instance.matches(colony, species));
     }
 
-    public record TriggerInstance(Optional<Holder<LootItemCondition>> player, Optional<Boolean> hasQueen, MinMaxBounds.Ints stage,
+    public record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<Boolean> hasQueen, MinMaxBounds.Ints stage,
                                   MinMaxBounds.Doubles adults, Optional<Identifier> species, Optional<String> category, MinMaxBounds.Ints bestTrait,
                                   Optional<Boolean> queenFounded, Optional<Boolean> linked)
             implements SimpleCriterionTrigger.SimpleInstance {
         public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create(i -> i.group(
-                LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player),
+                EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player),
                 Codec.BOOL.optionalFieldOf("has_queen").forGetter(TriggerInstance::hasQueen),
                 MinMaxBounds.Ints.CODEC.optionalFieldOf("stage", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::stage),
                 MinMaxBounds.Doubles.CODEC.optionalFieldOf("adults", MinMaxBounds.Doubles.ANY).forGetter(TriggerInstance::adults),

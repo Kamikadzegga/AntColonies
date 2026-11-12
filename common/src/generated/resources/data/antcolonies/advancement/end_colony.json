@@ -4,15 +4,17 @@
     "end_colony": {
       "trigger": "antcolonies:colony",
       "conditions": {
-        "player": {
-          "type": "minecraft:entity_properties",
-          "entity": "this",
-          "predicate": {
-            "minecraft:location": {
-              "dimension": "minecraft:the_end"
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "location": {
+                "dimension": "minecraft:the_end"
+              }
             }
           }
-        }
+        ]
       }
     }
   },

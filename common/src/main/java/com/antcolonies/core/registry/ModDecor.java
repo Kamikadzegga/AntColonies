@@ -79,7 +79,7 @@ public final class ModDecor {
     public static final DeferredBlock<TransparentBlock> AMBER_GLASS = register("amber_glass", TransparentBlock::new,
             p -> p.mapColor(MapColor.COLOR_ORANGE).strength(0.5F).sound(SoundType.GLASS).noOcclusion()
                     .isValidSpawn((state, level, pos, type) -> false).isRedstoneConductor((state, level, pos) -> false)
-                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, near) -> false));
+                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false));
     public static final DeferredBlock<Block> REINFORCED_AMBER = register("reinforced_amber", Block::new,
             p -> p.mapColor(MapColor.COLOR_ORANGE).strength(4.0F, 1200.0F).sound(SoundType.STONE).requiresCorrectToolForDrops());
     // --- Fungal ---
@@ -107,7 +107,7 @@ public final class ModDecor {
     public static final DeferredBlock<TransparentBlock> TERRARIUM_GLASS = register("terrarium_glass", TransparentBlock::new,
             p -> p.mapColor(MapColor.NONE).strength(0.4F).sound(SoundType.GLASS).noOcclusion()
                     .isValidSpawn((state, level, pos, type) -> false).isRedstoneConductor((state, level, pos) -> false)
-                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, near) -> false));
+                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false));
 
     private static <T extends Block> DeferredBlock<T> register(String id, java.util.function.Function<BlockBehaviour.Properties, T> factory,
                                                                UnaryOperator<BlockBehaviour.Properties> properties) {

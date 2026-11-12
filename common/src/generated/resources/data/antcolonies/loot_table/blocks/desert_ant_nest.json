@@ -9,21 +9,23 @@
             {
               "type": "minecraft:item",
               "name": "antcolonies:desert_ant_nest",
-              "condition": {
-                "type": "minecraft:match_tool",
-                "predicate": {
-                  "predicates": {
-                    "minecraft:enchantments": [
-                      {
-                        "enchantments": "minecraft:silk_touch",
-                        "levels": {
-                          "min": 1
+              "conditions": [
+                {
+                  "condition": "minecraft:match_tool",
+                  "predicate": {
+                    "predicates": {
+                      "minecraft:enchantments": [
+                        {
+                          "enchantments": "minecraft:silk_touch",
+                          "levels": {
+                            "min": 1
+                          }
                         }
-                      }
-                    ]
+                      ]
+                    }
                   }
                 }
-              }
+              ]
             },
             {
               "type": "minecraft:item",

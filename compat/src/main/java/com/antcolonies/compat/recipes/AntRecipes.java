@@ -332,11 +332,11 @@ public final class AntRecipes {
     }
 
     private static List<AntSpecies.Combat.Target> defaultTargets() {
-        return List.of(new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityTypes.ZOMBIE.builtInRegistryHolder(), 30),
-                new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityTypes.SKELETON.builtInRegistryHolder(), 25),
-                new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityTypes.SPIDER.builtInRegistryHolder(), 25),
-                new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityTypes.CREEPER.builtInRegistryHolder(), 15),
-                new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityTypes.SLIME.builtInRegistryHolder(), 5));
+        return List.of(new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityType.ZOMBIE.builtInRegistryHolder(), 30),
+                new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityType.SKELETON.builtInRegistryHolder(), 25),
+                new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityType.SPIDER.builtInRegistryHolder(), 25),
+                new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityType.CREEPER.builtInRegistryHolder(), 15),
+                new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityType.SLIME.builtInRegistryHolder(), 5));
     }
 
     private static ItemStack spawnEgg(EntityType<?> type) {

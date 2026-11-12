@@ -330,7 +330,7 @@ public final class AntConfig {
     }
 
     public static void register(ModContainer container) {
-        container.registerConfig(ModConfig.Type.SYNCED, SERVER_SPEC, FOLDER + "/server.toml");
+        container.registerConfig(ModConfig.Type.SERVER, SERVER_SPEC, FOLDER + "/server.toml");
         container.registerConfig(ModConfig.Type.CLIENT, CLIENT_SPEC, FOLDER + "/client.toml");
     }
 

@@ -78,7 +78,7 @@ public class TerrariumBlock extends ColonyPartBlock {
             }
             if (!level.isClientSide()) {
                 if (!inSlot.isEmpty()) {
-                    player.getInventory().placeItemBackInInventory(inSlot, net.minecraft.util.Prediction.SERVER_ONLY);
+                    player.getInventory().placeItemBackInInventory(inSlot);
                 }
                 terrarium.setItem(slot, stack.split(1));
             }
@@ -136,7 +136,7 @@ public class TerrariumBlock extends ColonyPartBlock {
         ItemStack tube = new ItemStack(ModItems.GUARD_ANT.get());
         tube.set(ModDataComponents.GUARD.get(), new com.antcolonies.content.item.GuardData(colony.species(), Math.clamp(strength, 1, 10), -1));
         pheromone.consume(1, player);
-        player.getInventory().placeItemBackInInventory(tube, net.minecraft.util.Prediction.SERVER_ONLY);
+        player.getInventory().placeItemBackInInventory(tube);
         player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable("message.antcolonies.guard.recruited", cost)
                 .withStyle(net.minecraft.ChatFormatting.GREEN));
         terrarium.setChanged();
@@ -147,5 +147,11 @@ public class TerrariumBlock extends ColonyPartBlock {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         ClientHooks.terrariumParticles(level, pos, random);
+    }
+
+    // 26.1.2: every block still names its codec.
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.block.BaseEntityBlock> codec() {
+        return simpleCodec(TerrariumBlock::new);
     }
 }

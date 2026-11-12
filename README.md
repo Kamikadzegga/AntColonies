@@ -4,11 +4,11 @@
 
 **Build a civilization, one ant at a time.**
 
-A NeoForge mod for Minecraft 26.3: catch wild ants, raise Queens in living Terrariums, put thousands of workers and
+A NeoForge mod for Minecraft 26.1.2: catch wild ants, raise Queens in living Terrariums, put thousands of workers and
 hunters to work, evolve mineral species and engineer their genes.
 
-[![Minecraft 26.3](https://img.shields.io/badge/Minecraft-26.3-62B47A?style=flat-square)](https://www.minecraft.net)
-[![NeoForge 26.3.0.101](https://img.shields.io/badge/NeoForge-26.3.0.101-D7742F?style=flat-square)](https://neoforged.net)
+[![Minecraft 26.1.2](https://img.shields.io/badge/Minecraft-26.1.2-62B47A?style=flat-square)](https://www.minecraft.net)
+[![NeoForge 26.1.2.122](https://img.shields.io/badge/NeoForge-26.1.2.122-D7742F?style=flat-square)](https://neoforged.net)
 [![Java 25](https://img.shields.io/badge/Java-25-B07219?style=flat-square)](https://adoptium.net)
 [![License: MIT](https://img.shields.io/badge/License-MIT-3DA639?style=flat-square)](LICENSE)
 [![Build](https://github.com/Kamikadzegga/AntColonies/actions/workflows/build.yml/badge.svg)](https://github.com/Kamikadzegga/AntColonies/actions/workflows/build.yml)
@@ -91,17 +91,26 @@ hunters to work, evolve mineral species and engineer their genes.
 | ![Jade tooltip](docs/images/screenshots/jade.png) | |
 | A Terrarium at a glance with Jade | |
 
+## Versions
+
+Each Minecraft version has its own branch. You are reading the **26.1.2** branch.
+
+| Minecraft | Branch | |
+|---|---|---|
+| 26.3 | [`main`](https://github.com/Kamikadzegga/AntColonies/tree/main) | The main version: new features land here first |
+| 26.1.2 | [`26.1.2`](https://github.com/Kamikadzegga/AntColonies/tree/26.1.2) | The same mod for 26.1.2 modpacks, tested with KubeJS |
+
 ## Installation
 
-1. Install [NeoForge](https://neoforged.net) **26.3.0.101** or newer for Minecraft **26.3** (Java 25).
+1. Install [NeoForge](https://neoforged.net) **26.1.2.122** or newer for Minecraft **26.1.2** (Java 25).
 2. Put `antcolonies-<version>.jar` into your `mods` folder. The mod is needed on both the server and the client.
 3. Optional companions:
 
 | Mod | What it adds |
 |---|---|
-| [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) 31.17+ | 13 recipe categories: species, evolutions, hybrids, production, the laboratory and more |
-| [EMI](https://modrinth.com/mod/pf-emi) (the 26.3 port, PF-EMI 1.1) | The same 13 categories in EMI |
-| [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) 26.3.5+ | Look at a Terrarium, job site or machine for its state |
+| [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) 29.47+ | 13 recipe categories: species, evolutions, hybrids, production, the laboratory and more |
+| [EMI](https://modrinth.com/mod/pf-emi) (PF-EMI, the EMI port for 26.1.2) | The same 13 categories in EMI |
+| [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) 26.1.12+ | Look at a Terrarium, job site or machine for its state |
 
 To start, craft **Tweezers** and **Test Tubes**, catch a wild Queen, and put her in a **Terrarium** with some ant food.
 The [gameplay guide](docs/gameplay.md#getting-started) takes it from there.
@@ -120,7 +129,7 @@ The [gameplay guide](docs/gameplay.md#getting-started) takes it from there.
 You need JDK 25. Gradle and the right NeoForge version are downloaded by the wrapper.
 
 ```sh
-git clone https://github.com/Kamikadzegga/AntColonies.git
+git clone -b 26.1.2 https://github.com/Kamikadzegga/AntColonies.git
 cd AntColonies
 ./gradlew build                # the jar ends up in build/libs/
 ./gradlew runGameTestServer    # runs the game tests

@@ -115,6 +115,7 @@ public class AntColoniesGameTests {
     public AntColoniesGameTests(IEventBus modEventBus) {
         TESTS.register(modEventBus);
         UpdateGameTests.register(modEventBus);
+        PortAuditTests.register(modEventBus);
         modEventBus.addListener(AntColoniesGameTests::registerTests);
         modEventBus.addListener(AntColoniesGameTests::addGuidePack);
     }
@@ -132,6 +133,7 @@ public class AntColoniesGameTests {
                     spaced(environment, 200)));
         }
         UpdateGameTests.registerTests(event, environment);
+        PortAuditTests.registerTests(event, environment);
         event.registerTest(LAB.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, LAB.getId()),
                 spaced(environment, 600)));
         event.registerTest(HOME_NEST_ALONE.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, HOME_NEST_ALONE.getId()),
@@ -145,7 +147,7 @@ public class AntColoniesGameTests {
      * colony could reach into a neighbouring test's blocks (its structures joined the other colony and broke both).
      */
     static TestData<Holder<TestEnvironmentDefinition<?>>> spaced(Holder<TestEnvironmentDefinition<?>> environment, int ticks) {
-        return new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD, EMPTY, ticks, 0, true, net.minecraft.world.level.block.Rotation.NONE,
+        return new TestData<>(environment, EMPTY, ticks, 0, true, net.minecraft.world.level.block.Rotation.NONE,
                 false, 1, 1, false, 20);
     }
 
@@ -1732,7 +1734,7 @@ public class AntColoniesGameTests {
     /** Every wild nest feature in the data places its nest on solid ground (world generation uses the same features). */
     private static void nests(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        var features = level.registryAccess().lookupOrThrow(Registries.FEATURE);
+        var features = level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE);
         int x = 0;
         for (var entry : ModBlocks.NESTS.entrySet()) {
             BlockPos pos = new BlockPos(x, 1, 1);

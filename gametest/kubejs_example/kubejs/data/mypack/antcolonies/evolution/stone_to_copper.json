@@ -1,0 +1,1 @@
+{ "from": "antcolonies:stone", "to": "mypack:copper", "item": "minecraft:copper_block", "chance": 0.1, "guaranteed_after": 20, "min_stage": 2 }

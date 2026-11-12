@@ -53,4 +53,10 @@ public class StructureBlock extends ColonyPartBlock {
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         com.antcolonies.client.ClientHooks.structureParticles(level, pos, kind, random);
     }
+
+    // 26.1.2: every block still names its codec.
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.block.BaseEntityBlock> codec() {
+        return simpleCodec(properties -> new StructureBlock(kind, properties));
+    }
 }

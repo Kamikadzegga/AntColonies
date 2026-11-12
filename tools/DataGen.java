@@ -88,12 +88,273 @@ public class DataGen {
     }
 
     static void write(Path path, Object value) {
+        // Minecraft 26.1.2 port: the generators below are the same as 26.3's; Legacy turns their output into 26.1.2's formats.
+        String rel = RES.relativize(path).toString().replace('\\', '/');
+        if (rel.contains("/worldgen/feature/")) {
+            path = RES.resolve(rel.replace("/worldgen/feature/", "/worldgen/configured_feature/"));
+        }
+        value = Legacy.convert(rel, value);
         try {
             Files.createDirectories(path.getParent());
             Files.writeString(path, json(value, 0) + "\n", StandardCharsets.UTF_8);
             written++;
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Converts data written in Minecraft 26.3's formats into 26.1.2's (this project is the 26.1.2 port):
+     * <ul>
+     * <li>loot tables: {@code modifier} (one or a list) becomes the {@code functions} list and {@code condition} the
+     * {@code conditions} list, whose entries name their kind in {@code function}/{@code condition} instead of {@code type};
+     * {@code match_block} is {@code block_state_property} ({@code block}, {@code properties}), the
+     * {@code minecraft:tool/can_silk_touch} shorthand is written out as a {@code match_tool} predicate;</li>
+     * <li>advancements: {@code player} is a list of loot conditions and entity predicate keys have no namespace;</li>
+     * <li>worldgen: {@code worldgen/feature} is {@code worldgen/configured_feature} with its settings in {@code config}
+     * and block states as {@code {Name, Properties}}; the {@code offset} placement is {@code random_offset}.</li>
+     * </ul>
+     * Anything it does not know how to convert stops the program, so nothing is silently written in the wrong format.
+     */
+    static final class Legacy {
+        static Object convert(String rel, Object value) {
+            if (!rel.startsWith("data/")) {
+                return value;
+            }
+            if (rel.contains("/loot_table/")) {
+                return lootTable(value);
+            }
+            if (rel.contains("/advancement/")) {
+                return advancement(value);
+            }
+            if (rel.contains("/worldgen/feature/")) {
+                return feature(map(value));
+            }
+            if (rel.contains("/worldgen/placed_feature/")) {
+                return placed(map(value));
+            }
+            if (rel.contains("/neoforge/biome_modifier/")) {
+                return biomeModifier(map(value));
+            }
+            return value;
+        }
+
+        @SuppressWarnings("unchecked")
+        static Map<String, Object> map(Object value) {
+            return (Map<String, Object>) value;
+        }
+
+        static List<?> list(Object value) {
+            return value instanceof List<?> l ? l : List.of(value);
+        }
+
+        // ---- loot tables: walk the tree; keys decide what a value is.
+        static Object lootTable(Object value) {
+            if (value instanceof List<?> l) {
+                List<Object> out = new ArrayList<>();
+                l.forEach(e -> out.add(lootTable(e)));
+                return out;
+            }
+            if (!(value instanceof Map<?, ?>)) {
+                return value;
+            }
+            Map<String, Object> out = new LinkedHashMap<>();
+            for (Map.Entry<String, Object> e : map(value).entrySet()) {
+                switch (e.getKey()) {
+                    case "modifier" -> {
+                        List<Object> functions = new ArrayList<>();
+                        for (Object f : list(e.getValue())) {
+                            functions.add(function(map(f)));
+                        }
+                        out.put("functions", functions);
+                    }
+                    case "condition" -> out.put("conditions", conditions(e.getValue()));
+                    default -> out.put(e.getKey(), lootTable(e.getValue()));
+                }
+            }
+            return out;
+        }
+
+        static Map<String, Object> function(Map<String, Object> f) {
+            Map<String, Object> out = new LinkedHashMap<>();
+            for (Map.Entry<String, Object> e : f.entrySet()) {
+                switch (e.getKey()) {
+                    case "type" -> out.put("function", e.getValue());
+                    case "condition" -> out.put("conditions", conditions(e.getValue()));
+                    case "modifier" -> throw new IllegalStateException("nested loot modifiers: " + f);
+                    default -> out.put(e.getKey(), lootTable(e.getValue()));
+                }
+            }
+            return out;
+        }
+
+        /** A 26.3 condition (one object, or a reference string) as 26.1.2's conditions list. */
+        static List<Object> conditions(Object condition) {
+            List<Object> out = new ArrayList<>();
+            out.add(condition(condition));
+            return out;
+        }
+
+        static Map<String, Object> condition(Object condition) {
+            if (condition instanceof String reference) {
+                if (reference.equals("minecraft:tool/can_silk_touch")) {
+                    return obj("condition", "minecraft:match_tool", "predicate", obj("predicates", obj("minecraft:enchantments",
+                            arr(obj("enchantments", "minecraft:silk_touch", "levels", obj("min", 1))))));
+                }
+                throw new IllegalStateException("unknown condition reference " + reference);
+            }
+            Map<String, Object> c = map(condition);
+            String type = (String) c.get("type");
+            Map<String, Object> out = new LinkedHashMap<>();
+            switch (type) {
+                case "minecraft:match_block" -> {
+                    out.put("condition", "minecraft:block_state_property");
+                    out.put("block", c.get("blocks"));
+                    if (c.containsKey("state")) {
+                        out.put("properties", c.get("state"));
+                    }
+                    check(c, "type", "blocks", "state");
+                }
+                case "minecraft:all_of", "minecraft:any_of" -> {
+                    out.put("condition", type);
+                    List<Object> terms = new ArrayList<>();
+                    list(c.get("terms")).forEach(t -> terms.add(condition(t)));
+                    out.put("terms", terms);
+                    check(c, "type", "terms");
+                }
+                case "minecraft:inverted" -> {
+                    out.put("condition", type);
+                    out.put("term", condition(c.get("term")));
+                    check(c, "type", "term");
+                }
+                case "minecraft:entity_properties" -> {
+                    out.put("condition", type);
+                    c.forEach((k, v) -> {
+                        if (!k.equals("type")) {
+                            out.put(k, k.equals("predicate") ? entityPredicate(map(v)) : v);
+                        }
+                    });
+                }
+                default -> {
+                    out.put("condition", type);
+                    c.forEach((k, v) -> {
+                        if (!k.equals("type")) {
+                            out.put(k, v);
+                        }
+                    });
+                }
+            }
+            return out;
+        }
+
+        /** 26.3 names entity predicate parts with ids ({@code minecraft:location}); 26.1.2 uses plain field names. */
+        static Map<String, Object> entityPredicate(Map<String, Object> p) {
+            Map<String, Object> out = new LinkedHashMap<>();
+            p.forEach((k, v) -> {
+                String key = k.startsWith("minecraft:") ? k.substring("minecraft:".length()) : k;
+                if (!List.of("location", "type", "flags", "equipment", "effects", "nbt", "distance", "movement", "stepping_on",
+                        "movement_affected_by", "periodic_tick", "vehicle", "passenger", "targeted_entity", "team", "slots", "components",
+                        "predicates", "type_specific").contains(key)) {
+                    throw new IllegalStateException("unknown entity predicate part " + k);
+                }
+                out.put(key, v);
+            });
+            return out;
+        }
+
+        static void check(Map<String, Object> c, String... known) {
+            for (String key : c.keySet()) {
+                if (!List.of(known).contains(key)) {
+                    throw new IllegalStateException("unconverted field " + key + " in " + c);
+                }
+            }
+        }
+
+        // ---- advancements: only criteria conditions' "player" changes.
+        static Object advancement(Object value) {
+            Map<String, Object> adv = new LinkedHashMap<>(map(value));
+            Object criteria = adv.get("criteria");
+            if (criteria != null) {
+                Map<String, Object> converted = new LinkedHashMap<>();
+                map(criteria).forEach((name, criterion) -> {
+                    Map<String, Object> cr = new LinkedHashMap<>(map(criterion));
+                    if (cr.get("conditions") instanceof Map<?, ?> conds && conds.containsKey("player")) {
+                        Map<String, Object> cc = new LinkedHashMap<>(map(conds));
+                        cc.put("player", conditions(cc.get("player")));
+                        cr.put("conditions", cc);
+                    }
+                    converted.put(name, cr);
+                });
+                adv.put("criteria", converted);
+            }
+            return adv;
+        }
+
+        // ---- biome modifiers: 26.1.2 spawners name their group size as minCount/maxCount instead of one int provider.
+        static Map<String, Object> biomeModifier(Map<String, Object> m) {
+            if (!"neoforge:add_spawns".equals(m.get("type"))) {
+                return m;
+            }
+            Map<String, Object> out = new LinkedHashMap<>(m);
+            List<Object> spawners = new ArrayList<>();
+            for (Object s : list(m.get("spawners"))) {
+                Map<String, Object> spawner = map(s);
+                check(spawner, "type", "count", "weight");
+                Object count = spawner.get("count");
+                Object min = count;
+                Object max = count;
+                if (count instanceof Map<?, ?> provider) {
+                    if (!"minecraft:uniform".equals(provider.get("type"))) {
+                        throw new IllegalStateException("spawn count needs converting: " + count);
+                    }
+                    min = provider.get("min_inclusive");
+                    max = provider.get("max_inclusive");
+                }
+                spawners.add(obj("type", spawner.get("type"), "minCount", min, "maxCount", max, "weight", spawner.get("weight")));
+            }
+            out.put("spawners", spawners);
+            return out;
+        }
+
+        // ---- worldgen
+        static Map<String, Object> feature(Map<String, Object> f) {
+            String type = (String) f.get("type");
+            if (!type.equals("minecraft:simple_block")) {
+                throw new IllegalStateException("no 26.1.2 conversion for feature type " + type);
+            }
+            check(f, "type", "to_place");
+            return obj("type", type, "config", obj("to_place", obj("type", "minecraft:simple_state_provider", "state", state(f.get("to_place")))));
+        }
+
+        static Map<String, Object> state(Object state) {
+            if (state instanceof String id) {
+                return obj("Name", id);
+            }
+            Map<String, Object> s = map(state);
+            check(s, "id", "properties");
+            return obj("Name", s.get("id"), "Properties", s.get("properties"));
+        }
+
+        static Map<String, Object> placed(Map<String, Object> p) {
+            Map<String, Object> out = new LinkedHashMap<>(p);
+            List<Object> placement = new ArrayList<>();
+            for (Object m : list(p.get("placement"))) {
+                Map<String, Object> mod = map(m);
+                if ("minecraft:offset".equals(mod.get("type"))) {
+                    check(mod, "type", "x", "y", "z");
+                    if (!java.util.Objects.equals(mod.get("x"), mod.get("z"))) {
+                        throw new IllegalStateException("random_offset needs x == z: " + mod);
+                    }
+                    placement.add(obj("type", "minecraft:random_offset", "xz_spread", mod.get("x"), "y_spread", mod.get("y")));
+                } else {
+                    if (json(mod, 0).contains("\"id\"")) {
+                        throw new IllegalStateException("block state in placement needs converting: " + mod);
+                    }
+                    placement.add(mod);
+                }
+            }
+            out.put("placement", placement);
+            return out;
         }
     }
 

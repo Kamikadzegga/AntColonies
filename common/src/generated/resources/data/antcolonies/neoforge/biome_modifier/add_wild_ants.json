@@ -4,11 +4,8 @@
   "spawners": [
     {
       "type": "antcolonies:wild_ant",
-      "count": {
-        "type": "minecraft:uniform",
-        "min_inclusive": 2,
-        "max_inclusive": 5
-      },
+      "minCount": 2,
+      "maxCount": 5,
       "weight": 12
     }
   ]

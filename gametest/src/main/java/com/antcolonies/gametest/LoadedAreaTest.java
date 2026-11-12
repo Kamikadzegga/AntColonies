@@ -52,7 +52,7 @@ final class LoadedAreaTest extends FunctionGameTestInstance {
     private final int ownTicks;
 
     LoadedAreaTest(ResourceKey<Consumer<GameTestHelper>> function, TestData<Holder<TestEnvironmentDefinition<?>>> info) {
-        super(function, new TestData<>(info.environment(), info.dimension(), info.structure(), info.maxTicks() + WAIT_TICKS, info.setupTicks(),
+        super(function, new TestData<>(info.environment(), info.structure(), info.maxTicks() + WAIT_TICKS, info.setupTicks(),
                 info.required(), info.rotation(), info.manualOnly(), info.maxAttempts(), info.requiredSuccesses(), info.skyAccess(), info.padding()));
         this.ownTicks = info.maxTicks();
         this.name = function;

@@ -71,4 +71,10 @@ public class GeneratorBlock extends BaseEntityBlock {
         }
         return InteractionResult.SUCCESS;
     }
+
+    // 26.1.2: every block still names its codec.
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.block.BaseEntityBlock> codec() {
+        return simpleCodec(GeneratorBlock::new);
+    }
 }

@@ -1,0 +1,8 @@
+{
+  "values": {
+    "minecraft:cookie": { "food": 60 },
+    "minecraft:glow_lichen": { "food": 20, "special_kind": "crystal", "special": 20 },
+    "#minecraft:flowers": { "food": 10 }
+  },
+  "remove": ["minecraft:rotten_flesh"]
+}

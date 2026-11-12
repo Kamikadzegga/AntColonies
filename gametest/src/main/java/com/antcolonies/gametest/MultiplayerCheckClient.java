@@ -63,7 +63,7 @@ public class MultiplayerCheckClient {
             if (connected) {
                 // Sent off by the server: done.
                 connected = false;
-                result("disconnected; screen " + name(minecraft.gui.screen()));
+                result("disconnected; screen " + name(minecraft.screen));
                 finish(minecraft);
             }
             return;
@@ -74,7 +74,7 @@ public class MultiplayerCheckClient {
             result("joined as " + minecraft.player.getGameProfile().name());
         }
         ticks++;
-        Screen screen = minecraft.gui.screen();
+        Screen screen = minecraft.screen;
         String screenName = name(screen);
         if (screen != null && screensSeen.add(screenName)) {
             screenshotAt = ticks + 15;
@@ -145,7 +145,7 @@ public class MultiplayerCheckClient {
 
     private void screenshot(Minecraft minecraft, String name) {
         String file = "mp-" + minecraft.player.getGameProfile().name() + "-" + name + ".png";
-        Screenshot.grab(minecraft.gameDirectory, file, minecraft.gameRenderer.mainRenderTarget(), 1, message -> {});
+        Screenshot.grab(minecraft.gameDirectory, file, minecraft.getMainRenderTarget(), 1, message -> {});
         result("screenshot " + file);
     }
 

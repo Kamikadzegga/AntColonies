@@ -210,13 +210,13 @@ public class TweezersItem extends Item {
                     other.set(ModDataComponents.ANTS.get(), there.withCount(there.count() + sample.count()));
                     // The tube taken for the catch isn't needed after all.
                     if (!player.isCreative()) {
-                        inventory.placeItemBackInInventory(new ItemStack(ModItems.TEST_TUBE.get()), net.minecraft.util.Prediction.SERVER_ONLY);
+                        inventory.placeItemBackInInventory(new ItemStack(ModItems.TEST_TUBE.get()));
                     }
                     return;
                 }
             }
         }
-        player.getInventory().placeItemBackInInventory(caught, net.minecraft.util.Prediction.SERVER_ONLY);
+        player.getInventory().placeItemBackInInventory(caught);
     }
 
     @Override

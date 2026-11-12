@@ -1,0 +1,15 @@
+{
+  "parent": "antcolonies:evolution",
+  "criteria": {
+    "big_diamonds": {
+      "trigger": "antcolonies:colony",
+      "conditions": { "species": "antcolonies:diamond", "adults": { "min": 1000 } }
+    }
+  },
+  "display": {
+    "icon": { "id": "minecraft:diamond" },
+    "title": "Diamond Hands",
+    "description": "Grow a Diamond Ant colony to 1,000 adults",
+    "frame": "goal"
+  }
+}

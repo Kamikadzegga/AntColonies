@@ -198,7 +198,7 @@ public class GuardAnt extends TamableAnimal implements AntLike {
                 if (hasCustomName()) {
                     tube.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, getCustomName());
                 }
-                player.getInventory().placeItemBackInInventory(tube, net.minecraft.util.Prediction.SERVER_ONLY);
+                player.getInventory().placeItemBackInInventory(tube);
                 discard();
             } else {
                 setOrderedToSit(!isOrderedToSit());

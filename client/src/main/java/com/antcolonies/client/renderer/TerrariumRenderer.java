@@ -565,7 +565,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
             float yaw = Mth.rotLerpRad(pt, actor.prevYaw, actor.yaw);
             poseStack.pushPose();
             poseStack.translate(x / 16, TOP / 16, z / 16);
-            poseStack.rotate(Axis.YP.rotation(yaw));
+            poseStack.mulPose(Axis.YP.rotation(yaw));
             drawer.draw(collector, poseStack, actor.caste, look, pose, length, state.lightCoords, OverlayTexture.NO_OVERLAY, actor.carry, 0);
             poseStack.popPose();
             return;

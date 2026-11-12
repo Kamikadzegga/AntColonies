@@ -35,6 +35,6 @@ Queens into mineral species and perfect their genetics in the Genetic Laboratory
 [[dependencies.${mod_id}]]
     modId="jei"
     type="optional"
-    versionRange="[31.17,)"
+    versionRange="[29.47,)"
     ordering="NONE"
     side="CLIENT"

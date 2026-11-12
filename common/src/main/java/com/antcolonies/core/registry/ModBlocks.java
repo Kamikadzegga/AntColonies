@@ -23,7 +23,7 @@ public final class ModBlocks {
 
     public static final DeferredBlock<TerrariumBlock> TERRARIUM = BLOCKS.registerBlock("terrarium", TerrariumBlock::new,
             p -> p.mapColor(MapColor.WOOD).strength(1.0F).sound(SoundType.GLASS).noOcclusion()
-                    .isViewBlocking((state, level, pos, near) -> false).isSuffocating((state, level, pos) -> false)
+                    .isViewBlocking((state, level, pos) -> false).isSuffocating((state, level, pos) -> false)
                     .isRedstoneConductor((state, level, pos) -> false));
 
     /** The colony chambers, in {@link StructureKind} order. */

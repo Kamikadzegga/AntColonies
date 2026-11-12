@@ -48,4 +48,10 @@ public class ExpeditionSiteBlock extends StructureBlock {
         level.addParticle(nether ? ParticleTypes.PORTAL : ParticleTypes.REVERSE_PORTAL, x, pos.getY() + 0.35 + random.nextDouble() * 0.4, z,
                 -front.getStepX() * 0.15, 0.02, -front.getStepZ() * 0.15);
     }
+
+    // 26.1.2: every block still names its codec.
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.block.BaseEntityBlock> codec() {
+        return simpleCodec(properties -> new ExpeditionSiteBlock(structureKind(), properties));
+    }
 }

@@ -14,7 +14,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.neoforged.neoforge.registries.NewDatapackRegistryEvent;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -34,13 +34,13 @@ public final class ModRegistries {
     /** The species every new player starts with, and the fallback of unknown ids. */
     public static final Identifier COMMON = AntColonies.id("common");
 
-    public static void register(NewDatapackRegistryEvent event) {
-        event.worldRegistry(SPECIES, AntSpecies.CODEC, AntSpecies.CODEC);
-        event.worldRegistry(EVOLUTION, Evolution.CODEC, Evolution.CODEC);
-        event.worldRegistry(HYBRID, Hybrid.CODEC, Hybrid.CODEC);
-        event.worldRegistry(MUTATION, Mutation.CODEC, Mutation.CODEC);
-        event.worldRegistry(TRAIT_UPGRADE, TraitUpgrade.CODEC, TraitUpgrade.CODEC);
-        event.worldRegistry(EXPEDITION, com.antcolonies.colony.expedition.Expedition.CODEC, com.antcolonies.colony.expedition.Expedition.CODEC);
+    public static void register(DataPackRegistryEvent.NewRegistry event) {
+        event.dataPackRegistry(SPECIES, AntSpecies.CODEC, AntSpecies.CODEC);
+        event.dataPackRegistry(EVOLUTION, Evolution.CODEC, Evolution.CODEC);
+        event.dataPackRegistry(HYBRID, Hybrid.CODEC, Hybrid.CODEC);
+        event.dataPackRegistry(MUTATION, Mutation.CODEC, Mutation.CODEC);
+        event.dataPackRegistry(TRAIT_UPGRADE, TraitUpgrade.CODEC, TraitUpgrade.CODEC);
+        event.dataPackRegistry(EXPEDITION, com.antcolonies.colony.expedition.Expedition.CODEC, com.antcolonies.colony.expedition.Expedition.CODEC);
     }
 
     public static @Nullable AntSpecies species(HolderLookup.@Nullable Provider registries, @Nullable Identifier id) {

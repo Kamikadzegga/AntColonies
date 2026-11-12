@@ -35,7 +35,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
@@ -51,11 +51,11 @@ public final class ColonySimulator {
     private static final int MAX_ROLLS = 256;
     /** What hunters of species without their own list hunt. */
     public static final List<AntSpecies.Combat.Target> DEFAULT_TARGETS = List.of(
-            new AntSpecies.Combat.Target(EntityTypes.ZOMBIE.builtInRegistryHolder(), 30),
-            new AntSpecies.Combat.Target(EntityTypes.SKELETON.builtInRegistryHolder(), 25),
-            new AntSpecies.Combat.Target(EntityTypes.SPIDER.builtInRegistryHolder(), 25),
-            new AntSpecies.Combat.Target(EntityTypes.CREEPER.builtInRegistryHolder(), 15),
-            new AntSpecies.Combat.Target(EntityTypes.SLIME.builtInRegistryHolder(), 5));
+            new AntSpecies.Combat.Target(EntityType.ZOMBIE.builtInRegistryHolder(), 30),
+            new AntSpecies.Combat.Target(EntityType.SKELETON.builtInRegistryHolder(), 25),
+            new AntSpecies.Combat.Target(EntityType.SPIDER.builtInRegistryHolder(), 25),
+            new AntSpecies.Combat.Target(EntityType.CREEPER.builtInRegistryHolder(), 15),
+            new AntSpecies.Combat.Target(EntityType.SLIME.builtInRegistryHolder(), 5));
 
     /** Everything a step needs, worked out once at its start. */
     static final class Step {

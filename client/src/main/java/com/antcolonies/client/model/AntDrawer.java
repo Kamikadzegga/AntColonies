@@ -73,29 +73,29 @@ public final class AntDrawer {
         // Model space is y-down like entity models: flip x and y (keeps the faces' winding).
         poseStack.scale(-k, -k, k);
         RenderType base = RenderTypes.entityCutout(BASE.get(caste));
-        collector.submitModelPart(model.body, poseStack, base, light, overlay, null, ARGB.opaque(look.body()), outline);
-        collector.submitModelPart(model.gaster, poseStack, base, light, overlay, null, ARGB.opaque(look.gaster()), outline);
+        collector.submitModelPart(model.body, poseStack, base, light, overlay, null, false, false, ARGB.opaque(look.body()), null, outline);
+        collector.submitModelPart(model.gaster, poseStack, base, light, overlay, null, false, false, ARGB.opaque(look.gaster()), null, outline);
         Identifier pattern = PATTERNS.get(caste).get(look.pattern());
         if (pattern != null) {
-            collector.submitModelPart(model.pattern, poseStack, RenderTypes.entityTranslucent(pattern), light, overlay, null, ARGB.opaque(look.accent()));
+            collector.submitModelPart(model.pattern, poseStack, RenderTypes.entityTranslucent(pattern), light, overlay, null, ARGB.opaque(look.accent()), null);
         }
         if (look.crystal().isPresent()) {
             int crystal = ARGB.color(220, look.crystal().get());
             int crystalLight = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
-            collector.submitModelPart(model.crystalsBody, poseStack, CRYSTAL_TYPE, crystalLight, overlay, null, crystal);
-            collector.submitModelPart(model.crystalsGaster, poseStack, CRYSTAL_TYPE, crystalLight, overlay, null, crystal);
+            collector.submitModelPart(model.crystalsBody, poseStack, CRYSTAL_TYPE, crystalLight, overlay, null, crystal, null);
+            collector.submitModelPart(model.crystalsGaster, poseStack, CRYSTAL_TYPE, crystalLight, overlay, null, crystal, null);
             if (look.glow()) {
                 collector.submitModelPart(model.crystalsBody, poseStack, CRYSTAL_GLOW, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, null,
-                        ARGB.color(160, look.crystal().get()));
+                        ARGB.color(160, look.crystal().get()), null);
                 collector.submitModelPart(model.crystalsGaster, poseStack, CRYSTAL_GLOW, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, null,
-                        ARGB.color(160, look.crystal().get()));
+                        ARGB.color(160, look.crystal().get()), null);
             }
         }
         if (carry != 0) {
             float[] mouth = model.mouth();
             poseStack.pushPose();
             poseStack.translate(mouth[0] / 16.0F, mouth[1] / 16.0F, mouth[2] / 16.0F);
-            collector.submitModelPart(carried, poseStack, CARRY_TYPE, light, overlay, null, carry);
+            collector.submitModelPart(carried, poseStack, CARRY_TYPE, light, overlay, null, carry, null);
             poseStack.popPose();
         }
         poseStack.popPose();

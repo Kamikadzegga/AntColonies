@@ -6,6 +6,15 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
+### Added
+- A build for Minecraft 26.1.2 (NeoForge 26.1.2.122), with the same content as 0.1.0 for 26.3. Data packs for it use
+  data pack format 101 and 26.1.2's loot table, advancement and world generation formats.
+- The modpack guide's KubeJS examples are tested with KubeJS 8.0.8, with more examples (new recipes, changed ingredients,
+  item tags) and a note that JEI must be on the server to show KubeJS-changed recipes.
+
+### Fixed
+- The modpack guide's KubeJS example for removing biomes from a spawn tag did nothing on KubeJS 8; it now uses a tag file.
+
 ## [0.1.0] - 2026-11-12
 
 The colony update.

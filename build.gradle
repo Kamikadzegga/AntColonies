@@ -42,11 +42,6 @@ repositories {
         content { includeGroup 'mezz.jei' }
     }
     maven {
-        name = 'CurseMaven (Jade)'
-        url = 'https://cursemaven.com'
-        content { includeGroup 'curse.maven' }
-    }
-    maven {
         name = 'Modrinth (EMI)'
         url = 'https://api.modrinth.com/maven'
         content { includeGroup 'maven.modrinth' }
@@ -57,12 +52,12 @@ base {
     archivesName = mod_id
 }
 
-// Jar naming: <mod_id>-<minecraft_version>.<mod_version>.jar (e.g. antcolonies-26.3.0.0.2.jar)
+// Jar naming: <mod_id>-<minecraft_version>.<mod_version>.jar (e.g. antcolonies-26.1.2.0.1.0.jar)
 tasks.withType(Jar).configureEach {
     archiveVersion = "${minecraft_version}.${mod_version}"
 }
 
-// Minecraft 26.3 ships Java 25.
+// Minecraft 26.1.2 ships Java 25.
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 neoForge {
@@ -72,6 +67,10 @@ neoForge {
         client {
             client()
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // Screenshot runs (gradlew runClient -PshowcaseWindow): a 1920x1080 window, so shots match across versions.
+            if (providers.gradleProperty('showcaseWindow').isPresent()) {
+                programArguments.addAll('--width', '1920', '--height', '1080')
+            }
         }
         server {
             server()
@@ -94,6 +93,18 @@ neoForge {
             server()
             gameDirectory = project.file('runs/worldgen-server')
             programArgument '--nogui'
+        }
+        // The KubeJS check (KubejsCheckServer/Client): KubeJS in runs/kubejs-*/mods, gametest/kubejs_example/kubejs copied in by
+        // prepareKubejsCheck, a kubejs-check file in each folder. Start the server, then the client.
+        kubejsServer {
+            server()
+            gameDirectory = project.file('runs/kubejs-server')
+            programArgument '--nogui'
+        }
+        kubejsClient {
+            client()
+            gameDirectory = project.file('runs/kubejs-client')
+            programArguments.addAll('--username', 'KubeJS_Tester', '--quickPlayMultiplayer', 'localhost', '--width', '1920', '--height', '1080')
         }
         mpClientA {
             client()
@@ -131,10 +142,10 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     // Jade (look-at tooltips): optional, the plugin only loads when Jade is installed.
-    compileOnly "curse.maven:jade-324717:9042207"
-    // EMI: compiled against PF-EMI 1.1 ("EMI - Port Forward", the 26.3 port of EMI; Modrinth version xwDayqWe = 1.1+26.3+neoforge).
+    compileOnly "maven.modrinth:jade:Pr1h4azo" // Jade 26.1.12+neoforge
+    // EMI: compiled against PF-EMI ("EMI - Port Forward"; Modrinth version RHajWT5D = 1.0+26.1.2+neoforge).
     // Optional at runtime.
-    compileOnly "maven.modrinth:pf-emi:xwDayqWe"
+    compileOnly "maven.modrinth:pf-emi:RHajWT5D"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
@@ -165,3 +176,15 @@ idea {
         downloadJavadoc = true
     }
 }
+
+// The KubeJS check's scripts and files (the examples of docs/modpack-guide.md), copied into both KubeJS check folders.
+var prepareKubejsCheck = tasks.register('prepareKubejsCheck', Copy) {
+    from 'gametest/kubejs_example/kubejs'
+    into 'runs/kubejs-server/kubejs'
+}
+var prepareKubejsCheckClient = tasks.register('prepareKubejsCheckClient', Copy) {
+    from 'gametest/kubejs_example/kubejs'
+    into 'runs/kubejs-client/kubejs'
+}
+tasks.matching { it.name == 'runKubejsServer' }.configureEach { dependsOn prepareKubejsCheck }
+tasks.matching { it.name == 'runKubejsClient' }.configureEach { dependsOn prepareKubejsCheckClient }

@@ -8,7 +8,6 @@ import com.antcolonies.core.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
@@ -19,14 +18,12 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
-import net.minecraft.world.item.component.CookingFuel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
@@ -113,7 +110,7 @@ public class GeneratorBlockEntity extends BaseContainerBlockEntity implements Wo
 
     /** Ticks one item of this fuel burns for here (as long as in a furnace), 0 if it isn't fuel. */
     public int burnDuration(ServerLevel level, ItemStack stack) {
-        return ResolvableInt.getFromItem(stack, DataComponents.COOKING_FUEL, CookingFuel::burnTime, getLootContext(level, stack), 0);
+        return stack.isEmpty() ? 0 : stack.getBurnTime(null, level.fuelValues());
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, GeneratorBlockEntity generator) {
@@ -208,7 +205,7 @@ public class GeneratorBlockEntity extends BaseContainerBlockEntity implements Wo
 
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
-        return stack.has(DataComponents.COOKING_FUEL);
+        return level != null && stack.getBurnTime(null, level.fuelValues()) > 0;
     }
 
     @Override
@@ -224,7 +221,7 @@ public class GeneratorBlockEntity extends BaseContainerBlockEntity implements Wo
     /** Only what fuel leaves behind (an empty bucket) can be taken out by hoppers. */
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return !stack.has(DataComponents.COOKING_FUEL);
+        return level == null || stack.getBurnTime(null, level.fuelValues()) <= 0;
     }
 
     @Override

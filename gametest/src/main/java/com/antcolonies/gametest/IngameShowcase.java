@@ -92,10 +92,10 @@ public class IngameShowcase {
     private void onConfigCheckTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (configTicks < 0) {
-            if (minecraft.gui.screen() != null && minecraft.gui.screen().getClass().getSimpleName().equals("LoadingErrorScreen")) {
-                minecraft.gui.setScreen(new TitleScreen());
+            if (minecraft.screen != null && minecraft.screen.getClass().getSimpleName().equals("LoadingErrorScreen")) {
+                minecraft.setScreen(new TitleScreen());
             }
-            if (!(minecraft.gui.screen() instanceof TitleScreen)) {
+            if (!(minecraft.screen instanceof TitleScreen)) {
                 return;
             }
             minecraft.options.pauseOnLostFocus = false;
@@ -104,9 +104,9 @@ public class IngameShowcase {
         switch (configTicks) {
             case 10 -> {
                 var container = net.neoforged.fml.ModList.get().getModContainerById(AntColonies.MODID).orElseThrow();
-                minecraft.gui.setScreen(net.neoforged.neoforge.client.gui.IConfigScreenFactory.getForMod(container.getModInfo())
+                minecraft.setScreen(net.neoforged.neoforge.client.gui.IConfigScreenFactory.getForMod(container.getModInfo())
                         .map(factory -> factory.createScreen(container, new TitleScreen())).orElse(null));
-                result("config screen: " + (minecraft.gui.screen() == null ? "none" : minecraft.gui.screen().getClass().getSimpleName()));
+                result("config screen: " + (minecraft.screen == null ? "none" : minecraft.screen.getClass().getSimpleName()));
             }
             case 30 -> {
                 screenshot(minecraft, "32_config_screen");
@@ -115,7 +115,7 @@ public class IngameShowcase {
             case 50 -> screenshot(minecraft, "33_config_client");
             case 52 -> {
                 // The tooltip of the first option, as a player sees it on hover.
-                var widget = findWidget(minecraft.gui.screen().children(), "3D ant models");
+                var widget = findWidget(minecraft.screen.children(), "3D ant models");
                 result("3D ant models option: " + (widget == null ? "not found" : "found"));
             }
             case 55 -> finish(minecraft);
@@ -211,8 +211,8 @@ public class IngameShowcase {
         if (ticks == 60) {
             origin = minecraft.player.blockPosition();
             minecraft.options.pauseOnLostFocus = false;
-            if (!minecraft.gui.hud.isHidden()) {
-                minecraft.gui.hud.toggle();
+            if (!minecraft.options.hideGui) {
+                minecraft.options.hideGui = !minecraft.options.hideGui;
             }
             savedOptions = new Object[] {minecraft.options.enableVsync().get(), minecraft.options.framerateLimit().get(),
                     minecraft.options.inactivityFpsLimit().get()};
@@ -374,8 +374,8 @@ public class IngameShowcase {
             case 60 -> {
                 origin = minecraft.player.blockPosition();
                 minecraft.options.pauseOnLostFocus = false;
-                if (!minecraft.gui.hud.isHidden()) {
-                    minecraft.gui.hud.toggle();
+                if (!minecraft.options.hideGui) {
+                    minecraft.options.hideGui = !minecraft.options.hideGui;
                 }
                 server.execute(() -> {
                     ServerLevel level = server.overworld();
@@ -435,15 +435,15 @@ public class IngameShowcase {
 
     private void startWorld(Minecraft minecraft) throws Exception {
         // Mods with load warnings (EMI's port has two) open a warnings screen before the title screen: go on past it.
-        if (!worldRequested && minecraft.gui.screen() != null && minecraft.gui.screen().getClass().getSimpleName().equals("LoadingErrorScreen")) {
+        if (!worldRequested && minecraft.screen != null && minecraft.screen.getClass().getSimpleName().equals("LoadingErrorScreen")) {
             result("skipped the mod loading warnings screen");
-            minecraft.gui.setScreen(new TitleScreen());
+            minecraft.setScreen(new TitleScreen());
             return;
         }
-        if (minecraft.gui.screen() instanceof TitleScreen && !worldRequested) {
+        if (minecraft.screen instanceof TitleScreen && !worldRequested) {
             worldRequested = true;
-            CreateWorldScreen.openFresh(minecraft, () -> minecraft.gui.setScreen(new TitleScreen()));
-        } else if (minecraft.gui.screen() instanceof CreateWorldScreen create && !createRequested) {
+            CreateWorldScreen.openFresh(minecraft, () -> minecraft.setScreen(new TitleScreen()));
+        } else if (minecraft.screen instanceof CreateWorldScreen create && !createRequested) {
             WorldCreationUiState state = create.getUiState();
             WorldCreationUiState.WorldTypeEntry flat = state.getNormalPresetList().stream()
                     .filter(entry -> entry.preset() != null && entry.preset().is(WorldPresets.FLAT)).findFirst().orElse(null);
@@ -488,8 +488,8 @@ public class IngameShowcase {
         if (ticks == 60) {
             origin = minecraft.player.blockPosition();
             minecraft.options.pauseOnLostFocus = false;
-            if (!minecraft.gui.hud.isHidden()) {
-                minecraft.gui.hud.toggle();
+            if (!minecraft.options.hideGui) {
+                minecraft.options.hideGui = !minecraft.options.hideGui;
             }
             server.execute(() -> {
                 command(server, "difficulty peaceful");
@@ -520,7 +520,7 @@ public class IngameShowcase {
             } else if (phase == 26) {
                 screenshot(minecraft, (String) target[0]);
             } else if (phase == 28) {
-                minecraft.gui.setScreen(null);
+                minecraft.setScreen(null);
             }
             return;
         }
@@ -544,7 +544,7 @@ public class IngameShowcase {
             case 255 -> emi(minecraft, "expedition");
             case 285 -> screenshot(minecraft, "u35b_emi_expedition");
             case 290 -> {
-                minecraft.gui.setScreen(null);
+                minecraft.setScreen(null);
                 look(server, 9.5, 1.0, 3.2, 0, 34);
             }
             case 320 -> screenshot(minecraft, "u36_jade_connector");
@@ -671,7 +671,7 @@ public class IngameShowcase {
         com.antcolonies.content.item.ChitinGear.Tier[] tiers = com.antcolonies.content.item.ChitinGear.Tier.values();
         for (int i = 0; i < tiers.length; i++) {
             BlockPos spot = origin.offset(29 + i * 2, 0, 6);
-            var stand = net.minecraft.world.entity.EntityTypes.ARMOR_STAND.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            var stand = net.minecraft.world.entity.EntityType.ARMOR_STAND.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             stand.snapTo(spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, 180, 0);
             stand.setYBodyRot(180);
             stand.setYHeadRot(180);
@@ -741,8 +741,8 @@ public class IngameShowcase {
                 // No pause menu when the window loses focus, and no slimes in the pictures.
                 minecraft.options.pauseOnLostFocus = false;
                 server.execute(() -> command(server, "difficulty peaceful"));
-                if (!minecraft.gui.hud.isHidden()) {
-                    minecraft.gui.hud.toggle();
+                if (!minecraft.options.hideGui) {
+                    minecraft.options.hideGui = !minecraft.options.hideGui;
                 }
                 server.execute(() -> build(server));
             }
@@ -763,8 +763,8 @@ public class IngameShowcase {
             case 435 -> camera(server, 0.5, 2.2 - 1.62, 10.5 - 3.2, 0, 25);
             case 475 -> screenshot(minecraft, "08_genetic_lab");
             case 480 -> {
-                if (minecraft.gui.hud.isHidden()) {
-                    minecraft.gui.hud.toggle();
+                if (minecraft.options.hideGui) {
+                    minecraft.options.hideGui = !minecraft.options.hideGui;
                 }
                 server.execute(() -> open(server, origin.offset(0, 0, 5)));
             }
@@ -821,18 +821,18 @@ public class IngameShowcase {
             case 810 -> jei(com.antcolonies.compat.jei.AntColoniesJeiPlugin.HYBRID);
             case 835 -> screenshot(minecraft, "19_jei_hybrid");
             case 845 -> {
-                minecraft.gui.setScreen(null);
+                minecraft.setScreen(null);
                 server.execute(() -> open(server, origin.offset(0, 0, 4)));
             }
             case 870 -> screenshot(minecraft, "20_gui_storage");
             case 875 -> {
                 minecraft.player.closeContainer();
-                minecraft.gui.setScreen(new com.antcolonies.client.screen.IdentificationBookScreen());
+                minecraft.setScreen(new com.antcolonies.client.screen.IdentificationBookScreen());
             }
             case 893 -> screenshot(minecraft, "21_book");
             case 894 -> {
                 // The second species in the book's list (after its how-to-play pages).
-                if (minecraft.gui.screen() instanceof com.antcolonies.client.screen.IdentificationBookScreen book) {
+                if (minecraft.screen instanceof com.antcolonies.client.screen.IdentificationBookScreen book) {
                     int left = (book.width - 330) / 2;
                     int top = (book.height - 196) / 2;
                     book.mouseClicked(new MouseButtonEvent(left + 30, top + 9 + 10 * 10 + 4, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0)), false);
@@ -841,7 +841,7 @@ public class IngameShowcase {
             case 898 -> screenshot(minecraft, "21b_book_species");
             // Jade look-at tooltips (when Jade is in run/mods): the crosshair on a Terrarium, a job site and the lab.
             case 900 -> {
-                minecraft.gui.setScreen(null);
+                minecraft.setScreen(null);
                 look(server, 0.5, 1.2, 3.3, 0, 41);
             }
             case 930 -> screenshot(minecraft, "22_jade_terrarium");
@@ -856,7 +856,7 @@ public class IngameShowcase {
             case 1070 -> screenshot(minecraft, "26_emi_evolution");
             case 1075 -> emi(minecraft, "species");
             case 1105 -> screenshot(minecraft, "27_emi_species");
-            case 1108 -> minecraft.gui.setScreen(null);
+            case 1108 -> minecraft.setScreen(null);
             // The giant anthill (on a raised stone platform: the flat world is too shallow to dig into), Guard Ants and
             // Chitin gear.
             case 1112 -> server.execute(() -> anthill(server));
@@ -874,8 +874,8 @@ public class IngameShowcase {
             case 1251 -> camera(server, -6.0, 0.15, -4.2, 41, 5);
             case 1254 -> screenshot(minecraft, "30b_chitin_helmet");
             case 1255 -> {
-                if (minecraft.gui.hud.isHidden()) {
-                    minecraft.gui.hud.toggle();
+                if (minecraft.options.hideGui) {
+                    minecraft.options.hideGui = !minecraft.options.hideGui;
                 }
                 server.execute(() -> {
                     command(server, "gamemode creative");
@@ -890,11 +890,11 @@ public class IngameShowcase {
                     player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, new ItemStack(ModItems.CHITIN_SHIELD.get()));
                 });
             }
-            case 1275 -> minecraft.gui.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(minecraft.player));
+            case 1275 -> minecraft.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(minecraft.player));
             case 1295 -> screenshot(minecraft, "31_chitin_items");
-            case 1298 -> minecraft.gui.setScreen(null);
+            case 1298 -> minecraft.setScreen(null);
             // The Config button in the Mods list: NeoForge's configuration screen, then its client page.
-            case 1300 -> minecraft.gui.setScreen(net.neoforged.neoforge.client.gui.IConfigScreenFactory
+            case 1300 -> minecraft.setScreen(net.neoforged.neoforge.client.gui.IConfigScreenFactory
                     .getForMod(net.neoforged.fml.ModList.get().getModContainerById(AntColonies.MODID).orElseThrow().getModInfo())
                     .map(factory -> factory.createScreen(net.neoforged.fml.ModList.get().getModContainerById(AntColonies.MODID).orElseThrow(), null))
                     .orElse(null));
@@ -903,7 +903,7 @@ public class IngameShowcase {
                 clickButton(minecraft, "Client Settings");
             }
             case 1340 -> screenshot(minecraft, "33_config_client");
-            case 1343 -> minecraft.gui.setScreen(null);
+            case 1343 -> minecraft.setScreen(null);
             default -> {
                 if (ticks > 1345) {
                     audit(minecraft, server, ticks - 1350);
@@ -1094,7 +1094,7 @@ public class IngameShowcase {
 
     /** Clicks the first button whose label contains the text, as a player would. */
     private void clickButton(Minecraft minecraft, String label) {
-        var screen = minecraft.gui.screen();
+        var screen = minecraft.screen;
         if (screen == null) {
             result("FAIL no screen to click " + label);
             return;
@@ -1111,10 +1111,10 @@ public class IngameShowcase {
     }
 
     private void clickTab(Minecraft minecraft, int tab) {
-        if (minecraft.gui.screen() instanceof com.antcolonies.client.screen.TerrariumScreen) {
+        if (minecraft.screen instanceof com.antcolonies.client.screen.TerrariumScreen) {
             com.antcolonies.client.screen.TerrariumScreen.showPage(tab);
         } else {
-            result("FAIL no container screen: " + minecraft.gui.screen());
+            result("FAIL no container screen: " + minecraft.screen);
         }
     }
 
@@ -1159,7 +1159,7 @@ public class IngameShowcase {
         ServerLevel level = server.overworld();
         ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
         BlockPos spot = origin.offset(-8, 0, -3);
-        var stand = net.minecraft.world.entity.EntityTypes.ARMOR_STAND.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        var stand = net.minecraft.world.entity.EntityType.ARMOR_STAND.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
         stand.snapTo(spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, 180, 0);
         // snapTo turns only the stand's yaw; armor stands are drawn by their body's, which would face away from the camera.
         stand.setYBodyRot(180);
@@ -1174,7 +1174,7 @@ public class IngameShowcase {
         level.addFreshEntity(stand);
         // A baby zombie in Chitin, for the armor's baby layer (zombies need more than Peaceful; this one does nothing).
         command(server, "difficulty easy");
-        var baby = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        var baby = net.minecraft.world.entity.EntityType.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
         baby.setBaby(true);
         baby.setNoAi(true);
         baby.setPersistenceRequired();
@@ -1210,8 +1210,8 @@ public class IngameShowcase {
         if (!net.neoforged.fml.ModList.get().isLoaded("emi")) {
             return;
         }
-        if (minecraft.gui.screen() == null) {
-            minecraft.gui.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(minecraft.player));
+        if (minecraft.screen == null) {
+            minecraft.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(minecraft.player));
         }
         result(EmiShowcase.open(category));
     }
@@ -1236,8 +1236,8 @@ public class IngameShowcase {
     private void audit(Minecraft minecraft, IntegratedServer server, int t) {
         // Never let a lost window focus pause the game (the pause screen would cover the screenshots and the FPS readings).
         minecraft.options.pauseOnLostFocus = false;
-        if (minecraft.gui.screen() instanceof net.minecraft.client.gui.screens.PauseScreen) {
-            minecraft.gui.setScreen(null);
+        if (minecraft.screen instanceof net.minecraft.client.gui.screens.PauseScreen) {
+            minecraft.setScreen(null);
         }
         if (t < 0 || t % AUDIT_STEP != 0 && t % AUDIT_STEP != 6 && t % AUDIT_STEP != AUDIT_STEP - 2) {
             return;
@@ -1271,10 +1271,10 @@ public class IngameShowcase {
             } else if (name.endsWith("_other_trait") && minecraft.player.containerMenu instanceof com.antcolonies.content.menu.GeneticLabMenu lab) {
                 // Select Soldier Strength (trait 5) as the trait list does: the cost card should follow it.
                 minecraft.gameMode.handleInventoryButtonClick(lab.containerId, 5);
-            } else if (name.endsWith("_scrolled") && minecraft.gui.screen() != null) {
+            } else if (name.endsWith("_scrolled") && minecraft.screen != null) {
                 var window = minecraft.getWindow();
                 for (int i = 0; i < 20; i++) {
-                    minecraft.gui.screen().mouseScrolled(window.getGuiScaledWidth() / 2.0, window.getGuiScaledHeight() / 2.0 - 60, 0, -1);
+                    minecraft.screen.mouseScrolled(window.getGuiScaledWidth() / 2.0, window.getGuiScaledHeight() / 2.0 - 60, 0, -1);
                 }
             }
             return;
@@ -1290,7 +1290,7 @@ public class IngameShowcase {
             if (shoot) {
                 screenshot(minecraft, (String) screens[index][0]);
             } else {
-                minecraft.gui.setScreen(null);
+                minecraft.setScreen(null);
                 BlockPos pos = (BlockPos) screens[index][1];
                 // Stand on the block first: a screen out of reach closes at once.
                 server.execute(() -> {
@@ -1324,7 +1324,7 @@ public class IngameShowcase {
                 screenshot(minecraft, String.format(java.util.Locale.ROOT, "c%02d_tooltip_%s", index + 1,
                         net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(items.get(index).getItem()).getPath()));
             } else {
-                minecraft.gui.setScreen(new TooltipScreen(items.get(index)));
+                minecraft.setScreen(new TooltipScreen(items.get(index)));
             }
             return;
         }
@@ -1333,7 +1333,7 @@ public class IngameShowcase {
             if (shoot) {
                 screenshot(minecraft, "d01_chat_reports");
             } else {
-                minecraft.gui.setScreen(null);
+                minecraft.setScreen(null);
                 server.execute(() -> chatReports(server));
             }
             return;
@@ -1342,14 +1342,14 @@ public class IngameShowcase {
             if (shoot) {
                 screenshot(minecraft, "d02_chat_open");
             } else {
-                minecraft.gui.setScreen(new net.minecraft.client.gui.screens.ChatScreen("", false));
+                minecraft.setScreen(new net.minecraft.client.gui.screens.ChatScreen("", false));
             }
             return;
         }
         // --- Frame rate: 25 busy colonies in view, then the same view without them. ---
         if (index == 2) {
             if (!shoot) {
-                minecraft.gui.setScreen(null);
+                minecraft.setScreen(null);
                 minecraft.options.enableVsync().set(false);
                 minecraft.options.inactivityFpsLimit().set(net.minecraft.client.InactivityFpsLimit.MINIMIZED);
                 minecraft.options.framerateLimit().set(net.minecraft.client.Options.UNLIMITED_FRAMERATE_CUTOFF);
@@ -1557,8 +1557,8 @@ public class IngameShowcase {
 
     private void screenshot(Minecraft minecraft, String name) {
         String file = "showcase-" + name + ".png";
-        Screenshot.grab(minecraft.gameDirectory, file, minecraft.gameRenderer.mainRenderTarget(), 1, message -> {});
-        result("screenshot " + file + (minecraft.gui.screen() == null ? "" : " (" + minecraft.gui.screen().getClass().getSimpleName() + ")"));
+        Screenshot.grab(minecraft.gameDirectory, file, minecraft.getMainRenderTarget(), 1, message -> {});
+        result("screenshot " + file + (minecraft.screen == null ? "" : " (" + minecraft.screen.getClass().getSimpleName() + ")"));
     }
 
     private synchronized void result(String line) {

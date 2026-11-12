@@ -67,7 +67,7 @@ public class GeneticLabRenderer implements BlockEntityRenderer<GeneticLabBlockEn
         float spin = state.time * (state.working ? 6 : 1.5F);
         poseStack.pushPose();
         poseStack.translate(0.5, 1.05, 0.5);
-        poseStack.rotate(Axis.YP.rotationDegrees(spin));
+        poseStack.mulPose(Axis.YP.rotationDegrees(spin));
         int a = state.colorA;
         int b = state.colorB;
         collector.submitCustomGeometry(poseStack, GLOW, (pose, buffer) -> {

@@ -184,7 +184,7 @@ public final class ClientHooks {
     }
 
     public static void openBook() {
-        Minecraft.getInstance().gui.setScreen(new IdentificationBookScreen());
+        Minecraft.getInstance().setScreen(new IdentificationBookScreen());
     }
 
     private ClientHooks() {}

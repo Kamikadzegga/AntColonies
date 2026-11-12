@@ -2,19 +2,23 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "condition": {
-        "type": "minecraft:survives_explosion"
-      },
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
       "entries": [
         {
           "type": "minecraft:item",
-          "condition": {
-            "type": "minecraft:match_block",
-            "blocks": "antcolonies:nest_door",
-            "state": {
-              "half": "lower"
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "antcolonies:nest_door",
+              "properties": {
+                "half": "lower"
+              }
             }
-          },
+          ],
           "name": "antcolonies:nest_door"
         }
       ],

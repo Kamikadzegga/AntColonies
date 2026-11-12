@@ -5,7 +5,6 @@ import com.antcolonies.core.registry.ModBlocks;
 import com.antcolonies.core.registry.ModMenus;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -28,7 +27,7 @@ public class GeneratorMenu extends BaseMenu {
         super(ModMenus.GENERATOR.get(), containerId);
         this.generator = generator;
         this.data = data;
-        addSlot(new FilteredSlot(generator, 0, FUEL_X, FUEL_Y, stack -> stack.has(DataComponents.COOKING_FUEL), 64));
+        addSlot(new FilteredSlot(generator, 0, FUEL_X, FUEL_Y, stack -> stack.getBurnTime(null, inventory.player.level().fuelValues()) > 0, 64));
         addPlayerInventory(inventory, 8, 84);
         addDataSlots(WideData.slots(data));
     }
