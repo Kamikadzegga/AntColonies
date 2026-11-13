@@ -77,6 +77,8 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         boolean detailed;
         @Nullable AntSpecies species;
         @Nullable AntSpecies former;
+        /** Which glass sides (north, east, south, west) face the camera; the others are behind the soil. */
+        final boolean[] facing = new boolean[4];
     }
 
     public TerrariumRenderer(BlockEntityRendererProvider.Context context) {
@@ -102,6 +104,14 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         state.detailed = AntConfig.client(AntConfig.ANT_3D_MODELS) && Vec3.atCenterOf(terrarium.getBlockPos()).distanceToSqr(camera) < detail * detail;
         state.species = ClientSpecies.get(terrarium.colony().species());
         state.former = ClientSpecies.get(terrarium.colony().formerSpecies());
+        // Only the sides facing the camera can be seen (two at most): the others are left out, a good share of the work
+        // when many Terrariums are in view.
+        double cx = (camera.x - terrarium.getBlockPos().getX()) * 16;
+        double cz = (camera.z - terrarium.getBlockPos().getZ()) * 16;
+        state.facing[0] = cz < MIN;
+        state.facing[1] = cx > MAX;
+        state.facing[2] = cz > MAX;
+        state.facing[3] = cx < MIN;
     }
 
     @Override
@@ -116,8 +126,11 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         int light = state.lightCoords;
         collector.submitCustomGeometry(poseStack, SOLID, (pose, buffer) -> {
             Geometry g = new Geometry(pose, buffer, TEX, light);
-            drawSoil(g, soil, top);
+            drawSoil(g, soil, top, state.facing);
             for (int face = 0; face < 4; face++) {
+                if (!state.facing[face]) {
+                    continue;
+                }
                 drawTunnels(g, face, visuals.faces[face], Geometry.shade(soil, 0.42F), soil);
             }
             drawItems(g, visuals, state);
@@ -140,7 +153,9 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
             int surface = 0;
             for (TerrariumVisuals.Actor actor : visuals.actors) {
                 if (actor.face != TerrariumVisuals.SURFACE) {
-                    drawActorSprite(g, actor, state, actor.former ? former : look);
+                    if (state.facing[actor.face]) {
+                        drawActorSprite(g, actor, state, actor.former ? former : look);
+                    }
                 } else if (!state.detailed || surface++ >= MAX_MODEL_ANTS) {
                     drawSurfaceSprite(g, actor, state, actor.former ? former : look);
                 }
@@ -179,17 +194,25 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
 
     // --- Soil and tunnels ---
 
-    private static void drawSoil(Geometry g, int soil, int top) {
+    private static void drawSoil(Geometry g, int soil, int top, boolean[] facing) {
         float e = 0;
-        // Sides.
-        g.quad(new float[] {MAX, BOTTOM, MIN - e}, new float[] {MIN, BOTTOM, MIN - e}, new float[] {MIN, TOP, MIN - e}, new float[] {MAX, TOP, MIN - e},
-                Geometry.shade(soil, 0.85F), 0, 0, 12, 10, 0, 0, -1);
-        g.quad(new float[] {MIN, BOTTOM, MAX + e}, new float[] {MAX, BOTTOM, MAX + e}, new float[] {MAX, TOP, MAX + e}, new float[] {MIN, TOP, MAX + e},
-                Geometry.shade(soil, 0.85F), 2, 2, 14, 12, 0, 0, 1);
-        g.quad(new float[] {MIN - e, BOTTOM, MIN}, new float[] {MIN - e, BOTTOM, MAX}, new float[] {MIN - e, TOP, MAX}, new float[] {MIN - e, TOP, MIN},
-                Geometry.shade(soil, 0.7F), 1, 3, 13, 13, -1, 0, 0);
-        g.quad(new float[] {MAX + e, BOTTOM, MAX}, new float[] {MAX + e, BOTTOM, MIN}, new float[] {MAX + e, TOP, MIN}, new float[] {MAX + e, TOP, MAX},
-                Geometry.shade(soil, 0.7F), 3, 1, 15, 11, 1, 0, 0);
+        // Sides: only those facing the camera.
+        if (facing[0]) {
+            g.quad(new float[] {MAX, BOTTOM, MIN - e}, new float[] {MIN, BOTTOM, MIN - e}, new float[] {MIN, TOP, MIN - e}, new float[] {MAX, TOP, MIN - e},
+                    Geometry.shade(soil, 0.85F), 0, 0, 12, 10, 0, 0, -1);
+        }
+        if (facing[2]) {
+            g.quad(new float[] {MIN, BOTTOM, MAX + e}, new float[] {MAX, BOTTOM, MAX + e}, new float[] {MAX, TOP, MAX + e}, new float[] {MIN, TOP, MAX + e},
+                    Geometry.shade(soil, 0.85F), 2, 2, 14, 12, 0, 0, 1);
+        }
+        if (facing[3]) {
+            g.quad(new float[] {MIN - e, BOTTOM, MIN}, new float[] {MIN - e, BOTTOM, MAX}, new float[] {MIN - e, TOP, MAX}, new float[] {MIN - e, TOP, MIN},
+                    Geometry.shade(soil, 0.7F), 1, 3, 13, 13, -1, 0, 0);
+        }
+        if (facing[1]) {
+            g.quad(new float[] {MAX + e, BOTTOM, MAX}, new float[] {MAX + e, BOTTOM, MIN}, new float[] {MAX + e, TOP, MIN}, new float[] {MAX + e, TOP, MAX},
+                    Geometry.shade(soil, 0.7F), 3, 1, 15, 11, 1, 0, 0);
+        }
         // The surface.
         g.quad(new float[] {MIN, TOP, MIN}, new float[] {MIN, TOP, MAX}, new float[] {MAX, TOP, MAX}, new float[] {MAX, TOP, MIN}, top, 34, 2, 46, 14, 0, 1, 0);
     }
@@ -312,6 +335,9 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
     private static void drawItems(Geometry g, TerrariumVisuals visuals, State state) {
         float[] at = new float[3];
         for (TerrariumVisuals.Item item : visuals.items) {
+            if (item.face() >= 0 && item.face() < 4 && !state.facing[item.face()]) {
+                continue;
+            }
             onFace(item.face(), item.u(), item.v(), 0.3F, at);
             float s = item.size() / 2;
             int color = switch (item.kind()) {
@@ -376,6 +402,9 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
 
     private static void drawQueenSprite(Geometry g, TerrariumVisuals visuals, State state, AntLook look) {
         if (state.colony.queen() == null) {
+            return;
+        }
+        if (!state.facing[visuals.frontFace]) {
             return;
         }
         TunnelLayout layout = visuals.faces[visuals.frontFace];

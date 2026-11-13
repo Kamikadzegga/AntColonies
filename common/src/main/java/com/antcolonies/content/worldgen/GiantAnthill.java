@@ -6,6 +6,7 @@ import com.antcolonies.core.registry.ModStructures;
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.QuartPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -56,8 +57,11 @@ public class GiantAnthill extends Structure {
         // The ground's top block is one below the first free one.
         BlockPos center = new BlockPos(cx, middle - 1, cz);
         // A layout planned from the world seed and the spot: the same anthill whichever chunk asks.
+        // Its look comes from the biome at its center: a termite cathedral in the savanna, a snowy cone in the cold and so on.
+        AnthillTheme theme = AnthillTheme.of(context.biomeSource().getNoiseBiome(QuartPos.fromBlock(cx), QuartPos.fromBlock(middle),
+                QuartPos.fromBlock(cz), context.randomState().sampler()));
         AnthillPiece piece = AnthillPiece.plan(center, AnthillPiece.Kind.OVERWORLD, context.seed() ^ center.asLong() * 0x9E3779B97F4A7C15L,
-                context.heightAccessor().getMinY() + 4);
+                context.heightAccessor().getMinY() + 4, theme);
         return Optional.of(new GenerationStub(center, builder -> builder.addPiece(piece)));
     }
 

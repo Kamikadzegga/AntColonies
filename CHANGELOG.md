@@ -6,14 +6,41 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
+The anthill update.
+
 ### Added
+
+- **Grown anthills:** every new anthill's nest grows room by room: small, medium or large (6 to 17 rooms), with winding
+  tunnels, loops, dead ends and side entrances beside the mound. Soldiers watch some of the tunnels.
+- **Anthills by biome:** termite spires in savannas and banded ones in the badlands, a pebble crater in the desert, a
+  thatched dome of needles in the taiga, a snow-capped mound in the cold, a mossy mound in the jungle, a mud mound in
+  swamps, mycelium in mushroom fields and petals in cherry groves. Ant trails lead away from the mound, and each look
+  carries on underground (packed ice, sandstone, termite clay, moss and glow lichen, mud bricks...).
+- **The great Queen:** every anthill's Queen is now twice the size of any other, in a great chamber behind an
+  antechamber of her royal guard, bigger and stronger soldiers.
+- **New rooms:** the royal guard's antechamber, middens with suspicious gravel (or sand) to brush, and aphid farms.
+- **Anthill alarm:** in a full Chitin set the ants still let you pass, but opening or breaking one of the anthill's
+  chests, stepping into the Queen's chamber or striking one of its ants raises the alarm: for five minutes every ant of
+  that anthill attacks you, workers too. Config `anthillAlarmSeconds`.
 - A build for Minecraft 26.1.2 (NeoForge 26.1.2.122), with the same content as 0.1.0 for 26.3. Data packs for it use
   data pack format 101 and 26.1.2's loot table, advancement and world generation formats.
 - The modpack guide's KubeJS examples are tested with KubeJS 8.0.8, with more examples (new recipes, changed ingredients,
   item tags) and a note that JEI must be on the server to show KubeJS-changed recipes.
 
+### Changed
+
+- Anthills are more common: about one per 20 x 20 chunks (was 32 x 32), the Nether's one per 18 x 18 (was 24) and the
+  End's one per 20 x 20 (was 28). They now also appear in swamps, mushroom fields, cherry groves, snowy plains and groves.
+- Anthills hold more ants: busier rooms, soldiers out on the mound, guards in treasure and chitin rooms.
+- Anthills already in a world keep their old look and layout; only new ones grow.
+- Terrariums draw faster: only the glass sides facing you are drawn, and their vertices are written in one go. With 100
+  colonies in view the frame rate went from about 95 to about 140 in testing.
+
 ### Fixed
+
 - The modpack guide's KubeJS example for removing biomes from a spawn tag did nothing on KubeJS 8; it now uses a tag file.
+- Anthill ants no longer wander round their tunnels while no player is within 32 blocks, as on 26.3. On 26.1.2 they
+  never stopped, which tripled the network traffic near anthills and cost the server time for nothing.
 
 ## [0.1.0] - 2026-11-12
 

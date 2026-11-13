@@ -51,7 +51,8 @@ public class NetherAnthill extends Structure {
         }
         BlockPos center = new BlockPos(cx, middle, cz);
         // Planned to stay above the lava sea (at 31), so its tunnels stay dry.
-        AnthillPiece piece = AnthillPiece.plan(center, AnthillPiece.Kind.NETHER, context.seed() ^ center.asLong() * 0x9E3779B97F4A7C15L, 35);
+        AnthillPiece piece = AnthillPiece.plan(center, AnthillPiece.Kind.NETHER, context.seed() ^ center.asLong() * 0x9E3779B97F4A7C15L, 35,
+                AnthillTheme.NETHER);
         return Optional.of(new GenerationStub(center, builder -> builder.addPiece(piece)));
     }
 

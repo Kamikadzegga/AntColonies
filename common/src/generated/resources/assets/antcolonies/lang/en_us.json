@@ -81,6 +81,8 @@
   "antcolonies.configuration.antCost.tooltip": "Ants a hunter colony gives up for one Guard Ant (a Rally Pheromone used on its Terrarium).",
   "antcolonies.configuration.antDetailDistance": "3D ant distance",
   "antcolonies.configuration.antDetailDistance.tooltip": "Blocks within which the ants on top of a Terrarium are 3D models (if ant3DModels is on); further away (where they are a pixel or two) they are 2D sprites, which are far cheaper to draw.",
+  "antcolonies.configuration.anthillAlarmSeconds": "Anthill alarm seconds",
+  "antcolonies.configuration.anthillAlarmSeconds.tooltip": "Seconds an anthill stays alarmed at a player who opened one of its chests, stepped into its Queen's chamber or struck one of its ants (even in a full Chitin set, its ants attack them meanwhile).",
   "antcolonies.configuration.baseEggsPerMinute": "Base eggs per minute",
   "antcolonies.configuration.baseEggsPerMinute.tooltip": "Eggs a Queen with average genetics lays per minute with one Nest Chamber.",
   "antcolonies.configuration.baseMutationChance": "Base mutation chance",
@@ -665,7 +667,8 @@
   "guide.antcolonies.automation.text": "Hoppers and pipes can feed the Terrarium and Queen Chambers, and empty Storage and Foraging Sites. A Storage with an Automation Upgrade pushes its finds into the container under it.
 Comparators read a Terrarium's food, a site's workforce, or how full a store is. A redstone signal pauses a site: its ants go elsewhere.",
   "guide.antcolonies.automation.title": "Automation",
-  "guide.antcolonies.building.text": "No two anthills are dug alike: branching, deep, multi-level, spiral, around a great hall, in wings, or abandoned, with nurseries, food stores, fungus gardens, barracks and treasure chambers. The End has anthills of Chorus Ants too.
+  "guide.antcolonies.building.text": "No two anthills are dug alike: each nest grows room by room, small, medium or large, with nurseries, food stores, fungus gardens, aphid farms, middens to brush, barracks and treasure chambers, side entrances, loops and dead ends. Their look follows the biome: termite spires in savannas and badlands, a crater in the desert, a thatched dome in the taiga, snow, moss or mud elsewhere. The Nether and the End have anthills too.
+Deepest of all, behind her royal guard, lies the great Queen. In a full Chitin set the ants let you pass, until you open one of their chests, step into her chamber or strike one of them: then the whole anthill attacks.
 Their walls are Anthill Soil. From it, Chitin Plates, Ant Resin (Wood Ants find it), mushrooms and Royal Jelly come five families of building blocks, with stairs, slabs and walls, a Nest Door and a Pheromone Lamp.",
   "guide.antcolonies.building.title": "Anthills and Building",
   "guide.antcolonies.chambers.text": "Chambers are additions. Put one against the Terrarium, or against a chamber already in the colony, on any side (above and below too): it joins, and the glass between them goes: the whole build becomes one glass case. A colony takes up to 32.
@@ -702,7 +705,7 @@ Food keeps a colony working: with less than 10 minutes of food left it slows dow
   "guide.antcolonies.gear.text": "Chitin tools and armor come in four tiers. Chitin (from Chitin Plates) is iron level; Hardened is crafted the same way from Hardened Chitin and lasts three times as long.
 Infernal: at a smithing table, a Hardened piece with an Infernal Reinforcement and an Infernal Chitin. Diamond level and fireproof. Void: an Infernal piece with a Void Reinforcement and a netherite ingot. Past netherite.
 Reinforcements are crafted two at a time: Infernal from Infernal Chitin, blaze rods, magma cream and a ghast tear; Void from Void Chitin, shulker shells, popped chorus fruit and an eye of ender.
-Any four chitin armor pieces are a full set: wild ants leave you alone. The lowest tier you wear sets the rest: digging 20, 25, 30 or 40% faster, and from Infernal up Fire Resistance.",
+Any four chitin armor pieces are a full set: wild ants leave you alone, until you raid their anthill. The lowest tier you wear sets the rest: digging 20, 25, 30 or 40% faster, and from Infernal up Fire Resistance.",
   "guide.antcolonies.gear.title": "Chitin Gear",
   "guide.antcolonies.genetics.text": "Each Queen has ten traits from 1 to 10, and daughters inherit them with small changes. Mutations add strengths, or flaws.
 The Genetic Laboratory raises one trait at a time, rerolls, mutates and purges flaws. It runs on FE: put a Generator next to it, or any mod's cable.",
@@ -865,6 +868,8 @@ The Colony Upgrade Station makes species upgrades from an Upgrade Base and a spe
   "jade.antcolonies.home_nest": "Home nest: %s ants in, %s out working",
   "jade.antcolonies.home_nest.stored": "Harvest stored: %s",
   "jade.antcolonies.nest": "Tweezers take workers out; now and then a Queen",
+  "jade.antcolonies.rank.great_queen": "Great Queen of this anthill",
+  "jade.antcolonies.rank.royal": "The Queen's royal guard",
   "jei.antcolonies.breeding": "Queen Rearing",
   "jei.antcolonies.catalyst": "Catalyst in the Mutation Chamber",
   "jei.antcolonies.chance": "Chance: %s%% per attempt",
@@ -919,6 +924,9 @@ The Colony Upgrade Station makes species upgrades from an Upgrade Base and a spe
   "jei.antcolonies.time": "%s s",
   "jei.antcolonies.trait": "Genetic Upgrades",
   "jei.antcolonies.weight": "Weight %s",
+  "message.antcolonies.anthill_alarm.attack": "You struck one of the anthill's ants: the colony rises against you!",
+  "message.antcolonies.anthill_alarm.chest": "The ants saw you raid their stores: the whole anthill is after you!",
+  "message.antcolonies.anthill_alarm.queen": "You stepped into the Queen's chamber: her guard attacks!",
   "message.antcolonies.guard.ants": "A Guard Ant takes %s hunters; this colony has %s",
   "message.antcolonies.guard.follow": "Your Guard Ant follows you",
   "message.antcolonies.guard.no_queen": "This colony has no Queen to send a guard",
@@ -1173,7 +1181,7 @@ The Colony Upgrade Station makes species upgrades from an Upgrade Base and a spe
   "tooltip.antcolonies.brood.use": "Put into a Terrarium of the same species: each adds 4.",
   "tooltip.antcolonies.chitin_plate": "Only from ants: wild ants leave it, and foraging colonies bring it home.",
   "tooltip.antcolonies.chitin_set": "Full set:",
-  "tooltip.antcolonies.chitin_set.ants": " Wild ants never attack you",
+  "tooltip.antcolonies.chitin_set.ants": " Wild ants leave you alone (not if you raid their anthill)",
   "tooltip.antcolonies.chitin_set.dig": " Dig %s%% faster",
   "tooltip.antcolonies.chitin_set.fire": " Fire Resistance",
   "tooltip.antcolonies.chitin_set.mixed": " Mixed tiers count: the lowest tier decides",

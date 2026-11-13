@@ -311,7 +311,7 @@ final class UpdateGameTests {
                 long queens = layout.rooms().stream().filter(r -> r.type() == AnthillLayout.RoomType.QUEEN).count();
                 helper.assertTrue(queens == 1, style + "/" + seed + ": " + queens + " Queen's chambers");
                 for (AnthillLayout.Room room : layout.rooms()) {
-                    helper.assertTrue(Math.abs(room.x()) <= 24 && Math.abs(room.z()) <= 24 && room.y() > -42, style + "/" + seed + ": room out of reach " + room);
+                    helper.assertTrue(Math.abs(room.x()) <= 30 && Math.abs(room.z()) <= 30 && room.y() > -50, style + "/" + seed + ": room out of reach " + room);
                 }
                 // Flood fill through the dug-out cells from the shaft's top.
                 Set<BlockPos> seen = new HashSet<>();

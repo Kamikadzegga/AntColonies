@@ -124,27 +124,51 @@ public class KubejsCheckClient {
 
     /** Logs the crafting recipes JEI shows for this output and checks them. */
     private void jeiCrafting(ItemStack stack, java.util.function.Predicate<List<String>> ok) {
-        var runtime = com.antcolonies.compat.jei.AntColoniesJeiPlugin.runtime;
-        if (runtime == null) {
+        if (!ModList.get().isLoaded("jei")) {
+            result("FAIL JEI not loaded");
+            return;
+        }
+        List<String> ids = Jei.craftingRecipes(stack);
+        if (ids == null) {
             result("FAIL JEI runtime missing");
             return;
         }
-        var focus = runtime.getJeiHelpers().getFocusFactory().createFocus(mezz.jei.api.recipe.RecipeIngredientRole.OUTPUT,
-                mezz.jei.api.constants.VanillaTypes.ITEM_STACK, stack);
-        List<String> ids = runtime.getRecipeManager().createRecipeLookup(mezz.jei.api.constants.RecipeTypes.CRAFTING).limitFocus(List.of(focus)).get()
-                .map(holder -> holder.id().identifier().toString()).sorted().toList();
         expect(ok.test(ids), "JEI crafting recipes for " + stack.getItem() + ": " + ids);
     }
 
     private void jeiOutput(Minecraft minecraft, ItemStack stack) {
-        var runtime = com.antcolonies.compat.jei.AntColoniesJeiPlugin.runtime;
-        if (runtime == null) {
+        if (!ModList.get().isLoaded("jei") || !Jei.show(stack)) {
             result("FAIL JEI runtime missing");
-            return;
         }
-        var focus = runtime.getJeiHelpers().getFocusFactory().createFocus(mezz.jei.api.recipe.RecipeIngredientRole.OUTPUT,
-                mezz.jei.api.constants.VanillaTypes.ITEM_STACK, stack);
-        runtime.getRecipesGui().show(focus);
+    }
+
+    /**
+     * Everything that touches JEI's classes, kept apart: this class is only loaded when JEI is, so a client without JEI
+     * (the multiplayer runs) still loads {@link KubejsCheckClient}.
+     */
+    private static final class Jei {
+        static List<String> craftingRecipes(ItemStack stack) {
+            var runtime = com.antcolonies.compat.jei.AntColoniesJeiPlugin.runtime;
+            if (runtime == null) {
+                return null;
+            }
+            return runtime.getRecipeManager().createRecipeLookup(mezz.jei.api.constants.RecipeTypes.CRAFTING).limitFocus(List.of(focus(runtime, stack)))
+                    .get().map(holder -> holder.id().identifier().toString()).sorted().toList();
+        }
+
+        static boolean show(ItemStack stack) {
+            var runtime = com.antcolonies.compat.jei.AntColoniesJeiPlugin.runtime;
+            if (runtime == null) {
+                return false;
+            }
+            runtime.getRecipesGui().show(focus(runtime, stack));
+            return true;
+        }
+
+        private static mezz.jei.api.recipe.IFocus<ItemStack> focus(mezz.jei.api.runtime.IJeiRuntime runtime, ItemStack stack) {
+            return runtime.getJeiHelpers().getFocusFactory().createFocus(mezz.jei.api.recipe.RecipeIngredientRole.OUTPUT,
+                    mezz.jei.api.constants.VanillaTypes.ITEM_STACK, stack);
+        }
     }
 
     private void screenshot(Minecraft minecraft, String name) {

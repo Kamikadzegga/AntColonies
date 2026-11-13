@@ -60,6 +60,7 @@ public class WorldgenCheckServer {
         }
         MinecraftServer server = event.getServer();
         try {
+            giantAnthills(server.overworld());
             netherAnthill(server.getLevel(Level.NETHER));
             nests(server.getLevel(Level.NETHER), Biomes.WARPED_FOREST, ModBlocks.NESTS.get("warped").get(), "Warped");
             nests(server.getLevel(Level.END), Biomes.END_HIGHLANDS, ModBlocks.NESTS.get("chorus").get(), "Chorus");
@@ -85,22 +86,79 @@ public class WorldgenCheckServer {
             return;
         }
         BlockPos at = found.getFirst();
-        loadAround(nether, at, 1);
+        loadAround(nether, at, 3);
         int bricks = 0;
         int chests = 0;
         BlockPos center = null;
-        for (BlockPos pos : BlockPos.betweenClosed(at.getX() - 10, 32, at.getZ() - 10, at.getX() + 10, 120, at.getZ() + 10)) {
+        for (BlockPos pos : BlockPos.betweenClosed(at.getX() - 34, 32, at.getZ() - 34, at.getX() + 34, 120, at.getZ() + 34)) {
             var state = nether.getBlockState(pos);
             if (state.is(Blocks.POLISHED_BLACKSTONE_BRICKS)) {
                 bricks++;
-            } else if (state.is(Blocks.CHEST) && nether.getBlockEntity(pos) instanceof RandomizableContainer chest
+            } else if ((state.is(Blocks.CHEST) || state.is(Blocks.BARREL)) && nether.getBlockEntity(pos) instanceof RandomizableContainer chest
                     && AnthillPiece.NETHER_LOOT.equals(chest.getLootTable())) {
                 chests++;
                 center = pos.immutable();
             }
         }
-        result("Nether anthill near " + at.toShortString() + ": " + bricks + " blackstone bricks, " + chests + " Nether-loot chest(s)"
+        long greatQueens = nether.getEntitiesOfClass(com.antcolonies.content.entity.WildAnt.class, new net.minecraft.world.phys.AABB(at).inflate(40, 80, 40),
+                ant -> ant.rank() == com.antcolonies.content.entity.WildAnt.Rank.GREAT_QUEEN).size();
+        result("Nether anthill: " + greatQueens + " great Queen(s)");
+        result("Nether anthill near " + at.toShortString() + ": " + bricks + " blackstone bricks, " + chests + " Nether-loot chest(s) or barrel(s)"
                 + (center == null ? "" : " (chest at " + center.toShortString() + ")"));
+    }
+
+    /**
+     * The giant anthills nearest five spots (0,0 and 4000 blocks out each way), generated: their biome and theme, their
+     * plan, the great Queen and her royal guard, every ant knowing its anthill, and the trails worn round the mound.
+     */
+    private void giantAnthills(ServerLevel overworld) {
+        var structure = overworld.registryAccess().lookupOrThrow(Registries.STRUCTURE)
+                .getOrThrow(ResourceKey.create(Registries.STRUCTURE, AntColonies.id("giant_anthill")));
+        int[][] spots = {{0, 0}, {4000, 0}, {-4000, 0}, {0, 4000}, {0, -4000}};
+        java.util.Set<BlockPos> seen = new java.util.HashSet<>();
+        for (int[] spot : spots) {
+            var found = overworld.getChunkSource().getGenerator().findNearestMapStructure(overworld, HolderSet.direct(structure),
+                    new BlockPos(spot[0], 64, spot[1]), 100, false);
+            if (found == null) {
+                result("Giant anthill near " + spot[0] + "," + spot[1] + ": none within 100 chunks");
+                continue;
+            }
+            BlockPos at = found.getFirst();
+            if (!seen.add(at)) {
+                continue;
+            }
+            loadAround(overworld, at, 3);
+            var start = overworld.structureManager().getStartForStructure(net.minecraft.core.SectionPos.of(at), structure.value(),
+                    overworld.getChunk(at.getX() >> 4, at.getZ() >> 4));
+            if (start == null || start.getPieces().isEmpty() || !(start.getPieces().getFirst() instanceof AnthillPiece piece)) {
+                result("Giant anthill at " + at.toShortString() + ": no anthill piece");
+                continue;
+            }
+            BlockPos center = piece.center();
+            var ants = overworld.getEntitiesOfClass(com.antcolonies.content.entity.WildAnt.class,
+                    net.minecraft.world.phys.AABB.of(piece.getBoundingBox()).inflate(4));
+            var queens = ants.stream().filter(a -> a.rank() == com.antcolonies.content.entity.WildAnt.Rank.GREAT_QUEEN).toList();
+            long royal = ants.stream().filter(a -> a.rank() == com.antcolonies.content.entity.WildAnt.Rank.ROYAL).count();
+            BlockPos anthill = queens.isEmpty() ? null : queens.getFirst().anthill();
+            long theirs = ants.stream().filter(a -> anthill != null && anthill.equals(a.anthill())).count();
+            int trails = 0;
+            int above = 0;
+            for (BlockPos pos : BlockPos.betweenClosed(center.getX() - 22, center.getY() - 6, center.getZ() - 22, center.getX() + 22, center.getY() + 16,
+                    center.getZ() + 22)) {
+                var state = overworld.getBlockState(pos);
+                if (state.is(Blocks.DIRT_PATH)) {
+                    trails++;
+                }
+                if (pos.getY() > center.getY() + 6 && !state.isAir() && Math.abs(pos.getX() - center.getX()) < 8 && Math.abs(pos.getZ() - center.getZ()) < 8
+                        && !state.is(net.minecraft.tags.BlockTags.LEAVES) && !state.is(net.minecraft.tags.BlockTags.LOGS)) {
+                    above++;
+                }
+            }
+            result("Giant anthill at " + center.toShortString() + " in " + overworld.getBiome(center).unwrapKey().map(k -> k.identifier().getPath()).orElse("?")
+                    + ": theme " + piece.theme() + ", " + piece.layout().style() + " " + piece.layout().size() + ", " + piece.layout().rooms().size()
+                    + " rooms; " + ants.size() + " ants (" + queens.size() + " great Queen, " + royal + " royal guards, " + theirs + " of this anthill); "
+                    + trails + " path blocks, " + above + " blocks over 6 up");
+        }
     }
 
     /** Nests of a species in the chunks around the nearest spot of its biome. */

@@ -1,0 +1,66 @@
+{
+  "type": "minecraft:archaeology",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:bone",
+          "weight": 16
+        },
+        {
+          "type": "minecraft:item",
+          "name": "antcolonies:chitin_plate",
+          "weight": 14
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:flint",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:item",
+          "name": "antcolonies:ant_resin",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:gold_nugget",
+          "weight": 8
+        },
+        {
+          "type": "minecraft:item",
+          "name": "antcolonies:ant_food",
+          "weight": 8
+        },
+        {
+          "type": "minecraft:item",
+          "name": "antcolonies:royal_jelly",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "antcolonies:diamond_fragment",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "antcolonies:emerald_fragment",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "antcolonies:evolution_catalyst",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:emerald",
+          "weight": 1
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "antcolonies:archaeology/anthill_midden"
+}

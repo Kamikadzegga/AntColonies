@@ -48,8 +48,11 @@ hunters to work, evolve mineral species and engineer their genes.
   Nether and End Foraging Sites, built from the trail pheromones a colony living in that dimension finds.
 - **Colony Connectors.** Link colonies on a channel: food flows from colonies with food to spare to the hungriest ones,
   and filtered items move between their Storage. No power.
-- **Giant anthills.** Rare world-generation structures in the Overworld, the Nether and the End, planned in seven
-  layouts from a dozen kinds of room, with loot, soldiers, and always one Queen to catch.
+- **Giant anthills.** World-generation structures in the Overworld, the Nether and the End. Each nest grows room by room
+  (small, medium or large) and takes its look from the biome: termite spires in the savanna, a pebble crater in the
+  desert, a snowy cone in the cold, a mossy mound in the jungle and more. Loot, middens to brush, aphid farms, soldiers,
+  and a great Queen behind her royal guard. In Chitin the ants let you pass, until you open their chests or step into
+  the Queen's chamber.
 - **Building blocks.** Anthill soil and bricks, chitin scales and tiles, amber with an ant caught inside, fungal and
   royal blocks, a nest door, a pheromone lamp and more, with stairs, slabs and walls.
 - **Home nests.** Pick up a wild nest with Silk Touch and place it at home: its ants tend and harvest your crops and

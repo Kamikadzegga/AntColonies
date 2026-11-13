@@ -52,7 +52,8 @@ public class EndAnthill extends Structure {
             return Optional.empty();
         }
         BlockPos center = new BlockPos(cx, middle - 1, cz);
-        AnthillPiece piece = AnthillPiece.plan(center, AnthillPiece.Kind.END, context.seed() ^ center.asLong() * 0x9E3779B97F4A7C15L, middle - 26);
+        AnthillPiece piece = AnthillPiece.plan(center, AnthillPiece.Kind.END, context.seed() ^ center.asLong() * 0x9E3779B97F4A7C15L, middle - 26,
+                AnthillTheme.END);
         return Optional.of(new GenerationStub(center, builder -> builder.addPiece(piece)));
     }
 

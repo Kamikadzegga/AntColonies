@@ -2007,14 +2007,15 @@ public class DataGen {
         write(RES.resolve("data/minecraft/tags/item/enchantable/durability.json"), obj("values", arr(ac("chitin_shield"))));
         // The vanilla tool and armor tags: chitinTiers() writes them, with every tier in them.
 
-        // The giant anthill: the structure, how often (about one per 32x32 chunks, never in a village) and where.
+        // The giant anthill: the structure, how often (about one per 20x20 chunks, never in a village) and where.
         write(DATA.resolve("worldgen/structure/giant_anthill.json"), obj("type", ac("giant_anthill"), "biomes", "#" + ac("has_structure/giant_anthill"),
                 "spawn_overrides", obj(), "step", "surface_structures", "terrain_adaptation", "none"));
         write(DATA.resolve("worldgen/structure_set/giant_anthills.json"), obj("placement", obj("type", "minecraft:random_spread",
-                        "exclusion_zone", obj("chunk_count", 4, "other_set", "minecraft:villages"), "salt", 1836401827, "separation", 10, "spacing", 32),
+                        "exclusion_zone", obj("chunk_count", 4, "other_set", "minecraft:villages"), "salt", 1836401827, "separation", 7, "spacing", 20),
                 "structures", arr(obj("structure", ac("giant_anthill"), "weight", 1))));
         write(DATA.resolve("tags/worldgen/biome/has_structure/giant_anthill.json"), obj("values", arr("#c:is_plains", "#c:is_forest",
-                "#c:is_savanna", "#c:is_jungle", "#c:is_taiga", "#c:is_desert", "#c:is_badlands", "minecraft:meadow")));
+                "#c:is_savanna", "#c:is_jungle", "#c:is_taiga", "#c:is_desert", "#c:is_badlands", "minecraft:meadow",
+                "#c:is_swamp", "#c:is_mushroom", "minecraft:cherry_grove", "minecraft:snowy_plains", "minecraft:grove")));
         // Its chests.
         write(DATA.resolve("loot_table/chests/giant_anthill.json"), obj("type", "minecraft:chest", "pools", arr(
                 obj("entries", arr(
@@ -2034,7 +2035,7 @@ public class DataGen {
         write(DATA.resolve("worldgen/structure/nether_anthill.json"), obj("type", ac("nether_anthill"), "biomes", "#" + ac("has_structure/nether_anthill"),
                 "spawn_overrides", obj(), "step", "surface_structures", "terrain_adaptation", "none"));
         write(DATA.resolve("worldgen/structure_set/nether_anthills.json"), obj("placement", obj("type", "minecraft:random_spread",
-                        "salt", 517294613, "separation", 8, "spacing", 24),
+                        "salt", 517294613, "separation", 6, "spacing", 18),
                 "structures", arr(obj("structure", ac("nether_anthill"), "weight", 1))));
         write(DATA.resolve("tags/worldgen/biome/has_structure/nether_anthill.json"), obj("values", arr("minecraft:nether_wastes",
                 "minecraft:crimson_forest", "minecraft:warped_forest", "minecraft:soul_sand_valley")));
@@ -2073,7 +2074,7 @@ public class DataGen {
         }
         LANG.put("entity." + NS + ".guard_ant", "Guard Ant");
         LANG.put("tooltip." + NS + ".chitin_set", "Full set:");
-        LANG.put("tooltip." + NS + ".chitin_set.ants", " Wild ants never attack you");
+        LANG.put("tooltip." + NS + ".chitin_set.ants", " Wild ants leave you alone (not if you raid their anthill)");
         LANG.put("tooltip." + NS + ".chitin_set.dig", " Dig %s%% faster");
         LANG.put("tooltip." + NS + ".chitin_shield", "Light: raised faster than a wooden shield, and an axe knocks it down for less time.");
         LANG.put("tooltip." + NS + ".rally_pheromone","Use on a hunter colony's Terrarium: it gives up hunters for a Guard Ant.");
@@ -2580,7 +2581,7 @@ public class DataGen {
         write(DATA.resolve("worldgen/structure/end_anthill.json"), obj("type", ac("end_anthill"), "biomes", "#" + ac("has_structure/end_anthill"),
                 "spawn_overrides", obj(), "step", "surface_structures", "terrain_adaptation", "none"));
         write(DATA.resolve("worldgen/structure_set/end_anthills.json"), obj("placement", obj("type", "minecraft:random_spread",
-                        "salt", 1290377481, "separation", 8, "spacing", 28),
+                        "salt", 1290377481, "separation", 6, "spacing", 20),
                 "structures", arr(obj("structure", ac("end_anthill"), "weight", 1))));
         write(DATA.resolve("tags/worldgen/biome/has_structure/end_anthill.json"), obj("values", arr("minecraft:end_highlands", "minecraft:end_midlands")));
         write(DATA.resolve("loot_table/chests/end_anthill.json"), obj("type", "minecraft:chest", "pools", arr(
@@ -2610,6 +2611,21 @@ public class DataGen {
                         lootItem(ac("royal_jelly"), 4, 1, 2), lootItem("minecraft:glow_berries", 5, 2, 5), lootItem(ac("fungal_block"), 5, 1, 3)),
                         "rolls", obj("type", "minecraft:uniform", "max", 5, "min", 3))),
                 "random_sequence", ac("chests/anthill_food")));
+        // A midden: what a Brush works out of the refuse heap's suspicious gravel (or sand).
+        write(DATA.resolve("loot_table/archaeology/anthill_midden.json"), obj("type", "minecraft:archaeology", "pools", arr(
+                obj("entries", arr(
+                        lootItem("minecraft:bone", 16, 1, 1), lootItem(ac("chitin_plate"), 14, 1, 1), lootItem("minecraft:flint", 10, 1, 1),
+                        lootItem(ac("ant_resin"), 10, 1, 1), lootItem("minecraft:gold_nugget", 8, 1, 1), lootItem(ac("ant_food"), 8, 1, 1),
+                        lootItem(ac("royal_jelly"), 4, 1, 1), lootItem(ac("diamond_fragment"), 4, 1, 1), lootItem(ac("emerald_fragment"), 3, 1, 1),
+                        lootItem(ac("evolution_catalyst"), 2, 1, 1), lootItem("minecraft:emerald", 1, 1, 1)),
+                        "rolls", 1)),
+                "random_sequence", ac("archaeology/anthill_midden")));
+        // An anthill's alarm (AnthillAlarm), on the action bar.
+        LANG.put("message." + NS + ".anthill_alarm.chest", "The ants saw you raid their stores: the whole anthill is after you!");
+        LANG.put("message." + NS + ".anthill_alarm.queen", "You stepped into the Queen's chamber: her guard attacks!");
+        LANG.put("message." + NS + ".anthill_alarm.attack", "You struck one of the anthill's ants: the colony rises against you!");
+        LANG.put("jade." + NS + ".rank.royal", "The Queen's royal guard");
+        LANG.put("jade." + NS + ".rank.great_queen", "Great Queen of this anthill");
         advancement("end_anthill", "end_colony", "minecraft:end_stone_bricks", "task", "Island Hoppers", "Find an End anthill",
                 obj("trigger", "minecraft:location", "conditions", obj("player", obj("type", "minecraft:entity_properties", "entity", "this",
                         "predicate", obj("minecraft:location", obj("structures", ac("end_anthill")))))));
@@ -3061,7 +3077,7 @@ public class DataGen {
                         "Chitin tools and armor come in four tiers. Chitin (from Chitin Plates) is iron level; Hardened is crafted the same way from Hardened Chitin and lasts three times as long.",
                         "Infernal: at a smithing table, a Hardened piece with an Infernal Reinforcement and an Infernal Chitin. Diamond level and fireproof. Void: an Infernal piece with a Void Reinforcement and a netherite ingot. Past netherite.",
                         "Reinforcements are crafted two at a time: Infernal from Infernal Chitin, blaze rods, magma cream and a ghast tear; Void from Void Chitin, shulker shells, popped chorus fruit and an eye of ender.",
-                        "Any four chitin armor pieces are a full set: wild ants leave you alone. The lowest tier you wear sets the rest: digging 20, 25, 30 or 40% faster, and from Infernal up Fire Resistance.")},
+                        "Any four chitin armor pieces are a full set: wild ants leave you alone, until you raid their anthill. The lowest tier you wear sets the rest: digging 20, 25, 30 or 40% faster, and from Infernal up Fire Resistance.")},
                 {"founding", "Founding a Colony", String.join("\n",
                         "Every anthill has a Queen to catch. Put her into a completely empty Terrarium on her own and she founds a colony: fill the food bar (ten Ant Food) and she lays her first eggs. When her first 10 workers are grown, the colony is founded.",
                         "Put her in with workers, eggs or larvae instead (or move a colony across in its tubes) and the colony runs at once: founding is only for a Queen alone.",
@@ -3075,7 +3091,8 @@ public class DataGen {
                         "Supply gives the food a colony has above its reserve; Request takes food up to its target, the hungriest colony first. Send moves the items in its filter out of the colony's Storage to colonies that Receive.",
                         "A Farmer colony supplying food lets mining and hunting colonies put more ants to work. The Terrarium's Network page shows the network.")},
                 {"building", "Anthills and Building", String.join("\n",
-                        "No two anthills are dug alike: branching, deep, multi-level, spiral, around a great hall, in wings, or abandoned, with nurseries, food stores, fungus gardens, barracks and treasure chambers. The End has anthills of Chorus Ants too.",
+                        "No two anthills are dug alike: each nest grows room by room, small, medium or large, with nurseries, food stores, fungus gardens, aphid farms, middens to brush, barracks and treasure chambers, side entrances, loops and dead ends. Their look follows the biome: termite spires in savannas and badlands, a crater in the desert, a thatched dome in the taiga, snow, moss or mud elsewhere. The Nether and the End have anthills too.",
+                        "Deepest of all, behind her royal guard, lies the great Queen. In a full Chitin set the ants let you pass, until you open one of their chests, step into her chamber or strike one of them: then the whole anthill attacks.",
                         "Their walls are Anthill Soil. From it, Chitin Plates, Ant Resin (Wood Ants find it), mushrooms and Royal Jelly come five families of building blocks, with stairs, slabs and walls, a Nest Door and a Pheromone Lamp.")}};
         for (String[] page : bookPages) {
             l.put("guide." + NS + "." + page[0] + ".title", page[1]);

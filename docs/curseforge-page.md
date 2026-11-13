@@ -55,8 +55,8 @@ into thousands of workers that mine, farm, hunt and evolve.
   Genetic Laboratory.
 - **Expeditions.** Nether and End ants bring back that dimension's riches through little portals at home.
 - **Colony Connectors.** Link nearby colonies so food and items flow to where they are needed.
-- **Anthills.** Explore giant anthills in the Overworld, the Nether and the End, with loot, soldiers and a Queen to
-  catch.
+- **Anthills.** Explore giant anthills in the Overworld, the Nether and the End, each shaped by its biome, with loot,
+  soldiers and a great Queen guarded by her royal soldiers. Touch their chests and the whole anthill comes after you.
 - **Chitin gear.** Four tiers of ant armor and tools, with jaws, spines and wings. In a full set, wild ants leave you
   alone.
 - **Building blocks.** Anthill bricks, chitin plates, amber, fungal and royal blocks, with stairs, slabs and walls.
@@ -103,7 +103,7 @@ Upload these 17 from `docs/images/screenshots/`, in this order (they replace the
 | `expedition-sites.png` | Expeditions | Nether and End Foraging Sites |
 | `connected-colonies.png` | Colony Connectors | Food and items between nearby colonies |
 | `building-blocks.png` | Building blocks | Anthill, chitin, amber, fungal and royal blocks |
-| `giant-anthill.png` | A giant anthill | A rare structure with loot and defenders |
+| `giant-anthill.png` | A giant anthill | A structure shaped by its biome, with loot and defenders |
 | `anthill-queen-chamber.png` | Inside an anthill | Tunnels and chambers, and a Queen to catch |
 | `machines.png` | The machines | The Genetic Laboratory and the Generator, working and idle |
 | `genetic-laboratory.png` | The Genetic Laboratory | Raise, reroll and mutate a Queen's traits |
