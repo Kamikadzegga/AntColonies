@@ -25,7 +25,7 @@ and the colony update and everything before it (the 26.3 versions further down).
 - **Anthill alarm:** in a full Chitin set the ants still let you pass, but opening or breaking one of the anthill's
   chests, stepping into the Queen's chamber or striking one of its ants raises the alarm: for five minutes every ant of
   that anthill attacks you, workers too. Config `anthillAlarmSeconds`.
-- A build for Minecraft 26.1.2 (NeoForge 26.1.2.122), with the same content as 0.1.0 for 26.3. Data packs for it use
+- A build for Minecraft 26.1.2 (NeoForge 26.1.2.122), with the same content as 0.2.0 for 26.3. Data packs for it use
   data pack format 101 and 26.1.2's loot table, advancement and world generation formats.
 - The modpack guide's KubeJS examples are tested with KubeJS 8.0.8, with more examples (new recipes, changed ingredients,
   item tags) and a note that JEI must be on the server to show KubeJS-changed recipes.
