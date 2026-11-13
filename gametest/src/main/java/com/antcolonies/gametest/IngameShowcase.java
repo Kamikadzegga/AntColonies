@@ -75,7 +75,8 @@ public class IngameShowcase {
     private BlockPos origin;
 
     public IngameShowcase(IEventBus modEventBus) {
-        if (Files.exists(MARKER) || Files.exists(GUI_MARKER) || Files.exists(UPDATE_MARKER) || Files.exists(STRESS_MARKER) || Files.exists(MACHINE_MARKER)) {
+        if (Files.exists(MARKER) || Files.exists(GUI_MARKER) || Files.exists(UPDATE_MARKER) || Files.exists(STRESS_MARKER) || Files.exists(MACHINE_MARKER)
+                || Files.exists(ANTHILL_MARKER)) {
             LOGGER.info("[Showcase] marker found");
             NeoForge.EVENT_BUS.addListener(this::onClientTick);
         } else if (Files.exists(CONFIG_MARKER)) {
@@ -191,20 +192,24 @@ public class IngameShowcase {
     // ------------------------------------------------------------------ Stress test (marker "stress-test")
 
     /**
-     * A file named {@code stress-test} in the run folder: 30 seconds of an empty world for a baseline, then 100 big
-     * colonies (2000 workers and a full ring of eight chambers each: Foraging or Harvesting Sites, Storage, Nest and Queen
-     * Chambers and a Colony Connector, 4 channels, all in range of many others) and 100 wild ants; 20 seconds to settle,
-     * then five minutes measured: the server's tick time and the client's frames per second, once a second. The results go
-     * to {@code ingame-showcase-result.txt}. While it runs, frames are not capped (no vsync, no limit, no slowing down in
-     * the background); the player's own settings are put back before it quits.
+     * A file named {@code stress-test} in the run folder: 30 seconds of an empty world for a baseline; then the
+     * {@link StressWorld} (100 big colonies, 100 wild ants, four large grown anthills of some 50 ants each), 20 seconds to
+     * settle and five minutes measured; then the worst case for anthills, one minute measured while the player, in Chitin
+     * and unkillable, stands in an anthill's Queen's chamber with the whole anthill alarmed and after them. The server's
+     * tick time and the client's frames per second are sampled once a second; the results go to
+     * {@code ingame-showcase-result.txt}. While it runs, frames are not capped (no vsync, no limit, no slowing down in the
+     * background); the player's own settings are put back before it quits.
      */
     private static final Path STRESS_MARKER = FMLPaths.GAMEDIR.get().resolve("stress-test");
     private final boolean stressTest = Files.exists(STRESS_MARKER);
     private static final int STRESS_BASELINE_END = 700;
     private static final int STRESS_MEASURE_START = 1100;
     private static final int STRESS_MEASURE_END = STRESS_MEASURE_START + 5 * 60 * 20;
+    private static final int STRESS_ALARM_START = STRESS_MEASURE_END + 100;
+    private static final int STRESS_ALARM_END = STRESS_ALARM_START + 60 * 20;
     private final List<double[]> baseline = new ArrayList<>();
     private final List<double[]> loaded = new ArrayList<>();
+    private final List<double[]> alarm = new ArrayList<>();
     private Object[] savedOptions;
 
     private void stressStep(Minecraft minecraft, IntegratedServer server) {
@@ -224,6 +229,7 @@ public class IngameShowcase {
             server.execute(() -> {
                 command(server, "difficulty peaceful");
                 command(server, "time set noon");
+                command(server, "gamerule advance_time false");
             });
             camera(server, 28.5, 14 - 1.62, -6.0, 0, 32);
             return;
@@ -235,9 +241,19 @@ public class IngameShowcase {
             screenshot(minecraft, "stress_0_empty");
             server.execute(() -> {
                 long start = System.nanoTime();
-                buildStress(server);
-                result(String.format(java.util.Locale.ROOT, "stress: built in %.0f ms", (System.nanoTime() - start) / 1e6));
+                StressWorld.buildColonies(server.overworld(), origin);
+                result(String.format(java.util.Locale.ROOT, "stress: colonies built in %.0f ms", (System.nanoTime() - start) / 1e6));
             });
+        }
+        for (int i = 0; i < StressWorld.THEMES.length; i++) {
+            int index = i;
+            if (ticks == STRESS_BASELINE_END + 10 + i * 10) {
+                server.execute(() -> {
+                    long start = System.nanoTime();
+                    String line = StressWorld.buildAnthill(server.overworld(), origin, index);
+                    result(String.format(java.util.Locale.ROOT, "stress: %s, built in %.0f ms", line, (System.nanoTime() - start) / 1e6));
+                });
+            }
         }
         if (ticks > STRESS_MEASURE_START && ticks <= STRESS_MEASURE_END && ticks % 20 == 0) {
             loaded.add(sample(minecraft, server));
@@ -256,47 +272,38 @@ public class IngameShowcase {
         }
         if (ticks == STRESS_MEASURE_END + 1) {
             // Block entities can only be read on the server's own thread: count there, and wait for it.
-            server.submit(() -> stressCount(server)).join();
+            server.submit(() -> result("stress: after 5 minutes: " + StressWorld.count(server.overworld(), origin))).join();
+            server.execute(() -> {
+                command(server, "difficulty normal");
+                result("stress: " + StressWorld.raiseAlarm(server.overworld(), origin, server.getPlayerList().getPlayers().getFirst(), 0));
+            });
         }
-        if (ticks == STRESS_MEASURE_END + 2) {
+        if (ticks == STRESS_ALARM_START) {
+            server.submit(() -> result("stress: alarm raised: " + StressWorld.count(server.overworld(), origin))).join();
+        }
+        if (ticks > STRESS_ALARM_START && ticks <= STRESS_ALARM_END && ticks % 20 == 0) {
+            alarm.add(sample(minecraft, server));
+        }
+        if (ticks == STRESS_ALARM_START + 200) {
+            screenshot(minecraft, "stress_4_alarm");
+        }
+        if (ticks == STRESS_ALARM_END + 1) {
+            server.submit(() -> result("stress: after the alarm minute: " + StressWorld.count(server.overworld(), origin)
+                    + "; player health " + server.getPlayerList().getPlayers().getFirst().getHealth())).join();
+        }
+        if (ticks == STRESS_ALARM_END + 2) {
             finishStress(minecraft);
         }
     }
 
-    private void stressCount(IntegratedServer server) {
-        {
-            ServerLevel level = server.overworld();
-            int colonies = 0;
-            double workers = 0;
-            long found = 0;
-            for (int gx = 0; gx < 10; gx++) {
-                for (int gz = 0; gz < 10; gz++) {
-                    if (level.getBlockEntity(stressPos(gx, gz)) instanceof TerrariumBlockEntity t) {
-                        colonies++;
-                        workers += t.colony().workers();
-                        found += t.colony().totalFound();
-                    }
-                }
-            }
-            int ants = level.getEntitiesOfClass(com.antcolonies.content.entity.WildAnt.class, new net.minecraft.world.phys.AABB(origin).inflate(120)).size();
-            result(String.format(java.util.Locale.ROOT, "stress: after 5 minutes: %d colonies, %.0f workers, %d finds in all, %d wild ants",
-                    colonies, workers, found, ants));
-        }
-    }
-
     private void finishStress(Minecraft minecraft) {
-        {
-            result("stress: baseline (empty world, " + baseline.size() + " s): " + summary(baseline));
-            result("stress: loaded (5 minutes, " + loaded.size() + " s): " + summary(loaded));
-            minecraft.options.enableVsync().set((Boolean) savedOptions[0]);
-            minecraft.options.framerateLimit().set((Integer) savedOptions[1]);
-            minecraft.options.inactivityFpsLimit().set((net.minecraft.client.InactivityFpsLimit) savedOptions[2]);
-            finish(minecraft);
-        }
-    }
-
-    private BlockPos stressPos(int gx, int gz) {
-        return origin.offset(6 + gx * 5, 0, 6 + gz * 5);
+        result("stress: baseline (empty world, " + baseline.size() + " s): " + summary(baseline));
+        result("stress: loaded (5 minutes, " + loaded.size() + " s): " + summary(loaded));
+        result("stress: anthill alarmed (1 minute, " + alarm.size() + " s): " + summary(alarm));
+        minecraft.options.enableVsync().set((Boolean) savedOptions[0]);
+        minecraft.options.framerateLimit().set((Integer) savedOptions[1]);
+        minecraft.options.inactivityFpsLimit().set((net.minecraft.client.InactivityFpsLimit) savedOptions[2]);
+        finish(minecraft);
     }
 
     /** One second's sample: the server's average tick (last 100 ticks), its worst tick (last 100), the frames per second. */
@@ -308,7 +315,7 @@ public class IngameShowcase {
         return new double[] {server.getAverageTickTimeNanos() / 1e6, worst / 1e6, minecraft.getFps()};
     }
 
-    private static String summary(List<double[]> samples) {
+    static String summary(List<double[]> samples) {
         double tick = 0;
         double worst = 0;
         double fps = 0;
@@ -326,38 +333,6 @@ public class IngameShowcase {
         double p95 = ticks.isEmpty() ? 0 : ticks.get(Math.min(ticks.size() - 1, (int) Math.floor(ticks.size() * 0.95)));
         return String.format(java.util.Locale.ROOT, "server tick %.2f ms average (95th percentile %.2f ms, worst single tick %.2f ms); %.0f fps average, %.0f lowest",
                 tick / n, p95, worst, fps / n, minFps == Double.MAX_VALUE ? 0 : minFps);
-    }
-
-    /** 100 big colonies in a 10 x 10 grid, every one with a Colony Connector, and 100 wild ants among them. */
-    private void buildStress(IntegratedServer server) {
-        ServerLevel level = server.overworld();
-        StructureKind[] mine = {StructureKind.FORAGING_SITE, StructureKind.FORAGING_SITE, StructureKind.STORAGE, StructureKind.NEST_CHAMBER,
-                StructureKind.FORAGING_SITE, StructureKind.NEST_CHAMBER, StructureKind.QUEEN_CHAMBER};
-        StructureKind[] farm = {StructureKind.HARVESTING_SITE, StructureKind.FORAGING_SITE, StructureKind.STORAGE, StructureKind.NEST_CHAMBER,
-                StructureKind.HARVESTING_SITE, StructureKind.NEST_CHAMBER, StructureKind.QUEEN_CHAMBER};
-        int i = 0;
-        for (int gx = 0; gx < 10; gx++) {
-            for (int gz = 0; gz < 10; gz++) {
-                BlockPos pos = stressPos(gx, gz);
-                boolean farmer = i % 2 == 0;
-                colony(level, pos, farmer ? "farmer" : "stone", 2000, 20000);
-                List<BlockPos> places = places(pos);
-                StructureKind[] kinds = farmer ? farm : mine;
-                for (int p = 0; p < kinds.length; p++) {
-                    structure(level, places.get(p), kinds[p]);
-                }
-                connector(level, places.get(7), i % 4, farmer ? com.antcolonies.content.blockentity.ConnectorSettings.SUPPLY
-                        : com.antcolonies.content.blockentity.ConnectorSettings.REQUEST, 40, 75, 0, ItemStack.EMPTY);
-                i++;
-            }
-        }
-        RandomSource random = RandomSource.create(99);
-        for (int n = 0; n < 100; n++) {
-            var ant = com.antcolonies.core.registry.ModEntities.WILD_ANT.get().create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
-            BlockPos at = origin.offset(4 + random.nextInt(50), 0, 4 + random.nextInt(50));
-            ant.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, random.nextFloat() * 360, 0);
-            level.addFreshEntity(ant);
-        }
     }
 
     // ------------------------------------------------------------------ Machine look check (marker "machine-check")
@@ -407,6 +382,137 @@ public class IngameShowcase {
         }
     }
 
+    // ------------------------------------------------------------------ Anthill themes (marker "anthill-check")
+
+    /**
+     * A file named {@code anthill-check} in the run folder: one grown anthill of every theme, built in turn on a platform
+     * of its own ground, photographed from outside (the mound, trails and ants on it) and, for some, inside the great
+     * Queen's chamber with her royal guard.
+     */
+    private static final Path ANTHILL_MARKER = FMLPaths.GAMEDIR.get().resolve("anthill-check");
+    private final boolean anthillCheck = Files.exists(ANTHILL_MARKER);
+    private static final int ANTHILL_PERIOD = 170;
+    private static final java.util.Set<com.antcolonies.content.worldgen.AnthillTheme> INSIDE_SHOTS = java.util.EnumSet.of(
+            com.antcolonies.content.worldgen.AnthillTheme.TEMPERATE, com.antcolonies.content.worldgen.AnthillTheme.SAVANNA,
+            com.antcolonies.content.worldgen.AnthillTheme.SNOWY, com.antcolonies.content.worldgen.AnthillTheme.JUNGLE);
+    private com.antcolonies.content.worldgen.AnthillPiece themedPiece;
+
+    private void anthillStep(Minecraft minecraft, IntegratedServer server) {
+        if (ticks == 60) {
+            origin = minecraft.player.blockPosition();
+            minecraft.options.pauseOnLostFocus = false;
+            if (!minecraft.gui.hud.isHidden()) {
+                minecraft.gui.hud.toggle();
+            }
+            server.execute(() -> {
+                command(server, "time set noon");
+                command(server, "gamerule spawn_mobs false");
+                command(server, "weather clear");
+            });
+            return;
+        }
+        if (ticks < 80) {
+            return;
+        }
+        var themes = com.antcolonies.content.worldgen.AnthillTheme.values();
+        int index = (ticks - 80) / ANTHILL_PERIOD;
+        int phase = (ticks - 80) % ANTHILL_PERIOD;
+        if (index >= themes.length) {
+            finish(minecraft);
+            return;
+        }
+        var theme = themes[index];
+        String name = String.format(java.util.Locale.ROOT, "h%02d_%s", index + 1, theme.getSerializedName());
+        // Each anthill on a spot of its own, so nothing of the one before shows.
+        int dz = index * 90;
+        BlockPos center = origin.offset(40, 31, dz);
+        switch (phase) {
+            case 0 -> server.execute(() -> buildThemed(server, theme, center, index));
+            case 10 -> camera(server, 40 - 19, 31 + 11, dz - 19, -45, 26);
+            case 70 -> screenshot(minecraft, name + "_mound");
+            case 72 -> camera(server, 40 + 2, 31 + 3.5, dz - 24, 0, 12);
+            case 110 -> screenshot(minecraft, name + "_side");
+            case 112 -> {
+                if (INSIDE_SHOTS.contains(theme)) {
+                    server.execute(() -> queenCamera(server, center));
+                }
+            }
+            case 160 -> {
+                if (INSIDE_SHOTS.contains(theme)) {
+                    screenshot(minecraft, name + "_queen");
+                }
+            }
+            default -> { }
+        }
+    }
+
+    /** A medium grown layout planned within 26 blocks of its center and 30 below it (the platform's size). */
+    private static long themedSeed(int index) {
+        for (long seed = 1 + index * 7919L; ; seed++) {
+            var layout = com.antcolonies.content.worldgen.AnthillLayout.create(com.antcolonies.content.worldgen.AnthillLayout.Style.GROWN, seed);
+            if (layout.size() == com.antcolonies.content.worldgen.AnthillLayout.Size.MEDIUM && layout.minX() >= -26 && layout.maxX() <= 26
+                    && layout.minZ() >= -26 && layout.maxZ() <= 26 && layout.minY() >= -30) {
+                return seed;
+            }
+        }
+    }
+
+    /** Builds one themed anthill on a platform of its ground (clearing the last one), and reports what it holds. */
+    private void buildThemed(IntegratedServer server, com.antcolonies.content.worldgen.AnthillTheme theme, BlockPos center, int index) {
+        ServerLevel level = server.overworld();
+        command(server, "kill @e[type=antcolonies:wild_ant]");
+        command(server, "kill @e[type=minecraft:item]");
+        var kind = theme == com.antcolonies.content.worldgen.AnthillTheme.NETHER ? com.antcolonies.content.worldgen.AnthillPiece.Kind.NETHER
+                : theme == com.antcolonies.content.worldgen.AnthillTheme.END ? com.antcolonies.content.worldgen.AnthillPiece.Kind.END
+                : com.antcolonies.content.worldgen.AnthillPiece.Kind.OVERWORLD;
+        themedPiece = new com.antcolonies.content.worldgen.AnthillPiece(center, kind, com.antcolonies.content.worldgen.AnthillLayout.Style.GROWN,
+                themedSeed(index), theme);
+        var box = themedPiece.getBoundingBox();
+        net.minecraft.world.level.block.Block ground = switch (theme) {
+            case DESERT -> net.minecraft.world.level.block.Blocks.SAND;
+            case BADLANDS -> net.minecraft.world.level.block.Blocks.RED_SAND;
+            case SNOWY -> net.minecraft.world.level.block.Blocks.SNOW_BLOCK;
+            case MUSHROOM -> net.minecraft.world.level.block.Blocks.MYCELIUM;
+            case NETHER -> net.minecraft.world.level.block.Blocks.NETHERRACK;
+            case END -> net.minecraft.world.level.block.Blocks.END_STONE;
+            default -> net.minecraft.world.level.block.Blocks.GRASS_BLOCK;
+        };
+        net.minecraft.world.level.block.Block under = theme == com.antcolonies.content.worldgen.AnthillTheme.NETHER ? net.minecraft.world.level.block.Blocks.NETHERRACK
+                : theme == com.antcolonies.content.worldgen.AnthillTheme.END ? net.minecraft.world.level.block.Blocks.END_STONE
+                : theme == com.antcolonies.content.worldgen.AnthillTheme.DESERT ? net.minecraft.world.level.block.Blocks.SANDSTONE
+                : net.minecraft.world.level.block.Blocks.DIRT;
+        for (BlockPos pos : BlockPos.betweenClosed(box.minX(), origin.getY(), box.minZ(), box.maxX(), box.maxY() + 2, box.maxZ())) {
+            int ry = pos.getY() - center.getY();
+            net.minecraft.world.level.block.Block block = ry > 0 ? net.minecraft.world.level.block.Blocks.AIR : ry == 0 ? ground
+                    : ry > -4 ? under : net.minecraft.world.level.block.Blocks.STONE;
+            level.setBlock(pos, block.defaultBlockState(), 2 | 16);
+        }
+        themedPiece.postProcess(level, level.structureManager(), level.getChunkSource().getGenerator(), level.getRandom(), box,
+                net.minecraft.world.level.ChunkPos.containing(center), center);
+        var ants = level.getEntitiesOfClass(com.antcolonies.content.entity.WildAnt.class, net.minecraft.world.phys.AABB.of(box).inflate(2));
+        result("anthill " + theme.getSerializedName() + ": " + themedPiece.layout().rooms().size() + " rooms, " + ants.size() + " ants ("
+                + ants.stream().filter(a -> a.rank() == com.antcolonies.content.entity.WildAnt.Rank.ROYAL).count() + " royal guards, "
+                + ants.stream().filter(a -> a.rank() == com.antcolonies.content.entity.WildAnt.Rank.GREAT_QUEEN).count() + " great Queen)");
+    }
+
+    /** The camera in the great Queen's chamber, looking at her and her guard (with night vision). */
+    private void queenCamera(IntegratedServer server, BlockPos center) {
+        ServerLevel level = server.overworld();
+        var queen = level.getEntitiesOfClass(com.antcolonies.content.entity.WildAnt.class, new net.minecraft.world.phys.AABB(center).inflate(40, 45, 40),
+                ant -> ant.caste() == Caste.QUEEN).stream().findFirst().orElse(null);
+        if (queen == null) {
+            result("FAIL themed anthill: no Queen");
+            return;
+        }
+        command(server, "effect give @s minecraft:night_vision 60 0 true");
+        command(server, "gamemode spectator");
+        // Inside the chamber, three blocks from her, a little above: her and the guard round her in view.
+        double x = queen.getX() - 2.2;
+        double z = queen.getZ() - 2.2;
+        float yaw = (float) Math.toDegrees(Math.atan2(-(queen.getX() - x), queen.getZ() - z));
+        command(server, String.format(java.util.Locale.ROOT, "tp @s %.2f %.2f %.2f %.1f %.1f", x, queen.getY() + 1.6, z, yaw, 30.0F));
+    }
+
     private void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         try {
@@ -415,7 +521,9 @@ public class IngameShowcase {
                 return;
             }
             ticks++;
-            if (machineCheck) {
+            if (anthillCheck) {
+                anthillStep(minecraft, minecraft.getSingleplayerServer());
+            } else if (machineCheck) {
                 machineStep(minecraft, minecraft.getSingleplayerServer());
             } else if (stressTest) {
                 stressStep(minecraft, minecraft.getSingleplayerServer());

@@ -255,50 +255,84 @@ along the lines), and Jade shows a connector's channel, settings and what it mov
 
 ## Giant anthills
 
-A rare world-generation structure, about one per 32 x 32 chunks, in plains, forests, taigas, savannas, jungles, deserts,
-badlands and meadows (never next to a village). A mound of earth (sandy in deserts and badlands) has a shaft down
-through it into a nest of rooms and tunnels.
+A world-generation structure, about one per 20 x 20 chunks, in plains, meadows, forests, taigas, snowy plains and
+groves, savannas, jungles, swamps, deserts, badlands, mushroom fields and cherry groves (never next to a village, only
+on dry, fairly flat ground). A mound has a shaft down through it into a nest of rooms and tunnels.
 
-**Every anthill has exactly one Queen**, in her chamber, and she can always be caught: an anthill's Queen can't be hurt
-(lava, falls, mobs and players alike), never despawns and isn't pushed out of her chamber, so the only way she leaves is
-in a Test Tube, caught with Tweezers. Her chamber is always joined to the entrance.
+**Every anthill has exactly one Queen**, a **great Queen** twice the size of any other, and she can always be caught: she
+can't be hurt (lava, falls, mobs and players alike), never despawns and isn't pushed out of her chamber, so the only
+way she leaves is in a Test Tube, caught with Tweezers. Her chamber is always joined to the entrance.
 
-No two anthills are dug alike. Each is planned from the world seed in one of seven layouts:
+### How they look
 
-| Layout | |
-|---|---|
-| Branching | Rooms dug off the shaft in every direction, deeper as they go |
-| Deep | A long spine straight down, rooms off both sides, the Queen at its foot (some 30 blocks down) |
-| Multi-level | Floors of rooms joined by ramps |
-| Spiral | Rooms down a spiral around the shaft |
-| Central chamber | A great hall under the shaft, rooms all round it, the Queen beneath |
-| Wings | Three wings off a gallery, the Queen at the end of one |
-| Abandoned | A small, shallow nest its colony left: empty rooms, cobwebs and bones, and its old Queen, who stayed, alone |
+The mound and the tunnels take their look from the biome:
 
-And a dozen kinds of room, each furnished for its purpose: the **Queen's chamber** (royal chitin floor, her nest, a
-barrel of the anthill's loot, a pheromone lamp, her guard), **nurseries**, **egg stores** and **larval chambers** (piles
-of eggs and larvae), **food stores** (a barrel of food), **fungus gardens** (fungal beds and mushrooms, glowing fungus),
-**barracks** (soldiers), **chitin stores** (chitin blocks and a chest), **treasure chambers** (a chest of the ants'
-hoard: gold, fragments, Royal Jelly, sometimes a Chitin Shield or a Crystal Core), **rare-find chambers** (where the
-ants dug into ore, crystal or amber), galleries and halls. The walls are packed anthill soil, so anthills are also where
-you first find the [building blocks](#building-blocks).
+| Biome | Mound | Underground |
+|---|---|---|
+| Plains, meadows, forests | A cone of anthill soil, coarse and rooted dirt | Packed anthill soil and mud, hanging roots |
+| Taiga | A tall rounded dome thatched with needles, podzol and twigs | Packed soil, mossy cobblestone, podzol floors |
+| Snowy | A snow-capped cone | Packed and blue ice in the walls, snow underfoot |
+| Desert | A crater of dug-out sand ringed with pebbles | Sandstone, smooth and cut sandstone |
+| Badlands | Termite spires in banded terracotta | Banded terracotta and red sandstone |
+| Savanna | Termite spires of packed mud and terracotta | Termite clay: packed mud, mud bricks, terracotta |
+| Jungle | A low, wide mound of moss, mud and leaves | Moss, mossy cobblestone and mud, glow lichen |
+| Swamps | A squat mound of mud, clay and mangrove roots | Mud bricks, packed mud and clay |
+| Mushroom fields | A mycelium cone with mushrooms | Mushroom stems and blocks, shroomlight |
+| Cherry grove | A cone strewn with pink petals | Packed soil and calcite |
 
-The ants are the local wild species: the Queen, workers and soldiers. They stay at the anthill, and its soldiers attack
-players who come close; a full set of Chitin armor keeps them peaceful. `/locate structure antcolonies:giant_anthill`
-finds one.
+Ant trails of worn earth lead away from most mounds. The Nether's and the End's anthills have their own looks (below).
+
+### How they are dug
+
+No two anthills are dug alike: each nest grows room by room from the shaft, every room dug off one already joined to
+the entrance, by winding tunnels. A nest is **small** (6 to 8 rooms), **medium** (9 to 12) or **large** (13 to 17, up to
+some 40 blocks down). Some tunnels loop back between neighbouring rooms, some end blind, and one or two **side
+entrances** slope down from the ground beside the mound, a way out for anyone who dropped down the shaft. One anthill
+in ten is **abandoned**: a small, shallow nest its colony left, with only its old Queen, alone.
+
+Deepest of all lies the **Queen's great chamber**, and the only way in is through the **antechamber** of her royal guard.
+
+The rooms, each furnished for its purpose: the **Queen's chamber** (royal chitin floor, her nest, eggs and larvae, a
+barrel of the anthill's loot, pheromone lamps, six of her royal guard round her), the **antechamber** (four more royal
+guards), **nurseries**, **egg stores** and **larval chambers** (piles of eggs and larvae), **food stores** (a barrel of
+food), **fungus gardens** (fungal beds and mushrooms, glowing fungus), **aphid farms** (moss, azaleas and honey),
+**middens** (bones and suspicious gravel, or sand in deserts and badlands, to work with a Brush: chitin, resin, nuggets,
+sometimes fragments, Royal Jelly or an emerald), **barracks** (soldiers), **chitin stores** (chitin blocks and a chest),
+**treasure chambers** (a guarded chest of the ants' hoard: gold, fragments, Royal Jelly, sometimes a Chitin Shield or a
+Crystal Core), **rare-find chambers** (where the ants dug into ore, crystal or amber), galleries and halls. The walls are
+packed anthill soil in most biomes, so anthills are also where you first find the [building blocks](#building-blocks).
+
+Anthills generated before 0.2.0 keep the layout and look they started with.
+
+### Its ants, and the alarm
+
+The ants are the local wild species: the great Queen, her **royal guard** (soldiers a third bigger, with 18 health,
+armor and a harder bite), soldiers in the barracks, the galleries and some tunnels, workers in the rooms and ants out on
+the mound. Each keeps to its room, and soldiers attack players who come close.
+
+A **full set of Chitin armor** makes you smell like the colony: the ants let you walk through their nest. Until you
+raise the **alarm**: by opening or breaking one of the anthill's chests or barrels (one still holding its loot),
+stepping into the Queen's chamber, or striking one of its ants (the Queen too). Then, for five minutes (config
+`anthillAlarmSeconds`), every ant of that anthill comes after you, Chitin or not: soldiers and royal guards attack and
+workers swarm, chasing you through the tunnels. The alarm is that anthill's alone, and only against the player who
+raised it. Without Chitin the same things raise it too: the soldiers attack anyway, but now the whole nest comes. Players
+in creative or spectator mode never raise it.
+
+`/locate structure antcolonies:giant_anthill` finds one.
+
+### In the Nether and the End
 
 The **Nether anthill** is a nest dug into the Nether's floor (nether wastes, the crimson and warped forests and
-soul sand valleys; about one per 24 x 24 chunks): a mound of soul soil and netherrack over tunnels walled in blackstone,
+soul sand valleys; about one per 18 x 18 chunks): a mound of soul soil and netherrack over tunnels walled in blackstone,
 with any lava around them walled off, always planned to stay above the lava sea. Its ants are Fire Ants (Warped Ants in
 the fungus forests), so its Queen is a way to Fire Ants without evolving them. Its chests hold the Nether's materials.
 `/locate structure antcolonies:nether_anthill` finds one.
 
-The **End anthill** is a Chorus Ant nest in the End's outer islands (highlands and midlands; about one per 28 x 28
+The **End anthill** is a Chorus Ant nest in the End's outer islands (highlands and midlands; about one per 20 x 20
 chunks): end stone, end stone bricks and purpur, its tunnels walled in even where they reach the island's underside.
 Its chests hold chorus fruit, ender pearls, Chitin and End materials. `/locate structure
 antcolonies:end_anthill` finds one.
 
-Anthills generated before this version keep the layout they started with: the old fixed nest.
 
 ## Building blocks
 
@@ -339,7 +373,8 @@ Tools (sword, pickaxe, axe, shovel, hoe) and armor made from Chitin Plates in th
 mine what iron mines, and the armor has iron's defense. They last a little longer (300 uses for tools), enchant better,
 and Chitin Plates repair them. **Wearing the full armor set**:
 
-- Wild ants never attack you, including the defenders of giant anthills and the soldiers a raided nest sends out.
+- Wild ants never attack you, including the defenders of giant anthills and the soldiers a raided nest sends out, until
+  you raise an anthill's [alarm](#its-ants-and-the-alarm).
 - You dig 20% faster.
 
 The **Chitin Shield** (five Chitin Plates around a plank: `CPC`, `CCC`, ` C `) blocks like a shield but is lighter: it

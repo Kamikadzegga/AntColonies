@@ -211,6 +211,9 @@ final class ColonyProviders {
             }
             tooltip.add(Tooltips.species(ant.species()).append(" · ")
                     .append(Component.translatable("caste.antcolonies." + ant.caste().getSerializedName())));
+            if (ant.rank() != WildAnt.Rank.NORMAL) {
+                tooltip.add(Component.translatable("jade.antcolonies.rank." + ant.rank().name().toLowerCase(java.util.Locale.ROOT)).withStyle(ChatFormatting.GOLD));
+            }
             Tooltips.speciesFacts(accessor.getLevel().registryAccess(), ant.species(), tooltip::add, false);
             tooltip.add(Component.translatable("jade.antcolonies.catch").withStyle(ChatFormatting.DARK_GRAY));
         }

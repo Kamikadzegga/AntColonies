@@ -2,7 +2,10 @@ package com.antcolonies.content.entity;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import com.antcolonies.content.blockentity.HomeNestBlockEntity;
 import com.antcolonies.core.config.AntConfig;
@@ -30,6 +33,7 @@ import net.minecraft.world.level.block.NetherWartBlock;
 import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -78,8 +82,28 @@ public class WildAnt extends PathfinderMob implements AntLike {
     /** The colour of what it carries in its mandibles (0: nothing), for the renderer. */
     private static final EntityDataAccessor<Integer> DATA_CARRY = SynchedEntityData.defineId(WildAnt.class, EntityDataSerializers.INT);
 
+    /** Its rank in an anthill: an ordinary ant, one of the Queen's royal guard, or the great Queen herself. */
+    private static final EntityDataAccessor<Byte> DATA_RANK = SynchedEntityData.defineId(WildAnt.class, EntityDataSerializers.BYTE);
+
     /** Guards a giant anthill: its soldiers attack players who come close (not ones in a full Chitin set). */
     private boolean guardian;
+    /** The anthill it belongs to, named by its Queen's spot (null for ants of no anthill). */
+    private @Nullable BlockPos anthill;
+    /** A great Queen's chamber: a player stepping into it raises the alarm. */
+    private @Nullable AABB chamber;
+    /** Players its anthill is alarmed at, and the game time each alarm ends. */
+    private final Map<UUID, Long> alarms = new HashMap<>();
+    /** Whether any alarm is on (worked out once a tick, server side). */
+    private boolean alarmed;
+
+    /** An anthill ant's rank: royal guards are bigger and stronger soldiers, the great Queen twice any Queen's size. */
+    public enum Rank {
+        NORMAL, ROYAL, GREAT_QUEEN;
+
+        static Rank byId(int id) {
+            return id >= 0 && id < values().length ? values()[id] : NORMAL;
+        }
+    }
 
     /** How far from its home nest an ant works. */
     public static final int NEST_RANGE = 10;
@@ -126,13 +150,14 @@ public class WildAnt extends PathfinderMob implements AntLike {
         goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.2, true) {
             @Override
             public boolean canUse() {
-                return caste() == Caste.SOLDIER && super.canUse();
+                // An alarmed anthill's workers swarm the intruder too.
+                return (caste() == Caste.SOLDIER || alarmed && caste() == Caste.WORKER) && super.canUse();
             }
         });
         goalSelector.addGoal(2, new PanicGoal(this, 1.4) {
             @Override
             public boolean canUse() {
-                return caste() != Caste.SOLDIER && super.canUse();
+                return caste() != Caste.SOLDIER && !alarmed && super.canUse();
             }
         });
         goalSelector.addGoal(3, new ReturnToNestGoal());
@@ -140,6 +165,8 @@ public class WildAnt extends PathfinderMob implements AntLike {
         goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8));
         goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 4.0F));
         goalSelector.addGoal(7, new RandomLookAroundGoal(this));
+        // An alarmed anthill goes for the players it is alarmed at, wherever they are in it.
+        targetSelector.addGoal(0, new AlarmTargetGoal());
         // Hurting any ant of a group brings its soldiers.
         targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(WildAnt.class));
         targetSelector.addGoal(2, new net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
@@ -152,6 +179,26 @@ public class WildAnt extends PathfinderMob implements AntLike {
         builder.define(DATA_SPECIES, ModRegistries.COMMON.toString());
         builder.define(DATA_CASTE, (byte) Caste.WORKER.ordinal());
         builder.define(DATA_CARRY, 0);
+        builder.define(DATA_RANK, (byte) 0);
+    }
+
+    public Rank rank() {
+        return Rank.byId(entityData.get(DATA_RANK));
+    }
+
+    /** Makes it a royal guard or the great Queen (after its caste: the rank scales the caste's size and strength). */
+    public void setRank(Rank rank) {
+        entityData.set(DATA_RANK, (byte) rank.ordinal());
+        applyCaste();
+    }
+
+    @Override
+    public float renderScale() {
+        return switch (rank()) {
+            case GREAT_QUEEN -> 2.0F;
+            case ROYAL -> 1.3F;
+            case NORMAL -> 1.0F;
+        };
     }
 
     @Override
@@ -175,13 +222,33 @@ public class WildAnt extends PathfinderMob implements AntLike {
         applyCaste();
     }
 
-    /** Soldiers are bigger and hit harder; Queens are the biggest. */
+    /** Soldiers are bigger and hit harder; Queens are the biggest. Royal guards and the great Queen are bigger still. */
     private void applyCaste() {
         Caste caste = caste();
-        set(Attributes.SCALE, caste == Caste.QUEEN ? 1.6 : caste == Caste.SOLDIER ? 1.3 : 1.0);
-        set(Attributes.MAX_HEALTH, caste == Caste.QUEEN ? 10 : caste == Caste.SOLDIER ? 8 : 4);
-        set(Attributes.ATTACK_DAMAGE, caste == Caste.SOLDIER ? 2.5 : 1.0);
-        set(Attributes.MOVEMENT_SPEED, caste == Caste.QUEEN ? 0.18 : 0.28);
+        Rank rank = rank();
+        double scale = caste == Caste.QUEEN ? 1.6 : caste == Caste.SOLDIER ? 1.3 : 1.0;
+        double health = caste == Caste.QUEEN ? 10 : caste == Caste.SOLDIER ? 8 : 4;
+        double damage = caste == Caste.SOLDIER ? 2.5 : 1.0;
+        double speed = caste == Caste.QUEEN ? 0.18 : 0.28;
+        double armor = 0;
+        if (rank == Rank.ROYAL) {
+            scale *= 1.3;
+            health = 18;
+            damage = 3.5;
+            armor = 4;
+            speed = 0.3;
+        } else if (rank == Rank.GREAT_QUEEN) {
+            scale *= 2.0;
+            health = 40;
+            speed = 0.1;
+        }
+        set(Attributes.SCALE, scale);
+        set(Attributes.MAX_HEALTH, health);
+        set(Attributes.ATTACK_DAMAGE, damage);
+        set(Attributes.MOVEMENT_SPEED, speed);
+        set(Attributes.ARMOR, armor);
+        // An anthill's ants keep chasing an intruder through its tunnels.
+        set(Attributes.FOLLOW_RANGE, guardian ? 24 : 12);
         setHealth(getMaxHealth());
     }
 
@@ -207,9 +274,13 @@ public class WildAnt extends PathfinderMob implements AntLike {
 
     /** A species that lives in the biome here, or Common Ants where none does. */
     public static Identifier speciesFor(ServerLevelAccessor level, BlockPos pos, RandomSource random) {
-        Holder<Biome> biome = level.getBiome(pos);
+        return speciesFor(level.registryAccess(), level.getBiome(pos), random);
+    }
+
+    /** A species that lives in a biome, or Common Ants where none does. */
+    public static Identifier speciesFor(net.minecraft.core.RegistryAccess registries, Holder<Biome> biome, RandomSource random) {
         List<Identifier> candidates = new ArrayList<>();
-        level.registryAccess().lookup(ModRegistries.SPECIES).ifPresent(lookup -> lookup.listElements().forEach(entry -> {
+        registries.lookup(ModRegistries.SPECIES).ifPresent(lookup -> lookup.listElements().forEach(entry -> {
             AntSpecies species = entry.value();
             if (species.spawn().isPresent() && biome.is(species.spawn().get())) {
                 candidates.add(entry.key().identifier());
@@ -224,6 +295,23 @@ public class WildAnt extends PathfinderMob implements AntLike {
         output.putString("species", species().toString());
         output.putString("caste", caste().getSerializedName());
         output.putBoolean("guardian", guardian);
+        output.putString("rank", rank().name().toLowerCase(java.util.Locale.ROOT));
+        if (anthill != null) {
+            output.putLong("anthill", anthill.asLong());
+        }
+        if (chamber != null) {
+            output.putIntArray("chamber", new int[] {(int) Math.floor(chamber.minX), (int) Math.floor(chamber.minY), (int) Math.floor(chamber.minZ),
+                    (int) Math.ceil(chamber.maxX), (int) Math.ceil(chamber.maxY), (int) Math.ceil(chamber.maxZ)});
+        }
+        long now = level().getGameTime();
+        var alarmList = output.childrenList("alarms");
+        alarms.forEach((player, until) -> {
+            if (until > now) {
+                var entry = alarmList.addChild();
+                entry.store("player", net.minecraft.core.UUIDUtil.CODEC, player);
+                entry.putLong("until", until);
+            }
+        });
         if (nest != null) {
             output.putLong("nest", nest.asLong());
             output.putBoolean("returning", returning);
@@ -239,6 +327,12 @@ public class WildAnt extends PathfinderMob implements AntLike {
         super.readAdditionalSaveData(input);
         setSpecies(Identifier.tryParse(input.getStringOr("species", ModRegistries.COMMON.toString())) instanceof Identifier id ? id : ModRegistries.COMMON);
         guardian = input.getBooleanOr("guardian", false);
+        anthill = input.getLong("anthill").map(BlockPos::of).orElse(null);
+        chamber = input.getIntArray("chamber").filter(box -> box.length == 6)
+                .map(box -> new AABB(box[0], box[1], box[2], box[3], box[4], box[5])).orElse(null);
+        alarms.clear();
+        input.childrenListOrEmpty("alarms").forEach(entry -> entry.read("player", net.minecraft.core.UUIDUtil.CODEC)
+                .ifPresent(player -> alarms.put(player, entry.getLongOr("until", 0))));
         input.getLong("nest").ifPresent(packed -> {
             setNest(BlockPos.of(packed));
             returning = input.getBooleanOr("returning", false);
@@ -255,6 +349,19 @@ public class WildAnt extends PathfinderMob implements AntLike {
                 entityData.set(DATA_CASTE, (byte) value.ordinal());
             }
         }
+        String rank = input.getStringOr("rank", "");
+        for (Rank value : Rank.values()) {
+            if (value.name().toLowerCase(java.util.Locale.ROOT).equals(rank)) {
+                entityData.set(DATA_RANK, (byte) value.ordinal());
+            }
+        }
+        if (guardian && anthill == null && hasHome()) {
+            // An anthill ant from before 0.2.0: all of them were kept near the Queen's spot, which names the anthill.
+            anthill = getHomePosition();
+            if (caste() == Caste.QUEEN && rank.isEmpty()) {
+                setRank(Rank.GREAT_QUEEN);
+            }
+        }
     }
 
     public boolean guardian() {
@@ -266,10 +373,77 @@ public class WildAnt extends PathfinderMob implements AntLike {
         this.guardian = guardian;
     }
 
-    /** A player in a full Chitin set smells like the colony: no wild ant attacks them. */
+    /**
+     * A player in a full Chitin set smells like the colony: no wild ant attacks them, until they raise an anthill's
+     * alarm (its ants attack them then, Chitin or not).
+     */
     @Override
     public boolean canAttack(net.minecraft.world.entity.LivingEntity target) {
-        return !ignores(target) && super.canAttack(target);
+        return hostileTo(target) && super.canAttack(target);
+    }
+
+    /** Whether it would fight this one (whatever the difficulty): anyone not in a full Chitin set, or whom its anthill is alarmed at. */
+    public boolean hostileTo(net.minecraft.world.entity.LivingEntity target) {
+        return !ignores(target) || alarmedAt(target);
+    }
+
+    /** The anthill it belongs to (its Queen's spot), or null. */
+    public @Nullable BlockPos anthill() {
+        return anthill;
+    }
+
+    public void setAnthill(@Nullable BlockPos anthill) {
+        this.anthill = anthill == null ? null : anthill.immutable();
+    }
+
+    /** A great Queen's chamber (null for any other ant, or a Queen from before chambers were kept). */
+    public @Nullable AABB chamber() {
+        if (chamber == null && rank() == Rank.GREAT_QUEEN && anthill != null) {
+            // A Queen from before 0.2.0: her chamber was about this big round her spot.
+            return new AABB(anthill).inflate(4.5, 0, 4.5).expandTowards(0, 4, 0).move(0, -0.5, 0);
+        }
+        return chamber;
+    }
+
+    public void setChamber(@Nullable AABB chamber) {
+        this.chamber = chamber;
+    }
+
+    /** Whether its anthill is alarmed at this one now. */
+    public boolean alarmedAt(net.minecraft.world.entity.LivingEntity target) {
+        Long until = target instanceof Player ? alarms.get(target.getUUID()) : null;
+        return until != null && until > level().getGameTime();
+    }
+
+    /** Whether any alarm is on. */
+    public boolean alarmed() {
+        return alarmed;
+    }
+
+    /** Alarms it at a player until the game time {@code until} (see {@link com.antcolonies.content.worldgen.AnthillAlarm}). */
+    public void alarm(Player player, long until) {
+        alarms.merge(player.getUUID(), until, Math::max);
+        alarmed = true;
+    }
+
+    @Override
+    public boolean isWithinHome(BlockPos pos) {
+        // An alarmed ant chases an intruder anywhere; otherwise it keeps to its room.
+        return alarmed || super.isWithinHome(pos);
+    }
+
+    @Override
+    public boolean isWithinHome(Vec3 pos) {
+        return alarmed || super.isWithinHome(pos);
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
+        if (anthill != null && source.getEntity() instanceof Player player && !com.antcolonies.content.worldgen.AnthillAlarm.exempt(player)) {
+            // Striking an anthill's ant (its great Queen too, who can't be hurt) brings the whole anthill down on you.
+            com.antcolonies.content.worldgen.AnthillAlarm.raise(level, anthill, player, com.antcolonies.content.worldgen.AnthillAlarm.Reason.ATTACK);
+        }
+        return super.hurtServer(level, source, damage);
     }
 
     /** Whether wild ants leave this one alone: a player in a full Chitin set. */
@@ -355,6 +529,23 @@ public class WildAnt extends PathfinderMob implements AntLike {
     @Override
     public void aiStep() {
         super.aiStep();
+        if (level() instanceof ServerLevel server) {
+            if (!alarms.isEmpty()) {
+                long now = server.getGameTime();
+                if (tickCount % 40 == 0) {
+                    alarms.values().removeIf(until -> until <= now);
+                }
+                alarmed = alarms.values().stream().anyMatch(until -> until > now);
+            } else {
+                alarmed = false;
+            }
+            // The great Queen watches her chamber: whoever steps in raises the alarm.
+            if (tickCount % 10 == 0 && rank() == Rank.GREAT_QUEEN && anthill != null && chamber() != null) {
+                for (Player player : server.getEntitiesOfClass(Player.class, chamber(), player -> !com.antcolonies.content.worldgen.AnthillAlarm.exempt(player))) {
+                    com.antcolonies.content.worldgen.AnthillAlarm.raise(server, anthill, player, com.antcolonies.content.worldgen.AnthillAlarm.Reason.QUEEN);
+                }
+            }
+        }
         if (nest != null && !level().isClientSide() && !returning) {
             outTicks++;
             if (outTicks > tripTicks || !HomeNestBlockEntity.foragingWeather(level())) {
@@ -484,6 +675,59 @@ public class WildAnt extends PathfinderMob implements AntLike {
         level.levelEvent(2011, pos, 15);
         level.setBlockAndUpdate(pos, grown);
         return true;
+    }
+
+    /**
+     * Targets the nearest player its anthill is alarmed at (within 40 blocks, not in creative or spectator mode, never
+     * in Peaceful), and keeps after them while the alarm lasts. Queens don't fight.
+     */
+    private class AlarmTargetGoal extends Goal {
+        private static final double RANGE = 40;
+        private @Nullable Player intruder;
+
+        AlarmTargetGoal() {
+            setFlags(EnumSet.of(Flag.TARGET));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (!alarmed || caste() == Caste.QUEEN || !(level() instanceof ServerLevel server)
+                    || server.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) {
+                return false;
+            }
+            intruder = null;
+            double best = RANGE * RANGE;
+            for (UUID id : alarms.keySet()) {
+                Player player = server.getPlayerByUUID(id);
+                if (player != null && valid(player) && distanceToSqr(player) < best) {
+                    best = distanceToSqr(player);
+                    intruder = player;
+                }
+            }
+            return intruder != null;
+        }
+
+        private boolean valid(Player player) {
+            return player.isAlive() && !player.isCreative() && !player.isSpectator() && alarmedAt(player);
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return intruder != null && valid(intruder) && intruder.level() == level() && distanceToSqr(intruder) < RANGE * RANGE;
+        }
+
+        @Override
+        public void start() {
+            setTarget(intruder);
+        }
+
+        @Override
+        public void stop() {
+            if (getTarget() == intruder) {
+                setTarget(null);
+            }
+            intruder = null;
+        }
     }
 
     /** Goes back into its nest when its trip is over, it carries a harvest, or night or rain comes. */

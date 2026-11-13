@@ -7,6 +7,11 @@
     "#c:is_taiga",
     "#c:is_desert",
     "#c:is_badlands",
-    "minecraft:meadow"
+    "minecraft:meadow",
+    "#c:is_swamp",
+    "#c:is_mushroom",
+    "minecraft:cherry_grove",
+    "minecraft:snowy_plains",
+    "minecraft:grove"
   ]
 }

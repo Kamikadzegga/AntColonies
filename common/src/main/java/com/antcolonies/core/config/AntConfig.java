@@ -110,6 +110,7 @@ public final class AntConfig {
     public static final ModConfigSpec.IntValue NEST_COOLDOWN_SECONDS;
     public static final ModConfigSpec.DoubleValue NEST_CROP_GROWTH;
     public static final ModConfigSpec.BooleanValue NEST_HARVEST;
+    public static final ModConfigSpec.IntValue ANTHILL_ALARM_SECONDS;
 
     // --- Guard Ants ---
     public static final ModConfigSpec.IntValue GUARD_COST;
@@ -297,6 +298,9 @@ public final class AntConfig {
                 .defineInRange("nestCropGrowth", 0.02, 0, 1);
         NEST_HARVEST = s.comment("Ants from a home nest harvest ripe crops around it, replant them and carry the harvest into the nest.")
                 .define("nestHarvest", true);
+        ANTHILL_ALARM_SECONDS = s.comment("Seconds an anthill stays alarmed at a player who opened one of its chests, stepped into its Queen's chamber",
+                        "or struck one of its ants (even in a full Chitin set, its ants attack them meanwhile).")
+                .defineInRange("anthillAlarmSeconds", 300, 10, 86400);
         s.pop();
 
         s.push("guards");

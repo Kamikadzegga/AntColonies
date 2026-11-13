@@ -115,6 +115,7 @@ public class AntColoniesGameTests {
     public AntColoniesGameTests(IEventBus modEventBus) {
         TESTS.register(modEventBus);
         UpdateGameTests.register(modEventBus);
+        AnthillGameTests.register(modEventBus);
         modEventBus.addListener(AntColoniesGameTests::registerTests);
         modEventBus.addListener(AntColoniesGameTests::addGuidePack);
     }
@@ -132,6 +133,7 @@ public class AntColoniesGameTests {
                     spaced(environment, 200)));
         }
         UpdateGameTests.registerTests(event, environment);
+        AnthillGameTests.registerTests(event, environment);
         event.registerTest(LAB.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, LAB.getId()),
                 spaced(environment, 600)));
         event.registerTest(HOME_NEST_ALONE.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, HOME_NEST_ALONE.getId()),

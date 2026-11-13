@@ -68,11 +68,22 @@ java tools/BrandGen.java
 
 - `./gradlew runGameTestServer` runs the game tests on a dedicated server: persistence, ant allocation, production and
   its limits, starvation, breeding, farming, fighting, evolution, Queen rearing, hybrids, the laboratory and its power,
-  joining chambers, offline catch-up, tweezers, world generation, advancements, redstone, Chitin gear, Guard Ants, the giant
-  anthill, data loading, and the modpack guide's examples loaded as a data pack. All of them must pass.
+  joining chambers, offline catch-up, tweezers, world generation, advancements, redstone, Chitin gear, Guard Ants, the
+  anthills (grown layouts, biome themes, the alarm, ants resting when nobody is near), data loading, and the modpack
+  guide's examples loaded as a data pack. All of them must pass.
 - `./gradlew runClient` with an empty file named `ingame-showcase` in `run/` builds a demo world, takes screenshots of
   the colonies, every screen, the recipe viewers, the anthill and the new items into `run/screenshots`, writes what it
-  saw to `run/ingame-showcase-result.txt`, and quits. Use it to check anything visual.
+  saw to `run/ingame-showcase-result.txt`, and quits. Use it to check anything visual. Other files there run other
+  checks the same way: `anthill-check` builds one anthill per biome theme and photographs it, `stress-test` measures
+  the server tick and frame rate with 100 colonies and four large anthills (then with one anthill alarmed).
+- `./gradlew runWorldgenServer` with a `worldgen-check` file in `runs/worldgen-server` finds anthills in real terrain
+  in all three dimensions and checks their Queens, guards and loot (`worldgen-check-result.txt`).
+- The multiplayer stress test: an empty `mp-stress` file in `runs/mp-server`, `runs/mp-a` and `runs/mp-b`, then
+  `./gradlew runMpServer` and, once it is up, `runMpClientA` and `runMpClientB`. It measures the same world as
+  `stress-test` on a dedicated server with two players: tick time, frame rates, the packets each player gets by type,
+  and a profile (`mp-stress-*.jfr`, read with `jfr view hot-methods`). Results in `mp-stress-result.txt` in each
+  folder. Add an `mp-stress-short` file beside the server's for a one-minute run without the profile. Start it from a
+  fresh world each time.
 
 ## Pull requests
 
