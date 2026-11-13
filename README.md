@@ -106,7 +106,9 @@ Each Minecraft version has its own branch. You are reading the **26.3** branch.
 ## Installation
 
 1. Install [NeoForge](https://neoforged.net) **26.3.0.101** or newer for Minecraft **26.3** (Java 25).
-2. Put `antcolonies-<version>.jar` into your `mods` folder. The mod is needed on both the server and the client.
+2. Download `antcolonies-26.3.0.2.0.jar` from the [0.2.0 release](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.2.0)
+   (for Minecraft 26.1.2, get [0.1.0 for 26.1.2](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.1.0-26.1.2) instead) and
+   put it into your `mods` folder. The mod is needed on both the server and the client.
 3. Optional companions:
 
 | Mod | What it adds |
