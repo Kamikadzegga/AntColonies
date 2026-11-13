@@ -6,7 +6,10 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
-The anthill update.
+## [0.1.0] - 2026-11-13
+
+The first release for Minecraft 26.1.2, with the same content as 0.2.0 for Minecraft 26.3: the anthill update below,
+and the colony update and everything before it (the 26.3 versions further down).
 
 ### Added
 
@@ -42,7 +45,7 @@ The anthill update.
 - Anthill ants no longer wander round their tunnels while no player is within 32 blocks, as on 26.3. On 26.1.2 they
   never stopped, which tripled the network traffic near anthills and cost the server time for nothing.
 
-## [0.1.0] - 2026-11-12
+## 0.1.0 for Minecraft 26.3 - 2026-11-12
 
 The colony update.
 
@@ -75,7 +78,7 @@ The colony update.
 
 - Some anthills were missing the chest in their chitin storage room.
 
-## [0.0.2] - 2026-11-09
+## 0.0.2 for Minecraft 26.3 - 2026-11-09
 
 ### Added
 
@@ -98,7 +101,7 @@ The colony update.
 - Genetic Laboratory: the cost card and the Upgrade tooltip showed the first trait's materials whatever trait was
   selected, so other traits seemed impossible to upgrade. They now show the selected trait's cost.
 
-## [0.0.1] - 2026-11-09
+## 0.0.1 for Minecraft 26.3 - 2026-11-09
 
 The first release, for Minecraft 26.3 and NeoForge 26.3.0.101 (Java 25).
 
@@ -177,6 +180,5 @@ The first release, for Minecraft 26.3 and NeoForge 26.3.0.101 (Java 25).
   and KubeJS guide.
 - Tested together with MachinaOpus and its Tools Addon: no clashing recipes or names.
 
-[Unreleased]: https://github.com/Kamikadzegga/AntColonies/compare/v0.0.2...HEAD
-[0.0.2]: https://github.com/Kamikadzegga/AntColonies/compare/v0.0.1...v0.0.2
-[0.0.1]: https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.0.1
+[Unreleased]: https://github.com/Kamikadzegga/AntColonies/compare/v0.1.0-26.1.2...26.1.2
+[0.1.0]: https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.1.0-26.1.2

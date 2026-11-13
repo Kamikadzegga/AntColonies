@@ -98,10 +98,10 @@ hunters to work, evolve mineral species and engineer their genes.
 
 Each Minecraft version has its own branch. You are reading the **26.1.2** branch.
 
-| Minecraft | Branch | |
-|---|---|---|
-| 26.3 | [`main`](https://github.com/Kamikadzegga/AntColonies/tree/main) | The main version: new features land here first |
-| 26.1.2 | [`26.1.2`](https://github.com/Kamikadzegga/AntColonies/tree/26.1.2) | The same mod for 26.1.2 modpacks, tested with KubeJS |
+| Minecraft | Branch | Latest release | |
+|---|---|---|---|
+| 26.3 | [`main`](https://github.com/Kamikadzegga/AntColonies/tree/main) | [0.2.0](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.2.0) | The main version: new features land here first |
+| 26.1.2 | [`26.1.2`](https://github.com/Kamikadzegga/AntColonies/tree/26.1.2) | [0.1.0](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.1.0-26.1.2) | The same mod for 26.1.2 modpacks, tested with KubeJS; 0.1.0 has the same content as 0.2.0 for 26.3 |
 
 ## Installation
 
