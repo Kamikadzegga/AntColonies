@@ -4,12 +4,45 @@
     {
       "conditions": [
         {
-          "condition": "minecraft:survives_explosion"
+          "condition": "minecraft:any_of",
+          "terms": [
+            {
+              "condition": "minecraft:match_tool",
+              "predicate": {
+                "predicates": {
+                  "minecraft:enchantments": [
+                    {
+                      "enchantments": "minecraft:silk_touch",
+                      "levels": {
+                        "min": 1
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "antcolonies:ant_egg_cluster",
+              "properties": {
+                "natural": "false"
+              }
+            }
+          ]
         }
       ],
       "entries": [
         {
           "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "minecraft:copy_components",
+              "include": [
+                "antcolonies:species"
+              ],
+              "source": "block_entity"
+            }
+          ],
           "name": "antcolonies:ant_egg_cluster"
         }
       ],

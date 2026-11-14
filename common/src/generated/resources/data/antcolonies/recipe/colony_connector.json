@@ -2,12 +2,13 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": "antcolonies:chitin_plate",
-    "A": "antcolonies:ant_food",
-    "P": "minecraft:packed_mud",
+    "I": "antcolonies:infernal_chitin",
+    "P": "antcolonies:nether_trail_pheromone",
+    "B": "minecraft:blaze_rod",
+    "M": "minecraft:magma_block",
     "T": "antcolonies:test_tube"
   },
-  "pattern": ["CAC", "PTP", "CCC"],
+  "pattern": ["IPI", "BTB", "IMI"],
   "result": {
     "id": "antcolonies:colony_connector"
   }

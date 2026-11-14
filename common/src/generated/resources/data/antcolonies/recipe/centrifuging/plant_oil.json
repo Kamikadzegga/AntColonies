@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:plant_oil_droplet",
+  "result": {
+    "id": "immersiveengineering:plantoil",
+    "amount": 50
+  },
+  "energy": 1200,
+  "time": 80,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "immersiveengineering"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:fluid",
+      "value": "immersiveengineering:plantoil"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:plant_oil_droplet"
+    }
+  ]
+}

@@ -46,6 +46,12 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
 
     protected final List<Button> buttons = new ArrayList<>();
 
+    /** Text drawn cut short this frame: where (screen coordinates) and the whole text, shown on hover. */
+    private record Cut(int x, int y, int w, int h, String text) {
+    }
+
+    private final List<Cut> cuts = new ArrayList<>();
+
     protected AntScreen(T menu, Inventory inventory, Component title, int width, int height) {
         super(menu, inventory, title, width, height);
     }
@@ -54,6 +60,7 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         super.extractBackground(graphics, mouseX, mouseY, a);
         buttons.clear();
+        cuts.clear();
         drawFrame(graphics);
         for (Slot slot : menu.slots) {
             if (slot.isActive()) {
@@ -148,8 +155,41 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
                 return;
             }
         }
+        // A text cut short shows whole under the mouse (an item in a slot under it keeps its own tooltip).
+        if (hoveredSlot == null || !hoveredSlot.hasItem()) {
+            for (Cut cut : cuts) {
+                if (mouseX >= cut.x() && mouseY >= cut.y() && mouseX < cut.x() + cut.w() && mouseY < cut.y() + cut.h()) {
+                    List<Component> lines = new ArrayList<>();
+                    font.getSplitter().splitLines(cut.text(), 220, net.minecraft.network.chat.Style.EMPTY)
+                            .forEach(part -> lines.add(Component.literal(part.getString())));
+                    graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+                    return;
+                }
+            }
+        }
         extractPageTooltip(graphics, mouseX, mouseY);
     }
+
+    /** Registers a hover with {@code text} over an area (panel coordinates), for text shown shortened some other way. */
+    protected void hoverText(int x, int y, int w, int h, String text) {
+        cuts.add(new Cut(leftPos + x, topPos + y, w, h, text));
+    }
+
+    /**
+     * Call after drawing {@code drawn} at screen coordinates: if it is the text {@link #fit} cut last, hovering it shows it
+     * whole. {@link #label} and the screens' own text helpers call this, so any {@code label(fit(...))} gets its hover.
+     */
+    protected void noteDrawn(String drawn, int screenX, int screenY) {
+        if (lastCutShown != null && lastCutShown.equals(drawn)) {
+            cuts.add(new Cut(screenX, screenY - 1, font.width(drawn), 10, lastCutFull));
+        }
+        lastCutShown = null;
+        lastCutFull = null;
+    }
+
+    /** The last text {@link #fit} cut, as drawn and whole, until it is drawn. */
+    private @Nullable String lastCutShown;
+    private @Nullable String lastCutFull;
 
     protected void extractPageTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     }
@@ -218,6 +258,9 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
         int room = button.w() - 4;
         if (font.width(label) - 1 > room) {
             label = font.plainSubstrByWidth(label, room - font.width(".")) + ".";
+            if (button.tooltip() == null) {
+                cuts.add(new Cut(button.x(), button.y(), button.w(), button.h(), button.label()));
+            }
         }
         int textW = font.width(label) - 1;
         graphics.text(font, label, button.x() + (button.w() - textW + 1) / 2, button.y() + (button.h() - 7) / 2, color, false);
@@ -259,9 +302,10 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
 
     protected void label(GuiGraphicsExtractor graphics, String text, int x, int y, int color) {
         graphics.text(font, text, leftPos + x, topPos + y, color, false);
+        noteDrawn(text, leftPos + x, topPos + y);
     }
 
-    /** Text cut to a width, with an ellipsis. */
+    /** Text cut to a width, with an ellipsis; drawn with {@link #label} (or noted with {@link #noteDrawn}) it shows whole on hover. */
     protected String fit(String text, int width) {
         if (font.width(text) <= width) {
             return text;
@@ -270,7 +314,9 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
         while (cut.length() > 1 && font.width(cut + "...") > width) {
             cut = cut.substring(0, cut.length() - 1);
         }
-        return cut + "...";
+        lastCutShown = cut + "...";
+        lastCutFull = text;
+        return lastCutShown;
     }
 
     protected boolean over(double mouseX, double mouseY, int x, int y, int w, int h) {

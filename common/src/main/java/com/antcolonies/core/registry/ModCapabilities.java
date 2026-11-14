@@ -20,6 +20,11 @@ public final class ModCapabilities {
         // FE: the Generator gives energy out; the Genetic Laboratory takes it in on any side.
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.GENERATOR.get(), (be, side) -> be.energyHandler());
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.GENETIC_LAB.get(), (be, side) -> be.energyHandler());
+        // The Droplet Centrifuge: droplets in (any side), FE in (any side), and its tank out: an ordinary fluid handler that
+        // pipes and tanks take from on every side (nothing can be put into it).
+        event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.CENTRIFUGE.get(), (be, side) -> new WorldlyContainerWrapper(be, side));
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.CENTRIFUGE.get(), (be, side) -> be.energyHandler());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.CENTRIFUGE.get(), (be, side) -> be.fluidOutput());
     }
 
     private ModCapabilities() {}

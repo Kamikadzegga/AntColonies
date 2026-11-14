@@ -109,7 +109,9 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             }
             state.look = species == null ? AntLook.UNKNOWN : species.look();
             state.farmers = species != null && species.canFarm();
-            state.carry = state.kind == StructureKind.HARVESTING_SITE ? 0xFF5DAA3C
+            // Liquid Ants carry a droplet of their fluid.
+            state.carry = state.kind == StructureKind.LIQUID_CHAMBER ? 0xFF000000 | state.look.crop().orElse(0x9AD8FF)
+                    : state.kind == StructureKind.HARVESTING_SITE ? 0xFF5DAA3C
                     : state.look.crystal().map(c -> 0xFF000000 | c).orElse(0xFFD9B26A);
         }
         state.heap.clear();

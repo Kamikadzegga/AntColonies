@@ -1,0 +1,11 @@
+{
+  "tier": 2,
+  "category": "liquid",
+  "look": { "body": "#5A3A1E", "gaster": "#3E2814", "accent": "#3E2814", "crop": "#C98A2B" },
+  "diet": { "consumption": 1.5 },
+  "liquid": { "fluid": "mypack:syrup", "droplet": "mypack:syrup_droplet", "rate": 0.5 },
+  "rearing": {
+    "cost": [{ "ingredient": "antcolonies:royal_jelly", "count": 2 }, { "ingredient": "minecraft:sugar", "count": 16 }],
+    "time": 3600
+  }
+}

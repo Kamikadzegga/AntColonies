@@ -449,8 +449,7 @@ public class AnthillPiece extends StructurePiece {
                         place(level, chunkBB, floor(room, 3, -3), lamp);
                         place(level, chunkBB, floor(room, -1, 4), lamp);
                         for (int i = 0; i < 4; i++) {
-                            place(level, chunkBB, floor(room, roomRandom.nextInt(7) - 3, roomRandom.nextInt(2) == 0 ? -4 : 4),
-                                    (i % 2 == 0 ? ModDecor.ANT_EGG_CLUSTER : ModDecor.LARVA_CLUSTER).get().defaultBlockState());
+                            cluster(level, chunkBB, floor(room, roomRandom.nextInt(7) - 3, roomRandom.nextInt(2) == 0 ? -4 : 4), i % 2 == 0, species, anthill);
                         }
                     }
                     WildAnt great = spawn(level, chunkBB, anthill, species, Caste.QUEEN, WildAnt.Rank.GREAT_QUEEN, anthill, 2);
@@ -483,8 +482,7 @@ public class AnthillPiece extends StructurePiece {
                     int piles = room.type() == AnthillLayout.RoomType.NURSERY ? 4 : 5;
                     for (int i = 0; i < piles; i++) {
                         boolean eggs = room.type() == AnthillLayout.RoomType.EGG_STORAGE || room.type() == AnthillLayout.RoomType.NURSERY && i % 2 == 0;
-                        place(level, chunkBB, floor(room, roomRandom.nextInt(5) - 2, roomRandom.nextInt(5) - 2),
-                                (eggs ? ModDecor.ANT_EGG_CLUSTER : ModDecor.LARVA_CLUSTER).get().defaultBlockState());
+                        cluster(level, chunkBB, floor(room, roomRandom.nextInt(5) - 2, roomRandom.nextInt(5) - 2), eggs, species, anthill);
                     }
                     workers(level, chunkBB, room, species, anthill, 1 + roomRandom.nextInt(2));
                 }
@@ -654,6 +652,17 @@ public class AnthillPiece extends StructurePiece {
     private static void place(WorldGenLevel level, BoundingBox chunkBB, BlockPos pos, BlockState state) {
         if (chunkBB.isInside(pos) && free(level.getBlockState(pos)) && !free(level.getBlockState(pos.below()))) {
             level.setBlock(pos, state, Block.UPDATE_CLIENTS);
+        }
+    }
+
+    /** A live egg or larva cluster of the anthill: it hatches, in time, into ants of its species that belong to the anthill. */
+    private static void cluster(WorldGenLevel level, BoundingBox chunkBB, BlockPos pos, boolean eggs, Identifier species, BlockPos anthill) {
+        if (chunkBB.isInside(pos) && free(level.getBlockState(pos)) && !free(level.getBlockState(pos.below()))) {
+            level.setBlock(pos, (eggs ? ModDecor.ANT_EGG_CLUSTER : ModDecor.LARVA_CLUSTER).get().defaultBlockState()
+                    .setValue(com.antcolonies.content.block.BroodClusterBlock.NATURAL, true), Block.UPDATE_CLIENTS);
+            if (level.getBlockEntity(pos) instanceof com.antcolonies.content.blockentity.BroodClusterBlockEntity cluster) {
+                cluster.set(species, anthill);
+            }
         }
     }
 

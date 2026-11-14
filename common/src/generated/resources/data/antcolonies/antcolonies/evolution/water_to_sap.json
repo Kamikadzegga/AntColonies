@@ -1,0 +1,25 @@
+{
+  "from": "antcolonies:water",
+  "to": "antcolonies:sap",
+  "item": "#antcolonies:liquid_feed/sap",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "thermal"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:fluid",
+      "value": "thermal:sap"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:sap_droplet"
+    }
+  ]
+}

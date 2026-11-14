@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:creosote_droplet",
+  "result": {
+    "id": "immersiveengineering:creosote",
+    "amount": 50
+  },
+  "energy": 1200,
+  "time": 80,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "immersiveengineering"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:fluid",
+      "value": "immersiveengineering:creosote"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:creosote_droplet"
+    }
+  ]
+}

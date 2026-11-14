@@ -117,6 +117,7 @@ public class AntColoniesGameTests {
         UpdateGameTests.register(modEventBus);
         PortAuditTests.register(modEventBus);
         AnthillGameTests.register(modEventBus);
+        LiquidGameTests.register(modEventBus);
         modEventBus.addListener(AntColoniesGameTests::registerTests);
         modEventBus.addListener(AntColoniesGameTests::addGuidePack);
     }
@@ -136,6 +137,7 @@ public class AntColoniesGameTests {
         UpdateGameTests.registerTests(event, environment);
         PortAuditTests.registerTests(event, environment);
         AnthillGameTests.registerTests(event, environment);
+        LiquidGameTests.registerTests(event, environment);
         event.registerTest(LAB.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, LAB.getId()),
                 spaced(environment, 600)));
         event.registerTest(HOME_NEST_ALONE.getId(), new LoadedAreaTest(ResourceKey.create(Registries.TEST_FUNCTION, HOME_NEST_ALONE.getId()),
@@ -288,7 +290,8 @@ public class AntColoniesGameTests {
                 java.util.Map.entry("fluorite", List.of("mekanism", "machinaopus")), java.util.Map.entry("certus", List.of("ae2")),
                 java.util.Map.entry("molybdenum", List.of("machinaopus")), java.util.Map.entry("sulfur", List.of("machinaopus")),
                 java.util.Map.entry("rubber", List.of("machinaopus")));
-        long expected = 46;
+        // And the Liquid Ants: Water and Lava always, one more per other mod's fluid that exists (LiquidGameTests checks which).
+        long expected = 46 + com.antcolonies.colony.liquid.LiquidKinds.available().size();
         for (var entry : needs.entrySet()) {
             boolean modLoaded = entry.getValue().stream().anyMatch(ModList.get()::isLoaded);
             boolean speciesLoaded = ModRegistries.species(registries, AntColonies.id(entry.getKey())) != null;

@@ -1,0 +1,1 @@
+{ "from": "antcolonies:water", "to": "mypack:syrup", "item": "mypack:syrup_bucket", "chance": 0.08, "guaranteed_after": 24, "min_stage": 2 }

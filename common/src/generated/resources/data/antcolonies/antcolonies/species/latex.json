@@ -1,0 +1,53 @@
+{
+  "tier": 2,
+  "category": "liquid",
+  "look": {
+    "body": "#6A6A66",
+    "gaster": "#4A4A46",
+    "accent": "#4A4A46",
+    "pattern": "plain",
+    "crop": "#E4E4E4"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.5
+  },
+  "liquid": {
+    "fluid": "industrialforegoing:latex",
+    "droplet": "antcolonies:latex_droplet",
+    "rate": 0.15
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "minecraft:honey_bottle",
+        "count": 2
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "industrialforegoing"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:fluid",
+      "value": "industrialforegoing:latex"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:latex_droplet"
+    }
+  ]
+}

@@ -28,5 +28,8 @@ public final class ModMenus {
     public static final Supplier<MenuType<com.antcolonies.content.menu.GeneratorMenu>> GENERATOR = MENUS.register("generator",
             () -> IMenuTypeExtension.create(com.antcolonies.content.menu.GeneratorMenu::fromNetwork));
 
+    public static final Supplier<MenuType<com.antcolonies.content.menu.CentrifugeMenu>> CENTRIFUGE = MENUS.register("centrifuge",
+            () -> IMenuTypeExtension.create(com.antcolonies.content.menu.CentrifugeMenu::fromNetwork));
+
     private ModMenus() {}
 }

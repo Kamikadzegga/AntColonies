@@ -53,8 +53,13 @@ public class AntCategory extends AbstractRecipeCategory<AntRecipe> {
         for (int i = 0; i < recipe.outputs().size(); i++) {
             AntRecipe.Output output = recipe.outputs().get(i);
             IRecipeSlotBuilder slot = builder.addOutputSlot(OUTPUT_X + 1 + i % OUTPUT_COLUMNS * STEP, 1 + i / OUTPUT_COLUMNS * STEP)
-                    .setStandardSlotBackground()
-                    .addItemStacks(output.stacks());
+                    .setStandardSlotBackground();
+            if (output.fluid() != null) {
+                // A fluid (the Droplet Centrifuge's result): shown as the fluid itself.
+                slot.setFluidRenderer(output.fluid().getAmount(), false, 16, 16).add(output.fluid().getFluid(), output.fluid().getAmount());
+            } else {
+                slot.addItemStacks(output.stacks());
+            }
             if (!output.tooltip().isEmpty()) {
                 slot.addRichTooltipCallback((view, tooltip) -> output.tooltip().forEach(tooltip::add));
             }

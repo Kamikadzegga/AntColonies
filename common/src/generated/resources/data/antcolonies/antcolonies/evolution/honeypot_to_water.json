@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:honeypot",
+  "to": "antcolonies:water",
+  "item": "#antcolonies:liquid_feed/water",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300
+}

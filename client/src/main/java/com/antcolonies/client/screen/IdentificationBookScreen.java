@@ -98,6 +98,7 @@ public class IdentificationBookScreen extends Screen {
         AntScreen.drawWell(graphics, left + 6, top + 6, LIST_W, HEIGHT - 12);
         AntScreen.drawWell(graphics, left + LIST_W + 8, top + 6, WIDTH - LIST_W - 14, HEIGHT - 12);
         scroll = Math.clamp(scroll, 0, Math.max(0, entries() - ROWS));
+        String cutName = null;
         for (int row = 0; row < ROWS && scroll + row < entries(); row++) {
             int index = scroll + row;
             int y = top + 9 + row * 10;
@@ -118,6 +119,9 @@ public class IdentificationBookScreen extends Screen {
                 color = 0xFFD8F2FF;
             }
             if (font.width(name) > LIST_W - 16) {
+                if (mouseX >= left + 7 && mouseX < left + LIST_W + 5 && mouseY >= y - 1 && mouseY < y + 9) {
+                    cutName = name; // shown whole on hover
+                }
                 name = font.plainSubstrByWidth(name, LIST_W - 16 - font.width("..")) + "..";
             }
             graphics.text(font, name, left + 18, y, color, false);
@@ -133,6 +137,10 @@ public class IdentificationBookScreen extends Screen {
             info.species(font, entry.key().identifier(), entry.value(), null, null, w);
         }
         info.draw(graphics, font, x, top + 10, HEIGHT - 20);
+        if (cutName != null) {
+            graphics.setComponentTooltipForNextFrame(font, List.of(Component.literal(cutName)), mouseX, mouseY);
+            return;
+        }
         List<Component> tooltip = info.hover(mouseX, mouseY);
         if (tooltip != null) {
             graphics.setComponentTooltipForNextFrame(font, tooltip, mouseX, mouseY);

@@ -64,7 +64,10 @@ public class KubejsCheckServer {
         if (Files.exists(MARKER)) {
             LOGGER.info("[KubeJS check] marker found");
             NeoForge.EVENT_BUS.addListener(this::onServerTick);
-            NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> clientJoined = true);
+            NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> {
+                clientJoined = true;
+                showSyrup(event.getEntity());
+            });
             NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> clientLeft = true);
         }
     }
@@ -125,8 +128,12 @@ public class KubejsCheckServer {
         }, () -> fail("FAIL the Tweezers recipe is gone"));
         // Every other recipe of the mod still loaded (KubeJS re-reads all recipes; one it can't parse would vanish).
         long mine = recipes.stream().filter(holder -> holder.id().identifier().getNamespace().equals(AntColonies.MODID)).count();
-        long files = 189 - 2; // DataGen writes 189 recipes; the guide's script removes the Terrarium and Royal Jelly ones
+        // DataGen writes 191 recipes that need no other mod; the guide's scripts remove the Terrarium, Royal Jelly and
+        // Lava Droplet ones.
+        long files = 191 - 3;
         expect(mine == files, "antcolonies recipes loaded: " + mine + " (expected " + files + ")");
+
+        liquids(server, level, recipes);
 
         // --- Guide section 11: biome tags.
         var biomes = server.registryAccess().lookupOrThrow(Registries.BIOME);
@@ -167,6 +174,133 @@ public class KubejsCheckServer {
         var advancement = server.getAdvancements().get(Identifier.parse("mypack:diamond_thousand"));
         expect(advancement != null && advancement.value().parent().map(p -> p.toString().equals("antcolonies:evolution")).orElse(false),
                 "advancement mypack:diamond_thousand loaded with its parent: " + (advancement != null));
+    }
+
+    /**
+     * Guide sections 3 and 5: Centrifuge recipes removed, replaced and added by a script, and a pack's own Liquid Ant
+     * whose fluid and droplet a startup script registers. Read back from the server's recipes, then run for real: a
+     * Centrifuge spins them, and a colony of the pack's ants makes its droplets.
+     */
+    private void liquids(MinecraftServer server, ServerLevel level, List<RecipeHolder<?>> recipes) {
+        java.util.Map<String, com.antcolonies.content.recipe.CentrifugingRecipe> centrifuging = new java.util.TreeMap<>();
+        for (RecipeHolder<?> holder : recipes) {
+            if (holder.value() instanceof com.antcolonies.content.recipe.CentrifugingRecipe recipe) {
+                centrifuging.put(holder.id().identifier().toString(), recipe);
+            }
+        }
+        expect(centrifuging.keySet().equals(Set.of("antcolonies:centrifuging/water", "mypack:centrifuging/lava", "mypack:centrifuging/snowball",
+                "mypack:centrifuging/syrup")), "Centrifuge recipes: " + centrifuging.keySet());
+        var lava = centrifuging.get("mypack:centrifuging/lava");
+        expect(lava != null && lava.result().fluid().value() == net.minecraft.world.level.material.Fluids.LAVA && lava.result().amount() == 25
+                && lava.energy() == 4000 && lava.time() == 200, "replaced Lava Droplet recipe: " + (lava == null ? "none" : lava.result().amount()
+                + " mB, " + lava.energy() + " FE, " + lava.time() + " ticks"));
+        var snowball = centrifuging.get("mypack:centrifuging/snowball");
+        expect(snowball != null && snowball.ingredient().test(new ItemStack(Items.SNOWBALL)) && snowball.result().amount() == 250
+                && snowball.energy() == 200 && snowball.time() == 40, "added snowball recipe: " + (snowball == null ? "none" : snowball.result().amount()
+                + " mB, " + snowball.energy() + " FE, " + snowball.time() + " ticks (time left out: the default 40)"));
+
+        // What the startup script registered.
+        Identifier syrupId = Identifier.parse("mypack:syrup");
+        Identifier dropletId = Identifier.parse("mypack:syrup_droplet");
+        var syrup = BuiltInRegistries.FLUID.getOptional(syrupId);
+        var droplet = BuiltInRegistries.ITEM.getOptional(dropletId);
+        var bucket = BuiltInRegistries.ITEM.getOptional(Identifier.parse("mypack:syrup_bucket"));
+        expect(syrup.isPresent() && droplet.isPresent() && bucket.isPresent(), "startup script registered: fluid mypack:syrup " + syrup.isPresent()
+                + ", item mypack:syrup_droplet " + droplet.isPresent() + ", item mypack:syrup_bucket " + bucket.isPresent());
+
+        // The pack's Liquid Ant and the evolution into it, from kubejs/data.
+        var species = ModRegistries.species(server.registryAccess(), syrupId);
+        expect(species != null && species.makesLiquid() && species.liquid().orElseThrow().available(), "species mypack:syrup: loaded "
+                + (species != null) + ", a Liquid Ant " + (species != null && species.makesLiquid()) + ", its fluid and droplet exist "
+                + (species != null && species.liquid().map(com.antcolonies.colony.species.AntSpecies.Liquid::available).orElse(false)));
+        var evolutions = server.registryAccess().lookupOrThrow(ModRegistries.EVOLUTION);
+        var evolution = evolutions.get(ResourceKey.create(ModRegistries.EVOLUTION, Identifier.parse("mypack:water_to_syrup")));
+        expect(evolution.isPresent() && bucket.isPresent() && evolution.get().value().item().test(new ItemStack(bucket.get())),
+                "evolution mypack:water_to_syrup loaded and takes the Syrup Bucket: " + evolution.isPresent());
+        if (syrup.isEmpty() || droplet.isEmpty() || species == null) {
+            return;
+        }
+
+        // A real Centrifuge with each of them.
+        var water = spin(level, new ItemStack(Items.SNOWBALL), 45);
+        expect(water.getFluid() == net.minecraft.world.level.material.Fluids.WATER && water.getAmount() == 250,
+                "a Centrifuge spins a snowball into " + water.getAmount() + " mB of " + BuiltInRegistries.FLUID.getKey(water.getFluid()));
+        var slow = spin(level, new ItemStack(BuiltInRegistries.ITEM.getValue(AntColonies.id("lava_droplet"))), 150);
+        var done = spin(level, new ItemStack(BuiltInRegistries.ITEM.getValue(AntColonies.id("lava_droplet"))), 205);
+        expect(slow.isEmpty() && done.getFluid() == net.minecraft.world.level.material.Fluids.LAVA && done.getAmount() == 25,
+                "a Centrifuge spins a Lava Droplet into " + done.getAmount() + " mB of lava in 200 ticks (after 150: " + slow.getAmount() + " mB)");
+        var thick = spin(level, new ItemStack(droplet.get()), 65);
+        expect(thick.getFluid() == syrup.get() && thick.getAmount() == 50,
+                "a Centrifuge spins a Syrup Droplet into " + thick.getAmount() + " mB of " + BuiltInRegistries.FLUID.getKey(thick.getFluid()));
+
+        // A colony of Syrup Ants with a Liquid Chamber.
+        level.getChunk(0, 0);
+        net.minecraft.core.BlockPos pos = new net.minecraft.core.BlockPos(4, 200, 4);
+        level.setBlockAndUpdate(pos, com.antcolonies.core.registry.ModBlocks.TERRARIUM.get().defaultBlockState());
+        level.setBlockAndUpdate(pos.east(), com.antcolonies.core.registry.ModBlocks.STRUCTURES
+                .get(com.antcolonies.colony.model.StructureKind.LIQUID_CHAMBER).get().defaultBlockState());
+        if (level.getBlockEntity(pos) instanceof com.antcolonies.content.blockentity.TerrariumBlockEntity terrarium
+                && level.getBlockEntity(pos.east()) instanceof com.antcolonies.content.blockentity.StructureBlockEntity chamber) {
+            var queen = com.antcolonies.colony.genetics.Genetics.wildQueen(syrupId, net.minecraft.util.RandomSource.create(5));
+            terrarium.colony().setQueen(new com.antcolonies.colony.genetics.QueenData(queen.species(), queen.genome(), 4));
+            terrarium.colony().setPopulation(0, 0, 250);
+            terrarium.colony().setFood(2000);
+            for (int i = 0; i < 6; i++) {
+                terrarium.rescan(level);
+                com.antcolonies.colony.simulation.ColonySimulator.step(terrarium, level, 1);
+            }
+            int made = 0;
+            Set<String> others = new java.util.TreeSet<>();
+            for (int slot = 0; slot < chamber.getContainerSize(); slot++) {
+                ItemStack stack = chamber.getItem(slot);
+                if (stack.is(droplet.get())) {
+                    made += stack.getCount();
+                } else if (!stack.isEmpty() && !stack.is(ModItems.ANT_FOOD.get())) {
+                    others.add(stack.getItem().toString());
+                }
+            }
+            expect(chamber.assigned() > 0 && made > 0 && others.isEmpty(), "a colony of Syrup Ants at a Liquid Chamber: " + chamber.assigned()
+                    + " ants there, " + made + " Syrup Droplets in 6 minutes, anything else: " + others);
+            chamber.clearContent();
+            terrarium.clearContent();
+        } else {
+            fail("FAIL couldn't place a Terrarium and a Liquid Chamber");
+        }
+        level.removeBlock(pos.east(), false);
+        level.removeBlock(pos, false);
+    }
+
+    /** For the client's screenshot: a Centrifuge three quarters full of the pack's fluid, in front of the player who joined. */
+    private static void showSyrup(net.minecraft.world.entity.player.Player player) {
+        var syrup = BuiltInRegistries.FLUID.getOptional(Identifier.parse("mypack:syrup"));
+        if (syrup.isEmpty() || !(player.level() instanceof ServerLevel level)) {
+            return;
+        }
+        net.minecraft.core.BlockPos pos = player.blockPosition().relative(player.getDirection(), 2).above();
+        level.setBlockAndUpdate(pos, com.antcolonies.core.registry.ModBlocks.CENTRIFUGE.get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, player.getDirection().getOpposite()));
+        if (level.getBlockEntity(pos) instanceof com.antcolonies.content.blockentity.CentrifugeBlockEntity centrifuge) {
+            centrifuge.setFluid(new net.neoforged.neoforge.fluids.FluidStack(syrup.get(), 6000));
+        }
+    }
+
+    /** What a Centrifuge with full power holds after this many ticks with this item in its slot. */
+    private static net.neoforged.neoforge.fluids.FluidStack spin(ServerLevel level, ItemStack input, int ticks) {
+        level.getChunk(0, 0);
+        net.minecraft.core.BlockPos pos = new net.minecraft.core.BlockPos(8, 200, 8);
+        level.setBlockAndUpdate(pos, com.antcolonies.core.registry.ModBlocks.CENTRIFUGE.get().defaultBlockState());
+        if (!(level.getBlockEntity(pos) instanceof com.antcolonies.content.blockentity.CentrifugeBlockEntity centrifuge)) {
+            return net.neoforged.neoforge.fluids.FluidStack.EMPTY;
+        }
+        centrifuge.setEnergy(50000);
+        centrifuge.setItem(0, input);
+        for (int i = 0; i < ticks; i++) {
+            com.antcolonies.content.blockentity.CentrifugeBlockEntity.serverTick(level, pos, level.getBlockState(pos), centrifuge);
+        }
+        var held = centrifuge.fluid().copy();
+        centrifuge.clearContent();
+        level.removeBlock(pos, false);
+        return held;
     }
 
     /** Ids of the crafting recipes whose result (with their ingredients' first items in the grid) is this item. */

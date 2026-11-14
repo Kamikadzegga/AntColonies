@@ -1,0 +1,25 @@
+{
+  "from": "antcolonies:water",
+  "to": "antcolonies:crude_oil",
+  "item": "#antcolonies:liquid_feed/crude_oil",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "machinaopus"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:fluid",
+      "value": "machinaopus:crude_oil"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:crude_oil_droplet"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "values": [
+    {
+      "id": "thermal:sap_bucket",
+      "required": false
+    }
+  ]
+}

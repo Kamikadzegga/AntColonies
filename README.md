@@ -29,7 +29,10 @@ hunters to work, evolve mineral species and engineer their genes.
   glass case: Nest Chambers for a bigger colony, Foraging Sites where workers find resources, Hunting Grounds where
   hunter species kill mobs for their drops and feed on them (no mob is ever spawned), Harvesting Sites for farmers, Storage and Queen Chambers. A block under the Terrarium
   sets its climate.
-- **46 species.** Sixteen wild species live in their own biomes, with nests, among them the Army Ant, a hunter, and the
+- **Liquid Ants.** Water Ants and Lava Ants hang at a Liquid Chamber with crops full of their fluid and give droplets
+  of it; a Droplet Centrifuge spins the droplets into the real fluid for FE, into buckets, tanks and pipes. With
+  MachinaOpus, Mekanism, Create and other mods installed, more Liquid Ants make those mods' fluids.
+- **48 species.** Sixteen wild species live in their own biomes, with nests, among them the Army Ant, a hunter, and the
   Nether's Warped Ant and the End's Chorus Ant. Mineral species (iron, gold, diamond, emerald, netherite, ender and more)
   evolve from them, and eleven hybrids come from crossing Queens. The endgame Wither and Dragon Ants need a Nether Star
   and the dragon's breath.
@@ -46,12 +49,12 @@ hunters to work, evolve mineral species and engineer their genes.
   its own slot in the Terrarium.
 - **Expeditions.** Nether- and End-adapted ants go on simulated expeditions from home, through the little portals of the
   Nether and End Foraging Sites, built from the trail pheromones a colony living in that dimension finds.
-- **Colony Connectors.** Link colonies on a channel: food flows from colonies with food to spare to the hungriest ones,
-  and filtered items move between their Storage. No power.
+- **Colony Connectors.** A mid-game (Nether) chamber: link colonies on a channel, and food flows from colonies with food
+  to spare to the hungriest ones, and filtered items move between their Storage. No power.
 - **Giant anthills.** World-generation structures in the Overworld, the Nether and the End. Each nest grows room by room
   (small, medium or large) and takes its look from the biome: termite spires in the savanna, a pebble crater in the
   desert, a snowy cone in the cold, a mossy mound in the jungle and more. Loot, middens to brush, aphid farms, soldiers,
-  and a great Queen behind her royal guard. In Chitin the ants let you pass, until you open their chests or step into
+  and a great Queen behind her Royal Guard Ants. In Chitin the ants let you pass, until you open their chests or step into
   the Queen's chamber.
 - **Building blocks.** Anthill soil and bricks, chitin scales and tiles, amber with an ant caught inside, fungal and
   royal blocks, a nest door, a pheromone lamp and more, with stairs, slabs and walls.

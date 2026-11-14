@@ -1,0 +1,10 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:water_droplet",
+  "result": {
+    "id": "minecraft:water",
+    "amount": 100
+  },
+  "energy": 400,
+  "time": 40
+}

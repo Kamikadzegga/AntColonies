@@ -27,6 +27,7 @@ public class AntColoniesJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(ColonyProviders.STRUCTURE_DATA, StructureBlockEntity.class);
         registration.registerBlockDataProvider(ColonyProviders.MACHINE_DATA, GeneratorBlockEntity.class);
         registration.registerBlockDataProvider(ColonyProviders.MACHINE_DATA, GeneticLabBlockEntity.class);
+        registration.registerBlockDataProvider(ColonyProviders.MACHINE_DATA, com.antcolonies.content.blockentity.CentrifugeBlockEntity.class);
         registration.registerBlockDataProvider(ColonyProviders.NEST_DATA, com.antcolonies.content.blockentity.HomeNestBlockEntity.class);
     }
 
@@ -36,6 +37,7 @@ public class AntColoniesJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(ColonyProviders.STRUCTURE, StructureBlock.class);
         registration.registerBlockComponent(ColonyProviders.MACHINE, GeneratorBlock.class);
         registration.registerBlockComponent(ColonyProviders.MACHINE, GeneticLabBlock.class);
+        registration.registerBlockComponent(ColonyProviders.MACHINE, com.antcolonies.content.block.CentrifugeBlock.class);
         registration.registerBlockComponent(ColonyProviders.WILD_NEST, com.antcolonies.content.block.WildNestBlock.class);
         registration.registerEntityComponent(ColonyProviders.WILD_ANT, com.antcolonies.content.entity.WildAnt.class);
     }

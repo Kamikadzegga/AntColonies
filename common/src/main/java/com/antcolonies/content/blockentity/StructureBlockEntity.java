@@ -365,6 +365,11 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     }
 
     public boolean isLinked() {
+        if (level != null && level.isClientSide()) {
+            // A client knows only what the last sync said (the server sends one when the link is made or lost), so it must
+            // not time the link out itself: its screens and the ants drawn on it would forget their colony after a while.
+            return clientLinked();
+        }
         return terrarium != null && level != null && level.getGameTime() - linkedAt < LINK_TIMEOUT;
     }
 
@@ -595,7 +600,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
         return switch (kind) {
-            case STORAGE, FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE -> slot < unlockedSlots();
+            case STORAGE, FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER -> slot < unlockedSlots();
             // A Colony Connector's filter: one of each item it should send.
             case COLONY_CONNECTOR -> slot < items.size();
             case QUEEN_CHAMBER -> slot < StructureKind.QUEEN_CHAMBER_MATERIALS
@@ -620,7 +625,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     public int[] getSlotsForFace(Direction side) {
         return switch (kind) {
-            case STORAGE, FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE -> range(0, unlockedSlots());
+            case STORAGE, FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER -> range(0, unlockedSlots());
             case QUEEN_CHAMBER -> range(0, items.size());
             default -> NO_SLOTS;
         };

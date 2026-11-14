@@ -1360,6 +1360,8 @@ public class DataGen {
         List<Object> axe = new ArrayList<>();
         pickaxe.add(ac("genetic_laboratory"));
         pickaxe.add(ac("generator"));
+        pickaxe.add(ac("centrifuge"));
+        shovel.add(ac("liquid_chamber"));
         for (String s : new String[] {"nest_chamber", "foraging_site", "harvesting_site", "hunting_ground", "queen_chamber"}) {
             shovel.add(ac(s));
         }
@@ -1511,9 +1513,38 @@ public class DataGen {
             }
         }
         write(states.resolve("generator.json"), obj("variants", generator));
+        // Its models: the shell it shares with the Droplet Centrifuge, with its burn chamber between casing and lid (see
+        // labMachine): dark plating with a viewport in front, a slit in each side and fins at the back; inside, the burn
+        // core between two electrodes.
         for (String on : new String[] {"", "_on"}) {
-            write(blockModels.resolve("generator" + on + ".json"), obj("parent", "minecraft:block/orientable", "textures", obj("front", ac("block/generator_front" + on),
-                    "side", ac("block/generator_side"), "top", ac("block/generator_top"))));
+            boolean lit = !on.isEmpty();
+            List<Object> chamber = new ArrayList<>();
+            // The electrodes, from the floor and from the lid.
+            Map<String, Object> rod = obj("uv", arr(6, 7, 10, 8), "texture", "#deck");
+            chamber.add(obj("from", arr(6, 8, 6), "to", arr(10, 9, 10), "faces", obj("north", rod, "south", rod, "west", rod, "east", rod)));
+            chamber.add(obj("from", arr(6, 13, 6), "to", arr(10, 14, 10), "faces", obj("north", rod, "south", rod, "west", rod, "east", rod)));
+            // The core: plasma (animated, full-bright) while it burns, a dark slug otherwise.
+            Map<String, Object> coreSide = obj("uv", arr(4, 6, 12, 10), "texture", "#core");
+            Map<String, Object> coreEnd = obj("uv", arr(4, 4, 12, 12), "texture", "#core");
+            chamber.add(obj("from", arr(4, 9, 4), "to", arr(12, 13, 12), "light_emission", lit ? 15 : null, "faces", obj(
+                    "up", coreEnd, "down", coreEnd, "north", coreSide, "south", coreSide, "west", coreSide, "east", coreSide)));
+            if (lit) {
+                // What is lit on the casing is drawn again a hair proud of it, full-bright, so it glows in the dark: the
+                // display, the conduits along both sides and the back, the centre of the lid.
+                chamber.add(obj("from", arr(3, 4, -0.02), "to", arr(13, 7, -0.02), "light_emission", 13,
+                        "faces", obj("north", obj("uv", arr(3, 9, 13, 12), "texture", "#front"))));
+                Map<String, Object> conduit = obj("uv", arr(3, 10, 13, 12), "texture", "#side");
+                chamber.add(obj("from", arr(3, 4, 16.02), "to", arr(13, 6, 16.02), "light_emission", 13, "faces", obj("south", conduit)));
+                chamber.add(obj("from", arr(-0.02, 4, 3), "to", arr(-0.02, 6, 13), "light_emission", 13, "faces", obj("west", conduit)));
+                chamber.add(obj("from", arr(16.02, 4, 3), "to", arr(16.02, 6, 13), "light_emission", 13, "faces", obj("east", conduit)));
+                chamber.add(obj("from", arr(6, 16.02, 6), "to", arr(10, 16.02, 10), "light_emission", 13,
+                        "faces", obj("up", obj("uv", arr(6, 6, 10, 10), "texture", "#top"))));
+            }
+            Map<String, Object> textures = obj("particle", ac("block/generator_side"), "side", ac("block/generator_side" + on),
+                    "front", ac("block/generator_front" + on), "top", ac("block/generator_top" + on), "deck", ac("block/generator_deck"),
+                    "port", ac("block/generator_chamber_front"), "slit", ac("block/generator_chamber_side"),
+                    "fins", ac("block/generator_chamber_back"), "core", ac("block/" + (lit ? "generator_plasma" : "generator_core")));
+            labMachine("generator" + on, textures, chamber, "#port", "#fins", "#slit", "#slit");
         }
         for (String nest : NESTS) {
             // One look for every state (recovering or not, wild or a home nest).
@@ -1696,6 +1727,7 @@ public class DataGen {
         // Block items use their block models.
         List<String> blocks = new ArrayList<>(Arrays.asList(STRUCTURES));
         blocks.addAll(List.of("terrarium", "upgrade_station", "genetic_laboratory", "generator"));
+        // (The Liquid Chamber's and the Droplet Centrifuge's item models are written with the rest of theirs, in liquids().)
         for (String nest : NESTS) {
             blocks.add(nest + "_ant_nest");
         }
@@ -2255,6 +2287,10 @@ public class DataGen {
                     + "home, for hoppers and pipes to take out.");
         }
         l.put("entity." + NS + ".wild_ant", "Wild Ant");
+        l.put("entity." + NS + ".royal_guard_ant", "Royal Guard Ant");
+        l.put("tooltip." + NS + ".brood_cluster.use.eggs", "Put into the Terrarium of a working colony (a Queen and workers) of its species: adds %s eggs.");
+        l.put("tooltip." + NS + ".brood_cluster.use.larvae", "Put into the Terrarium of a working colony (a Queen and workers) of its species: adds %s larvae.");
+        l.put("tooltip." + NS + ".brood_cluster.placed", "Only an anthill's own clusters hatch: placed by you, it is a decoration.");
         // Tooltips of blocks and items.
         String[][] tips = {
                 {"terrarium", "The heart of a colony. Put a Queen in and feed her. Chambers placed against it, or against its chambers, join the colony. Take the Queen and ants out in Test Tubes before breaking it: what is left inside is lost."},
@@ -2624,13 +2660,13 @@ public class DataGen {
         LANG.put("message." + NS + ".anthill_alarm.chest", "The ants saw you raid their stores: the whole anthill is after you!");
         LANG.put("message." + NS + ".anthill_alarm.queen", "You stepped into the Queen's chamber: her guard attacks!");
         LANG.put("message." + NS + ".anthill_alarm.attack", "You struck one of the anthill's ants: the colony rises against you!");
-        LANG.put("jade." + NS + ".rank.royal", "The Queen's royal guard");
+        LANG.put("jade." + NS + ".rank.royal", "Guards the great Queen at its post");
         LANG.put("jade." + NS + ".rank.great_queen", "Great Queen of this anthill");
         advancement("end_anthill", "end_colony", "minecraft:end_stone_bricks", "task", "Island Hoppers", "Find an End anthill",
                 obj("trigger", "minecraft:location", "conditions", obj("player", obj("type", "minecraft:entity_properties", "entity", "this",
                         "predicate", obj("minecraft:location", obj("structures", ac("end_anthill")))))));
     }
-/** The update's advancements: founding a colony from one Queen, linking colonies, and the expedition sites. */    static void updateAdvancements() {        advancement("queen_founding", "first_colony", "queen_test_tube", "goal", "From a Single Queen",                "Found a colony with nothing but a Queen: feed her until her first workers are grown", colony("queen_founded", true));        advancement("linked_colonies", "stage_2", "colony_connector", "task", "Trail Network",                "Link two colonies with Colony Connectors on the same channel", colony("linked", true));        advancement("nether_trail", "nether_colony", "nether_trail_pheromone", "task", "Scent of Sulphur",                "Find a Nether Trail Pheromone: a colony foraging in the Nether turns one up now and then", hasItem("nether_trail_pheromone"));        advancement("nether_expedition", "nether_trail", "nether_foraging_site", "goal", "Portal Foragers",                "Build a Nether Foraging Site, for expeditions into the Nether from home", hasItem("nether_foraging_site"));        advancement("end_trail", "end_colony", "end_trail_pheromone", "task", "Scent of the Void",                "Find an End Trail Pheromone: a colony foraging in the End turns one up now and then", hasItem("end_trail_pheromone"));        advancement("end_expedition", "end_trail", "end_foraging_site", "goal", "Beyond the Rift",                "Build an End Foraging Site, for expeditions into the End from home", hasItem("end_foraging_site"));    }
+/** The update's advancements: founding a colony from one Queen, linking colonies, and the expedition sites. */    static void updateAdvancements() {        advancement("queen_founding", "first_colony", "queen_test_tube", "goal", "From a Single Queen",                "Found a colony with nothing but a Queen: feed her until her first workers are grown", colony("queen_founded", true));        advancement("linked_colonies", "nether_trail", "colony_connector", "task", "Trail Network",                "Link two colonies with Colony Connectors on the same channel", colony("linked", true));        advancement("nether_trail", "nether_colony", "nether_trail_pheromone", "task", "Scent of Sulphur",                "Find a Nether Trail Pheromone: a colony foraging in the Nether turns one up now and then", hasItem("nether_trail_pheromone"));        advancement("nether_expedition", "nether_trail", "nether_foraging_site", "goal", "Portal Foragers",                "Build a Nether Foraging Site, for expeditions into the Nether from home", hasItem("nether_foraging_site"));        advancement("end_trail", "end_colony", "end_trail_pheromone", "task", "Scent of the Void",                "Find an End Trail Pheromone: a colony foraging in the End turns one up now and then", hasItem("end_trail_pheromone"));        advancement("end_expedition", "end_trail", "end_foraging_site", "goal", "Beyond the Rift",                "Build an End Foraging Site, for expeditions into the End from home", hasItem("end_foraging_site"));    }
     static void colonyUpdate() {
         decorAssets();
         decorData();
@@ -2817,6 +2853,15 @@ public class DataGen {
                         "condition", obj("type", "minecraft:survives_explosion"),
                         "entries", arr(obj("type", "minecraft:item", "condition", obj("type", "minecraft:match_block", "blocks", ac("nest_door"),
                                 "state", obj("half", "lower")), "name", ac("nest_door"))), "rolls", 1)), "random_sequence", ac("blocks/nest_door")));
+            } else if (d.id().endsWith("_cluster")) {
+                // A live cluster (one an anthill was built with) only with Silk Touch, keeping its species; a placed one (a
+                // decoration) always drops itself.
+                write(DATA.resolve("loot_table/blocks/" + d.id() + ".json"), obj("type", "minecraft:block", "pools", arr(obj(
+                        "condition", obj("type", "minecraft:any_of", "terms", arr("minecraft:tool/can_silk_touch",
+                                obj("type", "minecraft:match_block", "blocks", ac(d.id()), "state", obj("natural", "false")))),
+                        "entries", arr(obj("type", "minecraft:item", "modifier", obj("type", "minecraft:copy_components",
+                                "include", arr(ac("species")), "source", "block_entity"), "name", ac(d.id()))), "rolls", 1)),
+                        "random_sequence", ac("blocks/" + d.id())));
             } else if (d.id().endsWith("glass")) {
                 // Glass only with Silk Touch, like vanilla glass.
                 write(DATA.resolve("loot_table/blocks/" + d.id() + ".json"), obj("type", "minecraft:block", "pools", arr(obj(
@@ -2889,8 +2934,6 @@ public class DataGen {
         shaped("nest_door", ac("nest_door"), 3, new String[] {"CC", "PP", "CC"}, "C", ac("chitin_plate"), "P", ac("packed_anthill_soil"));
         shaped("nest_trapdoor", ac("nest_trapdoor"), 2, new String[] {"CPC", "PCP"}, "C", ac("chitin_plate"), "P", ac("packed_anthill_soil"));
         shaped("pheromone_lamp", ac("pheromone_lamp"), 1, new String[] {" C ", "RGR", " C "}, "C", ac("chitin_plate"), "R", ac("ant_resin"), "G", "glowstone");
-        shapeless("ant_egg_cluster", ac("ant_egg_cluster"), 1, "egg", "egg", "sugar");
-        shapeless("larva_cluster", ac("larva_cluster"), 1, "slime_ball", "sugar", "bone_meal");
         shapeless("terrarium_glass", ac("terrarium_glass"), 4, "glass", "glass", "glass", "glass", "#minecraft:planks");
         for (String id : WITH_STAIRS) {
             String s = stem(id);
@@ -2920,9 +2963,10 @@ public class DataGen {
                 "P", ac("nether_trail_pheromone"), "I", ac("infernal_chitin"), "F", ac("foraging_site"));
         shaped("end_foraging_site", ac("end_foraging_site"), 1, new String[] {"EPE", "VFV", "EYE"}, "E", "end_stone_bricks",
                 "P", ac("end_trail_pheromone"), "V", ac("void_chitin"), "F", ac("foraging_site"), "Y", "ender_eye");
-        // The Colony Connector: a tunnel (a Test Tube through packed mud) lined with Chitin, scented with food.
-        shaped("colony_connector", ac("colony_connector"), 1, new String[] {"CAC", "PTP", "CCC"}, "C", ac("chitin_plate"), "A", ac("ant_food"),
-                "P", "packed_mud", "T", ac("test_tube"));
+        // The Colony Connector, a mid-game (Nether) chamber: a tunnel (a Test Tube) lined with Infernal Chitin, kept warm by
+        // Blaze Rods over a Magma Block and scented with a Nether Trail Pheromone, so it needs a colony that has been to the Nether.
+        shaped("colony_connector", ac("colony_connector"), 1, new String[] {"IPI", "BTB", "IMI"}, "I", ac("infernal_chitin"),
+                "P", ac("nether_trail_pheromone"), "B", "blaze_rod", "M", "magma_block", "T", ac("test_tube"));
     }
 
     /**
@@ -3087,12 +3131,14 @@ public class DataGen {
                         "Back home, build a Nether Foraging Site (obsidian, Infernal Chitin, a Foraging Site and two Nether Trail Pheromones) or an End Foraging Site (end stone bricks, Void Chitin, an eye of ender, a Foraging Site and two End Trail Pheromones).",
                         "Nether-adapted ants (Warped, Fire, Inferno, Soul, Netherite, Wither, Crimson) and End-adapted ants (Chorus, Ender, Dragon) then go on expeditions through its little portal and bring back that dimension's finds. Nothing really travels: no power and no chunk loading.")},
                 {"connectors", "Colony Connectors", String.join("\n",
+                        "Connectors come in the mid game, after the Nether: one takes Infernal Chitin, a Nether Trail Pheromone, Blaze Rods and a Magma Block.",
                         "A Colony Connector joins a colony like any chamber. Connectors with the same channel colour in one dimension link their colonies when they are at most 30 blocks apart (on x and on z), as long as both are loaded.",
                         "Supply gives the food a colony has above its reserve; Request takes food up to its target, the hungriest colony first. Send moves the items in its filter out of the colony's Storage to colonies that Receive.",
                         "A Farmer colony supplying food lets mining and hunting colonies put more ants to work. The Terrarium's Network page shows the network.")},
                 {"building", "Anthills and Building", String.join("\n",
                         "No two anthills are dug alike: each nest grows room by room, small, medium or large, with nurseries, food stores, fungus gardens, aphid farms, middens to brush, barracks and treasure chambers, side entrances, loops and dead ends. Their look follows the biome: termite spires in savannas and badlands, a crater in the desert, a thatched dome in the taiga, snow, moss or mud elsewhere. The Nether and the End have anthills too.",
-                        "Deepest of all, behind her royal guard, lies the great Queen. In a full Chitin set the ants let you pass, until you open one of their chests, step into her chamber or strike one of them: then the whole anthill attacks.",
+                        "Deepest of all, behind her Royal Guard Ants, lies the great Queen. In a full Chitin set the ants let you pass, until you open one of their chests, step into her chamber or strike one of them: then the whole anthill attacks.",
+                        "Its Ant Egg Clusters become Larva Clusters, and those, in time, 1 to 3 more of its ants. Taken with Silk Touch, a cluster goes into the Terrarium of a working colony of the same species; placed again, it is only a decoration.",
                         "Their walls are Anthill Soil. From it, Chitin Plates, Ant Resin (Wood Ants find it), mushrooms and Royal Jelly come five families of building blocks, with stairs, slabs and walls, a Nest Door and a Pheromone Lamp.")}};
         for (String[] page : bookPages) {
             l.put("guide." + NS + "." + page[0] + ".title", page[1]);
@@ -3194,6 +3240,11 @@ public class DataGen {
         l.put(g + "production.col.stored", "Stored");
         l.put(g + "production.stored", "Stored: %s");
         l.put(g + "production.rate", "Found: about %s a minute");
+        l.put(g + "production.rate_measured", "Brought in: %s a minute (last %s min)");
+        l.put(g + "production.window", "%s min");
+        l.put(g + "production.window.hint", "Items per minute: the average of what the ants really brought in over the last %s minutes (up to 30). It stays when the Storage is emptied.");
+        l.put(g + "production.estimate", "est.");
+        l.put(g + "production.estimate.hint", "Estimated from the sites' rates until the ants have brought something in.");
         // Network.
         l.put(g + "network.none", "No colonies linked yet. Put a Colony Connector against this colony, pick a channel colour, and do the same at "
                 + "another colony up to 30 blocks away: food (and filtered items) then move between them.");
@@ -3254,8 +3305,300 @@ public class DataGen {
         l.put("jade." + NS + ".expedition.active", "Ants out on expeditions");
         l.put("jade." + NS + ".expedition.idle", "Portal dark: no expedition");
     }
+    // ------------------------------------------------------------------ Liquid Ants, droplets and the Droplet Centrifuge
+
+    /**
+     * One fluid Liquid Ants make droplets of: its ant species, its droplet and its Centrifuge recipe, all from one row.
+     * The same rows are in tools/TexGen.java (LIQUIDS: the droplet's colour and style) and the mod's code
+     * (LiquidKinds and compat/liquid: the kind's name, mod and fluid id). A new fluid is one row in each.
+     *
+     * @param id        the kind's name: species antcolonies:id, droplet antcolonies:id_droplet
+     * @param ant       the species' name
+     * @param mod       the mod that adds the fluid (null: the base game's, always there)
+     * @param fluid     the still fluid's registry id
+     * @param fluidName the fluid's English name as its mod writes it; the droplet is named "<fluidName> Droplet"
+     * @param from      the species it evolves from
+     * @param feed      what the Queen is fed for it (the fluid's bucket or, where it has none, another container of it)
+     * @param rate      droplets per minute compared to Water Ants
+     * @param food      food eaten compared to Common Ants
+     * @param amount    millibuckets one droplet gives in the Centrifuge
+     * @param energy    FE one droplet takes
+     * @param time      ticks one droplet takes
+     */
+    record Liquid(String id, String ant, String mod, String fluid, String fluidName, String from, String feed, String dimension, int tier, String climate,
+                  String body, String plates, String crop, boolean glow, double rate, double food, int amount, int energy, int time, String description) {
+        String droplet() {
+            return id + "_droplet";
+        }
+    }
+
+    static final List<Liquid> LIQUIDS = List.of(
+            // The base game's two: always there.
+            new Liquid("water", "Water Ant", null, "minecraft:water", "Water", "honeypot", "minecraft:water_bucket", null, 1, "temperate",
+                    "2E4A6B", "1E3550", "4F8FEA", false, 1.0, 1.3, 100, 400, 40,
+                    "Honeypot Ants fed water. Their crops are full of it, always: at a Liquid Chamber they give Water Droplets and nothing else."),
+            new Liquid("lava", "Lava Ant", null, "minecraft:lava", "Lava", "honeypot", "minecraft:lava_bucket", NETHER, 2, "hot",
+                    "3A1A10", "5A2410", "FF7A1A", true, 0.1, 1.8, 50, 2000, 100,
+                    "Honeypot Ants fed lava in the Nether. Their glowing crops hold lava: slow, hungry makers of Lava Droplets."),
+            // MachinaOpus.
+            new Liquid("crude_oil", "Oil Ant", "machinaopus", "machinaopus:crude_oil", "Crude Oil", "water", "machinaopus:crude_oil_bucket", null, 2, "hot",
+                    "2A2420", "14110E", "2B211A", false, 0.08, 1.6, 50, 2400, 120,
+                    "Water Ants fed crude oil. Black-cropped ants that give Crude Oil Droplets: oil for MachinaOpus without a Pumpjack, a little at a time."),
+            new Liquid("liquid_blaze", "Blaze Ant", "machinaopus", "machinaopus:liquid_blaze", "Liquid Blaze", "lava", "machinaopus:liquid_blaze_bucket", null, 2,
+                    "hot", "6A3A0A", "8A4A0A", "FFA020", true, 0.04, 2.0, 25, 4000, 160,
+                    "Lava Ants fed liquid blaze. Their crops burn gold: Liquid Blaze Droplets for MachinaOpus's Blaze Crucible, slowly."),
+            // Mekanism.
+            new Liquid("brine", "Brine Ant", "mekanism", "mekanism:brine", "Brine", "water", "mekanism:brine_bucket", null, 2, "hot",
+                    "7A7450", "5A5438", "FEEF9C", false, 0.3, 1.4, 50, 800, 60,
+                    "Water Ants fed brine. Pale-cropped ants that give Brine Droplets for Mekanism's chemistry."),
+            new Liquid("heavy_water", "Heavy Water Ant", "mekanism", "mekanism:heavy_water", "Heavy Water", "water", "mekanism:heavy_water_bucket", null, 2,
+                    "temperate", "1E2450", "141838", "2A3AB0", false, 0.05, 1.8, 25, 3200, 140,
+                    "Water Ants fed heavy water. Deep blue crops and a slow trickle of Heavy Water Droplets for Mekanism's reactors."),
+            // Create.
+            new Liquid("honey", "Honey Ant", "create", "create:honey", "Honey", "honeypot", "create:honey_bucket", null, 2, "temperate",
+                    "6A3A12", "4A2808", "E8A126", false, 0.2, 1.4, 50, 800, 60,
+                    "Honeypot Ants fed liquid honey. All crop, they give Honey Droplets for Create's pipes and basins."),
+            new Liquid("chocolate", "Chocolate Ant", "create", "create:chocolate", "Chocolate", "water", "create:chocolate_bucket", null, 2, "temperate",
+                    "4A2A1E", "2E1810", "8A4A30", false, 0.2, 1.4, 50, 800, 60,
+                    "Water Ants fed chocolate. Brown-cropped ants that give Chocolate Droplets for Create's kitchens."),
+            new Liquid("tea", "Tea Ant", "create", "create:tea", "Builder's Tea", "water", "create:builders_tea", null, 2, "temperate",
+                    "5A3A2A", "3E2618", "CF755A", false, 0.25, 1.4, 50, 800, 60,
+                    "Water Ants fed Builder's Tea. They give Builder's Tea Droplets, a fluid Create has no bucket for."),
+            // Industrial Foregoing.
+            new Liquid("pink_slime", "Pink Slime Ant", "industrialforegoing", "industrialforegoing:pink_slime", "Pink Slime", "water",
+                    "industrialforegoing:pink_slime_bucket", null, 2, "temperate", "6A3A62", "4A2644", "D09DCD", false, 0.08, 1.6, 25, 2400, 120,
+                    "Water Ants fed pink slime. Their crops wobble pink: Pink Slime Droplets for Industrial Foregoing, slowly."),
+            new Liquid("latex", "Latex Ant", "industrialforegoing", "industrialforegoing:latex", "Latex", "water", "industrialforegoing:latex_bucket", null, 2,
+                    "temperate", "6A6A66", "4A4A46", "E4E4E4", false, 0.15, 1.5, 50, 1200, 80,
+                    "Water Ants fed latex. Milky-cropped ants that give Latex Droplets for Industrial Foregoing."),
+            // Ender IO.
+            new Liquid("nutrient_distillation", "Nutrient Ant", "enderio", "enderio:fluid_nutrient_distillation_still", "Nutrient Distillation", "water",
+                    "enderio:nutrient_distillation_bucket", null, 2, "temperate", "3A4010", "2A2E08", "6E7A10", false, 0.1, 1.6, 50, 1600, 100,
+                    "Water Ants fed nutrient distillation. Olive crops, and Nutrient Distillation Droplets for Ender IO."),
+            new Liquid("hootch", "Hootch Ant", "enderio", "enderio:fluid_hootch_still", "Hootch", "water", "enderio:hootch_bucket", null, 2, "temperate",
+                    "5A5040", "3E3628", "E6D9A8", false, 0.08, 1.6, 50, 2000, 100,
+                    "Water Ants fed hootch. They hold their drink, and give Hootch Droplets for Ender IO."),
+            // Thermal Series.
+            new Liquid("resin", "Resin Ant", "thermal", "thermal:resin", "Resin", "water", "thermal:resin_bucket", null, 2, "temperate",
+                    "5A3A0A", "3E2806", "B87A10", false, 0.15, 1.5, 50, 1200, 80,
+                    "Water Ants fed resin. Amber-cropped ants that give Resin Droplets for Thermal's machines."),
+            new Liquid("sap", "Sap Ant", "thermal", "thermal:sap", "Sap", "water", "thermal:sap_bucket", null, 2, "temperate",
+                    "6A2E08", "4A1E04", "D85A10", false, 0.2, 1.4, 50, 800, 60,
+                    "Water Ants fed sap. They give Sap Droplets for Thermal's machines."),
+            // Immersive Engineering.
+            new Liquid("creosote", "Creosote Ant", "immersiveengineering", "immersiveengineering:creosote", "Creosote Oil", "lava",
+                    "immersiveengineering:creosote_bucket", null, 2, "hot", "2E1A0E", "1C0E06", "4A2208", false, 0.15, 1.5, 50, 1200, 80,
+                    "Lava Ants fed creosote oil. Tar-dark crops, and Creosote Oil Droplets for Immersive Engineering."),
+            new Liquid("plant_oil", "Plant Oil Ant", "immersiveengineering", "immersiveengineering:plantoil", "Plant Oil", "water",
+                    "immersiveengineering:plantoil_bucket", null, 2, "temperate", "4A4A22", "32321A", "A8A450", false, 0.15, 1.5, 50, 1200, 80,
+                    "Water Ants fed plant oil. They give Plant Oil Droplets for Immersive Engineering."));
+
+    /** The names of the mods the liquids come from, for "these ants need ..." when a mod is gone. */
+    static final Map<String, String> MOD_NAMES = Map.of("minecraft", "Minecraft", "machinaopus", "MachinaOpus", "mekanism", "Mekanism", "create", "Create",
+            "industrialforegoing", "Industrial Foregoing", "enderio", "Ender IO", "thermal", "Thermal Series", "immersiveengineering", "Immersive Engineering");
+
+    /**
+     * What every data file of another mod's liquid carries: it loads only when the mod is installed, its fluid is in the
+     * fluid registry, and the droplet item was registered for it (which the mod does under the same two checks). The base
+     * game's two need nothing.
+     */
+    static List<Object> liquidConditions(Liquid l) {
+        return l.mod() == null ? null : arr(
+                obj("type", "neoforge:mod_loaded", "modid", l.mod()),
+                obj("type", "neoforge:registered", "registry", "minecraft:fluid", "value", l.fluid()),
+                obj("type", "neoforge:registered", "registry", "minecraft:item", "value", ac(l.droplet())));
+    }
+
+    /**
+     * A block model in the build the Droplet Centrifuge and the Generator share: a casing (0 to 8), a lid (14 to 16), four
+     * corner posts between them and glass between the posts, with whatever the machine has behind its glass ({@code
+     * inside}). Textures: {@code #front} and {@code #side} are whole block sides (lid edge in rows 0-1, posts in rows 2-7,
+     * casing in rows 8-15), {@code #top} the lid, {@code #deck} the floor under the glass and the lid's underside. What
+     * stands between the posts on each side is its own texture ({@code north} is the front): glass all round for the
+     * Centrifuge, firebrick walls for the Generator. Columns 2-13 of rows 2-7 of it are used; it is seen from both sides.
+     */
+    static void labMachine(String name, Map<String, Object> textures, List<Object> inside, String north, String south, String west, String east) {
+        List<Object> elements = new ArrayList<>();
+        // The casing.
+        elements.add(obj("from", arr(0, 0, 0), "to", arr(16, 8, 16), "faces", obj(
+                "down", obj("texture", "#top", "cullface", "down"), "up", obj("texture", "#deck"),
+                "north", obj("uv", arr(0, 8, 16, 16), "texture", "#front", "cullface", "north"),
+                "south", obj("uv", arr(0, 8, 16, 16), "texture", "#side", "cullface", "south"),
+                "west", obj("uv", arr(0, 8, 16, 16), "texture", "#side", "cullface", "west"),
+                "east", obj("uv", arr(0, 8, 16, 16), "texture", "#side", "cullface", "east"))));
+        // The lid.
+        elements.add(obj("from", arr(0, 14, 0), "to", arr(16, 16, 16), "faces", obj(
+                "down", obj("texture", "#deck"), "up", obj("texture", "#top", "cullface", "up"),
+                "north", obj("uv", arr(0, 0, 16, 2), "texture", "#front", "cullface", "north"),
+                "south", obj("uv", arr(0, 0, 16, 2), "texture", "#side", "cullface", "south"),
+                "west", obj("uv", arr(0, 0, 16, 2), "texture", "#side", "cullface", "west"),
+                "east", obj("uv", arr(0, 0, 16, 2), "texture", "#side", "cullface", "east"))));
+        // The four corner posts between them.
+        for (double[] post : new double[][] {{0, 0}, {14, 0}, {0, 14}, {14, 14}}) {
+            Map<String, Object> face = obj("uv", arr(0, 2, 2, 8), "texture", "#side");
+            elements.add(obj("from", arr(post[0], 8, post[1]), "to", arr(post[0] + 2, 14, post[1] + 2),
+                    "faces", obj("north", face, "south", face, "west", face, "east", face)));
+        }
+        // The walls between the posts, seen from both sides.
+        Map<String, Object> front = obj("uv", arr(2, 2, 14, 8), "texture", north);
+        Map<String, Object> rear = obj("uv", arr(2, 2, 14, 8), "texture", south);
+        Map<String, Object> left = obj("uv", arr(2, 2, 14, 8), "texture", west);
+        Map<String, Object> right = obj("uv", arr(2, 2, 14, 8), "texture", east);
+        elements.add(obj("from", arr(2, 8, 0.25), "to", arr(14, 14, 0.25), "faces", obj("north", front, "south", front)));
+        elements.add(obj("from", arr(2, 8, 15.75), "to", arr(14, 14, 15.75), "faces", obj("north", rear, "south", rear)));
+        elements.add(obj("from", arr(0.25, 8, 2), "to", arr(0.25, 14, 14), "faces", obj("west", left, "east", left)));
+        elements.add(obj("from", arr(15.75, 8, 2), "to", arr(15.75, 14, 14), "faces", obj("west", right, "east", right)));
+        elements.addAll(inside);
+        model(name, textures, elements);
+    }
+
+    static void liquids() {
+        Map<String, String> l = LANG;
+        List<Object> droplets = new ArrayList<>();
+        for (Liquid liquid : LIQUIDS) {
+            if (SPECIES.stream().anyMatch(s -> s.id().equals(liquid.id()))) {
+                throw new IllegalStateException("A liquid kind and a species share the id " + liquid.id());
+            }
+            List<Object> conditions = liquidConditions(liquid);
+            // --- The species: a Liquid Ant, with its crop colour and its one droplet. ---
+            Map<String, Object> species = obj("tier", liquid.tier(), "category", "liquid",
+                    "look", obj("body", "#" + liquid.body(), "gaster", "#" + liquid.plates(), "accent", "#" + liquid.plates(), "pattern", "plain",
+                            "glow", liquid.glow() ? true : null, "crop", "#" + liquid.crop()),
+                    "climate", liquid.climate(),
+                    "diet", obj("consumption", liquid.food()),
+                    "liquid", obj("fluid", liquid.fluid(), "droplet", ac(liquid.droplet()), "rate", liquid.rate()),
+                    "rearing", obj("cost", arr(obj("ingredient", ac("royal_jelly"), "count", 2), obj("ingredient", "minecraft:honey_bottle", "count", 2)),
+                            "time", 3600),
+                    "breeding", obj("eggs", 0.9, "growth", 0.9));
+            if (conditions != null) {
+                species.put("neoforge:conditions", conditions);
+            }
+            write(DATA.resolve(NS + "/species/" + liquid.id() + ".json"), species);
+            l.put("species." + NS + "." + liquid.id(), liquid.ant());
+            l.put("species." + NS + "." + liquid.id() + ".desc", liquid.description());
+            // --- How to get it: its parent species' Queen fed the fluid (what she is fed is a tag, so packs can add to it). ---
+            Map<String, Object> evolution = obj("from", ac(liquid.from()), "to", ac(liquid.id()), "item", "#" + ac("liquid_feed/" + liquid.id()),
+                    "chance", 0.08, "guaranteed_after", 24, "min_stage", 2, "min_population", 300L);
+            if (liquid.dimension() != null) {
+                evolution.put("dimension", liquid.dimension());
+            }
+            if (conditions != null) {
+                evolution.put("neoforge:conditions", conditions);
+            }
+            write(DATA.resolve(NS + "/evolution/" + liquid.from() + "_to_" + liquid.id() + ".json"), evolution);
+            write(DATA.resolve("tags/item/liquid_feed/" + liquid.id() + ".json"), obj("values", arr(
+                    liquid.mod() == null ? liquid.feed() : obj("id", liquid.feed(), "required", false))));
+            // --- The droplet: its name from the fluid's, its flat model. ---
+            l.put("item." + NS + "." + liquid.droplet(), liquid.fluidName() + " Droplet");
+            write(ASSETS.resolve("models/item/" + liquid.droplet() + ".json"), obj("parent", "minecraft:item/generated",
+                    "textures", obj("layer0", ac("item/" + liquid.droplet()))));
+            write(ASSETS.resolve("items/" + liquid.droplet() + ".json"), obj("model", obj("type", "minecraft:model", "model", ac("item/" + liquid.droplet()))));
+            droplets.add(liquid.mod() == null ? ac(liquid.droplet()) : obj("id", ac(liquid.droplet()), "required", false));
+            // --- The Centrifuge recipe: one droplet into the fluid. ---
+            Map<String, Object> recipe = obj("type", ac("centrifuging"), "ingredient", ac(liquid.droplet()),
+                    "result", obj("id", liquid.fluid(), "amount", liquid.amount()), "energy", liquid.energy(), "time", liquid.time());
+            if (conditions != null) {
+                recipe.put("neoforge:conditions", conditions);
+            }
+            write(DATA.resolve("recipe/centrifuging/" + liquid.id() + ".json"), recipe);
+        }
+        write(DATA.resolve("tags/item/droplets.json"), obj("values", droplets));
+        MOD_NAMES.forEach((id, name) -> l.put("mod." + NS + "." + id, name));
+        l.put("category." + NS + ".liquid", "Liquid");
+        l.put("tag.item." + NS + ".droplets", "Droplets");
+        for (Liquid liquid : LIQUIDS) {
+            l.put("tag.item." + NS + ".liquid_feed." + liquid.id(), "Fed to a Queen for " + liquid.ant() + "s");
+        }
+        l.put("tooltip." + NS + ".droplet", "A drop of %s from Liquid Ants. A Droplet Centrifuge spins it into the fluid.");
+
+        // --- The Liquid Chamber: a rack the full ants hang from (as honeypot ants do), over a bowl that catches the drips. ---
+        String wood = ac("block/terrarium_wood");
+        String top = ac("block/liquid_chamber_top");
+        double y = FLOOR;
+        model("liquid_chamber", obj("particle", top, "side", wood, "top", top, "rack", "minecraft:block/stripped_spruce_log",
+                "gourd", ac("block/liquid_chamber_gourd"), "bowl", "minecraft:block/terracotta", "pool", ac("block/liquid_chamber_pool")), arr(
+                floorBody(),
+                box(p(3, y, 7), p(4, 11, 9), "#rack", "#rack"), box(p(12, y, 7), p(13, 11, 9), "#rack", "#rack"),
+                box(p(3, 11, 7.5), p(13, 12, 8.5), "#rack", "#rack"),
+                box(p(5, 8, 7), p(7, 11, 9), "#gourd", "#gourd"), box(p(7.5, 7.5, 7), p(9.5, 11, 9), "#gourd", "#gourd"),
+                box(p(10, 8.5, 7), p(12, 11, 9), "#gourd", "#gourd"),
+                obj("from", arr(5, y, 11), "to", arr(11, y + 1, 15), "faces", obj("up", face("#pool"), "north", face("#bowl"), "south", face("#bowl"),
+                        "west", face("#bowl"), "east", face("#bowl")))));
+        colonyPart("liquid_chamber");
+        write(ASSETS.resolve("items/liquid_chamber.json"), obj("model", framedItem("liquid_chamber")));
+        selfDrop("liquid_chamber");
+        shaped("liquid_chamber", ac("liquid_chamber"), 1, new String[] {"BHB", "DMD", "DCD"}, "B", "glass_bottle", "H", "honeycomb", "D", "clay",
+                "M", "packed_mud", "C", "chest");
+        l.put("block." + NS + ".liquid_chamber", "Liquid Chamber");
+        l.put("tooltip." + NS + ".liquid_chamber", "Liquid Ants hang here with full crops and give droplets of their fluid. Only Liquid Ants work here.");
+
+        // --- The Droplet Centrifuge: a white enamel casing like the lab's, a glass drum section over it (the rotor and the fluid inside are drawn
+        // by its renderer), a lid. Its front panel lights up while it works. ---
+        for (String working : new String[] {"", "_working"}) {
+            labMachine("centrifuge" + working, obj("particle", ac("block/centrifuge_side"), "side", ac("block/centrifuge_side"),
+                    "front", ac("block/centrifuge_front" + working), "top", ac("block/centrifuge_top"), "deck", ac("block/centrifuge_deck"),
+                    "glass", ac("block/centrifuge_glass")), List.of(), "#glass", "#glass", "#glass", "#glass");
+        }
+        Map<String, Object> variants = new LinkedHashMap<>();
+        String[] facings = {"north", "east", "south", "west"};
+        for (int f = 0; f < 4; f++) {
+            for (String working : new String[] {"false", "true"}) {
+                variants.put("facing=" + facings[f] + ",working=" + working, obj("model", ac("block/centrifuge" + (working.equals("true") ? "_working" : "")),
+                        "y", f == 0 ? null : f * 90));
+            }
+        }
+        write(ASSETS.resolve("blockstates/centrifuge.json"), obj("variants", variants));
+        write(ASSETS.resolve("items/centrifuge.json"), obj("model", obj("type", "minecraft:model", "model", ac("block/centrifuge"))));
+        selfDrop("centrifuge");
+        shaped("centrifuge", ac("centrifuge"), 1, new String[] {"HGH", "CBC", "IRI"}, "H", ac("hardened_chitin"), "G", "glass", "C", "copper_ingot",
+                "B", "bucket", "I", "iron_ingot", "R", "redstone");
+        l.put("block." + NS + ".centrifuge", "Droplet Centrifuge");
+        l.put("tooltip." + NS + ".centrifuge", "Spins Liquid Ants' droplets into fluid. Runs on FE; take the fluid with a bucket, a tank or pipes.");
+
+        // --- Advancements ---
+        advancement("liquid_ants", "hybrid", "liquid_chamber", "task", "Living Jars",
+                "Raise a colony of Liquid Ants: feed a Honeypot Queen buckets of water (or of lava, in the Nether)", colony("category", "liquid"));
+        advancement("centrifuge", "liquid_ants", "centrifuge", "task", "Spin Cycle", "Make a Droplet Centrifuge to turn droplets into fluid",
+                hasItem("centrifuge"));
+
+        // --- Words ---
+        String[][] gui = {
+                {"site.liquid_ants", "Liquid Ants %s/%s (want %s)"}, {"site.droplet_rate", "%s droplets/min"},
+                {"site.droplet_store", "Droplets wait here while the Storage is full"},
+                {"liquid.needs", "Only Liquid Ants work here"}, {"liquid.only", "Liquid Ants work only at a Liquid Chamber"},
+                {"liquid.makes", "%s: a Droplet Centrifuge spins it into %s"}, {"liquid.missing", "These ants need %s"},
+                {"liquid.line", "%s ants: %s, %s/min (%s)"}, {"card.liquid", "%s Liquid Ants, full of %s"},
+                {"centrifuge.status.idle", "Waiting for droplets"}, {"centrifuge.status.working", "Spinning: %s"},
+                {"centrifuge.status.no_energy", "Not enough FE"}, {"centrifuge.status.tank_full", "Tank full"},
+                {"centrifuge.status.blocked", "Tank holds %s: empty it first"}, {"centrifuge.status.paused", "Paused by redstone"},
+                {"centrifuge.status.done", "Done: the fluid is ready"},
+                {"centrifuge.empty", "Empty"}, {"centrifuge.amount", "%s mB"}, {"centrifuge.of", "of %s mB"},
+                {"centrifuge.each", "Per droplet:"}, {"centrifuge.gives", "+%s mB"}, {"centrifuge.takes", "%s"},
+                {"centrifuge.energy", "Energy"}, {"centrifuge.energy.hint", "Takes FE on every side: a Generator next to it will do"},
+                {"centrifuge.slot", "Droplets"}, {"centrifuge.slot.hint", "From the Liquid Chambers of Liquid Ants"},
+                {"centrifuge.tank.hint", "Use a bucket on the block, or put a tank or a pipe next to it"},
+                {"centrifuge.run", "%s s of %s s"}};
+        for (String[] g : gui) {
+            l.put("gui." + NS + "." + g[0], g[1]);
+        }
+        l.put("status." + NS + ".no_droplet", "Their fluid is not in this game: these ants make nothing");
+        l.put("status." + NS + ".no_droplet.short", "No fluid");
+        l.put("info." + NS + ".liquid", "Liquid Ant: works only at a Liquid Chamber");
+        l.put("info." + NS + ".liquid.makes", "Makes %s");
+        l.put("info." + NS + ".liquid.fluid", "A drop of %s");
+        l.put("info." + NS + ".liquid.centrifuge", "Droplet Centrifuge: %s mB of %s for %s FE");
+        l.put("info." + NS + ".liquid.rate", "Droplet rate x%s");
+        l.put("jei." + NS + ".liquid", "Liquid Ants");
+        l.put("jei." + NS + ".liquid.rate", "Droplet rate x%s, food x%s");
+        l.put("jei." + NS + ".liquid.only", "Works only at a Liquid Chamber");
+        l.put("jei." + NS + ".centrifuging", "Droplet Centrifuge");
+        l.put("jei." + NS + ".centrifuging.cost", "%s FE, %s s");
+        l.put("jei." + NS + ".centrifuging.fluid", "%s mB of %s");
+    }
+
     public static void main(String[] args) {
         species();
+        liquids();
         evolutions();
         hybrids();
         mutations();

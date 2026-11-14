@@ -48,6 +48,13 @@ public class AntColonies {
         com.antcolonies.core.advancement.ModTriggers.TRIGGERS.register(modEventBus);
         com.antcolonies.core.registry.ModStructures.STRUCTURE_TYPES.register(modEventBus);
         com.antcolonies.core.registry.ModStructures.STRUCTURE_PIECES.register(modEventBus);
+        com.antcolonies.core.registry.ModRecipes.RECIPE_TYPES.register(modEventBus);
+        com.antcolonies.core.registry.ModRecipes.RECIPE_SERIALIZERS.register(modEventBus);
+        com.antcolonies.core.registry.ModRecipes.RECIPE_BOOK_CATEGORIES.register(modEventBus);
+        // Liquid Ants: other mods' fluids are offered now, and a droplet item is registered for each fluid that really exists
+        // (items are registered after every mod's fluids).
+        com.antcolonies.compat.liquid.LiquidIntegrations.offerAll();
+        modEventBus.addListener(com.antcolonies.colony.liquid.LiquidKinds::registerItems);
         // Species, evolutions, hybrids and mutations are datapack registries, synced to clients (JEI, rendering).
         modEventBus.addListener(ModRegistries::register);
         modEventBus.addListener(ModDataMaps::register);
@@ -62,6 +69,8 @@ public class AntColonies {
         NeoForge.EVENT_BUS.addListener(com.antcolonies.content.worldgen.AnthillAlarm::onBreakBlock);
         // Colony Connectors move food and items between the colonies on their channels.
         NeoForge.EVENT_BUS.addListener(com.antcolonies.colony.network.ConnectorNetwork::onLevelTick);
+        // The Droplet Centrifuge's recipes go to every client.
+        NeoForge.EVENT_BUS.addListener(com.antcolonies.core.registry.ModRecipes::onDatapackSync);
     }
 
     public static Identifier id(String path) {

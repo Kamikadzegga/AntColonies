@@ -1,0 +1,66 @@
+{
+  "values": [
+    "antcolonies:water_droplet",
+    "antcolonies:lava_droplet",
+    {
+      "id": "antcolonies:crude_oil_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:liquid_blaze_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:brine_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:heavy_water_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:honey_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:chocolate_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:tea_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:pink_slime_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:latex_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:nutrient_distillation_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:hootch_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:resin_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:sap_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:creosote_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:plant_oil_droplet",
+      "required": false
+    }
+  ]
+}

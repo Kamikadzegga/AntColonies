@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": "antcolonies:hardened_chitin",
+    "G": "minecraft:glass",
+    "C": "minecraft:copper_ingot",
+    "B": "minecraft:bucket",
+    "I": "minecraft:iron_ingot",
+    "R": "minecraft:redstone"
+  },
+  "pattern": ["HGH", "CBC", "IRI"],
+  "result": {
+    "id": "antcolonies:centrifuge"
+  }
+}

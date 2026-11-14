@@ -39,7 +39,9 @@ public enum ColonyStatus {
     /** A focused Foraging Site's species has no finds of the kind it looks for: it works as if Balanced. */
     NOTHING_TO_FOCUS(false),
     /** The job site is turned off (its screen or the Terrarium's Jobs page): it takes no ants. */
-    DISABLED(false);
+    DISABLED(false),
+    /** A Liquid Chamber whose ants' fluid or droplet is not in this game (its mod was removed): they make nothing. */
+    NO_DROPLET(true);
 
     private final boolean problem;
 

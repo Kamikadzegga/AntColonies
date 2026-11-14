@@ -338,7 +338,7 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
             String op = GeneticLabBlockEntity.Operation.byId(menu.data(GeneticLabBlockEntity.DATA_OPERATION)).name().toLowerCase(Locale.ROOT);
             Component text = Component.translatable("gui.antcolonies.lab.working." + op, Component.translatable(selected().translationKey()),
                     Math.round(progress * 100));
-            graphics.centeredText(font, fit(text.getString(), x1 - x0 - 8), (x0 + x1) / 2, y0 + 1, 0xFFFFFFFF);
+            centeredAt(graphics, fit(text.getString(), x1 - x0 - 8), (x0 + x1) / 2, y0 + 1, 0xFFFFFFFF);
             return;
         }
         Component message;
@@ -357,13 +357,20 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
                     Component.translatable(selected().translationKey() + ".desc"));
             color = TEXT_DIM;
         }
-        graphics.centeredText(font, fit(message.getString(), x1 - x0 - 8), (x0 + x1) / 2, y0 + 1, color);
+        centeredAt(graphics, fit(message.getString(), x1 - x0 - 8), (x0 + x1) / 2, y0 + 1, color);
     }
 
     // --- Text helpers ---
 
     private void centered(GuiGraphicsExtractor graphics, String text, int centerX, int y, int color) {
         graphics.text(font, text, leftPos + centerX - font.width(text) / 2, topPos + y, color, false);
+        noteDrawn(text, leftPos + centerX - font.width(text) / 2, topPos + y);
+    }
+
+    /** Text centered on a screen x (absolute coordinates), whole on hover when cut. */
+    private void centeredAt(GuiGraphicsExtractor graphics, String text, int centerX, int y, int color) {
+        graphics.text(font, text, centerX - font.width(text) / 2, y, color, false);
+        noteDrawn(text, centerX - font.width(text) / 2, y);
     }
 
     private List<String> wrap(String text, int width) {

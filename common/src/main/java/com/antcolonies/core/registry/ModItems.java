@@ -135,6 +135,7 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> UPGRADE_STATION = described(ModBlocks.UPGRADE_STATION);
     public static final DeferredItem<BlockItem> GENETIC_LAB = described(ModBlocks.GENETIC_LAB);
     public static final DeferredItem<BlockItem> GENERATOR = described(ModBlocks.GENERATOR);
+    public static final DeferredItem<BlockItem> CENTRIFUGE = described(ModBlocks.CENTRIFUGE);
 
     static {
         ModBlocks.NESTS.values().forEach(ModItems::described);
@@ -219,7 +220,12 @@ public final class ModItems {
     static {
         // The nest-building palette, after everything else in the creative tab.
         for (DeferredBlock<? extends net.minecraft.world.level.block.Block> block : ModDecor.ALL.values()) {
-            if (block == ModDecor.NEST_DOOR) {
+            if (block == ModDecor.ANT_EGG_CLUSTER || block == ModDecor.LARVA_CLUSTER) {
+                // Taken from an anthill with Silk Touch: they carry its species.
+                boolean eggs = block == ModDecor.ANT_EGG_CLUSTER;
+                ITEMS.registerItem(block.getId().getPath(), p -> new com.antcolonies.content.item.BroodClusterItem(block.get(), eggs, p),
+                        p -> p.useBlockDescriptionPrefix());
+            } else if (block == ModDecor.NEST_DOOR) {
                 ITEMS.registerItem(block.getId().getPath(), p -> new net.minecraft.world.item.DoubleHighBlockItem(block.get(), p),
                         p -> p.useBlockDescriptionPrefix());
             } else {

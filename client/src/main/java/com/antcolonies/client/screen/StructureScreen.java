@@ -25,12 +25,6 @@ import org.jspecify.annotations.Nullable;
 /** Any colony chamber: its link and problems, its ants (working sites), its slots, and its upgrades on the right. */
 public class StructureScreen extends AntScreen<StructureMenu> {
     private final StructureKind kind;
-    /** Status lines cut to fit this frame, with their full text for the hover tooltip. */
-    private final List<Clipped> clipped = new ArrayList<>();
-
-    private record Clipped(int x, int y, int w, String text) {
-    }
-
     /** A Storage's scrollbar: right of its slots, as tall as the six rows shown. */
     private static final int SCROLL_X = 172;
     private static final int SCROLL_Y = 18;
@@ -105,7 +99,6 @@ public class StructureScreen extends AntScreen<StructureMenu> {
 
     @Override
     protected void extractPage(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        clipped.clear();
         channelSwatches.clear();
         boolean linked = menu.data(StructureBlockEntity.DATA_LINKED) != 0;
         int x = 8;
@@ -143,9 +136,13 @@ public class StructureScreen extends AntScreen<StructureMenu> {
             connectorPage(graphics, x, y, mouseX, mouseY);
             return;
         }
+        pendingFluid = null;
         if (kind.job().any()) {
             y = jobRow(graphics, x, y);
             y = settingsRow(x, y);
+            if (pendingFluid != null) {
+                fluidLine(graphics, pendingFluid[0], pendingFluid[1]);
+            }
         }
         int status = menu.data(StructureBlockEntity.DATA_STATUS) | (kind == StructureKind.QUEEN_CHAMBER ? menu.data(StructureBlockEntity.DATA_REARING_STATUS) : 0);
         boolean slotted = kind == StructureKind.QUEEN_CHAMBER;
@@ -155,7 +152,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
             y = nestRoom(graphics, x, y);
         } else if (!kind.job().any()) {
             y = wrapped(graphics, Component.translatable("gui.antcolonies.effect." + kind.getSerializedName()), x, y, 170, 9, DIM);
-        } else if (kind.foraging()) {
+        } else if (kind.siteStore()) {
             // Its store's slots come next (their tooltip says what they are); the problems go under them.
             y = StructureMenu.STORE_Y + 20;
         }
@@ -163,13 +160,9 @@ public class StructureScreen extends AntScreen<StructureMenu> {
             // Which ants it needs, named, when the colony's are not among them.
             int flags = menu.data(StructureBlockEntity.DATA_STATUS);
             if (ColonyStatus.INCOMPATIBLE_SPECIES.in(flags)) {
+                // Wrapped over the lines above the inventory, the last one cut (full list on hover) if the names need more.
                 String needs = Component.translatable("gui.antcolonies.expedition.needs." + kind.getSerializedName(), adaptedNames()).getString();
-                String shown = fit(needs, 170);
-                if (!shown.equals(needs)) {
-                    clipped.add(new Clipped(x, y, 170, needs));
-                }
-                label(graphics, shown, x, y, BAD);
-                y += 9;
+                y = lines(graphics, needs, x, y, StructureMenu.inventoryY(kind) - 20, BAD);
             }
         }
         // Problems and work state: under the link line. Slotted structures have room for one line above their slots.
@@ -183,11 +176,16 @@ public class StructureScreen extends AntScreen<StructureMenu> {
                 continue; // said above, with the species it needs
             }
             String full = Component.translatable(flag.translationKey()).getString();
-            String shown = fit(full, 170);
-            if (!shown.equals(full)) {
-                clipped.add(new Clipped(x, line, 170, full));
+            if (flag == ColonyStatus.INCOMPATIBLE_SPECIES) {
+                // Which ants: a Liquid Chamber takes only Liquid Ants, and Liquid Ants work only there.
+                AntSpecies species = colonySpecies();
+                if (kind == StructureKind.LIQUID_CHAMBER) {
+                    full = Component.translatable("gui.antcolonies.liquid.needs").getString();
+                } else if (species != null && species.makesLiquid()) {
+                    full = Component.translatable("gui.antcolonies.liquid.only").getString();
+                }
             }
-            label(graphics, shown, x, line, flag == ColonyStatus.WORKING ? GOOD : flag.problem() ? BAD : WARN);
+            label(graphics, fit(full, 170), x, line, flag == ColonyStatus.WORKING ? GOOD : flag.problem() ? BAD : WARN); // whole on hover
             line += 9;
         }
     }
@@ -197,11 +195,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         String key = linked ? "gui.antcolonies.linked" : menu.data(StructureBlockEntity.DATA_CONTESTED) != 0 ? "gui.antcolonies.contested"
                 : "gui.antcolonies.not_linked";
         String full = Component.translatable(key).getString();
-        String shown = fit(full, 170);
-        if (!shown.equals(full)) {
-            clipped.add(new Clipped(8, kind == StructureKind.STORAGE ? 130 : 18, 170, full));
-        }
-        return shown;
+        return fit(full, 170);
     }
 
     /**
@@ -232,8 +226,9 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         int capacity = menu.data(StructureBlockEntity.DATA_CAPACITY);
         boolean hunting = kind == StructureKind.HUNTING_GROUND;
         String wanted = requested < 0 ? Component.translatable("gui.antcolonies.auto").getString() : String.valueOf(requested);
+        boolean liquid = kind == StructureKind.LIQUID_CHAMBER;
         String key = hunting ? "gui.antcolonies.site.hunters" : kind == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.farmers"
-                : "gui.antcolonies.site.workers";
+                : liquid ? "gui.antcolonies.site.liquid_ants" : "gui.antcolonies.site.workers";
         label(graphics, fit(Component.translatable(key, assigned, capacity, wanted).getString(), 170), x, y, LABEL);
         y += 11;
         int bx = x;
@@ -248,10 +243,10 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         y += 15;
         double rate = menu.data(StructureBlockEntity.DATA_RATE) / 10_000.0;
         String rateKey = hunting ? "gui.antcolonies.site.hunt_rate" : kind == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.food_rate"
-                : "gui.antcolonies.site.rate";
+                : liquid ? "gui.antcolonies.site.droplet_rate" : "gui.antcolonies.site.rate";
         label(graphics, Component.translatable(rateKey, rate(rate)), x, y, DIM);
         double progress = menu.data(StructureBlockEntity.DATA_PROGRESS) / 1000.0;
-        drawBar(graphics, leftPos + x + 110, topPos + y, 56, 8, progress, hunting ? 0xFFD05A3F : 0xFF3FD0A0);
+        drawBar(graphics, leftPos + x + 110, topPos + y, 56, 8, progress, hunting ? 0xFFD05A3F : liquid ? liquidColor() : 0xFF3FD0A0);
         return y + 11;
     }
 
@@ -279,7 +274,34 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         boolean enabled = menu.data(StructureBlockEntity.DATA_ENABLED) != 0;
         String onOff = Component.translatable(enabled ? "gui.antcolonies.site.on" : "gui.antcolonies.site.off").getString();
         toggle(bx, y, buttonWidth(onOff), 12, onOff, StructureMenu.TOGGLE, List.of(Component.translatable("gui.antcolonies.site.toggle.hint")), enabled);
+        bx += buttonWidth(onOff) + 4;
+        if (kind == StructureKind.LIQUID_CHAMBER) {
+            pendingFluid = new int[] {bx, y};
+        }
         return y + 15;
+    }
+
+    /** Where this frame's Liquid Chamber shows its ants' droplet and fluid (after the buttons of its settings row); null otherwise. */
+    private int @Nullable [] pendingFluid;
+
+    /** A Liquid Chamber's fluid: the droplet its ants give (the item itself) and the name of the fluid it is of. */
+    private void fluidLine(GuiGraphicsExtractor graphics, int x, int y) {
+        AntSpecies species = colonySpecies();
+        AntSpecies.Liquid liquid = species == null ? null : species.liquid().orElse(null);
+        if (liquid == null || !liquid.available()) {
+            return;
+        }
+        ItemStack droplet = new ItemStack(liquid.dropletItem().get());
+        graphics.item(droplet, leftPos + x, topPos + y - 2);
+        String name = liquid.fluidValue().get().getFluidType().getDescription().getString();
+        label(graphics, fit(name, 170 - (x - 8) - 18), x + 18, y + 2, LABEL);
+        hoverText(x, y - 2, 16, 16, Component.translatable("gui.antcolonies.liquid.makes", droplet.getHoverName(), name).getString());
+    }
+
+    /** The colour of the colony's liquid (its ants' crop), for the droplet progress bar. */
+    private int liquidColor() {
+        AntSpecies species = colonySpecies();
+        return 0xFF000000 | (species == null ? 0x3FD0A0 : species.look().crop().orElse(0x3FD0A0));
     }
 
     /** The species an expedition site takes, from the synced species tag (names, comma-separated). */
@@ -362,11 +384,27 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         boolean paused = ColonyStatus.PAUSED.in(menu.data(StructureBlockEntity.DATA_STATUS));
         String summary = paused ? Component.translatable("status.antcolonies.paused").getString()
                 : Component.translatable("gui.antcolonies.connector.flow", members, rate(in), rate(out), rate(items)).getString();
-        String shown = fit(summary, 170);
-        if (!shown.equals(summary)) {
-            clipped.add(new Clipped(x, line, 170, summary));
+        lines(graphics, summary, x, line, line + 9, paused ? WARN : members > 0 ? GOOD : DIM);
+    }
+
+    /**
+     * Text wrapped to the 170-pixel column from {@code y}, with no line starting below {@code lastY}; if it needs more
+     * lines than that, the last one is cut and the whole text is its hover tooltip. Returns the y under the text.
+     */
+    private int lines(GuiGraphicsExtractor graphics, String text, int x, int y, int lastY, int color) {
+        List<String> wrapped = new ArrayList<>();
+        font.getSplitter().splitLines(text, 170, net.minecraft.network.chat.Style.EMPTY).forEach(part -> wrapped.add(part.getString()));
+        int room = Math.max(1, (lastY - y) / 9 + 1);
+        for (int i = 0; i < wrapped.size() && i < room; i++) {
+            String shown = wrapped.get(i);
+            if (i == room - 1 && wrapped.size() > room) {
+                shown = fit(String.join(" ", wrapped.subList(i, wrapped.size())), 170);
+                hoverText(x, y - 1, 170, 10, text);
+            }
+            label(graphics, shown, x, y, color);
+            y += 9;
         }
-        label(graphics, shown, x, line, paused ? WARN : members > 0 ? GOOD : DIM);
+        return y;
     }
 
     /** The channel swatches drawn this frame: x, y, colour id, selected. */
@@ -416,19 +454,14 @@ public class StructureScreen extends AntScreen<StructureMenu> {
 
     @Override
     protected void extractPageTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        for (Clipped line : clipped) {
-            if (hoveredSlot == null && over(mouseX, mouseY, line.x(), line.y() - 1, line.w(), 9)) {
-                graphics.setComponentTooltipForNextFrame(font, List.of(Component.literal(line.text())), mouseX, mouseY);
-                return;
-            }
-        }
         if (hoveredSlot != null && kind == StructureKind.COLONY_CONNECTOR && hoveredSlot.container == menu.structure() && !hoveredSlot.hasItem()) {
             graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.connector.filter"),
                     Component.translatable("gui.antcolonies.connector.filter.hint").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
             return;
         }
-        if (hoveredSlot != null && kind.foraging() && hoveredSlot.container == menu.structure() && !hoveredSlot.hasItem()) {
-            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.site.store")), mouseX, mouseY);
+        if (hoveredSlot != null && kind.siteStore() && hoveredSlot.container == menu.structure() && !hoveredSlot.hasItem()) {
+            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable(
+                    kind == StructureKind.LIQUID_CHAMBER ? "gui.antcolonies.site.droplet_store" : "gui.antcolonies.site.store")), mouseX, mouseY);
             return;
         }
         if (hoveredSlot != null && hoveredSlot.container == menu.structure().upgrades() && hoveredSlot.hasItem()

@@ -48,6 +48,9 @@ class AntEmiRecipe extends BasicEmiRecipe {
             inputs.add(ingredient(slot));
         }
         for (AntRecipe.Output output : recipe.outputs()) {
+            if (output.fluid() != null) {
+                outputs.add(EmiStack.of(output.fluid().getFluid(), output.fluid().getAmount()));
+            }
             for (ItemStack stack : output.stacks()) {
                 outputs.add(EmiStack.of(stack));
             }
@@ -66,7 +69,8 @@ class AntEmiRecipe extends BasicEmiRecipe {
         widgets.addTexture(EmiTexture.EMPTY_ARROW, ARROW_X, 1);
         for (int i = 0; i < recipe.outputs().size(); i++) {
             AntRecipe.Output output = recipe.outputs().get(i);
-            SlotWidget slot = widgets.addSlot(ingredient(output.stacks()), OUTPUT_X + i % OUTPUT_COLUMNS * STEP, i / OUTPUT_COLUMNS * STEP)
+            EmiIngredient shown = output.fluid() != null ? EmiStack.of(output.fluid().getFluid(), output.fluid().getAmount()) : ingredient(output.stacks());
+            SlotWidget slot = widgets.addSlot(shown, OUTPUT_X + i % OUTPUT_COLUMNS * STEP, i / OUTPUT_COLUMNS * STEP)
                     .recipeContext(this);
             for (Component line : output.tooltip()) {
                 slot.appendTooltip(line);

@@ -14,7 +14,8 @@ import com.antcolonies.colony.expedition.Expedition;
 /**
  * Puts the colony's ants to work. Workers kept for maintenance are taken out first; the rest go to Harvesting Sites and
  * Hunting Grounds (food first), then Foraging Sites, each site in the scan's fixed order taking what it asks for (or all
- * it can hold) up to its capacity. Harvesting Sites take only species that farm, Hunting Grounds only hunters.
+ * it can hold) up to its capacity. Harvesting Sites take only species that farm, Hunting Grounds only hunters, Liquid
+ * Chambers only Liquid Ants (which in turn work nowhere else).
  *
  * <p>An ant is only ever counted once: the totals handed out never exceed the ants available, which
  * {@link #allocate} checks. A site that is gone, unloaded or no longer joined simply isn't in the next step's list, so
@@ -23,7 +24,7 @@ import com.antcolonies.colony.expedition.Expedition;
 public final class Allocation {
     /** The order workers are handed out in. */
     private static final List<StructureKind> WORKER_ORDER = List.of(StructureKind.HARVESTING_SITE, StructureKind.HUNTING_GROUND, StructureKind.FORAGING_SITE,
-            StructureKind.NETHER_FORAGING_SITE, StructureKind.END_FORAGING_SITE);
+            StructureKind.NETHER_FORAGING_SITE, StructureKind.END_FORAGING_SITE, StructureKind.LIQUID_CHAMBER);
 
     /** One working site and the ants it got this step. */
     public static final class Site {
@@ -100,6 +101,11 @@ public final class Allocation {
             }
             if (kind == StructureKind.HUNTING_GROUND && !step.species.canHunt()) {
                 // A Hunting Ground needs a hunter species; others leave it alone.
+                wanted = 0;
+                status |= ColonyStatus.INCOMPATIBLE_SPECIES.bit();
+            }
+            if ((kind == StructureKind.LIQUID_CHAMBER) != step.species.makesLiquid()) {
+                // Liquid Ants work only at Liquid Chambers, and only Liquid Ants work there.
                 wanted = 0;
                 status |= ColonyStatus.INCOMPATIBLE_SPECIES.bit();
             }

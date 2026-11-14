@@ -24,7 +24,7 @@ public final class ColonyStorage {
         if (from != null && from.kind().stores() && !piles.contains(from)) {
             piles.add(from);
         }
-        for (StructureKind kind : StructureKind.FORAGING_KINDS) {
+        for (StructureKind kind : StructureKind.SITE_STORES) {
             for (BlockPos pos : colony.layout().of(kind)) {
                 if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof StructureBlockEntity site && site.kind() == kind && site != from) {
                     piles.add(site);
@@ -181,11 +181,14 @@ public final class ColonyStorage {
     }
 
     /**
-     * Puts the stack into the stores; returns what didn't fit. First it tops up partial stacks of the same item in every
+     * Puts what the colony's ants brought in into the stores; returns what didn't fit. First it tops up partial stacks of the same item in every
      * store, then it uses empty slots, the same order canFit counts in, so a stack canFit allowed always goes in whole.
      */
     public static ItemStack insert(ServerLevel level, Colony colony, ItemStack stack, @Nullable StructureBlockEntity from) {
-        return insertInto(piles(level, colony, from), stack);
+        ItemStack left = insertInto(piles(level, colony, from), stack);
+        // Everything the ants bring in comes through here: counted for the Production page's last half hour.
+        colony.production().record(level.getGameTime(), stack.getItem(), stack.getCount() - left.getCount());
+        return left;
     }
 
     private static ItemStack insertInto(List<StructureBlockEntity> piles, ItemStack stack) {

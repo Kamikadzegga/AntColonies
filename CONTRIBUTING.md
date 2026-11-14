@@ -69,12 +69,15 @@ java tools/BrandGen.java
 - `./gradlew runGameTestServer` runs the game tests on a dedicated server: persistence, ant allocation, production and
   its limits, starvation, breeding, farming, fighting, evolution, Queen rearing, hybrids, the laboratory and its power,
   joining chambers, offline catch-up, tweezers, world generation, advancements, redstone, Chitin gear, Guard Ants, the
-  anthills (grown layouts, biome themes, the alarm, ants resting when nobody is near), data loading, and the modpack
+  anthills (grown layouts, biome themes, the alarm, ants resting when nobody is near), Liquid Ants and the Droplet
+  Centrifuge (which species exist with and without other mods, what the ants do, that no droplet or fluid is lost or
+  made twice), data loading, and the modpack
   guide's examples loaded as a data pack. All of them must pass.
 - `./gradlew runClient` with an empty file named `ingame-showcase` in `run/` builds a demo world, takes screenshots of
   the colonies, every screen, the recipe viewers, the anthill and the new items into `run/screenshots`, writes what it
   saw to `run/ingame-showcase-result.txt`, and quits. Use it to check anything visual. Other files there run other
-  checks the same way: `anthill-check` builds one anthill per biome theme and photographs it, `stress-test` measures
+  checks the same way: `anthill-check` builds one anthill per biome theme and photographs it, `liquid-check` Liquid Ant
+  colonies, wild Liquid Ants and Droplet Centrifuges in every state with all their screens, `stress-test` measures
   the server tick and frame rate with 100 colonies and four large anthills (then with one anthill alarmed).
 - `./gradlew runWorldgenServer` with a `worldgen-check` file in `runs/worldgen-server` finds anthills in real terrain
   in all three dimensions and checks their Queens, guards and loot (`worldgen-check-result.txt`).

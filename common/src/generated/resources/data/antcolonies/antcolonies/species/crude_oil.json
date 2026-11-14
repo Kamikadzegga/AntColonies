@@ -1,0 +1,53 @@
+{
+  "tier": 2,
+  "category": "liquid",
+  "look": {
+    "body": "#2A2420",
+    "gaster": "#14110E",
+    "accent": "#14110E",
+    "pattern": "plain",
+    "crop": "#2B211A"
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.6
+  },
+  "liquid": {
+    "fluid": "machinaopus:crude_oil",
+    "droplet": "antcolonies:crude_oil_droplet",
+    "rate": 0.08
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "minecraft:honey_bottle",
+        "count": 2
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "machinaopus"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:fluid",
+      "value": "machinaopus:crude_oil"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:crude_oil_droplet"
+    }
+  ]
+}

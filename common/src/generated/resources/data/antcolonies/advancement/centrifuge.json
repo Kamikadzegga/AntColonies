@@ -1,0 +1,29 @@
+{
+  "parent": "antcolonies:liquid_ants",
+  "criteria": {
+    "centrifuge": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "antcolonies:centrifuge"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:centrifuge"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.centrifuge.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.centrifuge.description"
+    }
+  },
+  "requirements": [
+    ["centrifuge"]
+  ]
+}

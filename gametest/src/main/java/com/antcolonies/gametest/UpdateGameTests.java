@@ -95,7 +95,73 @@ final class UpdateGameTests {
             test("chitin_tiers", UpdateGameTests::chitinTiers),
             test("chitin_only_from_ants", UpdateGameTests::chitinOnlyFromAnts),
             test("queen_grows_with_colony", UpdateGameTests::queenGrowsWithColony),
-            test("food_slot", UpdateGameTests::foodSlot));
+            test("food_slot", UpdateGameTests::foodSlot),
+            test("production_log_keeps_half_an_hour", UpdateGameTests::productionLogKeepsHalfAnHour));
+
+    /**
+     * The Production page's memory: what a colony's ants bring in is counted per item for the last 30 minutes, averaged
+     * over the time it covers, kept when the Storage is emptied and through saving, and forgotten after half an hour.
+     */
+    private static void productionLogKeepsHalfAnHour(GameTestHelper helper) {
+        // The log by itself, on a clock of its own.
+        var log = new com.antcolonies.colony.model.ProductionLog();
+        long minute = com.antcolonies.colony.model.ProductionLog.MINUTE;
+        long t0 = 100 * minute;
+        helper.assertTrue(log.isEmpty(t0) && log.total(t0, Items.COBBLESTONE) == 0, "A new log should be empty");
+        log.record(t0, Items.COBBLESTONE, 60);
+        log.record(t0 + 5 * minute, Items.DIRT, 10);
+        log.record(t0 + 10 * minute, Items.COBBLESTONE, 30);
+        long t10 = t0 + 10 * minute;
+        helper.assertTrue(log.total(t10, Items.COBBLESTONE) == 90 && log.total(t10, Items.DIRT) == 10, "Totals after ten minutes: "
+                + log.total(t10, Items.COBBLESTONE) + " cobblestone, " + log.total(t10, Items.DIRT) + " dirt");
+        helper.assertTrue(Math.abs(log.minutes(t10) - 10) < 1e-6 && Math.abs(log.perMinute(t10, Items.COBBLESTONE) - 9) < 1e-6,
+                "A log ten minutes old averages over ten minutes: " + log.minutes(t10) + " min, " + log.perMinute(t10, Items.COBBLESTONE) + " a minute");
+        helper.assertTrue(log.totals(t10).getFirst().item() == Items.COBBLESTONE && log.totals(t10).size() == 2, "Most first: " + log.totals(t10));
+        // Half an hour on: the first cobblestone has aged out, the rest is still there, averaged over 30 minutes.
+        long t31 = t0 + 31 * minute;
+        helper.assertTrue(log.total(t31, Items.COBBLESTONE) == 30 && log.total(t31, Items.DIRT) == 10, "After 31 minutes: "
+                + log.total(t31, Items.COBBLESTONE) + " cobblestone, " + log.total(t31, Items.DIRT) + " dirt");
+        helper.assertTrue(log.minutes(t31) <= 30 && log.minutes(t31) >= 29, "A full log covers the last 29 to 30 minutes: " + log.minutes(t31));
+        // Recording later drops what is too old, and an hour on nothing is left.
+        log.record(t0 + 36 * minute, Items.DIRT, 1);
+        helper.assertTrue(log.total(t0 + 36 * minute, Items.DIRT) == 1 && log.total(t0 + 36 * minute, Items.COBBLESTONE) == 30,
+                "After 36 minutes the dirt of minute 5 should be gone");
+        helper.assertTrue(log.isEmpty(t0 + 70 * minute), "After more than half an hour without anything the log should be empty");
+
+        // A real colony: what its ants bring in is in its log, and stays there when the Storage is emptied.
+        BlockPos pos = new BlockPos(1, 1, 1);
+        TerrariumBlockEntity terrarium = AntColoniesGameTests.terrarium(helper, pos, AntColonies.id("stone"), 250, 0, 5000);
+        AntColoniesGameTests.structure(helper, pos.east(), StructureKind.FORAGING_SITE);
+        StructureBlockEntity storage = AntColoniesGameTests.structure(helper, pos.south(), StructureKind.STORAGE);
+        for (int i = 0; i < 4; i++) {
+            AntColoniesGameTests.step(helper, terrarium, 1);
+        }
+        long now = helper.getLevel().getGameTime();
+        var production = terrarium.colony().production();
+        long logged = production.total(now, Items.COBBLESTONE);
+        int inStorage = 0;
+        for (int slot = 0; slot < storage.getContainerSize(); slot++) {
+            if (storage.getItem(slot).is(Items.COBBLESTONE)) {
+                inStorage += storage.getItem(slot).getCount();
+            }
+        }
+        helper.assertTrue(inStorage > 0 && logged == inStorage, "The log should count exactly the cobblestone brought in: " + logged + " logged, "
+                + inStorage + " in the Storage");
+        helper.assertTrue(production.perMinute(now, Items.COBBLESTONE) > 0, "No cobblestone per minute");
+        storage.clearContent();
+        helper.assertTrue(production.total(now, Items.COBBLESTONE) == logged, "Emptying the Storage must not empty the log");
+        // Saved and loaded with the Terrarium.
+        var registries = helper.getLevel().registryAccess();
+        net.minecraft.nbt.CompoundTag saved = terrarium.saveWithFullMetadata(registries);
+        var loaded = net.minecraft.world.level.block.entity.BlockEntity.loadStatic(helper.absolutePos(pos), terrarium.getBlockState(), saved, registries);
+        helper.assertTrue(loaded instanceof TerrariumBlockEntity copy && copy.colony().production().total(now, Items.COBBLESTONE) == logged
+                && copy.colony().production().totals(now).size() == production.totals(now).size(), "The log did not survive saving");
+        // And what a player's screen is sent (the update tag while it is open carries it; without a viewer it doesn't).
+        helper.assertTrue(!terrarium.getUpdateTag(registries).getCompoundOrEmpty("colony").contains("production"),
+                "The log should only be sent while someone has the screen open");
+        helper.succeed();
+    }
+
 
     private UpdateGameTests() {}
 
@@ -462,9 +528,13 @@ final class UpdateGameTests {
         double fedRate = fedSite.rate();
         TerrariumBlockEntity hungry = AntColoniesGameTests.terrarium(helper, new BlockPos(10, 1, 2), COMMON, 800, 0, 20000);
         StructureBlockEntity hungrySite = AntColoniesGameTests.structure(helper, new BlockPos(10, 1, 3), StructureKind.FORAGING_SITE);
-        AntColoniesGameTests.structure(helper, new BlockPos(10, 1, 1), StructureKind.STORAGE);
+        StructureBlockEntity hungryStorage = AntColoniesGameTests.structure(helper, new BlockPos(10, 1, 1), StructureKind.STORAGE);
         AntColoniesGameTests.step(helper, hungry, 0.5);
         hungry.colony().setFood(1); // almost nothing left: well under lowFoodMinutes of food
+        // And nothing to eat from its stores: a colony eats the food items its site found before it works out how hungry
+        // it is, and what the site happened to find (at random) would otherwise refill it, some runs nearly to fed.
+        hungrySite.clearContent();
+        hungryStorage.clearContent();
         AntColoniesGameTests.step(helper, hungry, 0.5);
         helper.assertTrue(hungrySite.rate() < fedRate * 0.9, "Low food should slow work: " + hungrySite.rate() + " vs " + fedRate);
         helper.assertTrue(ColonyStatus.LOW_FOOD.in(hungry.colony().status()) || ColonyStatus.STARVING.in(hungry.colony().status())
@@ -829,6 +899,14 @@ final class UpdateGameTests {
         terrarium.setItem(TerrariumBlockEntity.SLOT_FEED, tube);
         terrarium.processSlots(level);
         helper.assertTrue(terrarium.getItem(TerrariumBlockEntity.SLOT_OUTPUT).is(ModItems.ANT_TEST_TUBE.get()), "A tube should fill with ants while food waits");
+        // A special food the species needs is eaten past a full bar only until its special store is full, not the whole stack.
+        TerrariumBlockEntity iron = AntColoniesGameTests.terrarium(helper, new BlockPos(6, 1, 2), AntColonies.id("iron"), 300, 0, 0);
+        iron.colony().setFood(100_000);
+        iron.setItem(TerrariumBlockEntity.SLOT_FOOD, new ItemStack(ModItems.MINERAL_ANT_FOOD.get(), 64));
+        iron.processSlots(level);
+        iron.processSlots(level);
+        int left = iron.getItem(TerrariumBlockEntity.SLOT_FOOD).getCount();
+        helper.assertTrue(left > 0 && left < 64, "A full colony should eat only some Mineral Ant Food for its special store, " + left + " of 64 left");
         helper.succeed();
     }
 

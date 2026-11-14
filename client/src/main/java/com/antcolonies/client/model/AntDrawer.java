@@ -25,6 +25,10 @@ import net.minecraft.util.LightCoordsUtil;
 public final class AntDrawer {
     private static final Map<Caste, Identifier> BASE = new EnumMap<>(Caste.class);
     private static final Map<Caste, Map<Pattern, Identifier>> PATTERNS = new EnumMap<>(Caste.class);
+    /** A Liquid Ant's crop, per caste: the liquid in it (solid, shaded pale to deep), tinted with the liquid's colour. */
+    private static final Map<Caste, RenderType> CROPS = new EnumMap<>(Caste.class);
+    /** And the crop's thin skin around the liquid: nearly clear, with a gloss. */
+    private static final Map<Caste, RenderType> CROP_SKINS = new EnumMap<>(Caste.class);
     private static final Identifier CRYSTAL = AntColonies.id("textures/entity/ant/crystal.png");
     private static final RenderType CRYSTAL_TYPE = RenderTypes.entityTranslucent(CRYSTAL);
     private static final RenderType CRYSTAL_GLOW = RenderTypes.eyes(CRYSTAL);
@@ -41,6 +45,8 @@ public final class AntDrawer {
                 }
             }
             PATTERNS.put(caste, patterns);
+            CROPS.put(caste, RenderTypes.entityCutout(AntColonies.id("textures/entity/ant/crop_" + caste.getSerializedName() + ".png")));
+            CROP_SKINS.put(caste, RenderTypes.entityTranslucent(AntColonies.id("textures/entity/ant/crop_skin_" + caste.getSerializedName() + ".png")));
         }
     }
 
@@ -74,8 +80,22 @@ public final class AntDrawer {
         poseStack.scale(-k, -k, k);
         RenderType base = RenderTypes.entityCutout(BASE.get(caste));
         collector.submitModelPart(model.body, poseStack, base, light, overlay, null, false, false, ARGB.opaque(look.body()), null, outline);
-        collector.submitModelPart(model.gaster, poseStack, base, light, overlay, null, false, false, ARGB.opaque(look.gaster()), null, outline);
-        Identifier pattern = PATTERNS.get(caste).get(look.pattern());
+        boolean replete = look.crop().isPresent();
+        if (replete) {
+            // A Liquid Ant: the full crop in place of the gaster. The liquid (glowing if the species glows), the gaster's
+            // plates riding on top, and the crop's clear skin over the liquid. The same every frame: nothing here follows
+            // the colony's work.
+            int liquid = ARGB.opaque(look.crop().get());
+            collector.submitModelPart(model.crop, poseStack, CROPS.get(caste), look.glow() ? LightCoordsUtil.FULL_BRIGHT : light, overlay, null,
+                    false, false, liquid, null, outline);
+            collector.submitModelPart(model.cropPlates, poseStack, base, light, overlay, null, false, false, ARGB.opaque(look.gaster()), null, outline);
+            // The skin takes a paler shade of the liquid's colour.
+            collector.submitModelPart(model.cropSkin, poseStack, CROP_SKINS.get(caste), light, overlay, null,
+                    ARGB.color(255, paler(ARGB.red(liquid)), paler(ARGB.green(liquid)), paler(ARGB.blue(liquid))), null);
+        } else {
+            collector.submitModelPart(model.gaster, poseStack, base, light, overlay, null, false, false, ARGB.opaque(look.gaster()), null, outline);
+        }
+        Identifier pattern = replete ? null : PATTERNS.get(caste).get(look.pattern());
         if (pattern != null) {
             collector.submitModelPart(model.pattern, poseStack, RenderTypes.entityTranslucent(pattern), light, overlay, null, ARGB.opaque(look.accent()), null);
         }
@@ -83,12 +103,16 @@ public final class AntDrawer {
             int crystal = ARGB.color(220, look.crystal().get());
             int crystalLight = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
             collector.submitModelPart(model.crystalsBody, poseStack, CRYSTAL_TYPE, crystalLight, overlay, null, crystal, null);
-            collector.submitModelPart(model.crystalsGaster, poseStack, CRYSTAL_TYPE, crystalLight, overlay, null, crystal, null);
+            if (!replete) {
+                collector.submitModelPart(model.crystalsGaster, poseStack, CRYSTAL_TYPE, crystalLight, overlay, null, crystal, null);
+            }
             if (look.glow()) {
                 collector.submitModelPart(model.crystalsBody, poseStack, CRYSTAL_GLOW, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, null,
                         ARGB.color(160, look.crystal().get()), null);
-                collector.submitModelPart(model.crystalsGaster, poseStack, CRYSTAL_GLOW, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, null,
-                        ARGB.color(160, look.crystal().get()), null);
+                if (!replete) {
+                    collector.submitModelPart(model.crystalsGaster, poseStack, CRYSTAL_GLOW, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, null,
+                            ARGB.color(160, look.crystal().get()), null);
+                }
             }
         }
         if (carry != 0) {
@@ -99,6 +123,11 @@ public final class AntDrawer {
             poseStack.popPose();
         }
         poseStack.popPose();
+    }
+
+    /** A colour channel a third of the way to white: the crop's skin is a paler shade of the liquid in it. */
+    private static int paler(int channel) {
+        return channel + (255 - channel) / 3;
     }
 
     /** How long a caste is drawn compared to a worker. */

@@ -34,6 +34,7 @@ import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -161,8 +162,14 @@ public class WildAnt extends PathfinderMob implements AntLike {
             }
         });
         goalSelector.addGoal(3, new ReturnToNestGoal());
+        goalSelector.addGoal(3, new GuardPostGoal());
         goalSelector.addGoal(4, new WorkLandGoal());
-        goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8));
+        goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8) {
+            @Override
+            public boolean canUse() {
+                return !royalGuard() && super.canUse(); // a Royal Guard Ant keeps its post
+            }
+        });
         goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 4.0F));
         goalSelector.addGoal(7, new RandomLookAroundGoal(this));
         // An alarmed anthill goes for the players it is alarmed at, wherever they are in it.
@@ -170,7 +177,82 @@ public class WildAnt extends PathfinderMob implements AntLike {
         // Hurting any ant of a group brings its soldiers.
         targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(WildAnt.class));
         targetSelector.addGoal(2, new net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
-                (target, level) -> guardian && caste() == Caste.SOLDIER));
+                (target, level) -> guardian && caste() == Caste.SOLDIER && (!royalGuard() || atPost(target))));
+    }
+
+    // --- Royal Guard Ants: the great Queen's guard ---
+
+    /** How near its post a Royal Guard Ant lets a player come before it attacks (blocks). */
+    public static final double GUARD_REACH = 4.0;
+    /** How far from its post a Royal Guard Ant follows anyone: it never leaves the Queen for long (blocks). */
+    public static final double GUARD_LEASH = 10.0;
+
+    /**
+     * A Royal Guard Ant: one of the great Queen's guard (an anthill soldier of royal rank). Its job is her, not the anthill:
+     * it stands at its post in her chamber or the antechamber instead of roaming, takes on only those who come up to its
+     * post (or whom the anthill is alarmed at, or who hurt it) and never follows anyone farther than {@link #GUARD_LEASH}
+     * from it, then goes back.
+     */
+    public boolean royalGuard() {
+        return rank() == Rank.ROYAL && caste() == Caste.SOLDIER;
+    }
+
+    /** Its post: where it was placed (its home), or where it stands for an ant without one. */
+    public BlockPos post() {
+        return hasHome() ? getHomePosition() : blockPosition();
+    }
+
+    /** Whether someone has come up to this Royal Guard Ant's post. */
+    public boolean atPost(net.minecraft.world.entity.Entity other) {
+        return other.distanceToSqr(Vec3.atBottomCenterOf(post())) <= GUARD_REACH * GUARD_REACH;
+    }
+
+    /** Whether someone is still within the ground a Royal Guard Ant keeps (it lets anyone farther away go). */
+    public boolean withinLeash(net.minecraft.world.entity.Entity other) {
+        return other.distanceToSqr(Vec3.atBottomCenterOf(post())) <= GUARD_LEASH * GUARD_LEASH;
+    }
+
+    @Override
+    protected Component getTypeName() {
+        return royalGuard() ? Component.translatable("entity." + com.antcolonies.AntColonies.MODID + ".royal_guard_ant") : super.getTypeName();
+    }
+
+    /** A Royal Guard Ant with nothing to fight walks back to its post and stands there. */
+    private class GuardPostGoal extends Goal {
+        private int retry;
+
+        GuardPostGoal() {
+            setFlags(EnumSet.of(Goal.Flag.MOVE));
+        }
+
+        @Override
+        public boolean canUse() {
+            return royalGuard() && getTarget() == null && distanceToSqr(Vec3.atBottomCenterOf(post())) > 1.0;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return royalGuard() && getTarget() == null && distanceToSqr(Vec3.atBottomCenterOf(post())) > 0.3;
+        }
+
+        @Override
+        public void start() {
+            retry = 0;
+        }
+
+        @Override
+        public void tick() {
+            if (--retry <= 0) {
+                retry = 20;
+                Vec3 at = Vec3.atBottomCenterOf(post());
+                getNavigation().moveTo(at.x, at.y, at.z, 1.0);
+            }
+        }
+
+        @Override
+        public void stop() {
+            getNavigation().stop();
+        }
     }
 
     @Override
@@ -558,6 +640,10 @@ public class WildAnt extends PathfinderMob implements AntLike {
             } else {
                 alarmed = false;
             }
+            // A Royal Guard Ant lets go of anyone who gets away from its post, and goes back to the Queen.
+            if (royalGuard() && getTarget() != null && !withinLeash(getTarget())) {
+                setTarget(null);
+            }
             // The great Queen watches her chamber: whoever steps in raises the alarm.
             if (tickCount % 10 == 0 && rank() == Rank.GREAT_QUEEN && anthill != null && chamber() != null) {
                 for (Player player : server.getEntitiesOfClass(Player.class, chamber(), player -> !com.antcolonies.content.worldgen.AnthillAlarm.exempt(player))) {
@@ -727,7 +813,8 @@ public class WildAnt extends PathfinderMob implements AntLike {
         }
 
         private boolean valid(Player player) {
-            return player.isAlive() && !player.isCreative() && !player.isSpectator() && alarmedAt(player);
+            // Alarmed, a Royal Guard Ant still only fights by the Queen.
+            return player.isAlive() && !player.isCreative() && !player.isSpectator() && alarmedAt(player) && (!royalGuard() || withinLeash(player));
         }
 
         @Override

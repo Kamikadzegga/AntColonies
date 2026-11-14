@@ -1,0 +1,6 @@
+{
+  "neoforge:conditions": [{"type": "neoforge:mod_loaded", "modid": "antcolonies"}, {"type": "neoforge:registered", "registry": "minecraft:fluid", "value": "antcolonies:no_such_fluid"}],
+  "category": "liquid",
+  "look": {"body": "#202020", "gaster": "#101010", "crop": "#FF00FF"},
+  "liquid": {"fluid": "minecraft:water", "droplet": "antcolonies:water_droplet"}
+}

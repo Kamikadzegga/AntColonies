@@ -96,6 +96,9 @@ final class ColonyProviders {
                 // Active (ants out through the portal), or which ants it needs.
                 data.putBoolean("expedition", true);
             }
+            if (structure.kind() == com.antcolonies.colony.model.StructureKind.LIQUID_CHAMBER) {
+                data.putBoolean("liquid", true);
+            }
             var connector = structure.connector();
             if (connector != null) {
                 data.putInt("channel", connector.channel);
@@ -150,7 +153,8 @@ final class ColonyProviders {
                         .withStyle(ChatFormatting.GRAY));
                 double rate = data.getDoubleOr("rate", 0);
                 if (rate > 0) {
-                    tooltip.add(Component.translatable("gui.antcolonies.site.rate", rate(rate)).withStyle(ChatFormatting.GRAY));
+                    tooltip.add(Component.translatable(data.getBooleanOr("liquid", false) ? "gui.antcolonies.site.droplet_rate" : "gui.antcolonies.site.rate",
+                            rate(rate)).withStyle(ChatFormatting.GRAY));
                 }
             }
             statuses(tooltip, data.getIntOr("status", 0), false);
@@ -175,6 +179,15 @@ final class ColonyProviders {
                     int time = Math.max(1, labData.get(GeneticLabBlockEntity.DATA_TIME));
                     data.putInt("progress", (int) Math.round(Math.clamp(labData.get(GeneticLabBlockEntity.DATA_PROGRESS) / (double) time, 0, 1) * 100));
                 }
+            } else if (accessor.getBlockEntity() instanceof com.antcolonies.content.blockentity.CentrifugeBlockEntity centrifuge) {
+                // What it is doing, and what its tank holds (Jade draws the FE bar itself).
+                data.putInt("energy", centrifuge.energy());
+                data.putInt("centrifuge", centrifuge.status().ordinal());
+                var fluid = centrifuge.fluid();
+                data.putInt("fluid", fluid.isEmpty() ? -1 : net.minecraft.core.registries.BuiltInRegistries.FLUID.getId(fluid.getFluid()));
+                data.putInt("amount", fluid.getAmount());
+                data.putInt("tank", centrifuge.tankCapacity());
+                data.putInt("making", centrifuge.data().get(com.antcolonies.content.blockentity.CentrifugeBlockEntity.DATA_MAKING));
             }
         }
 
@@ -185,6 +198,21 @@ final class ColonyProviders {
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
             CompoundTag data = accessor.getServerData();
             if (!data.contains("energy")) {
+                return;
+            }
+            if (data.contains("centrifuge")) {
+                // A Droplet Centrifuge: what it is doing, and its tank.
+                var status = com.antcolonies.content.blockentity.CentrifugeBlockEntity.Status.byId(data.getIntOr("centrifuge", 0));
+                var making = com.antcolonies.content.blockentity.CentrifugeBlockEntity.fluidById(data.getIntOr("making", -1));
+                var held = com.antcolonies.content.blockentity.CentrifugeBlockEntity.fluidById(data.getIntOr("fluid", -1));
+                Component line = switch (status) {
+                    case WORKING -> Component.translatable(status.translationKey(), making.getFluidType().getDescription());
+                    case BLOCKED -> Component.translatable(status.translationKey(), held.getFluidType().getDescription());
+                    default -> Component.translatable(status.translationKey());
+                };
+                tooltip.add(line.copy().withStyle(status == com.antcolonies.content.blockentity.CentrifugeBlockEntity.Status.WORKING ? ChatFormatting.GREEN
+                        : status == com.antcolonies.content.blockentity.CentrifugeBlockEntity.Status.IDLE ? ChatFormatting.GRAY : ChatFormatting.GOLD));
+                // (Jade draws the tank and the FE store itself, from the block's fluid and energy handlers.)
                 return;
             }
             // Jade draws the energy bar itself (from the energy capability).

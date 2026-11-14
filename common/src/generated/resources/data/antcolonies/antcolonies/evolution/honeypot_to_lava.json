@@ -1,0 +1,10 @@
+{
+  "from": "antcolonies:honeypot",
+  "to": "antcolonies:lava",
+  "item": "#antcolonies:liquid_feed/lava",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300,
+  "dimension": "minecraft:the_nether"
+}

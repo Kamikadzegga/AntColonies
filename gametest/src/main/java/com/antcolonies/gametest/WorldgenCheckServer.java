@@ -154,10 +154,26 @@ public class WorldgenCheckServer {
                     above++;
                 }
             }
+            // Its egg and larva clusters: alive, and knowing the anthill and its species (so they hatch into its ants).
+            int clusters = 0;
+            int live = 0;
+            var species = queens.isEmpty() ? null : queens.getFirst().species();
+            for (BlockPos pos : BlockPos.betweenClosed(piece.getBoundingBox().minX(), piece.getBoundingBox().minY(), piece.getBoundingBox().minZ(),
+                    piece.getBoundingBox().maxX(), piece.getBoundingBox().maxY(), piece.getBoundingBox().maxZ())) {
+                var state = overworld.getBlockState(pos);
+                if (state.getBlock() instanceof com.antcolonies.content.block.BroodClusterBlock) {
+                    clusters++;
+                    if (state.getValue(com.antcolonies.content.block.BroodClusterBlock.NATURAL)
+                            && overworld.getBlockEntity(pos) instanceof com.antcolonies.content.blockentity.BroodClusterBlockEntity be
+                            && be.species() != null && be.species().equals(species) && anthill != null && anthill.equals(be.anthill())) {
+                        live++;
+                    }
+                }
+            }
             result("Giant anthill at " + center.toShortString() + " in " + overworld.getBiome(center).unwrapKey().map(k -> k.identifier().getPath()).orElse("?")
                     + ": theme " + piece.theme() + ", " + piece.layout().style() + " " + piece.layout().size() + ", " + piece.layout().rooms().size()
                     + " rooms; " + ants.size() + " ants (" + queens.size() + " great Queen, " + royal + " royal guards, " + theirs + " of this anthill); "
-                    + trails + " path blocks, " + above + " blocks over 6 up");
+                    + trails + " path blocks, " + above + " blocks over 6 up; " + clusters + " brood clusters, " + live + " live of its species");
         }
     }
 

@@ -1,0 +1,25 @@
+{
+  "from": "antcolonies:water",
+  "to": "antcolonies:hootch",
+  "item": "#antcolonies:liquid_feed/hootch",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "enderio"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:fluid",
+      "value": "enderio:fluid_hootch_still"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:hootch_droplet"
+    }
+  ]
+}

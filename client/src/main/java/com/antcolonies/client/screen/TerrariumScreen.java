@@ -242,6 +242,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     /** A number or value: light, with a shadow, so it reads on any background. */
     private void value(GuiGraphicsExtractor graphics, String text, int x, int y, int color) {
         graphics.text(font, text, leftPos + x, topPos + y, color, true);
+        noteDrawn(text, leftPos + x, topPos + y);
     }
 
     /** An item drawn at twice its size. */
@@ -260,13 +261,18 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     private void sideAnt(GuiGraphicsExtractor graphics, Caste caste, AntLook look, int x, int y, int scale) {
         int casteRow = caste == Caste.QUEEN ? 2 : caste == Caste.SOLDIER ? 1 : 0;
         int frame = (int) (System.currentTimeMillis() / 400 % 4);
-        int[] tints = {look.body(), look.gaster(), look.crystal().orElse(-1)};
-        for (int part = 0; part < 3; part++) {
+        boolean replete = look.crop().isPresent();
+        // Rows of the sheet and their colours, in drawing order: the body, the gaster (a Liquid Ant's full crop and the
+        // plates on it instead), the crystals.
+        int[] rows = replete ? new int[] {casteRow * 3, 10 + casteRow, 13 + casteRow, casteRow * 3 + 2}
+                : new int[] {casteRow * 3, casteRow * 3 + 1, casteRow * 3 + 2};
+        int[] tints = replete ? new int[] {look.body(), look.crop().get(), look.gaster(), look.crystal().orElse(-1)}
+                : new int[] {look.body(), look.gaster(), look.crystal().orElse(-1)};
+        for (int part = 0; part < rows.length; part++) {
             if (tints[part] == -1) {
                 continue;
             }
-            int row = casteRow * 3 + part;
-            graphics.blit(RenderPipelines.GUI_TEXTURED, SIDE, leftPos + x, topPos + y, frame * 24, row * 12, 24 * scale, 12 * scale, 24, 12, 96, 112,
+            graphics.blit(RenderPipelines.GUI_TEXTURED, SIDE, leftPos + x, topPos + y, frame * 24, rows[part] * 12, 24 * scale, 12 * scale, 24, 12, 96, 192,
                     0xFF000000 | tints[part]);
         }
     }
@@ -336,12 +342,15 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         } else if (detailed()) {
             Colony.Stats stats = colony.stats();
             String perMinute = Component.translatable("gui.antcolonies.per_minute").getString();
-            label(graphics, fit(Component.translatable("gui.antcolonies.workers", number(colony.workers())).getString(), 92), x, y, LABEL);
-            label(graphics, fit(Component.translatable("gui.antcolonies.housing", number(colony.adults()), number(stats.adultCapacity())).getString(), 92),
-                    x + 96, y, DIM);
+            // Two columns; the right one is the wider, for "Adults: 12.3k/15.0k".
+            int right = 88;
+            int rightW = CONTENT_W - 8 - right;
+            label(graphics, fit(Component.translatable("gui.antcolonies.workers", number(colony.workers())).getString(), right - 4), x, y, LABEL);
+            label(graphics, fit(Component.translatable("gui.antcolonies.housing", number(colony.adults()), number(stats.adultCapacity())).getString(),
+                    rightW), x + right, y, DIM);
             y += 10;
-            label(graphics, fit(Component.translatable("gui.antcolonies.larvae", number(colony.larvae())).getString(), 92), x, y, LABEL);
-            label(graphics, fit(Component.translatable("gui.antcolonies.eggs", number(colony.eggs())).getString(), 92), x + 96, y, LABEL);
+            label(graphics, fit(Component.translatable("gui.antcolonies.larvae", number(colony.larvae())).getString(), right - 4), x, y, LABEL);
+            label(graphics, fit(Component.translatable("gui.antcolonies.eggs", number(colony.eggs())).getString(), rightW), x + right, y, LABEL);
             y += 10;
             label(graphics, fit(Component.translatable("gui.antcolonies.food_balance", rate(stats.foodIn()) + perMinute, rate(stats.foodOut()) + perMinute)
                     .getString() + "  " + Component.translatable("gui.antcolonies.efficiency", percent(colony.foodFactor())).getString(), CONTENT_W - 8),
@@ -398,6 +407,13 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         for (ColonyStatus status : statuses) {
             String key = status.translationKey() + (detailed() ? "" : ".short");
             String text = Component.translatable(key).getString();
+            if (status == ColonyStatus.UNKNOWN_SPECIES) {
+                // Liquid Ants of a fluid that is gone: say which mod they need back.
+                com.antcolonies.colony.liquid.LiquidKind kind = com.antcolonies.colony.liquid.LiquidKinds.bySpecies(colony.species());
+                if (kind != null) {
+                    text = Component.translatable("gui.antcolonies.liquid.missing", Component.translatable("mod.antcolonies." + kind.mod())).getString();
+                }
+            }
             int color = status == ColonyStatus.WORKING ? GOOD : status.problem() ? BAD : WARN;
             int w = font.width(text) + 7;
             if (cx + w > CONTENT_X + CONTENT_W - 4) {
@@ -518,7 +534,12 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                 graphics.item(stack, leftPos + x + 10, topPos + y + 5);
             }
             case 3 -> sideAnt(graphics, Caste.WORKER, cardLook, x + 6, y + 8, 1);
-            default -> graphics.item(new ItemStack(ModBlocks.STRUCTURES.get(StructureKind.FORAGING_SITE).get()), leftPos + x + 10, topPos + y + 5);
+            default -> {
+                // The colony's kind of job site: a Liquid Chamber for Liquid Ants.
+                AntSpecies cardSpecies = ClientSpecies.get(colony.species());
+                StructureKind site = cardSpecies != null && cardSpecies.makesLiquid() ? StructureKind.LIQUID_CHAMBER : StructureKind.FORAGING_SITE;
+                graphics.item(new ItemStack(ModBlocks.STRUCTURES.get(site).get()), leftPos + x + 10, topPos + y + 5);
+            }
         }
     }
 
@@ -579,7 +600,10 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                 if (lines.size() == 1) {
                     lines.add(Component.translatable("gui.antcolonies.no_jobs"));
                 }
-                if (species != null && species.canHunt()) {
+                if (species != null && species.makesLiquid()) {
+                    // Liquid Ants: how many there are, and the fluid they are full of.
+                    lines.add(Component.translatable("gui.antcolonies.card.liquid", number(colony.workers()), liquidName(species)).withStyle(ChatFormatting.AQUA));
+                } else if (species != null && species.canHunt()) {
                     lines.add(Component.translatable("gui.antcolonies.card.hunters").withStyle(ChatFormatting.GOLD));
                 } else if (species != null && species.canFarm()) {
                     lines.add(Component.translatable("gui.antcolonies.card.farmers").withStyle(ChatFormatting.GREEN));
@@ -703,6 +727,35 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     /** One find this colony makes: the item, its expected finds per minute from its sites' real rates, and how many are stored. */
     private record Find(ItemStack item, double perMinute, long stored) {}
 
+    /**
+     * The minutes the Production page's rates are averaged over (up to 30: what the colony's log covers), or 0 while the
+     * colony has brought nothing in yet and the page shows estimates instead.
+     */
+    private double productionWindow(Colony colony) {
+        if (minecraft.level == null) {
+            return 0;
+        }
+        long now = minecraft.level.getGameTime();
+        return colony.production().isEmpty(now) ? 0 : colony.production().minutes(now);
+    }
+
+    /** The window as the page names it: whole minutes, and 30 once the log is full (it then covers 29 to 30 minutes). */
+    private static long shownMinutes(double window) {
+        return window >= com.antcolonies.colony.model.ProductionLog.MINUTES - 1 ? com.antcolonies.colony.model.ProductionLog.MINUTES : Math.round(window);
+    }
+
+    /** "30 min", or how long the colony's log covers so far; "est." while the rates are estimates. With its hover. */
+    private void productionWindowNote(GuiGraphicsExtractor graphics, Colony colony, int right, int y) {
+        double window = productionWindow(colony);
+        String note = window > 0 ? Component.translatable("gui.antcolonies.production.window", shownMinutes(window)).getString()
+                : Component.translatable("gui.antcolonies.production.estimate").getString();
+        int w = font.width(note);
+        label(graphics, note, right - w, y, FAINT);
+        hoverText(right - w, y - 1, w, 10, window > 0
+                ? Component.translatable("gui.antcolonies.production.window.hint", shownMinutes(window)).getString()
+                : Component.translatable("gui.antcolonies.production.estimate.hint").getString());
+    }
+
     private void production(GuiGraphicsExtractor graphics, Colony colony) {
         int x = CONTENT_X + 4;
         int y = CONTENT_Y + 5;
@@ -715,6 +768,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             drawBar(graphics, leftPos + x + 50, topPos + y + 1, 70, 6, colony.storageUsed() / (double) colony.storageSlots(),
                     colony.storageUsed() >= colony.storageSlots() ? BAD : INFO);
             label(graphics, colony.storageUsed() + "/" + colony.storageSlots(), x + 124, y, DIM);
+            productionWindowNote(graphics, colony, x + 190, y);
         } else {
             label(graphics, Component.translatable("gui.antcolonies.production.no_storage"), x, y, WARN);
         }
@@ -722,17 +776,21 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         label(graphics, fit(Component.translatable("gui.antcolonies.food_balance", rate(stats.foodIn()) + perMinute, rate(stats.foodOut()) + perMinute)
                 .getString(), CONTENT_W - 8), x, y, stats.foodOut() > stats.foodIn() ? WARN : GOOD);
         y += 11;
+        AntSpecies liquidSpecies = ClientSpecies.get(colony.species());
+        if (liquidSpecies != null && liquidSpecies.makesLiquid()) {
+            y = liquidLine(graphics, colony, liquidSpecies, x, y);
+        }
         if (finds.isEmpty()) {
             label(graphics, Component.translatable("gui.antcolonies.production.none"), x, y, DIM);
             return;
         }
         if (detailed()) {
-            // A table: item, stored, finds per minute, share.
+            // A table: item, stored, finds per minute, share. A name too long for its column is cut, whole on hover.
             double total = finds.stream().mapToDouble(Find::perMinute).sum();
             label(graphics, Component.translatable("gui.antcolonies.production.col.item"), x + 10, y, FAINT);
-            label(graphics, Component.translatable("gui.antcolonies.production.col.stored"), x + 86, y, FAINT);
-            label(graphics, Component.translatable("gui.antcolonies.per_minute"), x + 120, y, FAINT);
-            label(graphics, "%", x + 160, y, FAINT);
+            label(graphics, Component.translatable("gui.antcolonies.production.col.stored"), x + 104, y, FAINT);
+            label(graphics, Component.translatable("gui.antcolonies.per_minute"), x + 138, y, FAINT);
+            label(graphics, "%", x + 190 - font.width("%"), y, FAINT);
             y += 9;
             for (Find find : finds) {
                 if (y > CONTENT_Y + CONTENT_H - 12) {
@@ -743,10 +801,11 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                 graphics.pose().scale(0.5F, 0.5F);
                 graphics.item(find.item(), 0, 0);
                 graphics.pose().popMatrix();
-                label(graphics, fit(find.item().getHoverName().getString(), 72), x + 10, y, LABEL);
-                label(graphics, number(find.stored()), x + 86, y, INFO);
-                label(graphics, rate(find.perMinute()), x + 120, y, GOOD);
-                label(graphics, percent(total <= 0 ? 0 : find.perMinute() / total), x + 160, y, DIM);
+                label(graphics, fit(find.item().getHoverName().getString(), 90), x + 10, y, LABEL); // a cut name shows whole on hover
+                label(graphics, number(find.stored()), x + 104, y, INFO);
+                label(graphics, rate(find.perMinute()), x + 138, y, GOOD);
+                String share = percent(total <= 0 ? 0 : find.perMinute() / total);
+                label(graphics, share, x + 190 - font.width(share), y, DIM); // right-aligned: clear of the rate
                 y += 9;
             }
         } else {
@@ -778,6 +837,20 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
      */
     private List<Find> finds(Colony colony) {
         List<Find> finds = new ArrayList<>();
+        // What the ants really brought in over the last half hour, once there is any: it stays when the Storage is emptied.
+        double window = productionWindow(colony);
+        if (window > 0) {
+            long now = minecraft.level.getGameTime();
+            for (com.antcolonies.colony.model.ProductionLog.Total total : colony.production().totals(now)) {
+                add(finds, new ItemStack(total.item()), total.count() / window, 0);
+            }
+            for (Colony.StoredItem stored : colony.stored()) {
+                add(finds, stored.item(), 0, stored.count());
+            }
+            finds.sort((a, b) -> a.perMinute() != b.perMinute() ? Double.compare(b.perMinute(), a.perMinute()) : Long.compare(b.stored(), a.stored()));
+            return finds;
+        }
+        // Nothing brought in yet (a new colony, or one from before this was kept): an estimate from the sites' rates.
         AntSpecies species = ClientSpecies.get(colony.species());
         int stage = colony.stage();
         double gathering = 1;
@@ -787,6 +860,12 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         }
         double specialWeight = 1;
         for (Colony.Assignment job : colony.assignments()) {
+            if (job.kind() == StructureKind.LIQUID_CHAMBER && job.rate() > 0 && species != null && species.liquid().isPresent()
+                    && species.liquid().get().available()) {
+                // Liquid Ants: droplets of their one fluid.
+                add(finds, new ItemStack(species.liquid().get().dropletItem().get()), job.rate() * gathering, 0);
+                continue;
+            }
             if (!job.kind().foraging() || job.rate() <= 0) {
                 continue;
             }
@@ -822,6 +901,41 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         }
         finds.sort((a, b) -> a.perMinute() != b.perMinute() ? Double.compare(b.perMinute(), a.perMinute()) : Long.compare(b.stored(), a.stored()));
         return finds;
+    }
+
+    /** The name of the fluid a Liquid Ant species makes (as the fluid's own mod names it), or a dash if it is gone. */
+    private static String liquidName(AntSpecies species) {
+        return species.liquid().flatMap(AntSpecies.Liquid::fluidValue).map(fluid -> fluid.getFluidType().getDescription().getString()).orElse("-");
+    }
+
+    /**
+     * A Liquid Ant colony's line on the Production page: the droplet its ants give and the fluid it is of, how many ants
+     * are at it, how many droplets a minute, and how well they work (health and food together). Returns the y under it.
+     */
+    private int liquidLine(GuiGraphicsExtractor graphics, Colony colony, AntSpecies species, int x, int y) {
+        AntSpecies.Liquid liquid = species.liquid().orElse(null);
+        long ants = 0;
+        double droplets = 0;
+        for (Colony.Assignment job : colony.assignments()) {
+            if (job.kind() == StructureKind.LIQUID_CHAMBER) {
+                ants += job.assigned();
+                droplets += job.rate();
+            }
+        }
+        if (liquid == null || !liquid.available()) {
+            label(graphics, fit(Component.translatable("status.antcolonies.no_droplet").getString(), CONTENT_W - 8), x, y, BAD);
+            return y + 11;
+        }
+        ItemStack droplet = new ItemStack(liquid.dropletItem().get());
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(leftPos + x, topPos + y);
+        graphics.pose().scale(0.5F, 0.5F);
+        graphics.item(droplet, 0, 0);
+        graphics.pose().popMatrix();
+        double efficiency = ProductionMath.healthFactor(colony.health()) * colony.foodFactor();
+        String text = Component.translatable("gui.antcolonies.liquid.line", number(ants), liquidName(species), rate(droplets), percent(efficiency)).getString();
+        label(graphics, fit(text, CONTENT_W - 20), x + 10, y, ants > 0 ? (efficiency < 0.999 ? WARN : GOOD) : DIM);
+        return y + 11;
     }
 
     private static void add(List<Find> finds, ItemStack item, double perMinute, long stored) {
@@ -1202,9 +1316,12 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                     int cy = CONTENT_Y + 26 + (i / 7) * 33;
                     if (over(mouseX, mouseY, cx, cy, 25, 31)) {
                         Find find = finds.get(i);
+                        double window = productionWindow(menu.colony());
                         graphics.setComponentTooltipForNextFrame(font, List.of(find.item().getHoverName(),
                                 Component.translatable("gui.antcolonies.production.stored", number(find.stored())).withStyle(ChatFormatting.AQUA),
-                                Component.translatable("gui.antcolonies.production.rate", rate(find.perMinute())).withStyle(ChatFormatting.GREEN)), mouseX, mouseY);
+                                (window > 0 ? Component.translatable("gui.antcolonies.production.rate_measured", rate(find.perMinute()), shownMinutes(window))
+                                        : Component.translatable("gui.antcolonies.production.rate", rate(find.perMinute()))).withStyle(ChatFormatting.GREEN)),
+                                mouseX, mouseY);
                         return;
                     }
                 }
@@ -1253,11 +1370,13 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         lines.add(Component.translatable(job.kind().translationKey()));
         lines.add(Component.literal(job.pos().getX() + ", " + job.pos().getY() + ", " + job.pos().getZ()).withStyle(ChatFormatting.DARK_GRAY));
         lines.add(Component.translatable(job.kind() == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.farmers"
-                : job.kind() == StructureKind.HUNTING_GROUND ? "gui.antcolonies.site.hunters" : "gui.antcolonies.site.workers", job.assigned(), job.capacity(),
+                : job.kind() == StructureKind.HUNTING_GROUND ? "gui.antcolonies.site.hunters"
+                : job.kind() == StructureKind.LIQUID_CHAMBER ? "gui.antcolonies.site.liquid_ants" : "gui.antcolonies.site.workers", job.assigned(), job.capacity(),
                 job.requested() < 0 ? Component.translatable("gui.antcolonies.auto") : Component.literal(String.valueOf(job.requested())))
                 .withStyle(ChatFormatting.GRAY));
         lines.add(Component.translatable(job.kind() == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.food_rate"
-                : job.kind() == StructureKind.HUNTING_GROUND ? "gui.antcolonies.site.hunt_rate" : "gui.antcolonies.site.rate", rate(job.rate()))
+                : job.kind() == StructureKind.HUNTING_GROUND ? "gui.antcolonies.site.hunt_rate"
+                : job.kind() == StructureKind.LIQUID_CHAMBER ? "gui.antcolonies.site.droplet_rate" : "gui.antcolonies.site.rate", rate(job.rate()))
                 .withStyle(ChatFormatting.GRAY));
         if (job.kind() == StructureKind.FORAGING_SITE) {
             lines.add(Component.translatable(ForagingMode.byId(job.mode()).translationKey()).withStyle(ChatFormatting.AQUA));
