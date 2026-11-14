@@ -43,7 +43,12 @@ public enum StructureKind implements StringRepresentable {
      * food to colonies that ask for it, and items its filter names move between their Storage (see ConnectorNetwork).
      * Its slots are the item filter.
      */
-    COLONY_CONNECTOR("colony_connector", Job.NONE, 9, 0, EnumSet.noneOf(UpgradeType.class));
+    COLONY_CONNECTOR("colony_connector", Job.NONE, 9, 0, EnumSet.noneOf(UpgradeType.class)),
+    /**
+     * Liquid Ants (species of category liquid) hang here with full crops and give droplets of their fluid: nothing else,
+     * and no other ants work here. A small store for when the Storage is full, like a Foraging Site's.
+     */
+    LIQUID_CHAMBER("liquid_chamber", Job.LIQUID, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION));
 
     public static final Codec<StructureKind> CODEC = StringRepresentable.fromEnum(StructureKind::values);
 
@@ -54,7 +59,7 @@ public enum StructureKind implements StringRepresentable {
     public static final int QUEEN_CHAMBER_OUTPUT = 6;
 
     public enum Job {
-        NONE, FORAGING, FARMERS, HUNTING;
+        NONE, FORAGING, FARMERS, HUNTING, LIQUID;
 
         public boolean any() {
             return this != NONE;
@@ -101,9 +106,14 @@ public enum StructureKind implements StringRepresentable {
         return this == FORAGING_SITE;
     }
 
-    /** Whether finds can be kept here (Storage, and the Foraging Sites' small stores). */
+    /** Whether finds can be kept here (Storage, and the small stores of the Foraging Sites and the Liquid Chamber). */
     public boolean stores() {
-        return this == STORAGE || foraging();
+        return this == STORAGE || siteStore();
+    }
+
+    /** The job sites with a small store of their own for what their ants bring: the Foraging Sites and the Liquid Chamber. */
+    public boolean siteStore() {
+        return foraging() || this == LIQUID_CHAMBER;
     }
 
     /** The three Foraging Sites: the ordinary one and the Nether and End expedition sites. */
@@ -118,6 +128,9 @@ public enum StructureKind implements StringRepresentable {
 
     /** All the Foraging Site kinds, in the order the colony hands out its workers to them. */
     public static final java.util.List<StructureKind> FORAGING_KINDS = java.util.List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE);
+
+    /** Every job site with a store of its own ({@link #siteStore}), in the order finds overflow into them. */
+    public static final java.util.List<StructureKind> SITE_STORES = java.util.List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER);
 
     public String translationKey() {
         return "block.antcolonies." + name;

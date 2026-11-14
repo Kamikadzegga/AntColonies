@@ -81,6 +81,8 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
     public static final int SLOT_OUTPUT = 2;
     /** Food only, so food never blocks the feed slot (Test Tubes, ants, catalysts and evolution materials). */
     public static final int SLOT_FOOD = 3;
+    /** Eggs (or larvae) one Ant Egg Cluster (or Larva Cluster) adds to a working colony of its species. */
+    public static final int CLUSTER_BROOD = 3;
     public static final int UPGRADE_SLOTS = 4;
     /** Block events the client turns into effects. */
     public static final int EVENT_EVOLVED = 1;
@@ -353,6 +355,28 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
             items.set(SLOT_OUTPUT, com.antcolonies.content.item.TweezersItem.antTube(new AntSample(colony.species(), Caste.WORKER, count)));
             feed.shrink(1);
             syncNow();
+        } else if (feed.getItem() instanceof net.minecraft.world.item.BlockItem blockItem
+                && blockItem.getBlock() instanceof com.antcolonies.content.block.BroodClusterBlock cluster) {
+            // A cluster taken from an anthill with Silk Touch: only a working colony (a Queen and workers, past founding)
+            // of its species takes it in. It waits in the slot meanwhile.
+            if (colony.queen() == null) {
+                feedStatus = ColonyStatus.NO_QUEEN.bit();
+                return;
+            }
+            if (colony.founding().active() || colony.workers() < 1) {
+                feedStatus = ColonyStatus.NO_WORKERS.bit();
+                return;
+            }
+            if (species == null || !species.equals(colony.species())) {
+                feedStatus = ColonyStatus.INCOMPATIBLE_SPECIES.bit();
+                return;
+            }
+            if (cluster.eggs()) {
+                colony.addEggs(feed.getCount() * (double) CLUSTER_BROOD);
+            } else {
+                colony.addLarvae(feed.getCount() * (double) CLUSTER_BROOD);
+            }
+            feed.setCount(0);
         } else if (species != null && (feed.is(ModItems.ANT_EGG.get()) || feed.is(ModItems.ANT_LARVA.get()))) {
             if (!accepts(species)) {
                 feedStatus = ColonyStatus.INCOMPATIBLE_SPECIES.bit();
@@ -379,12 +403,12 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
                 case NOT_READY -> feedStatus = ColonyStatus.INSUFFICIENT_MATERIALS.bit();
                 case WRONG_DIMENSION -> feedStatus = ColonyStatus.WRONG_DIMENSION.bit();
                 case ABSORBED -> {
-                    feed.shrink(1);
+                    absorb(feed);
                     level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_ABSORBED, 0);
                     level.playSound(null, worldPosition, ModSounds.QUEEN_ACTIVITY.get(), SoundSource.BLOCKS, 0.6F, 1.4F);
                 }
                 case EVOLVED -> {
-                    feed.shrink(1);
+                    absorb(feed);
                     level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_EVOLVED, 0);
                     level.playSound(null, worldPosition, ModSounds.EVOLUTION.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
                     syncNow();
@@ -403,16 +427,20 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         setChanged();
     }
 
-    /** Eats from a stack of food while the food bar has room (a special food the species needs, always). */
+    /**
+     * Eats from a stack of food while the food bar has room, or, for a special food the species needs, while its special
+     * food store (a quarter of the food room, as in {@code FoodIntake}) is not full. The rest waits in the slot.
+     */
     private void eat(ServerLevel level, ItemStack stack) {
         ModDataMaps.AntFood value = ModDataMaps.food(stack);
         if (value == null) {
             return;
         }
         double capacity = colony.stats().foodCapacity() > 0 ? colony.stats().foodCapacity() : AntConfig.get(AntConfig.TERRARIUM_FOOD_CAPACITY);
+        double specialRoom = capacity / 4;
         String kind = value.specialKind();
-        boolean special = !kind.isEmpty() && kind.equals(speciesDiet(level));
-        while (!stack.isEmpty() && (colony.food() + value.food() <= capacity || special && value.special() > 0)) {
+        boolean special = !kind.isEmpty() && kind.equals(speciesDiet(level)) && value.special() > 0;
+        while (!stack.isEmpty() && (colony.food() + value.food() <= capacity || special && colony.specialFood() < specialRoom)) {
             colony.addFood(value.food(), special ? value.special() : 0);
             stack.shrink(1);
         }
@@ -468,6 +496,21 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
     /** An empty colony takes on the species of the first ants put in. */
     private void adopt(Identifier species) {
         colony.adoptSpecies(species);
+    }
+
+    /**
+     * The Queen takes one of the evolution material. What the item leaves behind (the bucket of a bucket of water, lava
+     * or another fluid fed to a Liquid Ant line) goes to the output slot, or drops by the Terrarium if that is taken.
+     */
+    private void absorb(ItemStack feed) {
+        net.minecraft.world.item.ItemStackTemplate remainder = feed.getCraftingRemainder();
+        feed.shrink(1);
+        if (remainder != null && level != null) {
+            ItemStack left = remainder.create();
+            if (!giveBack(left)) {
+                net.minecraft.world.Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 1, worldPosition.getZ() + 0.5, left);
+            }
+        }
     }
 
     /** Puts an item into the output slot; false when it doesn't fit. */

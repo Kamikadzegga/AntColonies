@@ -1,0 +1,53 @@
+{
+  "tier": 2,
+  "category": "liquid",
+  "look": {
+    "body": "#1E2450",
+    "gaster": "#141838",
+    "accent": "#141838",
+    "pattern": "plain",
+    "crop": "#2A3AB0"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.8
+  },
+  "liquid": {
+    "fluid": "mekanism:heavy_water",
+    "droplet": "antcolonies:heavy_water_droplet",
+    "rate": 0.05
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "minecraft:honey_bottle",
+        "count": 2
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "mekanism"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:fluid",
+      "value": "mekanism:heavy_water"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:heavy_water_droplet"
+    }
+  ]
+}

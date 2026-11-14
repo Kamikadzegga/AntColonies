@@ -21,6 +21,7 @@ world content, species, genetics and the settings. For data packs and modpacks s
 - [Chitin gear](#chitin-gear)
 - [Guard Ants](#guard-ants)
 - [Advancements](#advancements)
+- [Liquid Ants and the Droplet Centrifuge](#liquid-ants-and-the-droplet-centrifuge)
 - [Species](#species)
 - [Progression through the dimensions](#progression-through-the-dimensions)
 - [Genetics](#genetics)
@@ -124,7 +125,7 @@ The Terrarium's screen has eight tabs, with an icon each:
 | Overview | The Queen's portrait, the colony's stage (and how far to the next), health and food, its ants and its problems at a glance |
 | Colony | Cards for the Queen, eggs, larvae, workers and the ants at work; click one for its details |
 | Jobs | Every working site: its ants, its priority, on or off, a Foraging Site's mode, and how fast it works |
-| Production | What the colony finds and about how many a minute (from its sites' real rates), and what its Storage holds |
+| Production | What the colony's ants brought in over the last 30 minutes, item by item, as items per minute (the real count, averaged; a note says how many minutes it covers so far), and what its Storage holds. An item stays listed for half an hour after it came in even when the Storage has been emptied, so the rates can be read with hoppers or pipes attached. Until the ants bring something in, it shows an estimate from the sites' rates, marked "est." |
 | Genetics | The Queen's traits (green help, red hurt) and her mutations (green good, red flaws) |
 | Network | The colonies its Colony Connectors link it to, their food, and the food moving between them |
 | Statistics | Charts of the last half hour: adults, brood, food, eggs, finds, food in against food out |
@@ -149,6 +150,7 @@ by job, instead.
 | Harvesting Site | Farmer Ants grow food and harvest mushrooms, seeds, berries. Other species can't farm. |
 | Storage | More room for finds and 25,000 food room. A Storage starts with 18 slots; each Storage Upgrade tier adds 18 (Storage IV: 90, two Storage IV: 162, the screen scrolls), a stack per slot (Storage II: three stacks in each slot) and 25,000 food room. An upgrade stays in while the Storage holds more than would fit without it. The colony eats the food items in it (not Royal Jelly). Hoppers can empty it; Automation pushes it down. |
 | Queen Chamber | Raises daughter Queens; a Genetic Sample crossed in can make hybrids. |
+| Liquid Chamber | Liquid Ants (see below) hang here with full crops and give droplets of their fluid. Sends them to Storage; holds 9 stacks while the Storage is full. Other species leave it alone. |
 | Nether Foraging Site | Nether-adapted ants go on simulated expeditions through its little portal and bring back the Nether's finds. No power. |
 | End Foraging Site | The same for End-adapted ants and the End's finds. No power. |
 | Colony Connector | Links its colony to colonies with a connector on the same channel up to 30 blocks away: food and filtered items move between them. No power. |
@@ -232,6 +234,10 @@ the End.
 
 ## Colony Connectors
 
+Colony Connectors are a mid-game (Nether) chamber: one takes 4 Infernal Chitin (only from ants of the Nether), a Nether
+Trail Pheromone (a colony foraging in the Nether turns one up now and then), 2 Blaze Rods, a Magma Block and a Test
+Tube.
+
 A Colony Connector is a chamber: put it against a colony like any other. Connectors on the same **channel** (one of 16
 colours, picked in its screen) in the same dimension link their colonies when
 the connectors are at most 30 blocks apart on x and on z (height does not matter; config `connectorRange`), as long as both are loaded.
@@ -290,11 +296,11 @@ some 40 blocks down). Some tunnels loop back between neighbouring rooms, some en
 entrances** slope down from the ground beside the mound, a way out for anyone who dropped down the shaft. One anthill
 in ten is **abandoned**: a small, shallow nest its colony left, with only its old Queen, alone.
 
-Deepest of all lies the **Queen's great chamber**, and the only way in is through the **antechamber** of her royal guard.
+Deepest of all lies the **Queen's great chamber**, and the only way in is through the **antechamber** of her **Royal Guard Ants**.
 
 The rooms, each furnished for its purpose: the **Queen's chamber** (royal chitin floor, her nest, eggs and larvae, a
-barrel of the anthill's loot, pheromone lamps, six of her royal guard round her), the **antechamber** (four more royal
-guards), **nurseries**, **egg stores** and **larval chambers** (piles of eggs and larvae), **food stores** (a barrel of
+barrel of the anthill's loot, pheromone lamps, six of her Royal Guard Ants round her), the **antechamber** (four more Royal
+Guard Ants), **nurseries**, **egg stores** and **larval chambers** (piles of eggs and larvae), **food stores** (a barrel of
 food), **fungus gardens** (fungal beds and mushrooms, glowing fungus), **aphid farms** (moss, azaleas and honey),
 **middens** (bones and suspicious gravel, or sand in deserts and badlands, to work with a Brush: chitin, resin, nuggets,
 sometimes fragments, Royal Jelly or an emerald), **barracks** (soldiers), **chitin stores** (chitin blocks and a chest),
@@ -306,14 +312,31 @@ Anthills generated before 0.2.0 keep the layout and look they started with.
 
 ### Its ants, and the alarm
 
-The ants are the local wild species: the great Queen, her **royal guard** (soldiers a third bigger, with 18 health,
+The ants are the local wild species: the great Queen, her **Royal Guard Ants** (soldiers a third bigger, with 18 health,
 armor and a harder bite), soldiers in the barracks, the galleries and some tunnels, workers in the rooms and ants out on
 the mound. Each keeps to its room, and soldiers attack players who come close.
+
+The **Royal Guard Ants** have one job: the Queen. Each stands at its post in her chamber or the antechamber and does not
+roam. It attacks only a player who comes up to its post (within 4 blocks), who strikes it, or whom the anthill is
+alarmed at, and it never follows anyone more than 10 blocks from its post: then it lets them go and goes back to her.
+
+### Its brood
+
+The **Ant Egg Clusters** and **Larva Clusters** on the floors of the nurseries, egg stores, larval chambers and the
+Queen's chamber are alive. In time (about 10 minutes a stage on average, config `broodClusterMinutes`) an egg cluster
+becomes a larva cluster, and a larva cluster 1 to 3 workers of the anthill's species, who belong to that anthill. They
+only grow while a player is near enough for the chunk to tick, and a larva cluster waits while 60 or more wild ants are
+already within 24 blocks (config `anthillMaxAnts`).
+
+Clusters can't be crafted. Broken by hand or with a plain tool, a live cluster is lost; with **Silk Touch** you keep it,
+with the anthill's species. Its item goes into a Terrarium's feed slot, but only a **working colony** of the same species
+takes it (one with a Queen and workers, past founding): an Ant Egg Cluster adds 3 eggs, a Larva Cluster 3 larvae.
+Placed, a cluster is only a decoration: it never hatches, and it drops itself when broken.
 
 A **full set of Chitin armor** makes you smell like the colony: the ants let you walk through their nest. Until you
 raise the **alarm**: by opening or breaking one of the anthill's chests or barrels (one still holding its loot),
 stepping into the Queen's chamber, or striking one of its ants (the Queen too). Then, for five minutes (config
-`anthillAlarmSeconds`), every ant of that anthill comes after you, Chitin or not: soldiers and royal guards attack and
+`anthillAlarmSeconds`), every ant of that anthill comes after you, Chitin or not: soldiers and Royal Guard Ants attack and
 workers swarm, chasing you through the tunnels. The alarm is that anthill's alone, and only against the player who
 raised it. Without Chitin the same things raise it too: the soldiers attack anyway, but now the whole nest comes. Players
 in creative or spectator mode never raise it.
@@ -436,10 +459,47 @@ alone), Trail Network (two colonies linked by Colony Connectors), the trail pher
 Sites, and finding an End anthill. Colony advancements are checked when you open the Terrarium and every few seconds while you stand within 16
 blocks of it.
 
+## Liquid Ants and the Droplet Centrifuge
+
+Liquid Ants are species whose workers have a crop swollen full of a fluid, like the repletes of honeypot ants. The
+crop is how the species looks: it is always full and never changes. They do one job only: at a **Liquid Chamber** they
+give **droplets** of their fluid. They leave Foraging Sites, Harvesting Sites, Hunting Grounds and the Nether and End
+Foraging Sites alone, and no other species works at a Liquid Chamber.
+
+| Species | Comes from | Fed | Droplet | In a Centrifuge |
+|---|---|---|---|---|
+| Water Ant | Honeypot Ant | Water Bucket | Water Droplet | 100 mB of water, 400 FE, 2 s |
+| Lava Ant | Honeypot Ant, in the Nether | Lava Bucket | Lava Droplet | 50 mB of lava, 2,000 FE, 5 s |
+
+The Queen takes one bucket per attempt (colony stage 2 and 300 adults; the 25th attempt always works) and the empty
+bucket comes back in the Terrarium's output slot. Honeypot Ants are the hybrid of Blossom and Farmer Ants.
+
+- Droplets come like any other work: more ants at the chamber make more (with the usual diminishing returns), Speed and
+  Population Upgrades help, and a colony short of food slows down. Liquid Ants eat more than Common Ants (Water Ants
+  1.3 times as much, Lava Ants 1.8 times) and bring in no food of their own, so they have to be fed. Now and then a
+  droplet comes with one Ant Food (config `liquidFoodChance`, 1 in 2,000); Farmer Ants are the food makers.
+- Nothing about it takes power. A full Liquid Chamber of 256 Water Ants gives about 30 droplets a minute (3 buckets of
+  water); of Lava Ants about 3 (a bucket of lava every 6 minutes).
+
+The **Droplet Centrifuge** turns droplets into the fluid, for FE. Put droplets in its slot (by hand, hopper or pipe)
+and give it FE on any side: a Generator next to it will do. It holds 50,000 FE and 8,000 mB.
+
+- The fluid comes out three ways: use a bucket on the block; put a tank next to it; or connect a fluid pipe. Its tank is
+  an ordinary fluid tank on every side, and it also hands up to 1,000 mB a tick (a bucket; config `centrifugePushRate`)
+  to whatever next to it takes fluid, so a pipe drains it at the pipe's own speed and a cauldron next to it fills.
+  What a pipe takes out by itself has no limit.
+- It spins one droplet at a time and takes the droplet only in the moment the fluid goes into the tank, so nothing is
+  lost: out of FE, the run waits where it is; with no room in the tank for a whole droplet's fluid, or another fluid in
+  the tank, it waits and says so. A redstone signal pauses it; a comparator reads how full the tank is.
+
+With other mods installed, more Liquid Ants appear, each only if that mod's fluid really exists: see
+[compatibility.md](compatibility.md).
+
 ## Species
 
-46 species.
+48 species.
 
+- Liquid Ants, evolved from Honeypot Ants: Water and Lava (see above).
 - Wild, with nests in their biomes: Common, Wood, Stone, Snow, Desert, Farmer, Jungle, Swamp, Savanna, Shore (beaches),
   Blossom (cherry groves and flower meadows), Pale (pale garden), Badlands, Army (plains and savannas; a hunter); and in
   the other dimensions Warped (the Nether's warped and crimson forests) and Chorus (the End's outer islands).

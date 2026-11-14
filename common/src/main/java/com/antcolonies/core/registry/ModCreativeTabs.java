@@ -29,6 +29,8 @@ public final class ModCreativeTabs {
                         output.accept(item.get());
                     }
                 });
+                // The droplets of every fluid that exists in this game.
+                com.antcolonies.colony.liquid.LiquidKinds.droplets().forEach(output::accept);
                 net.minecraft.world.item.ItemStack guard = new net.minecraft.world.item.ItemStack(ModItems.GUARD_ANT.get());
                 guard.set(ModDataComponents.GUARD.get(), new com.antcolonies.content.item.GuardData(com.antcolonies.core.registry.ModRegistries.COMMON, 5, -1));
                 output.accept(guard);

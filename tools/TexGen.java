@@ -532,49 +532,188 @@ public class TexGen {
     }
 
     /**
-     * The Generator: a brushed-steel coal generator. Its front is a centred firebox window: coal lying in the bottom, the
-     * firebox dark when idle, flames over glowing coal while it burns; a status light centred over it. Its sides a centred
-     * vent grille; its top a centred exhaust grille.
+     * The Generator: a burn-core generator in the Genetic Laboratory's build (the user, 2026-11-14, in turn: "match the
+     * style of the centrifuge", "less glass and more furnace like", "more like the lab machine", "should look more
+     * futuristic"). The lab's white enamel casing, posts and lid, see {@link #labBody}. Between casing and lid, where the
+     * Centrifuge has glass, a containment chamber of dark plating: a framed viewport in front, a narrow slit in each
+     * side, cooling fins and an exhaust port at the back. Inside, held between two electrodes, the burn core: a dark
+     * slug while idle, a block of churning plasma while it burns (an animated strip). The casing carries three power
+     * cells and the lab's status light on the front, and an energy conduit along each side; the lid a
+     * heat exchanger with a glowing centre. Lit parts are teal for power (the lab's colour) and orange for the burn; the
+     * model draws them full-bright while it runs.
      */
     static void generator() {
         for (boolean on : new boolean[] {false, true}) {
-            Img front = casing(STEEL, 5.2, 3.0, 0.6, 71);
-            for (int y = 5; y < 12; y++) {
-                for (int x = 4; x < 12; x++) {
-                    double heat = (y - 5) / 6.0;
-                    front.set(x, y, on ? FIRE[Math.clamp((int) Math.round(heat * 4.2), 0, 5)] : COAL[0]);
+            String suffix = on ? "_on" : "";
+            // --- Front: three power cells set straight into the enamel (not one display, as the lab and the Centrifuge
+            // have: the Generator's own face), each hooded, lit hotter from left to right while it burns; the status
+            // light under the middle one ---
+            Img front = labBody(171);
+            for (int cell = 0; cell < 3; cell++) {
+                for (int x = 4 + cell * 3; x < 6 + cell * 3; x++) {
+                    front.set(x, 9, GRAPHITE[2]);
+                    front.set(x, 10, on ? FIRE[3 + cell] : GRAPHITE[0]);
+                    front.set(x, 11, on ? FIRE[2 + cell] : GRAPHITE[0]);
                 }
             }
-            // The coal: a low, even heap across the bottom of the firebox.
-            paint(front, 5, 9, new String[] {
-                    ".a.ba.b.",
-                    "abcbabcb"},
-                    'a', on ? FIRE[4] : COAL[3], 'b', on ? FIRE[2] : COAL[2], 'c', on ? FIRE[5] : COAL[4]);
-            frame(front, 3, 4, 13, 13, GRAPHITE[1]);
-            // The status light, centred.
-            front.set(7, 2, on ? 0xFF6CDA4E : 0xFF5A2420);
-            front.set(8, 2, on ? 0xFF6CDA4E : 0xFF5A2420);
-            front.save("block/generator_front" + (on ? "_on" : ""));
-        }
-        // The side: a centred vent grille.
-        Img side = casing(STEEL, 5.2, 3.0, 0.6, 72);
-        for (int y = 3; y < 11; y += 2) {
+            front.set(7, 12, on ? 0xFF6CDA4E : GRAPHITE[2]);
+            front.set(8, 12, on ? 0xFF6CDA4E : GRAPHITE[2]);
+            front.save("block/generator_front" + suffix);
+
+            // --- Sides: an energy conduit, a graphite channel with a line of light running through it ---
+            Img side = labBody(172);
+            for (int x = 3; x < 13; x++) {
+                side.set(x, 10, GRAPHITE[2]);
+                side.set(x, 11, GRAPHITE[1]);
+            }
             for (int x = 4; x < 12; x++) {
-                side.set(x, y, GRAPHITE[0]);
+                // Segments of light, a gap between each pair.
+                boolean gap = (x - 4) % 3 == 2;
+                side.set(x, 10, gap ? GRAPHITE[0] : on ? TEAL[4] : TEAL[1]);
+                side.set(x, 11, gap ? GRAPHITE[0] : on ? TEAL[3] : TEAL[0]);
+            }
+            side.save("block/generator_side" + suffix);
+
+            // --- Lid: the heat exchanger, square rings of fins round a centre that glows while it burns ---
+            Img top = new Img(16, 16);
+            brushed(top, 0, 0, 16, 16, ENAMEL, 4.0, 3.0, 0.35, 177);
+            frame(top, 0, 0, 16, 16, ENAMEL[1]);
+            top.fill(4, 4, 12, 12, GRAPHITE[0]);
+            frame(top, 3, 3, 13, 13, GRAPHITE[2]);
+            frame(top, 5, 5, 11, 11, STEEL[3]);
+            frame(top, 6, 6, 10, 10, GRAPHITE[1]);
+            top.fill(7, 7, 9, 9, on ? FIRE[4] : GRAPHITE[3]);
+            if (on) {
+                top.set(7, 7, FIRE[5]);
+                frame(top, 6, 6, 10, 10, FIRE[1]);
+            }
+            top.save("block/generator_top" + suffix);
+        }
+        // The chamber floor and the underside of the lid, and the two electrodes: brushed graphite.
+        Img deck = new Img(16, 16);
+        brushed(deck, 0, 0, 16, 16, GRAPHITE, 2.4, 1.2, 0.5, 178);
+        frame(deck, 4, 4, 12, 12, GRAPHITE[3]);
+        deck.save("block/generator_deck");
+
+        // --- The chamber's plating. The model uses columns 2-13 of rows 2-7 of each (between the corner posts). ---
+        // Front: a viewport with cut corners in a steel frame, a teal pip either side (cutout).
+        Img port = plating(181);
+        for (int y = 2; y < 8; y++) {
+            for (int x = 3; x < 13; x++) {
+                boolean corner = (y == 2 || y == 7) && (x == 3 || x == 12);
+                boolean rim = y == 2 || y == 7 || x == 3 || x == 12;
+                port.set(x, y, corner ? GRAPHITE[1] : rim ? STEEL[y == 2 ? 5 : 3] : 0);
             }
         }
-        side.save("block/generator_side");
-        // The top: brushed steel, a centred exhaust grille.
-        Img top = new Img(16, 16);
-        brushed(top, 0, 0, 16, 16, STEEL, 4.6, 3.4, 0.6, 73);
-        frame(top, 0, 0, 16, 16, STEEL[2]);
-        for (int y = 4; y < 12; y++) {
-            for (int x = 4; x < 12; x += 2) {
-                top.set(x, y, GRAPHITE[0]);
+        // The corners of the opening filled in, so it reads as an octagon rather than a box.
+        for (int[] p : new int[][] {{4, 3}, {11, 3}, {4, 6}, {11, 6}}) {
+            port.set(p[0], p[1], STEEL[2]);
+        }
+        port.set(2, 4, TEAL[3]);
+        port.set(2, 5, TEAL[2]);
+        port.set(13, 4, TEAL[3]);
+        port.set(13, 5, TEAL[2]);
+        port.save("block/generator_chamber_front");
+        // Sides: one narrow slit in a steel frame, a row of cooling fins over and under it (cutout).
+        Img slit = plating(182);
+        for (int x = 2; x < 14; x++) {
+            slit.set(x, 2, x % 2 == 0 ? GRAPHITE[3] : GRAPHITE[0]);
+            slit.set(x, 7, x % 2 == 0 ? GRAPHITE[3] : GRAPHITE[0]);
+        }
+        for (int y = 3; y < 7; y++) {
+            for (int x = 3; x < 13; x++) {
+                boolean rim = y == 3 || y == 6 || x == 3 || x == 12;
+                slit.set(x, y, rim ? STEEL[y == 3 ? 5 : 3] : 0);
             }
         }
-        frame(top, 3, 3, 13, 13, GRAPHITE[2]);
-        top.save("block/generator_top");
+        slit.set(3, 3, GRAPHITE[1]);
+        slit.set(12, 3, GRAPHITE[1]);
+        slit.set(3, 6, GRAPHITE[1]);
+        slit.set(12, 6, GRAPHITE[1]);
+        slit.save("block/generator_chamber_side");
+        // Back: upright cooling fins, and the exhaust port in a steel ring.
+        Img fins = plating(183);
+        for (int y = 2; y < 8; y++) {
+            for (int x = 2; x < 14; x++) {
+                fins.set(x, y, x % 2 == 0 ? GRAPHITE[3] : GRAPHITE[0]);
+            }
+        }
+        fins.fill(5, 3, 11, 7, STEEL[3]);
+        fins.fill(6, 4, 10, 6, GRAPHITE[0]);
+        fins.set(5, 3, GRAPHITE[1]);
+        fins.set(10, 3, GRAPHITE[1]);
+        fins.set(5, 6, GRAPHITE[1]);
+        fins.set(10, 6, GRAPHITE[1]);
+        fins.save("block/generator_chamber_back");
+
+        // --- The burn core. Idle: a dark slug with a few dull red seams. ---
+        Img core = new Img(16, 16);
+        brushed(core, 0, 0, 16, 16, COAL, 3.0, 1.4, 0.8, 184);
+        for (int[] seam : new int[][] {{6, 7}, {7, 7}, {9, 8}, {5, 9}, {10, 6}, {8, 10}, {6, 5}, {9, 5}}) {
+            core.set(seam[0], seam[1], FIRE[0]);
+        }
+        core.save("block/generator_core");
+        // Burning: plasma, eight frames. Two crossing ripples make hot cells that drift and merge; white-hot where they
+        // peak, deep orange between.
+        Img plasma = new Img(16, 16 * 8);
+        for (int f = 0; f < 8; f++) {
+            double t = f * Math.PI / 4;
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    double v = Math.sin(x * 1.05 + t) * Math.cos(y * 0.95 - t) + 0.55 * Math.sin((x + y) * 0.7 - 2 * t);
+                    int tone = v > 0.95 ? 5 : v > 0.45 ? 4 : v > -0.1 ? 3 : v > -0.7 ? 2 : 1;
+                    plasma.set(x, f * 16 + y, FIRE[tone]);
+                }
+            }
+        }
+        plasma.save("block/generator_plasma");
+        try {
+            Files.writeString(TEX.resolve("block/generator_plasma.png.mcmeta"), "{\n  \"animation\": {\n    \"frametime\": 2\n  }\n}\n");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * The Generator's chamber plating: brushed graphite in panels, a seam down every fourth column and a lighter edge
+     * along the top of each panel.
+     */
+    static Img plating(long seed) {
+        Img img = new Img(16, 16);
+        brushed(img, 0, 0, 16, 16, GRAPHITE, 2.6, 1.4, 0.5, seed);
+        for (int y = 0; y < 16; y++) {
+            for (int x = 2; x < 16; x += 4) {
+                img.set(x, y, GRAPHITE[0]);
+            }
+        }
+        for (int x = 0; x < 16; x++) {
+            if (x % 4 != 2) {
+                img.set(x, 2, GRAPHITE[3]);
+            }
+        }
+        return img;
+    }
+
+    /**
+     * One side of the Droplet Centrifuge and the Generator, the whole height of the block, in the Genetic Laboratory's
+     * build: the lab's own white enamel panel ({@link #casing}: brushed, lighter at the top, the same darker edge all
+     * round, a graphite kickplate along the foot), with the band these two machines keep open between casing and lid
+     * (rows 2-7): dark behind, an enamel post either end, and the same darker edge along the lid above it and the casing
+     * below it. The model puts glass (the Centrifuge) or firebox walls (the Generator) between the posts; the machine
+     * paints its own panel over the casing (rows 9-12).
+     */
+    static Img labBody(long seed) {
+        Img img = casing(ENAMEL, 4.2, 2.6, 0.35, seed);
+        img.fill(2, 2, 14, 8, GRAPHITE[0]);
+        for (int x = 0; x < 16; x++) {
+            img.set(x, 1, ENAMEL[1]);
+            img.set(x, 8, ENAMEL[1]);
+        }
+        for (int y = 2; y < 8; y++) {
+            img.set(1, y, ENAMEL[1]);
+            img.set(14, y, ENAMEL[1]);
+        }
+        return img;
     }
 
     /**
@@ -1311,10 +1450,12 @@ public class TexGen {
     /**
      * entity/ant_side.png: ants seen from the side, head to the right, standing on the cell's bottom row. Columns are
      * four walking frames; per caste three rows: body (head, thorax, legs, antennae), gaster, crystals. Grey, tinted in
-     * game with the species' colors. A white 4x4 block at (88, 108) is the carried crumb.
+     * game with the species' colors. A white 4x4 block at (88, 108) is the carried crumb. Below that (rows 10 to 15) the
+     * Liquid Ants' full crops and the plates on them, see {@link #sideCrops}.
      */
     static void sideSprites() {
-        Img img = new Img(96, 112);
+        Img img = new Img(96, 192);
+        sideCrops(img);
         String[] castes = {"worker", "soldier", "queen"};
         for (int c = 0; c < 3; c++) {
             for (int frame = 0; frame < 4; frame++) {
@@ -3144,7 +3285,362 @@ public class TexGen {
         img.save("item/" + name);
     }
 
+    // ------------------------------------------------------------------ Liquid Ants, droplets and the Droplet Centrifuge
+
+    /**
+     * One fluid's droplet: its colour and how it is finished. The same rows are in tools/DataGen.java (LIQUIDS) and the
+     * mod's code (LiquidKinds and compat/liquid). Colours are the fluid's own tint where its mod gives it one, else the
+     * colour of its texture.
+     *
+     * @param style clear (thin, see-through liquids: a spark of light let through at the far side), thick (oils and syrups:
+     *              a long gloss and a heavy underside), slime (bubbles), molten (a bright core under a dark crust)
+     */
+    record LiquidArt(String id, int color, String style) {}
+
+    static final LiquidArt[] LIQUIDS = {
+            new LiquidArt("water", 0x3F76E4, "clear"), new LiquidArt("lava", 0xF2701A, "molten"),
+            new LiquidArt("crude_oil", 0x2B211A, "thick"), new LiquidArt("liquid_blaze", 0xFFA020, "molten"),
+            new LiquidArt("brine", 0xFEEF9C, "clear"), new LiquidArt("heavy_water", 0x2A3AB0, "clear"),
+            new LiquidArt("honey", 0xE8A126, "thick"), new LiquidArt("chocolate", 0x8A4A30, "thick"), new LiquidArt("tea", 0xCF755A, "clear"),
+            new LiquidArt("pink_slime", 0xD09DCD, "slime"), new LiquidArt("latex", 0xE4E4E4, "slime"),
+            new LiquidArt("nutrient_distillation", 0x6E7A10, "thick"), new LiquidArt("hootch", 0xE6D9A8, "clear"),
+            new LiquidArt("resin", 0xB87A10, "thick"), new LiquidArt("sap", 0xD85A10, "thick"),
+            new LiquidArt("creosote", 0x4A2208, "thick"), new LiquidArt("plant_oil", 0xA8A450, "thick"),
+    };
+
+    /** The one droplet shape every fluid shares: o outline, h highlight, l light, m body, d shade. Lit from the top left. */
+    static final String[] DROPLET = {
+            "................",
+            ".......oo.......",
+            "......olho......",
+            "......ollo......",
+            ".....olllmo.....",
+            ".....ohlmmo.....",
+            "....ohhlmmmo....",
+            "....ohllmmmo....",
+            "...olhllmmmdo...",
+            "...olllmmmmdo...",
+            "...ollmmmmddo...",
+            "...olmmmmmddo...",
+            "...ommmmmdddo...",
+            "....ommmddddo...",
+            ".....odddddo....",
+            "......ooooo.....",
+    };
+
+    /** A colour moved in brightness and saturation (factors) and turned in hue (degrees): shades run cooler, lights warmer. */
+    static int tone(int rgb, double brightness, double saturation, double hueShift) {
+        float[] hsb = java.awt.Color.RGBtoHSB((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, null);
+        float h = (float) ((hsb[0] + hueShift / 360.0 + 1) % 1.0);
+        float s = (float) Math.clamp(hsb[1] * saturation, 0, 1);
+        float b = (float) Math.clamp(hsb[2] * brightness, 0, 1);
+        return 0xFF000000 | (java.awt.Color.HSBtoRGB(h, s, b) & 0xFFFFFF);
+    }
+
+    static int mix(int a, int b, double t) {
+        int r = (int) Math.round(((a >> 16) & 0xFF) * (1 - t) + ((b >> 16) & 0xFF) * t);
+        int g = (int) Math.round(((a >> 8) & 0xFF) * (1 - t) + ((b >> 8) & 0xFF) * t);
+        int bl = (int) Math.round((a & 0xFF) * (1 - t) + (b & 0xFF) * t);
+        return 0xFF000000 | r << 16 | g << 8 | bl;
+    }
+
+    /** item/<id>_droplet for every fluid: the shared shape in the fluid's own ramp, finished in its style. */
+    static void droplets() {
+        for (LiquidArt art : LIQUIDS) {
+            int base = hex(art.color());
+            float value = java.awt.Color.RGBtoHSB((base >> 16) & 0xFF, (base >> 8) & 0xFF, base & 0xFF, null)[2];
+            boolean dark = value < 0.35;
+            boolean molten = art.style().equals("molten");
+            // The ramp: lights lean warm and pale, shades lean cool and deep. Very dark fluids get lights they can show.
+            int highlight = molten ? hex(0xFFF4B8) : mix(base, hex(0xFFFFFF), dark ? 0.62 : 0.78);
+            int light = molten ? mix(base, hex(0xFFE070), 0.6) : dark ? mix(base, hex(0xFFFFFF), 0.24) : tone(mix(base, hex(0xFFFFFF), 0.32), 1, 0.9, 6);
+            int body = base;
+            int shadeTone = molten ? tone(base, 0.72, 1.1, -10) : tone(base, dark ? 0.62 : 0.74, 1.12, -8);
+            int outlineTone = molten ? hex(0x6E2206) : tone(base, dark ? 0.36 : 0.42, 1.15, -12);
+            Img img = item();
+            paint(img, 0, 0, DROPLET, 'o', outlineTone, 'h', highlight, 'l', light, 'm', body, 'd', shadeTone);
+            // The lit side's outline a touch lighter than the far side's, so the drop sits in the light.
+            for (int[] p : new int[][] {{6, 2}, {6, 3}, {5, 4}, {5, 5}, {4, 6}, {4, 7}, {3, 8}, {3, 9}}) {
+                img.set(p[0], p[1], mix(outlineTone, body, 0.28));
+            }
+            switch (art.style()) {
+                case "clear" -> {
+                    // Light let through: a small bright crescent low on the far side.
+                    img.set(10, 11, light);
+                    img.set(9, 12, light);
+                    img.set(10, 12, mix(light, highlight, 0.5));
+                }
+                case "thick" -> {
+                    // A long gloss down the lit side, and a heavier underside.
+                    img.set(5, 9, highlight);
+                    img.set(5, 10, light);
+                    for (int x = 6; x <= 10; x++) {
+                        img.set(x, 14, tone(shadeTone, 0.82, 1, 0));
+                    }
+                    img.set(11, 13, tone(shadeTone, 0.82, 1, 0));
+                }
+                case "slime" -> {
+                    // Bubbles: two small rings of light.
+                    img.set(8, 10, light);
+                    img.set(9, 9, highlight);
+                    img.set(6, 12, light);
+                    img.set(9, 12, shadeTone);
+                }
+                default -> {
+                    // Molten: a bright core low in the drop, a fleck of dark crust on the far side.
+                    img.set(6, 10, highlight);
+                    img.set(7, 10, highlight);
+                    img.set(6, 11, light);
+                    img.set(7, 11, highlight);
+                    img.set(8, 11, light);
+                    img.set(10, 9, hex(0x6E2206));
+                    img.set(10, 10, tone(shadeTone, 0.8, 1, 0));
+                }
+            }
+            img.save("item/" + art.id() + "_droplet");
+        }
+    }
+
+    /** The same numbers as AntModel.cropWidth, cropHeight and cropLength. */
+    static double[] cropSize(String caste) {
+        Shape s = shape(caste);
+        boolean queen = caste.equals("queen");
+        return new double[] {s.gasterW() * (queen ? 1.2 : 1.5), s.gasterH() * (queen ? 1.2 : 1.5), s.gasterL() * (queen ? 1.1 : 1.25)};
+    }
+
+    /** The crop's chamfer (AntModel.CROP_CHAMFER). */
+    static final double CROP_CHAMFER = 1.5;
+
+    /**
+     * entity/ant/crop_<caste> and crop_skin_<caste>: a Liquid Ant's crop, both tinted in game with the liquid's colour.
+     * The first is the liquid: solid, pale at the top where the light comes through and deep at the bottom where it lies
+     * thickest, shaded by how far down the whole crop a pixel is (so the four boxes it is built from read as one round
+     * body), with a gloss high on the sides and a few small bubbles. The second is the crop's skin around it: almost
+     * clear, a little denser along every edge, with a bright gloss on top. Laid out for the four boxes of
+     * AntModel.cropBoxes, each in its own quarter of the texture.
+     */
+    static void cropSkins() {
+        double c = CROP_CHAMFER;
+        for (String caste : new String[] {"worker", "soldier", "queen"}) {
+            double[] size = cropSize(caste);
+            double w = size[0], h = size[1], l = size[2];
+            // The four boxes (as AntModel.cropBoxes), and how far below the crop's top each one starts.
+            Box[] boxes = {new Box("crop", 0, 0, w, h - 2 * c, l - 2 * c), new Box("crop", 64, 0, w - 2 * c, h, l - 2 * c),
+                    new Box("crop", 0, 32, w - 2 * c, h - 2 * c, l), new Box("crop", 64, 32, w - c, h - c, l - c)};
+            double[] drop = {c, 0, c, c / 2};
+            Img liquid = new Img(128, 64);
+            Img skin = new Img(128, 64);
+            Random random = new Random(caste.hashCode() * 31L + 5);
+            for (int b = 0; b < boxes.length; b++) {
+                int[][] faces = faces(boxes[b]);
+                for (int f = 0; f < 6; f++) {
+                    int[] r = faces[f];
+                    for (int y = r[1]; y < r[3]; y++) {
+                        for (int x = r[0]; x < r[2]; x++) {
+                            // How far down the whole crop: 0 at its top, 1 at its bottom.
+                            double down = f == 0 ? drop[b] / h : f == 1 ? 1 - drop[b] / h : (drop[b] + (y - r[1]) + 0.5) / h;
+                            down = Math.clamp(down, 0, 1);
+                            int v = (int) Math.round(252 - 96 * Math.pow(down, 1.3)) + random.nextInt(5) - 2;
+                            liquid.set(x, y, gray(Math.clamp(v, 0, 255)));
+                            boolean edge = x == r[0] || x == r[2] - 1 || y == r[1] || y == r[3] - 1;
+                            skin.set(x, y, argb(edge ? 104 : 58, 255, 255, 255));
+                        }
+                    }
+                    int width = r[2] - r[0];
+                    int height = r[3] - r[1];
+                    if (f >= 2 && b != 2 && height >= 4) {
+                        // The gloss on the liquid: a short bright run high on each side, off centre.
+                        int gx = r[0] + Math.max(1, width / 5);
+                        for (int x = gx; x < gx + Math.max(2, width / 3); x++) {
+                            liquid.set(x, r[1] + 1, gray(255));
+                        }
+                        liquid.set(gx, r[1] + 2, gray(255));
+                        // Bubbles.
+                        for (int i = 0; i < 2; i++) {
+                            int bx = r[0] + 1 + random.nextInt(Math.max(1, width - 2));
+                            int by = r[1] + 2 + random.nextInt(Math.max(1, height - 3));
+                            liquid.set(bx, by, gray(Math.min(255, (liquid.get(bx, by) & 0xFF) + 28)));
+                        }
+                    }
+                    if (f == 0 && b == 1) {
+                        // The skin's gloss, where the light falls on top of the crop.
+                        int gx = r[0] + Math.max(1, width / 4);
+                        int gy = r[1] + Math.max(1, height / 4);
+                        skin.fill(gx, gy, gx + 2, gy + Math.max(3, height / 3), argb(214, 255, 255, 255));
+                        skin.set(gx + 2, gy, argb(170, 255, 255, 255));
+                    }
+                }
+            }
+            liquid.save("entity/ant/crop_" + caste);
+            skin.save("entity/ant/crop_skin_" + caste);
+        }
+    }
+
+    /**
+     * The Liquid Ants' rows of entity/ant_side.png (rows 10 to 12: the full crop per caste; rows 13 to 15: the gaster's
+     * plates over it). The crop is a big round bag where other ants have their slim gaster, the same in all four
+     * walking frames: it never changes.
+     */
+    static void sideCrops(Img img) {
+        String[] castes = {"worker", "soldier", "queen"};
+        for (int c = 0; c < 3; c++) {
+            boolean queen = castes[c].equals("queen");
+            double cx = queen ? 5.9 : 5.6;
+            double cy = queen ? 6.1 : 6.3;
+            double rx = queen ? 5.8 : 5.3;
+            double ry = queen ? 4.7 : 4.4;
+            for (int frame = 0; frame < 4; frame++) {
+                int ox = frame * SIDE_CELL_W;
+                int row = (10 + c) * SIDE_CELL_H;
+                int plates = (13 + c) * SIDE_CELL_H;
+                ellipse(img, ox + cx, row + cy, rx, ry, gray(236));
+                for (int y = 0; y < SIDE_CELL_H; y++) {
+                    for (int x = 0; x < SIDE_CELL_W; x++) {
+                        if (img.get(ox + x, row + y) == 0) {
+                            continue;
+                        }
+                        boolean edge = img.get(ox + x - 1, row + y) == 0 || img.get(ox + x + 1, row + y) == 0 || y == 0
+                                || img.get(ox + x, row + y - 1) == 0 || img.get(ox + x, row + y + 1) == 0;
+                        int v = edge ? 150 : y > cy + ry * 0.35 ? 196 : 236;
+                        img.set(ox + x, row + y, gray(v));
+                    }
+                }
+                // The gloss, up on the side the light comes from.
+                int gx = (int) Math.round(cx - rx * 0.45);
+                int gy = (int) Math.round(cy - ry * 0.5);
+                img.set(ox + gx, row + gy, gray(255));
+                img.set(ox + gx + 1, row + gy, gray(255));
+                img.set(ox + gx, row + gy + 1, gray(250));
+                // The plates: short dark bars riding the top of the bag.
+                for (int k = 0; k < 4; k++) {
+                    int px = (int) Math.round(cx - rx * 0.62 + k * rx * 0.42);
+                    for (int dx = 0; dx < 2; dx++) {
+                        for (int y = 0; y < SIDE_CELL_H; y++) {
+                            if (img.get(ox + px + dx, row + y) != 0) {
+                                img.set(ox + px + dx, plates + y, gray(214));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * The Liquid Chamber: a floor of damp clay with the dark rings drips leave; the wax pots hanging from its rack (a waxy
+     * amber, lighter on top); and the pale pool in its bowl.
+     */
+    static void liquidChamber() {
+        int[] clay = ramp(0x51473E, 0x65594D, 0x7A6D5F, 0x8F8171, 0xA39584);
+        Img top = new Img(16, 16);
+        render(top, clusters(801, clay.length - 1, 0.25, 0.05), clay);
+        for (int[] ring : new int[][] {{4, 4}, {11, 6}, {6, 12}}) {
+            top.set(ring[0], ring[1], clay[0]);
+            top.set(ring[0] + 1, ring[1], clay[1]);
+            top.set(ring[0], ring[1] + 1, clay[1]);
+            top.set(ring[0] + 1, ring[1] + 1, clay[4]);
+        }
+        top.save("block/liquid_chamber_top");
+
+        int[] wax = ramp(0x7A4A12, 0xA2661A, 0xC8882A, 0xE6B052, 0xF8DC98);
+        // Wax: soft blotches of the amber ramp (no grain or bands: it is not wood), with a few glints.
+        Img gourd = new Img(16, 16);
+        render(gourd, clusters(803, wax.length - 2, 0.3, 0.1), wax);
+        for (int[] glint : new int[][] {{5, 5}, {8, 5}, {11, 6}, {6, 8}, {2, 12}, {13, 2}}) {
+            gourd.set(glint[0], glint[1], wax[4]);
+        }
+        gourd.save("block/liquid_chamber_gourd");
+
+        int[] pale = ramp(0x5F7F8E, 0x7FA0AE, 0xA4C2CE, 0xC8DEE6, 0xE8F4F8);
+        Img pool = new Img(16, 16);
+        render(pool, clusters(805, 3, 0.2, 0.1), pale);
+        for (int[] glint : new int[][] {{6, 12}, {7, 12}, {9, 13}, {3, 4}, {12, 3}}) {
+            pool.set(glint[0], glint[1], pale[4]);
+        }
+        pool.save("block/liquid_chamber_pool");
+    }
+
+    /**
+     * The Droplet Centrifuge, in the Genetic Laboratory's build (the user, 2026-11-14: "make the generator and centrifuge
+     * more like the lab machine"): the lab's white enamel panels, graphite kickplate and teal lights, see {@link #labBody}.
+     * Each side texture is the block's whole side: the lid's edge (rows 0-1), the glass section with an enamel post either
+     * end (rows 2-7; the model puts glass between the posts) and the casing (rows 8-15). The front's casing carries a dark
+     * display like the lab's and a status light under it; the sides a small tube of teal liquid like the lab's sample
+     * cylinder. The deck is what shows through the glass under the rotor: steel, with the rotor's bearing ring.
+     */
+    static void centrifuge() {
+        for (int variant = 0; variant < 3; variant++) {
+            boolean front = variant > 0;
+            boolean on = variant == 2;
+            Img img = labBody(91 + variant);
+            if (front) {
+                // The panel, as on the lab: a centred dark display in a graphite frame, and the status light under it. The
+                // display shows the tank as a teal bar and the drum's two speed marks in the lab helix's cyan and magenta
+                // (all dim while idle).
+                img.fill(3, 9, 13, 12, GRAPHITE[0]);
+                frame(img, 3, 9, 13, 12, GRAPHITE[2]);
+                for (int x = 4; x < 9; x++) {
+                    img.set(x, 10, on ? TEAL[x < 7 ? 4 : 3] : TEAL[1]);
+                }
+                img.set(10, 10, on ? HELIX_A : shade(HELIX_A, 0.55));
+                img.set(11, 10, on ? HELIX_B : shade(HELIX_B, 0.55));
+                img.set(7, 12, on ? 0xFF6CDA4E : GRAPHITE[2]);
+                img.set(8, 12, on ? 0xFF6CDA4E : GRAPHITE[2]);
+            } else {
+                // The sides, as on the lab: a centred glass tube of teal liquid (lying down here), a graphite cap either end.
+                for (int x = 5; x < 11; x++) {
+                    img.set(x, 10, x == 5 || x == 10 ? GRAPHITE[2] : TEAL[x == 7 || x == 8 ? 3 : 2]);
+                    img.set(x, 11, x == 5 || x == 10 ? GRAPHITE[2] : TEAL[x == 7 || x == 8 ? 2 : 1]);
+                }
+            }
+            img.save("block/centrifuge_" + (front ? "front" + (on ? "_working" : "") : "side"));
+        }
+        // The top: the white enamel lid like the lab's, with a steel hub cap over the rotor's shaft in a graphite frame where
+        // the lab has its sample hatch.
+        Img top = new Img(16, 16);
+        brushed(top, 0, 0, 16, 16, ENAMEL, 4.0, 3.0, 0.35, 97);
+        frame(top, 0, 0, 16, 16, ENAMEL[1]);
+        frame(top, 4, 4, 12, 12, GRAPHITE[2]);
+        top.fill(5, 5, 11, 11, STEEL[3]);
+        top.fill(6, 6, 10, 10, STEEL[5]);
+        top.fill(7, 7, 9, 9, STEEL[6]);
+        top.save("block/centrifuge_top");
+        // The deck under the rotor: brushed steel, the bearing ring, the shaft's seat.
+        Img deck = new Img(16, 16);
+        brushed(deck, 0, 0, 16, 16, STEEL, 3.4, 2.4, 0.5, 98);
+        for (int y = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                double r = Math.hypot(x - 7.5, y - 7.5);
+                if (r > 5.2 && r < 6.2) {
+                    deck.set(x, y, STEEL[0]);
+                } else if (r < 1.6) {
+                    deck.set(x, y, GRAPHITE[0]);
+                }
+            }
+        }
+        deck.save("block/centrifuge_deck");
+        // The glass: clear but for two glints, a light upper edge and a darker lower one (cutout: no half-clear pixels).
+        Img glass = new Img(16, 16);
+        for (int x = 2; x < 14; x++) {
+            glass.set(x, 2, hex(0xD6ECF2));
+            glass.set(x, 7, hex(0x6F8E9B));
+        }
+        for (int[] glint : new int[][] {{3, 3}, {4, 3}, {3, 4}, {12, 6}, {11, 6}, {12, 5}}) {
+            glass.set(glint[0], glint[1], hex(0xEAF8FC));
+        }
+        glass.save("block/centrifuge_glass");
+    }
+
+    static void liquids() {
+        droplets();
+        cropSkins();
+        liquidChamber();
+        centrifuge();
+    }
+
     public static void main(String[] args) {
+        liquids();
         antSkins();
         terrariumInside();
         blocks();

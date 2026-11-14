@@ -85,6 +85,8 @@ public final class AntConfig {
     public static final ModConfigSpec.DoubleValue FOCUS_PENALTY;
     public static final ModConfigSpec.DoubleValue EXPEDITION_ROLLS;
     public static final ModConfigSpec.DoubleValue CHITIN_FIND_CHANCE;
+    public static final ModConfigSpec.DoubleValue DROPLET_ROLLS;
+    public static final ModConfigSpec.DoubleValue LIQUID_FOOD_CHANCE;
 
     // --- Genetics ---
     public static final ModConfigSpec.DoubleValue TRAIT_MIN_MULTIPLIER;
@@ -111,6 +113,8 @@ public final class AntConfig {
     public static final ModConfigSpec.DoubleValue NEST_CROP_GROWTH;
     public static final ModConfigSpec.BooleanValue NEST_HARVEST;
     public static final ModConfigSpec.IntValue ANTHILL_ALARM_SECONDS;
+    public static final ModConfigSpec.DoubleValue BROOD_CLUSTER_MINUTES;
+    public static final ModConfigSpec.IntValue ANTHILL_MAX_ANTS;
 
     // --- Guard Ants ---
     public static final ModConfigSpec.IntValue GUARD_COST;
@@ -118,6 +122,11 @@ public final class AntConfig {
     // --- Connections ---
     public static final ModConfigSpec.IntValue GENERATOR_OUTPUT;
     public static final ModConfigSpec.IntValue GENERATOR_PUSH;
+    public static final ModConfigSpec.IntValue CENTRIFUGE_ENERGY;
+    public static final ModConfigSpec.IntValue CENTRIFUGE_TANK;
+    public static final ModConfigSpec.IntValue CENTRIFUGE_PUSH;
+    public static final ModConfigSpec.DoubleValue CENTRIFUGE_ENERGY_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue CENTRIFUGE_TIME_MULTIPLIER;
 
     // --- Client ---
     public static final ModConfigSpec.IntValue MAX_VISUAL_ANTS;
@@ -247,6 +256,12 @@ public final class AntConfig {
         CHITIN_FIND_CHANCE = s.comment("Chance per Foraging Site find that the ants also bring back chitin (shed and left by ants): Chitin Plates,",
                         "Hardened Chitin from colony stage 2 (more at stage 3), Infernal Chitin in the Nether, Void Chitin in the End. 0 turns it off.")
                 .defineInRange("chitinFindChance", 0.04, 0, 1);
+        DROPLET_ROLLS = s.comment("Liquid Chambers: droplets per minute per effective Liquid Ant, before the species' own rate",
+                        "(the \"liquid\" part of data/<namespace>/antcolonies/species/*.json).")
+                .defineInRange("dropletRolls", 0.3, 0, 10000);
+        LIQUID_FOOD_CHANCE = s.comment("Chance that a droplet comes with one Ant Food as well. Keep it small: Farmer Ants are the colony's food makers.",
+                        "0 turns it off.")
+                .defineInRange("liquidFoodChance", 0.0005, 0, 1);
         s.pop();
 
         s.push("connectors");
@@ -301,6 +316,11 @@ public final class AntConfig {
         ANTHILL_ALARM_SECONDS = s.comment("Seconds an anthill stays alarmed at a player who opened one of its chests, stepped into its Queen's chamber",
                         "or struck one of its ants (even in a full Chitin set, its ants attack them meanwhile).")
                 .defineInRange("anthillAlarmSeconds", 300, 10, 86400);
+        BROOD_CLUSTER_MINUTES = s.comment("Minutes, on average, an anthill's Ant Egg Cluster takes to become a Larva Cluster, and a Larva Cluster to become",
+                        "1 to 3 ants (only clusters an anthill was built with, and only while a player is near enough for the chunk to tick).")
+                .defineInRange("broodClusterMinutes", 10.0, 0.1, 10000);
+        ANTHILL_MAX_ANTS = s.comment("A Larva Cluster waits to hatch while this many wild ants or more are within 24 blocks of it.")
+                .defineInRange("anthillMaxAnts", 60, 0, 1000);
         s.pop();
 
         s.push("guards");
@@ -312,6 +332,16 @@ public final class AntConfig {
         GENERATOR_OUTPUT = s.comment("FE a Generator makes per tick while it burns fuel (one coal burns for 1600 ticks).")
                 .defineInRange("generatorOutput", 40, 1, 100000);
         GENERATOR_PUSH = s.comment("Most FE a Generator gives to the blocks around it per tick.").defineInRange("generatorPush", 1000, 1, 1000000);
+        CENTRIFUGE_ENERGY = s.comment("FE a Droplet Centrifuge stores.").defineInRange("centrifugeEnergy", 50000, 1000, 100000000);
+        CENTRIFUGE_TANK = s.comment("Millibuckets of fluid a Droplet Centrifuge's tank holds.").defineInRange("centrifugeTank", 8000, 1000, 100000000);
+        CENTRIFUGE_PUSH = s.comment("Most millibuckets a Droplet Centrifuge gives per tick to the tanks and pipes touching it (0: it only lets them take).",
+                        "What they take out by themselves has no limit.")
+                .defineInRange("centrifugePushRate", 1000, 0, 100000000);
+        CENTRIFUGE_ENERGY_MULTIPLIER = s.comment("Multiplier on the FE every Droplet Centrifuge recipe takes (the recipes are data: data/<namespace>/recipe/*.json,",
+                        "type antcolonies:centrifuging).")
+                .defineInRange("centrifugeEnergyMultiplier", 1.0, 0, 1000);
+        CENTRIFUGE_TIME_MULTIPLIER = s.comment("Multiplier on the time every Droplet Centrifuge recipe takes.")
+                .defineInRange("centrifugeTimeMultiplier", 1.0, 0.01, 1000);
         s.pop();
         SERVER_SPEC = s.build();
 

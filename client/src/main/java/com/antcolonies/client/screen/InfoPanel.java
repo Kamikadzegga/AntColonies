@@ -208,7 +208,30 @@ public final class InfoPanel {
         text(font, Component.literal(diet + String.format(Locale.ROOT, " (x%.2f)", data.diet().consumption())), DIM);
         // What its workers find, or what its farmers grow.
         rows.add(new Gap(3));
-        outputs(font, data.production().outputs(), "info.antcolonies.finds");
+        if (data.makesLiquid()) {
+            // A Liquid Ant: the one thing it makes, with the droplet itself and the fluid it becomes.
+            text(font, Component.translatable("info.antcolonies.liquid"), TEXT);
+            AntSpecies.Liquid liquid = data.liquid().orElse(null);
+            if (liquid != null && liquid.available()) {
+                ItemStack droplet = new ItemStack(liquid.dropletItem().get());
+                Component fluid = liquid.fluidValue().get().getFluidType().getDescription();
+                Component line = Component.translatable("info.antcolonies.liquid.makes", droplet.getHoverName());
+                List<Component> tip = new java.util.ArrayList<>(List.of(droplet.getHoverName(),
+                        Component.translatable("info.antcolonies.liquid.fluid", fluid).withStyle(ChatFormatting.GRAY)));
+                var recipe = com.antcolonies.content.recipe.CentrifugingRecipe.find(net.minecraft.client.Minecraft.getInstance().level, droplet);
+                if (recipe != null) {
+                    tip.add(Component.translatable("info.antcolonies.liquid.centrifuge", recipe.amount(), recipe.fluid().getFluidType().getDescription(),
+                            recipe.energyCost()).withStyle(ChatFormatting.AQUA));
+                }
+                tip.add(Component.translatable("info.antcolonies.liquid.rate", String.format(Locale.ROOT, "%.2f", liquid.rate())).withStyle(ChatFormatting.DARK_GRAY));
+                rows.add(new ItemLine(droplet, font.split(line, width - 20).getFirst(), ACCENT, tip));
+            } else {
+                text(font, Component.translatable("status.antcolonies.no_droplet"), BAD);
+            }
+        }
+        if (!data.makesLiquid()) {
+            outputs(font, data.production().outputs(), "info.antcolonies.finds");
+        }
         if (data.canFarm()) {
             text(font, Component.translatable("info.antcolonies.farms", String.format(Locale.ROOT, "%.1f", data.farming().foodPerMinute())), TEXT);
             outputs(font, data.farming().harvest(), null);

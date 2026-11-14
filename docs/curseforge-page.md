@@ -49,7 +49,7 @@ into thousands of workers that mine, farm, hunt and evolve.
 
 - **Living colonies.** A Terrarium holds a whole colony you can watch: tunnels, eggs, larvae and workers. Place
   chambers against it to grow it: nests, Foraging and Harvesting Sites, Hunting Grounds and Storage.
-- **46 species.** Catch 16 wild ones, evolve them into iron, diamond, netherite and other mineral ants, breed hybrids,
+- **48 species.** Catch 16 wild ones, evolve them into iron, diamond, netherite and other mineral ants, breed hybrids,
   and reach the endgame Wither and Dragon Ants.
 - **Genetics.** Every Queen has ten traits and grows stronger with her colony. Breed daughters and perfect them in the
   Genetic Laboratory.
@@ -115,14 +115,14 @@ Upload these 17 from `docs/images/screenshots/`, in this order (they replace the
 
 | Field | Value |
 |---|---|
-| File | `build/libs/antcolonies-26.3.0.2.0.jar` |
-| Display name | `Ant Colonies 0.2.0` |
+| File | `build/libs/antcolonies-26.3.0.3.0.jar` |
+| Display name | `Ant Colonies 0.3.0` |
 | Release type | Beta (or Release once it has been played for a while) |
 | Game version | 26.3 |
 | Mod loader | NeoForge |
 | Java | Java 25 |
 | Environment | Client and Server |
 | Related projects | Optional: JEI, EMI, Jade, MachinaOpus (if published) |
-| Changelog | The `[0.2.0]` section of `CHANGELOG.md` |
+| Changelog | The `[0.3.0]` section of `CHANGELOG.md` |
 
-The version is 0.2.0 (`mod_version` in `gradle.properties`). `CHANGELOG.md` lists what 0.2.0 changed.
+The version is 0.3.0 (`mod_version` in `gradle.properties`). `CHANGELOG.md` lists what 0.3.0 changed.

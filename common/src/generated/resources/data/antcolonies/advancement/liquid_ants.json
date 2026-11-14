@@ -1,0 +1,25 @@
+{
+  "parent": "antcolonies:hybrid",
+  "criteria": {
+    "liquid_ants": {
+      "trigger": "antcolonies:colony",
+      "conditions": {
+        "category": "liquid"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:liquid_chamber"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.liquid_ants.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.liquid_ants.description"
+    }
+  },
+  "requirements": [
+    ["liquid_ants"]
+  ]
+}

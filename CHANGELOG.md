@@ -6,6 +6,55 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-14
+
+The Liquid Ants update.
+
+### Added
+
+- **Liquid Ants:** a new kind of species that works only at the new **Liquid Chamber**, where its workers give droplets
+  of a fluid. Water Ants and Lava Ants come from Honeypot Ants fed a bucket of water or lava (lava in the Nether); the
+  bucket comes back.
+- **Droplet Centrifuge:** a machine that spins droplets into the real fluid for FE (a Water Droplet gives 100 mB for
+  400 FE, a Lava Droplet 50 mB for 2,000 FE). Take the fluid with a bucket, or put a tank, pipe or cauldron next to it.
+  A droplet is never lost: without FE or with a full tank the run waits.
+- **Liquid Ants for other mods' fluids**, each only while that mod and its fluid are in the game: 15 ants for
+  MachinaOpus, Mekanism, Create, Industrial Foregoing, Ender IO, Thermal and Immersive Engineering, listed in
+  docs/compatibility.md. Only MachinaOpus's two were run in the game.
+- Droplets and Liquid Ants show on the Terrarium's Production page, in two new JEI and EMI categories and in Jade.
+- **For modpacks:** Centrifuge recipes are data (recipe type `antcolonies:centrifuging`), and a pack can add Liquid Ants
+  for its own fluids. The modpack guide has examples with KubeJS scripts, which were run on the 26.1.2 version with
+  KubeJS 8.0.8 (KubeJS has no build for Minecraft 26.3 yet).
+- Config: `dropletRolls`, `liquidFoodChance`, `centrifugeEnergy`, `centrifugeTank`, `centrifugePushRate`,
+  `centrifugeEnergyMultiplier`, `centrifugeTimeMultiplier`.
+
+### Changed
+
+- **The Terrarium's Production page remembers the last 30 minutes:** it counts what the ants really brought in and
+  shows it as items per minute. An item stays listed for 30 minutes after it came in, even when hoppers or pipes empty
+  the Storage.
+- **The Generator is redrawn** in the white enamel look of the Genetic Laboratory, which the Droplet Centrifuge shares.
+  It has a dark burn chamber with a plasma core, and power cells and conduits that light up while it runs. It works as
+  before.
+- **Colony Connectors are a mid-game (Nether) chamber:** the recipe now takes 4 Infernal Chitin, a Nether Trail
+  Pheromone, 2 Blaze Rods, a Magma Block and a Test Tube. The Trail Network advancement now follows Scent of Sulphur.
+- **Royal Guard Ants:** the soldiers guarding the great Queen in giant anthills have this name now and stand at their
+  posts instead of roaming. They attack only a player who comes within 4 blocks of a post, strikes them or has raised
+  the alarm, and follow no further than 10 blocks.
+- **Living brood in anthills:** Ant Egg Clusters hatch into Larva Clusters, and those into 1 to 3 workers of the anthill
+  (about 10 minutes a stage, config `broodClusterMinutes`). Clusters are no longer craftable: Silk Touch takes a live
+  one, for a Terrarium of that species or as a decoration. Clusters in anthills generated before this version are
+  decorations.
+
+### Fixed
+
+- A chamber's screen and the ants drawn on it forgot which colony the chamber belongs to about 20 seconds after it last
+  changed.
+- A special food (Mineral, Crystal or Nether Ant Food) in the Terrarium's food slot was eaten as a whole stack at once.
+  It is now eaten only while the colony's special food store has room.
+- Text cut short with "..." in the mod's screens now shows whole when you hover over it, everywhere. Some long lines
+  wrap onto a second line instead.
+
 ## [0.2.0] - 2026-11-13
 
 The anthill update.
@@ -170,6 +219,7 @@ The first release, for Minecraft 26.3 and NeoForge 26.3.0.101 (Java 25).
 - Tested together with MachinaOpus and its Tools Addon: no clashing recipes or names.
 
 [Unreleased]: https://github.com/Kamikadzegga/AntColonies/compare/v0.2.0...HEAD
+[0.3.0]: https://github.com/Kamikadzegga/AntColonies/compare/v0.2.0...main
 [0.2.0]: https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.2.0
 [0.1.0]: https://github.com/Kamikadzegga/AntColonies/commit/340502d
 [0.0.2]: https://github.com/Kamikadzegga/AntColonies/commit/541da99

@@ -1,0 +1,10 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:lava_droplet",
+  "result": {
+    "id": "minecraft:lava",
+    "amount": 50
+  },
+  "energy": 2000,
+  "time": 100
+}

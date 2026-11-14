@@ -40,6 +40,7 @@ All paths below start with `data/`. Put that `data/` folder in one of these:
 | Global data pack mod | e.g. a "global packs" mod's folder | Same layout, applies to every world. |
 | KubeJS | `kubejs/data/...` | KubeJS loads this folder as a data pack; no `pack.mcmeta` needed. |
 | Language files (names) | `assets/<namespace>/lang/en_us.json` | In a resource pack, or `kubejs/assets/...` with KubeJS. |
+| KubeJS startup scripts | `kubejs/startup_scripts/` | For new items and fluids (the Liquid Ant example in section 5). Read when the game starts: needs a restart, and the same script on the server and every client. |
 
 A world data pack's `pack.mcmeta` for Minecraft 26.3 (data pack format 121):
 
@@ -81,8 +82,74 @@ Every crafted item (Terrarium, chambers, upgrades, tools, foods, the lab) uses o
 (`minecraft:crafting_shaped`, `crafting_shapeless`), 72 recipes in all, in `data/antcolonies/recipe/`. Change them like
 any vanilla recipe: replace the file with the same name, or remove and add recipes with KubeJS.
 
-The mod has **no custom recipe types**. The lab, Queen rearing, evolution and the Colony Upgrade Station read their costs from
-the files in sections 5 to 9, not from recipes. JEI shows those costs in its own categories.
+The mod has **one recipe type of its own**, the Droplet Centrifuge's (below). The lab, Queen rearing, evolution and the
+Colony Upgrade Station read their costs from the files in sections 5 to 9, not from recipes. JEI shows those costs in
+its own categories.
+
+### Droplet Centrifuge recipes
+
+`antcolonies:centrifuging`: one item spun into a fluid for FE. Files go in `data/<ns>/recipe/` like any recipe, and
+`neoforge:conditions` work on them as on any other. A KubeJS script adds, removes and replaces them (example below).
+
+```json
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:lava_droplet",
+  "result": { "id": "minecraft:lava", "amount": 50 },
+  "energy": 2000,
+  "time": 100
+}
+```
+
+| Field | Default | Meaning |
+|---|---|---|
+| `ingredient` | required | The item (or `#tag`) that goes in, one per run. Any item works, not only droplets. |
+| `result` | required | The fluid's id and how many millibuckets one item gives. |
+| `energy` | `400` | FE one run takes in all, spread over its time. |
+| `time` | `40` | Ticks one run takes. |
+
+The built-in ones are in `data/antcolonies/recipe/centrifuging/`. The server config's `centrifugeEnergyMultiplier` and
+`centrifugeTimeMultiplier` scale them all at once. Also there: `centrifugeEnergy` (FE it stores, 50,000),
+`centrifugeTank` (mB its tank holds, 8,000) and `centrifugePushRate` (the most mB a tick it hands to the tanks and pipes
+next to it, 1,000; what a pipe takes out by itself has no limit).
+
+With KubeJS (untested on 26.3, see the note at the top): the type has no shortcut of its own in KubeJS, so a recipe is written out whole with
+`event.custom`; `.id(...)` names it, and `event.remove({ id: ... })` takes a built-in one out.
+
+```js
+// kubejs/server_scripts/antcolonies_centrifuge.js
+ServerEvents.recipes(event => {
+  // Lava Droplets give half as much for twice the power: replace the built-in recipe.
+  event.remove({ id: 'antcolonies:centrifuging/lava' })
+  event.custom({
+    type: 'antcolonies:centrifuging',
+    ingredient: 'antcolonies:lava_droplet',
+    result: { id: 'minecraft:lava', amount: 25 },
+    energy: 4000,
+    time: 200
+  }).id('mypack:centrifuging/lava')
+
+  // Any item can be spun: snowballs melt into water.
+  event.custom({
+    type: 'antcolonies:centrifuging',
+    ingredient: 'minecraft:snowball',
+    result: { id: 'minecraft:water', amount: 250 },
+    energy: 200
+  }).id('mypack:centrifuging/snowball')
+
+  // The Syrup Droplets of the pack's own Liquid Ant (section 5).
+  event.custom({
+    type: 'antcolonies:centrifuging',
+    ingredient: 'mypack:syrup_droplet',
+    result: { id: 'mypack:syrup', amount: 50 },
+    energy: 1200,
+    time: 60
+  }).id('mypack:centrifuging/syrup')
+})
+```
+
+Script recipes are sent to the players like the built-in ones: JEI's Droplet Centrifuge category lists them, and they
+are read again on `/reload`.
 
 KubeJS (untested on 26.3, see the note at the top):
 
@@ -194,6 +261,73 @@ required; every other field has a default.
 | `rearing.time` | `2400` | Rearing time in ticks (20 ticks = 1 second). |
 | `breeding.eggs`, `breeding.growth` | `1.0` | Egg laying and larvae growth speed. |
 | `signature_item` | none | The item the Colony Upgrade Station combines into species upgrades (4, 8 or 16 of it). Without one, the species has no species upgrades. |
+| `look.crop` | none | Liquid Ants: the colour of the liquid in their crop. With it the ants are drawn with a swollen, full crop instead of a gaster (always full: it is a look, not a gauge). `look.glow` makes it glow. |
+| `liquid.fluid`, `liquid.droplet`, `liquid.rate` | none, none, `1.0` | For `"category": "liquid"`: the fluid's id (shown in the screens), the item its workers give at a Liquid Chamber, and droplets per minute compared to Water Ants. |
+
+**Liquid Ants** (`"category": "liquid"`) work only at Liquid Chambers and make only their `liquid.droplet`: their
+`production` and `farming` are ignored. A pack can add one for any fluid with three files: the species (its `droplet`
+can be any item that exists, one of the mod's droplets or a pack's own), an evolution into it (section 6), and a
+Centrifuge recipe from that item into the fluid (section 3). Guard the files with `neoforge:conditions` if the fluid or
+item comes from a mod that may be missing, as the built-in ones do:
+
+```json
+"neoforge:conditions": [
+  { "type": "neoforge:mod_loaded", "modid": "create" },
+  { "type": "neoforge:registered", "registry": "minecraft:fluid", "value": "create:chocolate" },
+  { "type": "neoforge:registered", "registry": "minecraft:item", "value": "antcolonies:chocolate_droplet" }
+]
+```
+
+**A Liquid Ant for a pack's own fluid, with KubeJS (untested on 26.3, see the note at the top).** Syrup Ants evolve from Water Ants fed a Syrup
+Bucket and give Syrup Droplets, which a Centrifuge spins into syrup. A startup script makes the fluid (with its bucket)
+and the droplet item. Startup scripts run when the game starts, so they need a restart, and the same script has to be
+on the server and on every client.
+
+`kubejs/startup_scripts/mypack_syrup.js`:
+
+```js
+// kubejs/startup_scripts/mypack_syrup.js
+StartupEvents.registry('fluid', event => {
+  // The fluid mypack:syrup; its bucket is mypack:syrup_bucket.
+  event.create('mypack:syrup').tint(0xC98A2B).noBlock()
+})
+
+StartupEvents.registry('item', event => {
+  // What Syrup Ants give. It borrows the picture of the mod's Honey Droplet.
+  event.create('mypack:syrup_droplet').texture('antcolonies:item/honey_droplet')
+})
+```
+
+`kubejs/data/mypack/antcolonies/species/syrup.json`:
+
+```json
+{
+  "tier": 2,
+  "category": "liquid",
+  "look": { "body": "#5A3A1E", "gaster": "#3E2814", "accent": "#3E2814", "crop": "#C98A2B" },
+  "diet": { "consumption": 1.5 },
+  "liquid": { "fluid": "mypack:syrup", "droplet": "mypack:syrup_droplet", "rate": 0.5 },
+  "rearing": {
+    "cost": [{ "ingredient": "antcolonies:royal_jelly", "count": 2 }, { "ingredient": "minecraft:sugar", "count": 16 }],
+    "time": 3600
+  }
+}
+```
+
+`kubejs/data/mypack/antcolonies/evolution/water_to_syrup.json`:
+
+```json
+{ "from": "antcolonies:water", "to": "mypack:syrup", "item": "mypack:syrup_bucket", "chance": 0.08, "guaranteed_after": 24, "min_stage": 2 }
+```
+
+The Centrifuge recipe from the droplet into the fluid is the last one of the script in section 3, and the ant's name
+is `"species.mypack.syrup": "Syrup Ant"` in the language file (section 12). KubeJS names the fluid and the items
+itself ("Syrup", "Syrup Bucket", "Syrup Droplet"). The Syrup Ant then shows in the Ant Identification Book and in JEI's
+Liquid Ants category, its colony fills a Liquid Chamber with Syrup Droplets, and the Centrifuge's tank and screen draw
+the syrup in the fluid's own colour.
+
+What a Queen is fed to become a built-in Liquid Ant is an item tag, `antcolonies:liquid_feed/<kind>` (the fluid's bucket
+by default): add items to it to give players another way.
 
 **Output fields** (in `outputs` and `harvest`): either `item` or `tag`, plus
 
@@ -623,6 +757,10 @@ Generator, and comparators read a Terrarium's food, a job site's ants, storage f
 These are fixed in the mod's code today:
 
 - **Colony Upgrade Station amounts**: species upgrades always take 4, 8 or 16 of the signature item for tiers 1 to 3.
+- **Droplet items**: the mod registers a droplet item only for the fluids it knows (water, lava, and those of the mods
+  in docs/compatibility.md that are installed). A pack's Liquid Ants for other fluids give an existing item, or one a
+  script registers (section 5 has an example). Another mod can offer a fluid from its constructor with
+  `LiquidKinds.offer`.
 - **Nest blocks**: only the 13 built-in wild species have nest blocks; species added by a data pack can be wild ants but
   can't have nests.
 - **Structures, upgrades and their effects**: what each structure and upgrade does (the numbers are in the config).

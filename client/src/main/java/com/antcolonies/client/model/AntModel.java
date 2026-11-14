@@ -49,6 +49,10 @@ public final class AntModel {
     public final ModelPart pattern;
     public final ModelPart crystalsBody;
     public final ModelPart crystalsGaster;
+    /** Liquid Ants: the swollen, see-through crop that takes the gaster's place, and the gaster's plates stretched over it. */
+    public final ModelPart crop;
+    public final ModelPart cropSkin;
+    public final ModelPart cropPlates;
     public final ModelPart[] femurs = new ModelPart[6];
     public final ModelPart[] tibias = new ModelPart[6];
     public final ModelPart[] antennae = new ModelPart[2];
@@ -57,6 +61,7 @@ public final class AntModel {
     private final PartPose[] tibiaRest = new PartPose[6];
     private final PartPose bodyRest;
     private final PartPose gasterRest;
+    private final PartPose cropRest;
     private final PartPose headRest;
     private final PartPose[] antennaRest = new PartPose[2];
     private final PartPose[] mandibleRest = new PartPose[2];
@@ -71,6 +76,9 @@ public final class AntModel {
         pattern = root.getChild("pattern");
         crystalsBody = root.getChild("crystals_body");
         crystalsGaster = root.getChild("crystals_gaster");
+        crop = root.getChild("crop");
+        cropSkin = root.getChild("crop_skin");
+        cropPlates = root.getChild("crop_plates");
         for (int i = 0; i < 6; i++) {
             femurs[i] = body.getChild("femur" + i);
             tibias[i] = femurs[i].getChild("tibia");
@@ -85,6 +93,7 @@ public final class AntModel {
         }
         bodyRest = body.storePose();
         gasterRest = gaster.storePose();
+        cropRest = crop.storePose();
         headRest = head.storePose();
     }
 
@@ -164,7 +173,63 @@ public final class AntModel {
                 PartPose.offsetAndRotation(-1.4F, -s.gasterH() / 2 + 0.6F, s.gasterL() * 0.62F, -0.5F, 0.3F, -0.4F));
         crystalsGaster.addOrReplaceChild("c2", CubeListBuilder.create().texOffs(0, 48).addBox(-0.8F, -2.8F, -0.8F, 1.6F, 2.8F, 1.6F),
                 PartPose.offsetAndRotation(1.5F, -s.gasterH() / 2 + 0.7F, s.gasterL() * 0.7F, -0.6F, -0.4F, 0.45F));
+        // Liquid Ants (a look with a crop colour): a replete's abdomen. One size, always full: it is part of the species' shape
+        // like a soldier's big head, not a gauge. The liquid is a rounded body (four boxes crossed, so it has no square
+        // corner anywhere); around it, a little bigger, the thin skin of the crop, drawn see-through; and over the top the
+        // gaster's plates, pulled apart into four narrow bands as the crop swelled under them.
+        float cw = cropWidth(caste);
+        float ch = cropHeight(caste);
+        float cl = cropLength(caste);
+        PartPose cropPose = PartPose.offsetAndRotation(0, -s.bodyHeight() - 0.6F - (ch - s.gasterH()) * 0.3F, halfL + 2.2F, s.gasterTilt(), 0, 0);
+        root.addOrReplaceChild("crop", cropBoxes(cw, ch, cl, CubeDeformation.NONE), cropPose);
+        root.addOrReplaceChild("crop_skin", cropBoxes(cw, ch, cl, new CubeDeformation(CROP_SKIN)), cropPose);
+        CubeListBuilder plates = CubeListBuilder.create();
+        float c = CROP_CHAMFER;
+        for (int i = 0; i < CROP_PLATES; i++) {
+            float z = c + (cl - 2 * c) * (0.05F + 0.25F * i);
+            // Narrower towards both ends, like the crop under them.
+            float w = (cw - 2 * c) * (i == 0 || i == CROP_PLATES - 1 ? 0.62F : 1.0F);
+            plates.texOffs(0, 20).addBox(-w / 2, -ch / 2 - CROP_SKIN - 0.55F, z, w, 0.7F, (cl - 2 * c) * 0.14F);
+        }
+        root.addOrReplaceChild("crop_plates", plates, cropPose);
         return LayerDefinition.create(mesh, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+    }
+
+    /** The dark plates on top of a Liquid Ant's crop. */
+    public static final int CROP_PLATES = 4;
+    /** How much of each edge of the crop's bounding box is cut away to round it, in units. */
+    public static final float CROP_CHAMFER = 1.5F;
+    /** How far the crop's skin stands off the liquid inside it. */
+    public static final float CROP_SKIN = 0.45F;
+
+    /**
+     * The crop's rounded body, {@code w} wide, {@code h} tall and {@code l} long: one box each at full width, full height
+     * and full length (the other two sizes cut back by the chamfer), and one between them that fills their corners. Each
+     * has its own quarter of the crop texture (the texture generator lays the same four boxes out).
+     */
+    private static CubeListBuilder cropBoxes(float w, float h, float l, CubeDeformation grow) {
+        float c = CROP_CHAMFER;
+        return CubeListBuilder.create()
+                .texOffs(0, 0).addBox(-w / 2, -h / 2 + c, c, w, h - 2 * c, l - 2 * c, grow)
+                .texOffs(64, 0).addBox(-w / 2 + c, -h / 2, c, w - 2 * c, h, l - 2 * c, grow)
+                .texOffs(0, 32).addBox(-w / 2 + c, -h / 2 + c, 0, w - 2 * c, h - 2 * c, l, grow)
+                .texOffs(64, 32).addBox(-w / 2 + c / 2, -h / 2 + c / 2, c / 2, w - c, h - c, l - c, grow);
+    }
+
+    /**
+     * A Liquid Ant's crop, in units: much fatter and taller than the caste's gaster and a good deal longer (a Queen's is
+     * already big, so hers swells less). The texture generator lays the crop's skin out from the same numbers.
+     */
+    public static float cropWidth(Caste caste) {
+        return Shape.of(caste).gasterW() * (caste == Caste.QUEEN ? 1.2F : 1.5F);
+    }
+
+    public static float cropHeight(Caste caste) {
+        return Shape.of(caste).gasterH() * (caste == Caste.QUEEN ? 1.2F : 1.5F);
+    }
+
+    public static float cropLength(Caste caste) {
+        return Shape.of(caste).gasterL() * (caste == Caste.QUEEN ? 1.1F : 1.25F);
     }
 
     /** Puts every part back at rest, then poses the ant. */
@@ -229,6 +294,12 @@ public final class AntModel {
         crystalsBody.loadPose(body.storePose());
         crystalsBody.xRot = body.xRot;
         crystalsGaster.loadPose(gaster.storePose());
+        // The crop keeps its rest pose and size whatever the ant does: it only bobs and tilts with the body.
+        crop.loadPose(cropRest);
+        crop.y += gaster.y - gasterRest.y();
+        crop.xRot += gaster.xRot - gasterRest.xRot();
+        cropSkin.loadPose(crop.storePose());
+        cropPlates.loadPose(crop.storePose());
     }
 
     /** Where the carried thing sits: between the mandibles (units, ant space). */

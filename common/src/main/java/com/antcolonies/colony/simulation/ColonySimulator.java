@@ -293,10 +293,15 @@ public final class ColonySimulator {
         for (Allocation.Site site : allocation.of(StructureKind.HARVESTING_SITE)) {
             Farming.harvest(step, site);
         }
+        for (Allocation.Site site : allocation.of(StructureKind.LIQUID_CHAMBER)) {
+            // Liquid Ants: droplets of their fluid, counted with the finds.
+            Liquids.run(step, site);
+            finds += site.rate();
+        }
         allocation.publish(step);
 
-        // What waits in the Foraging Sites' stores moves on to Storage.
-        for (StructureKind kind : StructureKind.FORAGING_KINDS) {
+        // What waits in the job sites' own stores moves on to Storage.
+        for (StructureKind kind : StructureKind.SITE_STORES) {
             for (StructureBlockEntity site : step.of(kind)) {
                 ColonyStorage.moveToStorage(level, colony, site);
             }
@@ -324,7 +329,7 @@ public final class ColonySimulator {
         if (colony.queen() == null) {
             step.status |= ColonyStatus.NO_QUEEN.bit();
         }
-        if (StructureKind.FORAGING_KINDS.stream().anyMatch(kind -> !step.of(kind).isEmpty()) || !step.of(StructureKind.HARVESTING_SITE).isEmpty()) {
+        if (StructureKind.SITE_STORES.stream().anyMatch(kind -> !step.of(kind).isEmpty()) || !step.of(StructureKind.HARVESTING_SITE).isEmpty()) {
             if (allocation.assignedWorkers() == 0) {
                 step.status |= ColonyStatus.NO_WORKERS.bit();
             }
@@ -351,7 +356,7 @@ public final class ColonySimulator {
                 (float) (StructureKind.FORAGING_KINDS.stream().mapToInt(allocation::assigned).sum() / adultsNow),
                 (float) (allocation.assigned(StructureKind.HUNTING_GROUND) / adultsNow),
                 (float) (allocation.assigned(StructureKind.HARVESTING_SITE) / adultsNow),
-                0F,
+                (float) (allocation.assigned(StructureKind.LIQUID_CHAMBER) / adultsNow),
                 (float) (maintenance / adultsNow),
                 (float) Math.max(0, 1 - (allocation.assignedWorkers() + maintenance) / adultsNow),
                 intake.food() > 0 || farmed > 0 || hunted > 0, starving, bred.eggs() > 0);
@@ -583,6 +588,64 @@ public final class ColonySimulator {
                     * ProductionMath.bonus(step.trait(Trait.FARMER_PRODUCTIVITY) * ProductionMath.speed(site.entity().upgradeTier(UpgradeType.SPEED)))
                     * step.healthFactor * step.foodWork;
             return rollOutputs(step, site.entity(), rolls, site, from -> from.farming().harvest(), true, ForagingMode.BALANCED);
+        }
+    }
+
+    /**
+     * Liquid Ants at a Liquid Chamber: droplets of the species' one fluid, worked out from the number of ants there like
+     * every other job (no ant has a crop that fills: the full crops they are drawn with are only how the species looks).
+     * Nothing else comes of it, except now and then one Ant Food ({@code liquidFoodChance} per droplet).
+     */
+    static final class Liquids {
+        static double run(Step step, Allocation.Site site) {
+            if (site.assigned() <= 0 || !step.species.makesLiquid()) {
+                return 0;
+            }
+            StructureBlockEntity entity = site.entity();
+            AntSpecies.Liquid liquid = step.species.liquid().orElse(null);
+            net.minecraft.world.item.Item droplet = liquid == null || !liquid.available() ? null : liquid.dropletItem().orElse(null);
+            if (droplet == null) {
+                // The fluid or its droplet is gone (the mod that added it was removed): the ants stay, and wait.
+                site.addStatus(ColonyStatus.NO_DROPLET);
+                step.status |= ColonyStatus.NO_DROPLET.bit();
+                return 0;
+            }
+            double bonus = ProductionMath.bonus(step.trait(Trait.WORKER_PRODUCTIVITY) * step.effects.production()
+                    * ProductionMath.speed(entity.upgradeTier(UpgradeType.SPEED)));
+            // A colony still turning into this species has only that share of Liquid Ants so far.
+            double share = step.former != null ? Math.clamp(step.colony.conversion(), 0, 1) : 1;
+            double rate = AntConfig.get(AntConfig.DROPLET_ROLLS) * liquid.rate() * step.effective(site) * share * bonus
+                    * step.healthFactor * step.foodFactor;
+            site.setRate(rate);
+            double gathering = ProductionMath.bonus(step.trait(Trait.GATHERING_EFFICIENCY) * step.effects.gathering());
+            double foodChance = AntConfig.get(AntConfig.LIQUID_FOOD_CHANCE);
+            double progress = entity.progress() + rate * step.dt;
+            int rolls = 0;
+            while (progress >= 1 && rolls < MAX_ROLLS) {
+                int count = (int) Math.floor(gathering + step.random.nextDouble());
+                if (count > 0) {
+                    ItemStack stack = new ItemStack(droplet, count);
+                    if (!ColonyStorage.canFit(step.level, step.colony, List.of(stack), entity)) {
+                        site.addStatus(ColonyStatus.STORAGE_FULL);
+                        step.status |= ColonyStatus.STORAGE_FULL.bit();
+                        progress = 1;
+                        break;
+                    }
+                    ColonyStorage.insert(step.level, step.colony, stack, entity);
+                    ColonyAccess.countFound(step.colony, count);
+                }
+                if (foodChance > 0 && step.random.nextDouble() < foodChance) {
+                    // The rare extra: a little of what the ants were fed comes back as Ant Food.
+                    ItemStack food = new ItemStack(com.antcolonies.core.registry.ModItems.ANT_FOOD.get());
+                    if (ColonyStorage.canFit(step.level, step.colony, List.of(food), entity)) {
+                        ColonyStorage.insert(step.level, step.colony, food, entity);
+                    }
+                }
+                progress -= 1;
+                rolls++;
+            }
+            entity.setProgress(Math.min(progress, MAX_ROLLS));
+            return rolls;
         }
     }
 

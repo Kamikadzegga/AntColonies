@@ -1,0 +1,25 @@
+{
+  "from": "antcolonies:lava",
+  "to": "antcolonies:liquid_blaze",
+  "item": "#antcolonies:liquid_feed/liquid_blaze",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "machinaopus"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:fluid",
+      "value": "machinaopus:liquid_blaze"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:liquid_blaze_droplet"
+    }
+  ]
+}

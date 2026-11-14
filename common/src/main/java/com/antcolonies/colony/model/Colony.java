@@ -141,6 +141,8 @@ public final class Colony {
     /** Whether this colony grew from a single Queen through founding (for the advancement). */
     boolean queenFounded;
     final ColonyHistory history = new ColonyHistory();
+    /** What it brought in over the last half hour, item by item (saved; sent with the screen open). */
+    final ProductionLog production = new ProductionLog();
 
     // --- Results of the last step (synced, not saved) ---
     int stage = 1;
@@ -271,6 +273,11 @@ public final class Colony {
 
     public ColonyHistory history() {
         return history;
+    }
+
+    /** What the colony really brought in over the last half hour, for the Production page. */
+    public ProductionLog production() {
+        return production;
     }
 
     /** How well its food holds up its work, egg laying and growth this step: 1 when fed, less when food runs low. */
@@ -461,6 +468,7 @@ public final class Colony {
         }
         if (!sync) {
             history.save(output);
+            production.save(output);
         }
         if (sync) {
             output.putDouble("food_factor", foodFactor);
@@ -478,6 +486,7 @@ public final class Colony {
     /** What only a player with the Terrarium's screen open needs: the history, the Storage's contents and the network. */
     public void saveDetails(ValueOutput output) {
         history.save(output);
+        production.save(output);
         ValueOutput.TypedOutputList<NetworkLink> links = output.list("network", NetworkLink.CODEC);
         network.stream().limit(48).forEach(links::add);
         ValueOutput.TypedOutputList<StoredItem> items = output.list("stored", StoredItem.CODEC);
@@ -513,6 +522,7 @@ public final class Colony {
         queenFounded = input.getBooleanOr("queen_founded", false);
         // Saved, or synced with the screen open; a sync without it keeps the client's copy.
         history.load(input);
+        production.load(input);
         foodFactor = input.getDoubleOr("food_factor", foodFactor);
         if (input.getBooleanOr("details", false)) {
             List<NetworkLink> links = new ArrayList<>();

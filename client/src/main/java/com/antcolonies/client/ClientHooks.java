@@ -154,6 +154,9 @@ public final class ClientHooks {
                 || !structure.clientLinked() || structure.assigned() <= 0) {
             return;
         }
+        if (kind == StructureKind.LIQUID_CHAMBER) {
+            return; // nothing is dug or cut there
+        }
         int color = switch (kind) {
             case HARVESTING_SITE -> 0xFF5DAA3C;
             case HUNTING_GROUND -> 0xFF8A1F1F;

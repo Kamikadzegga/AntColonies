@@ -72,6 +72,7 @@ public final class AntColoniesClient {
         event.registerBlockEntityRenderer(ModBlockEntities.TERRARIUM.get(), TerrariumRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.STRUCTURE.get(), StructureRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.GENETIC_LAB.get(), GeneticLabRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.CENTRIFUGE.get(), com.antcolonies.client.renderer.CentrifugeRenderer::new);
     }
 
     @SubscribeEvent
@@ -81,6 +82,7 @@ public final class AntColoniesClient {
         event.register(ModMenus.GENETIC_LAB.get(), GeneticLabScreen::new);
         event.register(ModMenus.UPGRADE_STATION.get(), UpgradeStationScreen::new);
         event.register(ModMenus.GENERATOR.get(), com.antcolonies.client.screen.GeneratorScreen::new);
+        event.register(ModMenus.CENTRIFUGE.get(), com.antcolonies.client.screen.CentrifugeScreen::new);
     }
 
     @SubscribeEvent
@@ -103,5 +105,14 @@ public final class AntColoniesClient {
      */
     public AntColoniesClient(ModContainer container) {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+        // The Droplet Centrifuge's recipes, as the server sends them: kept for its screen's slot and for JEI and EMI, and
+        // dropped on leaving the world.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.RecipesReceivedEvent event) -> {
+            java.util.List<com.antcolonies.content.recipe.CentrifugingRecipe> recipes = new java.util.ArrayList<>();
+            event.getRecipeMap().byType(com.antcolonies.core.registry.ModRecipes.CENTRIFUGING.get()).forEach(holder -> recipes.add(holder.value()));
+            com.antcolonies.content.recipe.CentrifugingRecipe.setClientRecipes(recipes);
+        });
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) ->
+                com.antcolonies.content.recipe.CentrifugingRecipe.setClientRecipes(java.util.List.of()));
     }
 }

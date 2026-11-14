@@ -76,7 +76,7 @@ public class IngameShowcase {
 
     public IngameShowcase(IEventBus modEventBus) {
         if (Files.exists(MARKER) || Files.exists(GUI_MARKER) || Files.exists(UPDATE_MARKER) || Files.exists(STRESS_MARKER) || Files.exists(MACHINE_MARKER)
-                || Files.exists(ANTHILL_MARKER)) {
+                || Files.exists(ANTHILL_MARKER) || Files.exists(HOVER_MARKER) || Files.exists(LIQUID_MARKER)) {
             LOGGER.info("[Showcase] marker found");
             NeoForge.EVENT_BUS.addListener(this::onClientTick);
         } else if (Files.exists(CONFIG_MARKER)) {
@@ -361,6 +361,16 @@ public class IngameShowcase {
                     place(level, origin.offset(5, 0, 4), generator.setValue(com.antcolonies.content.block.GeneratorBlock.LIT, true));
                     place(level, origin.offset(8, 0, 4), lab);
                     place(level, origin.offset(10, 0, 4), lab.setValue(com.antcolonies.content.block.GeneticLabBlock.WORKING, true));
+                    // And the Droplet Centrifuge, whose build the Generator shares: idle, and working with water in its tank.
+                    var centrifuge = ModBlocks.CENTRIFUGE.get().defaultBlockState()
+                            .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, Direction.NORTH);
+                    place(level, origin.offset(1, 0, 4), centrifuge);
+                    BlockPos spinning = origin.offset(-1, 0, 4);
+                    place(level, spinning, centrifuge.setValue(com.antcolonies.content.block.CentrifugeBlock.WORKING, true));
+                    if (level.getBlockEntity(spinning) instanceof com.antcolonies.content.blockentity.CentrifugeBlockEntity tank) {
+                        tank.setFluid(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER, 5000));
+                        level.sendBlockUpdated(spinning, tank.getBlockState(), tank.getBlockState(), Block.UPDATE_CLIENTS);
+                    }
                     command(server, "tick freeze");
                 });
             }
@@ -372,12 +382,228 @@ public class IngameShowcase {
             case 210 -> screenshot(minecraft, "m3_machines_back");
             case 215 -> camera(server, 7.0, 5.2 - 1.62, 4.5, 0, 90);
             case 255 -> screenshot(minecraft, "m4_machines_top");
-            case 260 -> camera(server, 7.0, 1.7 - 1.62, 2.4, 0, 8);
+            case 260 -> camera(server, 4.5, 1.5 - 1.62, 2.2, 0, 12);
             case 300 -> screenshot(minecraft, "m5_machines_close");
-            case 305 -> {
+            case 305 -> camera(server, 2.0, 1.9 - 1.62, 1.3, 0, 20);
+            case 345 -> screenshot(minecraft, "m6_generator_and_centrifuge");
+            case 350 -> camera(server, 0.2, 2.3 - 1.62, 6.6, -140, 22);
+            case 390 -> screenshot(minecraft, "m7_generator_back");
+            case 395 -> {
                 server.execute(() -> command(server, "tick unfreeze"));
                 finish(minecraft);
             }
+            default -> { }
+        }
+    }
+
+    // ------------------------------------------------------------------ Liquid Ants and the Droplet Centrifuge (marker "liquid-check")
+
+    /**
+     * A file named {@code liquid-check} in the run folder: colonies of Water and Lava Ants (and MachinaOpus's two, with it)
+     * at their Liquid Chambers, wild ones of each to look at up close, Common Ants at a Liquid Chamber (the wrong ants),
+     * and Droplet Centrifuges idle, spinning, done, blocked and without FE; pictures of the blocks, the ants and every screen.
+     */
+    private static final Path LIQUID_MARKER = FMLPaths.GAMEDIR.get().resolve("liquid-check");
+    private final boolean liquidCheck = Files.exists(LIQUID_MARKER);
+
+    /** Screens of the liquid check: picture name, block offset from the origin, Terrarium page (or -1), Detailed Mode. */
+    private static final Object[][] LIQUID_SCREENS = {
+            {"l10_water_overview", 0, 0, 5, 0, true}, {"l11_water_colony", 0, 0, 5, 1, false}, {"l12_water_jobs", 0, 0, 5, 2, true},
+            {"l13_water_production_visual", 0, 0, 5, 3, false}, {"l14_water_production_detailed", 0, 0, 5, 3, true},
+            {"l15_water_info", 0, 0, 5, 7, false},
+            {"l16_liquid_chamber_water", 1, 0, 5, -1, false}, {"l17_liquid_chamber_lava", 6, 0, 5, -1, false},
+            {"l18_liquid_chamber_wrong_ants", -4, 0, 5, -1, false}, {"l19_foraging_site_liquid_ants", 0, 0, 6, -1, false},
+            {"l20_centrifuge_idle", 0, 0, 10, -1, false}, {"l21_centrifuge_working", 2, 0, 10, -1, false},
+            {"l22_centrifuge_done", 4, 0, 10, -1, false}, {"l23_centrifuge_blocked", 6, 0, 10, -1, false},
+            {"l24_centrifuge_no_energy", 8, 0, 10, -1, false}};
+
+    private void buildLiquid(IntegratedServer server) {
+        ServerLevel level = server.overworld();
+        command(server, "time set noon");
+        // Water Ants: a Liquid Chamber, a Storage, and a Foraging Site they leave alone.
+        TerrariumBlockEntity water = colony(level, origin.offset(0, 0, 5), "water", 2400, 1500);
+        structure(level, origin.offset(1, 0, 5), StructureKind.LIQUID_CHAMBER);
+        structure(level, origin.offset(-1, 0, 5), StructureKind.STORAGE);
+        structure(level, origin.offset(0, 0, 6), StructureKind.FORAGING_SITE);
+        // Lava Ants: only a Liquid Chamber (their droplets wait in it).
+        TerrariumBlockEntity lava = colony(level, origin.offset(5, 0, 5), "lava", 900, 1500);
+        structure(level, origin.offset(6, 0, 5), StructureKind.LIQUID_CHAMBER);
+        // Common Ants at a Liquid Chamber.
+        TerrariumBlockEntity common = colony(level, origin.offset(-5, 0, 5), "common", 400, 1500);
+        structure(level, origin.offset(-4, 0, 5), StructureKind.LIQUID_CHAMBER);
+        List<TerrariumBlockEntity> colonies = new ArrayList<>(List.of(water, lava, common));
+        // Another mod's liquids, where they exist.
+        int x = 10;
+        List<String> wild = new ArrayList<>(List.of("water", "lava"));
+        for (var kind : com.antcolonies.colony.liquid.LiquidKinds.available()) {
+            if (kind.mod().equals("minecraft")) {
+                continue;
+            }
+            colonies.add(colony(level, origin.offset(x, 0, 5), kind.name(), 900, 1500));
+            structure(level, origin.offset(x + 1, 0, 5), StructureKind.LIQUID_CHAMBER);
+            wild.add(kind.name());
+            x += 4;
+        }
+        for (TerrariumBlockEntity terrarium : colonies) {
+            terrarium.rescan(level);
+            for (int i = 0; i < 6; i++) {
+                com.antcolonies.colony.simulation.ColonySimulator.step(terrarium, level, 1);
+            }
+        }
+        // Wild ones standing still, to look at: a worker, a soldier and a Queen of each.
+        for (int i = 0; i < wild.size(); i++) {
+            for (int c = 0; c < 3; c++) {
+                WildAnt ant = ModEntities.WILD_ANT.get().create(level, EntitySpawnReason.COMMAND);
+                if (ant != null) {
+                    ant.setSpecies(AntColonies.id(wild.get(i)));
+                    ant.setCaste(c == 0 ? Caste.WORKER : c == 1 ? Caste.SOLDIER : Caste.QUEEN);
+                    ant.setNoAi(true);
+                    ant.setPersistenceRequired();
+                    ant.snapTo(origin.getX() - 2.5 + i * 2.2, origin.getY(), origin.getZ() + 1.2 + c * 0.9, 90, 0);
+                    ant.setYBodyRot(90);
+                    ant.setYHeadRot(90);
+                    level.addFreshEntity(ant);
+                }
+            }
+        }
+        // The Centrifuges, facing the camera: empty; spinning water; done, with lava; blocked (lava in the tank, water
+        // droplets in the slot); waiting for FE.
+        var block = ModBlocks.CENTRIFUGE.get().defaultBlockState().setValue(com.antcolonies.content.block.CentrifugeBlock.FACING, Direction.NORTH);
+        var waterDroplet = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(AntColonies.id("water_droplet"));
+        var lavaDroplet = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(AntColonies.id("lava_droplet"));
+        for (int i = 0; i < 5; i++) {
+            BlockPos pos = origin.offset(i * 2, 0, 10);
+            place(level, pos, block);
+            var centrifuge = (com.antcolonies.content.blockentity.CentrifugeBlockEntity) level.getBlockEntity(pos);
+            switch (i) {
+                case 1 -> {
+                    centrifuge.setItem(0, new ItemStack(waterDroplet, 64));
+                    centrifuge.setEnergy(50_000);
+                    centrifuge.setFluid(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER, 2600));
+                }
+                case 2 -> {
+                    centrifuge.setFluid(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.LAVA, 6400));
+                    centrifuge.setEnergy(31_000);
+                }
+                case 3 -> {
+                    centrifuge.setItem(0, new ItemStack(waterDroplet, 12));
+                    centrifuge.setFluid(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.LAVA, 1500));
+                    centrifuge.setEnergy(50_000);
+                }
+                case 4 -> centrifuge.setItem(0, new ItemStack(lavaDroplet, 20));
+                default -> { }
+            }
+        }
+        // The droplets themselves, in the hotbar, and the two new blocks.
+        ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+        int slot = 0;
+        for (var droplet : com.antcolonies.colony.liquid.LiquidKinds.droplets()) {
+            if (slot < 7) {
+                player.getInventory().setItem(slot++, new ItemStack(droplet, 16));
+            }
+        }
+        player.getInventory().setItem(7, new ItemStack(ModBlocks.STRUCTURES.get(StructureKind.LIQUID_CHAMBER).get()));
+        player.getInventory().setItem(8, new ItemStack(ModBlocks.CENTRIFUGE.get()));
+        result("liquid check built: " + wild);
+    }
+
+    private void liquidStep(Minecraft minecraft, IntegratedServer server) {
+        if (ticks == 60) {
+            origin = minecraft.player.blockPosition();
+            minecraft.options.pauseOnLostFocus = false;
+            if (!minecraft.gui.hud.isHidden()) {
+                minecraft.gui.hud.toggle();
+            }
+            server.execute(() -> {
+                command(server, "difficulty peaceful");
+                buildLiquid(server);
+            });
+            return;
+        }
+        if (ticks < 160 || origin == null) {
+            return;
+        }
+        int t = ticks - 160;
+        // First the world: the ants, the chambers, the machines.
+        switch (t) {
+            case 0 -> camera(server, 0.8, 2.2 - 1.62, -1.4, 0, 38);
+            case 40 -> screenshot(minecraft, "l01_wild_liquid_ants");
+            case 45 -> camera(server, -1.4, 0.8 - 1.62, -0.1, 0, 20);
+            case 85 -> screenshot(minecraft, "l02_wild_liquid_ants_close");
+            case 90 -> camera(server, 0.5, 2.6 - 1.62, 2.4, 0, 38);
+            case 130 -> screenshot(minecraft, "l03_water_colony");
+            case 135 -> camera(server, 2.2, 1.9 - 1.62, 3.9, -25, 32);
+            case 175 -> screenshot(minecraft, "l04_liquid_chamber_close");
+            case 180 -> camera(server, 6.0, 2.4 - 1.62, 2.8, 0, 36);
+            case 220 -> screenshot(minecraft, "l05_lava_colony");
+            case 225 -> camera(server, 4.5, 2.4 - 1.62, 7.4, 0, 30);
+            case 265 -> screenshot(minecraft, "l06_centrifuges_front");
+            case 270 -> camera(server, 1.2, 2.1 - 1.62, 8.6, -35, 30);
+            case 310 -> screenshot(minecraft, "l07_centrifuges_close");
+            case 315 -> camera(server, 4.5, 4.4 - 1.62, 10.5, 0, 90);
+            case 355 -> screenshot(minecraft, "l08_centrifuges_top");
+            case 360 -> camera(server, 9.6, 2.2 - 1.62, 12.9, 140, 26);
+            case 400 -> screenshot(minecraft, "l09_centrifuges_back");
+            default -> { }
+        }
+        if (t < 410) {
+            return;
+        }
+        t -= 410;
+        int index = t / 30;
+        int phase = t % 30;
+        if (index < LIQUID_SCREENS.length) {
+            Object[] target = LIQUID_SCREENS[index];
+            BlockPos pos = origin.offset((int) target[1], (int) target[2], (int) target[3]);
+            int page = (int) target[4];
+            if (phase == 0) {
+                com.antcolonies.client.screen.TerrariumScreen.showDetailed((boolean) target[5]);
+                if (page >= 0) {
+                    com.antcolonies.client.screen.TerrariumScreen.showPage(page);
+                }
+                server.execute(() -> {
+                    command(server, String.format(java.util.Locale.ROOT, "tp @s %.1f %d %.1f", pos.getX() + 0.5, pos.getY(), pos.getZ() - 2.5));
+                    open(server, pos);
+                });
+            } else if (phase == 26) {
+                screenshot(minecraft, (String) target[0]);
+            } else if (phase == 28) {
+                minecraft.gui.setScreen(null);
+            }
+            return;
+        }
+        int w = t - LIQUID_SCREENS.length * 30;
+        switch (w) {
+            case 0 -> {
+                com.antcolonies.client.screen.TerrariumScreen.showDetailed(false);
+                jei(com.antcolonies.compat.jei.AntColoniesJeiPlugin.LIQUID);
+                emi(minecraft, "liquid");
+            }
+            case 30 -> screenshot(minecraft, "l30_viewer_liquid");
+            case 35 -> {
+                minecraft.gui.setScreen(null);
+                jei(com.antcolonies.compat.jei.AntColoniesJeiPlugin.CENTRIFUGING);
+                emi(minecraft, "centrifuging");
+            }
+            case 65 -> screenshot(minecraft, "l31_viewer_centrifuging");
+            case 70 -> {
+                minecraft.gui.setScreen(null);
+                // Jade draws with the HUD: show it for these two.
+                if (minecraft.gui.hud.isHidden()) {
+                    minecraft.gui.hud.toggle();
+                }
+                look(server, 2.5, 0.2, 8.4, 0, 30);
+            }
+            case 100 -> screenshot(minecraft, "l32_jade_centrifuge");
+            case 105 -> look(server, 1.5, 0.2, 3.4, 0, 30);
+            case 135 -> screenshot(minecraft, "l33_jade_liquid_chamber");
+            case 140 -> {
+                // The inventory: the droplets in the hotbar.
+                server.execute(() -> command(server, "gamemode creative"));
+                minecraft.gui.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(minecraft.player));
+            }
+            case 165 -> screenshot(minecraft, "l34_droplets_in_inventory");
+            case 170 -> finish(minecraft);
             default -> { }
         }
     }
@@ -521,7 +747,11 @@ public class IngameShowcase {
                 return;
             }
             ticks++;
-            if (anthillCheck) {
+            if (liquidCheck) {
+                liquidStep(minecraft, minecraft.getSingleplayerServer());
+            } else if (hoverCheck) {
+                hoverStep(minecraft, minecraft.getSingleplayerServer());
+            } else if (anthillCheck) {
                 anthillStep(minecraft, minecraft.getSingleplayerServer());
             } else if (machineCheck) {
                 machineStep(minecraft, minecraft.getSingleplayerServer());
@@ -679,6 +909,80 @@ public class IngameShowcase {
      * one (wrong ants), a Queen founding alone, settings on the Diamond colony's sites, half an hour of history, and a
      * gallery of the building blocks behind the player.
      */
+    // ------------------------------------------------------------------ Hover check (marker "hover-check")
+
+    /**
+     * A file named {@code hover-check} in the run folder: the update world, plus a Queen with a long name and a Nether
+     * site whose colony's ants can't go (a long list of the species it needs); each screen is opened, the mouse put over
+     * text that was cut short, and screenshot: the whole text must show in a tooltip.
+     */
+    private static final Path HOVER_MARKER = FMLPaths.GAMEDIR.get().resolve("hover-check");
+    private final boolean hoverCheck = Files.exists(HOVER_MARKER);
+    /** Name, block offset, Terrarium page (-1 = a chamber), detailed view, and where to hover (panel coordinates). */
+    private static final Object[][] HOVER_TARGETS = {
+            {"hover1_nether_needs", 28, 0, 6, -1, false, 40, 118},
+            {"hover2_queen_name", 0, 0, 5, 0, false, 150, 39},
+            {"hover3_queen_name_detailed", 0, 0, 5, 0, true, 150, 39}, {"hover4_nest_upgrade_hint", 1, 0, 6, -1, false, 120, 52}};
+
+    private void hoverStep(Minecraft minecraft, IntegratedServer server) throws ReflectiveOperationException {
+        if (ticks == 60) {
+            origin = minecraft.player.blockPosition();
+            minecraft.options.pauseOnLostFocus = false;
+            server.execute(() -> {
+                command(server, "difficulty peaceful");
+                build(server);
+                buildUpdate(server);
+                ServerLevel level = server.overworld();
+                colony(level, origin.offset(28, 0, 5), "common", 500, 5000);
+                structure(level, origin.offset(28, 0, 6), StructureKind.NETHER_FORAGING_SITE);
+                TerrariumBlockEntity diamond = (TerrariumBlockEntity) level.getBlockEntity(origin.offset(0, 0, 5));
+                var queen = diamond.colony().queen();
+                var lineage = queen.genome().lineage();
+                diamond.colony().setQueen(queen.withGenome(queen.genome().withLineage(new com.antcolonies.colony.genetics.Lineage(lineage.id(),
+                        "Lyrtheis Aurelianna Maximiliana", lineage.parent(), lineage.generation(), lineage.history()))));
+                diamond.setChanged();
+            });
+            return;
+        }
+        if (ticks < 160 || origin == null) {
+            return;
+        }
+        int index = (ticks - 160) / 30;
+        int phase = (ticks - 160) % 30;
+        if (index >= HOVER_TARGETS.length) {
+            finish(minecraft);
+            return;
+        }
+        Object[] target = HOVER_TARGETS[index];
+        BlockPos pos = origin.offset((int) target[1], (int) target[2], (int) target[3]);
+        if (phase == 0) {
+            com.antcolonies.client.screen.TerrariumScreen.showDetailed((boolean) target[5]);
+            if ((int) target[4] >= 0) {
+                com.antcolonies.client.screen.TerrariumScreen.showPage((int) target[4]);
+            }
+            server.execute(() -> {
+                command(server, String.format(java.util.Locale.ROOT, "tp @s %.1f %d %.1f", pos.getX() + 0.5, pos.getY(), pos.getZ() - 2.5));
+                open(server, pos);
+            });
+        } else if (phase == 20 && minecraft.gui.screen() instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> screen) {
+            // The mouse over the text, as a player would put it: the game reads its position from the mouse handler.
+            double scale = minecraft.getWindow().getGuiScale();
+            double x = (screen.getLeftPos() + (int) target[6]) * scale;
+            double y = (screen.getTopPos() + (int) target[7]) * scale;
+            var xpos = net.minecraft.client.MouseHandler.class.getDeclaredField("xpos");
+            var ypos = net.minecraft.client.MouseHandler.class.getDeclaredField("ypos");
+            xpos.setAccessible(true);
+            ypos.setAccessible(true);
+            xpos.setDouble(minecraft.mouseHandler, x);
+            ypos.setDouble(minecraft.mouseHandler, y);
+            result("hover " + target[0] + " at " + target[6] + "," + target[7]);
+        } else if (phase == 26) {
+            screenshot(minecraft, (String) target[0]);
+        } else if (phase == 28) {
+            minecraft.gui.setScreen(null);
+        }
+    }
+
     private void buildUpdate(IntegratedServer server) {
         ServerLevel level = server.overworld();
         // The Diamond colony's sites: one looking for minerals at high priority, one turned off.

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
-import com.antcolonies.content.block.DecorClusterBlock;
+import com.antcolonies.content.block.BroodClusterBlock;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
@@ -100,9 +100,9 @@ public final class ModDecor {
                     .isValidSpawn((state, level, pos, type) -> false));
     public static final DeferredBlock<Block> PHEROMONE_LAMP = register("pheromone_lamp", Block::new,
             p -> p.mapColor(MapColor.COLOR_YELLOW).strength(0.6F).sound(SoundType.FROGLIGHT).lightLevel(state -> 15));
-    public static final DeferredBlock<DecorClusterBlock> ANT_EGG_CLUSTER = register("ant_egg_cluster", DecorClusterBlock::new,
+    public static final DeferredBlock<BroodClusterBlock> ANT_EGG_CLUSTER = register("ant_egg_cluster", BroodClusterBlock::new,
             p -> p.mapColor(MapColor.TERRACOTTA_WHITE).strength(0.2F).sound(SoundType.FROGSPAWN).noOcclusion());
-    public static final DeferredBlock<DecorClusterBlock> LARVA_CLUSTER = register("larva_cluster", DecorClusterBlock::new,
+    public static final DeferredBlock<BroodClusterBlock> LARVA_CLUSTER = register("larva_cluster", BroodClusterBlock::new,
             p -> p.mapColor(MapColor.TERRACOTTA_WHITE).strength(0.2F).sound(SoundType.SLIME_BLOCK).noOcclusion());
     public static final DeferredBlock<TransparentBlock> TERRARIUM_GLASS = register("terrarium_glass", TransparentBlock::new,
             p -> p.mapColor(MapColor.NONE).strength(0.4F).sound(SoundType.GLASS).noOcclusion()

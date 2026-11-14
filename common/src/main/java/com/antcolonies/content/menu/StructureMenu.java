@@ -45,8 +45,8 @@ public class StructureMenu extends BaseMenu {
     public static final int UPGRADE_X = 184;
     /** Where a Foraging Site's store slots are. */
     public static final int STORE_Y = 88;
-    /** Where a Colony Connector's filter slots are. */
-    public static final int FILTER_Y = 112;
+    /** Where a Colony Connector's filter slots are: under its settings and the two lines of what it moved. */
+    public static final int FILTER_Y = 121;
 
     /** Menu button ids from here on scroll a Storage: SCROLL + the first row to show. */
     public static final int SCROLL = 100;
@@ -75,7 +75,7 @@ public class StructureMenu extends BaseMenu {
                             () -> window.storageSlot(s) < data.get(StructureBlockEntity.DATA_UNLOCKED)));
                 }
             }
-            case FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE -> {
+            case FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER -> {
                 for (int slot = 0; slot < kind.slots(); slot++) {
                     addSlot(new FilteredSlot(structure, slot, 8 + slot * 18, STORE_Y, stack -> true, 64));
                 }
@@ -112,10 +112,14 @@ public class StructureMenu extends BaseMenu {
     }
 
     public static int inventoryY(StructureKind kind) {
-        if (kind == StructureKind.STORAGE || kind == StructureKind.COLONY_CONNECTOR) {
+        if (kind == StructureKind.COLONY_CONNECTOR) {
+            return 161;
+        }
+        if (kind == StructureKind.STORAGE) {
             return 152;
         }
-        return kind.foraging() ? 136 : kind.job().any() ? 104 : 84;
+        // Nether and End sites have a line more under their store: the species they need, when the colony's are not.
+        return kind.expedition() ? 145 : kind.siteStore() ? 136 : kind.job().any() ? 104 : 84;
     }
 
     public static StructureMenu fromNetwork(int containerId, Inventory inventory, RegistryFriendlyByteBuf buffer) {

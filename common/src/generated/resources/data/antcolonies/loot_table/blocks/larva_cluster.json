@@ -3,11 +3,28 @@
   "pools": [
     {
       "condition": {
-        "type": "minecraft:survives_explosion"
+        "type": "minecraft:any_of",
+        "terms": [
+          "minecraft:tool/can_silk_touch",
+          {
+            "type": "minecraft:match_block",
+            "blocks": "antcolonies:larva_cluster",
+            "state": {
+              "natural": "false"
+            }
+          }
+        ]
       },
       "entries": [
         {
           "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:copy_components",
+            "include": [
+              "antcolonies:species"
+            ],
+            "source": "block_entity"
+          },
           "name": "antcolonies:larva_cluster"
         }
       ],

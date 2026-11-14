@@ -1,0 +1,4 @@
+{
+  "species.antcolonies_test.conditions_met": "Test Water Ant (dev runs only)",
+  "species.antcolonies_test.conditions_met.desc": "Game test data: checks that data file conditions on a fluid work."
+}

@@ -45,6 +45,8 @@ public class AntColoniesJeiPlugin implements IModPlugin {
     public static final IRecipeType<AntRecipe> EXPEDITION = AntCategory.type("expedition");
     public static final IRecipeType<AntRecipe> FARMING = AntCategory.type("farming");
     public static final IRecipeType<AntRecipe> FIGHTING = AntCategory.type("fighting");
+    public static final IRecipeType<AntRecipe> LIQUID = AntCategory.type("liquid");
+    public static final IRecipeType<AntRecipe> CENTRIFUGING = AntCategory.type("centrifuging");
     public static final IRecipeType<AntRecipe> LAB = AntCategory.type("lab");
     public static final IRecipeType<AntRecipe> TRAIT = AntCategory.type("trait");
     public static final IRecipeType<AntRecipe> SPECIES_UPGRADE = AntCategory.type("species_upgrade");
@@ -114,6 +116,8 @@ public class AntColoniesJeiPlugin implements IModPlugin {
                 new AntCategory(EXPEDITION, "expedition", structure(StructureKind.NETHER_FORAGING_SITE), gui, 3, 2),
                 new AntCategory(FARMING, "farming", structure(StructureKind.HARVESTING_SITE), gui, 2, 1),
                 new AntCategory(FIGHTING, "fighting", structure(StructureKind.HUNTING_GROUND), gui, 2, 2),
+                new AntCategory(LIQUID, "liquid", structure(StructureKind.LIQUID_CHAMBER), gui, 1, 3),
+                new AntCategory(CENTRIFUGING, "centrifuging", ModItems.CENTRIFUGE.get(), gui, 1, 2),
                 new AntCategory(LAB, "lab", ModItems.GENETIC_LAB.get(), gui, 1, 4),
                 new AntCategory(TRAIT, "trait", ModItems.GENETIC_ANALYZER.get(), gui, 1, 3),
                 new AntCategory(SPECIES_UPGRADE, "species_upgrade", ModItems.UPGRADE_STATION.get(), gui, 1, 2),
@@ -139,6 +143,8 @@ public class AntColoniesJeiPlugin implements IModPlugin {
         registration.addRecipes(EXPEDITION, recipes.expeditions());
         registration.addRecipes(FARMING, recipes.farming());
         registration.addRecipes(FIGHTING, recipes.fighting());
+        registration.addRecipes(LIQUID, recipes.liquids());
+        registration.addRecipes(CENTRIFUGING, recipes.centrifuging());
         registration.addRecipes(LAB, recipes.lab());
         registration.addRecipes(TRAIT, recipes.traits());
         registration.addRecipes(SPECIES_UPGRADE, recipes.speciesUpgrades());
@@ -158,6 +164,8 @@ public class AntColoniesJeiPlugin implements IModPlugin {
         registration.addCraftingStation(EXPEDITION, structure(StructureKind.NETHER_FORAGING_SITE), structure(StructureKind.END_FORAGING_SITE));
         registration.addCraftingStation(FARMING, structure(StructureKind.HARVESTING_SITE), structure(StructureKind.STORAGE));
         registration.addCraftingStation(FIGHTING, structure(StructureKind.HUNTING_GROUND));
+        registration.addCraftingStation(LIQUID, structure(StructureKind.LIQUID_CHAMBER), structure(StructureKind.STORAGE));
+        registration.addCraftingStation(CENTRIFUGING, ModItems.CENTRIFUGE.get());
         registration.addCraftingStation(LAB, ModItems.GENETIC_LAB.get());
         registration.addCraftingStation(TRAIT, ModItems.GENETIC_LAB.get(), ModItems.GENETIC_ANALYZER.get());
         registration.addCraftingStation(SPECIES_UPGRADE, ModItems.UPGRADE_STATION.get());

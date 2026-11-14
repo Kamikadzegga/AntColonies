@@ -60,7 +60,10 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
     private static final int SIDE_CELL_W = 24;
     private static final int SIDE_CELL_H = 12;
     private static final int SIDE_TEX_W = 96;
-    private static final int SIDE_TEX_H = 112;
+    private static final int SIDE_TEX_H = 192;
+    /** Liquid Ants in the sprite sheet: per caste a row for the full crop (from this row) and one for the plates on it. */
+    private static final int SIDE_CROP_ROW = 10;
+    private static final int SIDE_PLATES_ROW = 13;
     /** A tunnel worker sprite's length, px. */
     private static final float SPRITE_LENGTH = 2.1F;
 
@@ -452,7 +455,15 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         int row = caste.ordinal() * 3;
         int saved = g.light;
         g.light = light;
-        spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height * gasterScale, frame, row + 1, 0xFF000000 | visible(look.gaster()), 0.08F);
+        if (look.crop().isPresent()) {
+            // A Liquid Ant: its crop, always full and always the same size, with the gaster's plates over it.
+            g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
+            spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, SIDE_CROP_ROW + caste.ordinal(), 0xFF000000 | look.crop().get(), 0.075F);
+            g.light = light;
+            spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, SIDE_PLATES_ROW + caste.ordinal(), 0xFF000000 | visible(look.gaster()), 0.08F);
+        } else {
+            spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height * gasterScale, frame, row + 1, 0xFF000000 | visible(look.gaster()), 0.08F);
+        }
         spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, row, 0xFF000000 | visible(look.body()), 0.09F);
         if (look.crystal().isPresent()) {
             g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
@@ -464,7 +475,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
             float cu = u + fu * len * 0.5F + upU * height * 0.35F;
             float cv = v + fv * len * 0.5F + upV * height * 0.35F;
             float s = len * 0.14F;
-            float[][] uv = {{88 / 96F, 1}, {92 / 96F, 1}, {92 / 96F, 108 / 112F}, {88 / 96F, 108 / 112F}};
+            float[][] uv = {{88 / 96F, 112F / SIDE_TEX_H}, {92 / 96F, 112F / SIDE_TEX_H}, {92 / 96F, 108F / SIDE_TEX_H}, {88 / 96F, 108F / SIDE_TEX_H}};
             float[][] local = {{-s, -s}, {s, -s}, {s, s}, {-s, s}};
             float[][] corners = new float[4][];
             for (int i = 0; i < 4; i++) {
@@ -541,7 +552,14 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         int light = g.light;
         for (int side = -1; side <= 1; side += 2) {
             float[] n = {nx * side, 0, nz * side};
-            surfaceLayer(g, x, z, fx, fz, n, len, height, frame, row + 1, 0xFF000000 | visible(look.gaster()), 0.01F);
+            if (look.crop().isPresent()) {
+                g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
+                surfaceLayer(g, x, z, fx, fz, n, len, height, frame, SIDE_CROP_ROW + actor.caste.ordinal(), 0xFF000000 | look.crop().get(), 0.005F);
+                g.light = light;
+                surfaceLayer(g, x, z, fx, fz, n, len, height, frame, SIDE_PLATES_ROW + actor.caste.ordinal(), 0xFF000000 | visible(look.gaster()), 0.01F);
+            } else {
+                surfaceLayer(g, x, z, fx, fz, n, len, height, frame, row + 1, 0xFF000000 | visible(look.gaster()), 0.01F);
+            }
             surfaceLayer(g, x, z, fx, fz, n, len, height, frame, row, 0xFF000000 | visible(look.body()), 0.02F);
             if (look.crystal().isPresent()) {
                 g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;

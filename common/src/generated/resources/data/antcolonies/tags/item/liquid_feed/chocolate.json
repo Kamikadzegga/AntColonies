@@ -1,0 +1,8 @@
+{
+  "values": [
+    {
+      "id": "create:chocolate_bucket",
+      "required": false
+    }
+  ]
+}

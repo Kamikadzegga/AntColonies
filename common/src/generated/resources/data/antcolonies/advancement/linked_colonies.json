@@ -1,5 +1,5 @@
 {
-  "parent": "antcolonies:stage_2",
+  "parent": "antcolonies:nether_trail",
   "criteria": {
     "linked_colonies": {
       "trigger": "antcolonies:colony",

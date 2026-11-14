@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:liquid_blaze_droplet",
+  "result": {
+    "id": "machinaopus:liquid_blaze",
+    "amount": 25
+  },
+  "energy": 4000,
+  "time": 160,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "machinaopus"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:fluid",
+      "value": "machinaopus:liquid_blaze"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:liquid_blaze_droplet"
+    }
+  ]
+}

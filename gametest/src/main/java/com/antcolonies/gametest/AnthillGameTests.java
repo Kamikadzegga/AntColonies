@@ -63,7 +63,9 @@ final class AnthillGameTests {
             test("anthill_themes_by_biome", AnthillGameTests::themesByBiome),
             test("anthill_themed_build", AnthillGameTests::themedBuild),
             test("anthill_alarm", AnthillGameTests::alarm),
-            test("anthill_ants_rest_unwatched", AnthillGameTests::restUnwatched));
+            test("anthill_ants_rest_unwatched", AnthillGameTests::restUnwatched),
+            test("anthill_royal_guard_ants", AnthillGameTests::royalGuardAnts),
+            test("anthill_brood_clusters", AnthillGameTests::broodClusters));
 
     private AnthillGameTests() {}
 
@@ -281,6 +283,134 @@ final class AnthillGameTests {
         ant.discard();
         player.discard();
         helper.succeed();
+    }
+
+    /**
+     * Royal Guard Ants, the great Queen's guard: named so (other soldiers stay Wild Ants), they take on only a player at their
+     * post (not one merely in sight), let go of anyone more than 10 blocks from it, and walk back to it and stand there.
+     */
+    private static void royalGuardAnts(GameTestHelper helper) {
+        // A stone floor to stand on (the test area has none out here).
+        for (int x = 12; x <= 34; x++) {
+            for (int z = 12; z <= 34; z++) {
+                helper.setBlock(new BlockPos(x, 0, z), net.minecraft.world.level.block.Blocks.STONE);
+            }
+        }
+        BlockPos postAt = new BlockPos(20, 1, 20);
+        WildAnt soldier = ant(helper, postAt, Caste.SOLDIER, WildAnt.Rank.ROYAL, new BlockPos(20, 1, 24));
+        WildAnt tunnel = ant(helper, new BlockPos(30, 1, 30), Caste.SOLDIER, WildAnt.Rank.NORMAL, new BlockPos(20, 1, 24));
+        helper.assertTrue(soldier.royalGuard() && !tunnel.royalGuard(), "Only the royal soldier is a Royal Guard Ant");
+        helper.assertValueEqual(soldier.getName().getString(), "Royal Guard Ant", "royal soldier's name");
+        helper.assertValueEqual(tunnel.getName().getString(), "Wild Ant", "tunnel soldier's name");
+        BlockPos post = soldier.post();
+        helper.assertTrue(post.equals(helper.absolutePos(postAt)), "Its post is where it was placed: " + post);
+        Player player = helper.makeMockServerPlayerInLevel();
+        net.minecraft.world.phys.Vec3 postCenter = net.minecraft.world.phys.Vec3.atBottomCenterOf(post);
+        player.setPos(postCenter.add(3, 0, 0));
+        helper.assertTrue(soldier.atPost(player), "A player 3 blocks from its post is at its post");
+        player.setPos(postCenter.add(7, 0, 0));
+        helper.assertTrue(!soldier.atPost(player) && soldier.withinLeash(player), "7 blocks away: in sight, not at its post");
+        player.setPos(postCenter.add(12, 0, 0));
+        helper.assertTrue(!soldier.withinLeash(player), "12 blocks away: out of its ground");
+        // Chasing someone that far, it lets them go.
+        soldier.setTarget(player);
+        // And taken 6 blocks from its post, it walks back and stands there.
+        soldier.teleportTo(postCenter.x + 6, postCenter.y, postCenter.z);
+        helper.runAfterDelay(5, () -> helper.assertTrue(soldier.getTarget() == null, "It should let go of a player 12 blocks from its post"));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(soldier.getTarget() == null, "still chasing at " + soldier.position() + " tick " + soldier.tickCount);
+            helper.assertTrue(soldier.distanceToSqr(postCenter) < 1.5, "Back at its post? " + Math.sqrt(soldier.distanceToSqr(postCenter)) + " blocks off, at " + soldier.position() + " post " + postCenter + " tick " + soldier.tickCount + " nav " + soldier.getNavigation().isDone() + " ground " + soldier.onGround());
+            player.discard();
+        });
+    }
+
+    /**
+     * Ant Egg and Larva Clusters: not craftable; an anthill's own (natural) egg cluster becomes a larva cluster and that 1
+     * to 3 ants of its species and anthill; broken, a natural one drops nothing without Silk Touch and itself (with the
+     * species) with it; a placed one never hatches and always drops itself; the item goes only into a working colony of
+     * its species (not a founding one, not another species).
+     */
+    private static void broodClusters(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        for (int x = 2; x <= 14; x++) {
+            for (int z = 2; z <= 14; z++) {
+                helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+            }
+        }
+        var recipes = level.getServer().getRecipeManager();
+        for (String id : new String[] {"ant_egg_cluster", "larva_cluster"}) {
+            helper.assertTrue(recipes.byKey(ResourceKey.create(Registries.RECIPE, AntColonies.id(id))).isEmpty(), id + " should not be craftable");
+        }
+        Identifier common = AntColonies.id("common");
+        BlockPos anthill = helper.absolutePos(new BlockPos(12, 1, 12));
+        // A natural egg cluster: eggs, then larvae, then ants.
+        BlockPos at = new BlockPos(4, 1, 4);
+        cluster(helper, at, true, true, common, anthill);
+        var block = (com.antcolonies.content.block.BroodClusterBlock) com.antcolonies.core.registry.ModDecor.ANT_EGG_CLUSTER.get();
+        helper.assertTrue(helper.getBlockState(at).isRandomlyTicking(), "A natural cluster ticks");
+        helper.assertTrue(block.grow(helper.getBlockState(at), level, helper.absolutePos(at), level.getRandom()), "The eggs should grow");
+        helper.assertBlockPresent(com.antcolonies.core.registry.ModDecor.LARVA_CLUSTER.get(), at);
+        var larvae = helper.getBlockEntity(at, com.antcolonies.content.blockentity.BroodClusterBlockEntity.class);
+        helper.assertTrue(common.equals(larvae.species()) && anthill.equals(larvae.anthill()), "The larvae keep the species and anthill");
+        var larvaBlock = (com.antcolonies.content.block.BroodClusterBlock) com.antcolonies.core.registry.ModDecor.LARVA_CLUSTER.get();
+        helper.assertTrue(larvaBlock.grow(helper.getBlockState(at), level, helper.absolutePos(at), level.getRandom()), "The larvae should hatch");
+        helper.assertBlockNotPresent(com.antcolonies.core.registry.ModDecor.LARVA_CLUSTER.get(), at);
+        List<WildAnt> hatched = level.getEntitiesOfClass(WildAnt.class, new net.minecraft.world.phys.AABB(helper.absolutePos(at)).inflate(2));
+        helper.assertTrue(hatched.size() >= 1 && hatched.size() <= 3, "1 to 3 ants should hatch, not " + hatched.size());
+        for (WildAnt ant : hatched) {
+            helper.assertTrue(ant.species().equals(common) && anthill.equals(ant.anthill()) && ant.guardian() && ant.caste() == Caste.WORKER,
+                    "A hatched ant is a worker of the anthill's species and of the anthill");
+            ant.discard();
+        }
+        // A placed (decorative) cluster never hatches.
+        BlockPos placed = new BlockPos(8, 1, 4);
+        cluster(helper, placed, false, false, common, null);
+        helper.assertTrue(!helper.getBlockState(placed).isRandomlyTicking(), "A placed cluster doesn't tick");
+        helper.assertTrue(!larvaBlock.grow(helper.getBlockState(placed), level, helper.absolutePos(placed), level.getRandom()), "A placed cluster never hatches");
+        // Drops.
+        ItemStack hand = ItemStack.EMPTY;
+        ItemStack silk = new ItemStack(net.minecraft.world.item.Items.DIAMOND_PICKAXE);
+        silk.enchant(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH), 1);
+        BlockPos natural = new BlockPos(4, 1, 8);
+        cluster(helper, natural, true, true, common, anthill);
+        helper.assertTrue(drops(helper, natural, hand).isEmpty(), "A natural cluster without Silk Touch drops nothing");
+        List<ItemStack> taken = drops(helper, natural, silk);
+        helper.assertTrue(taken.size() == 1 && taken.get(0).is(com.antcolonies.core.registry.ModDecor.ANT_EGG_CLUSTER.get().asItem())
+                && common.equals(taken.get(0).get(com.antcolonies.core.registry.ModDataComponents.SPECIES.get())), "Silk Touch takes it with its species: " + taken);
+        helper.assertTrue(drops(helper, placed, hand).size() == 1, "A placed cluster drops itself");
+        // Into a Terrarium: a founding colony and another species' colony don't take it; a working one of its species does.
+        ItemStack item = taken.get(0).copyWithCount(2);
+        var founding = AntColoniesGameTests.terrarium(helper, new BlockPos(4, 1, 12), common, 0, 0, 1000);
+        founding.colony().startFounding();
+        founding.setItem(com.antcolonies.content.blockentity.TerrariumBlockEntity.SLOT_FEED, item.copy());
+        founding.processSlots(level);
+        helper.assertTrue(founding.getItem(com.antcolonies.content.blockentity.TerrariumBlockEntity.SLOT_FEED).getCount() == 2
+                && founding.colony().eggs() == 0, "A founding colony doesn't take a cluster");
+        var iron = AntColoniesGameTests.terrarium(helper, new BlockPos(7, 1, 12), AntColonies.id("iron"), 300, 0, 1000);
+        iron.setItem(com.antcolonies.content.blockentity.TerrariumBlockEntity.SLOT_FEED, item.copy());
+        iron.processSlots(level);
+        helper.assertTrue(iron.getItem(com.antcolonies.content.blockentity.TerrariumBlockEntity.SLOT_FEED).getCount() == 2,
+                "Another species' colony doesn't take it");
+        var working = AntColoniesGameTests.terrarium(helper, new BlockPos(10, 1, 12), common, 300, 0, 1000);
+        double eggsBefore = working.colony().eggs();
+        working.setItem(com.antcolonies.content.blockentity.TerrariumBlockEntity.SLOT_FEED, item.copy());
+        working.processSlots(level);
+        helper.assertTrue(working.getItem(com.antcolonies.content.blockentity.TerrariumBlockEntity.SLOT_FEED).isEmpty()
+                && working.colony().eggs() - eggsBefore == 2 * com.antcolonies.content.blockentity.TerrariumBlockEntity.CLUSTER_BROOD,
+                "A working colony of its species takes 2 clusters as " + 2 * com.antcolonies.content.blockentity.TerrariumBlockEntity.CLUSTER_BROOD
+                        + " eggs: " + (working.colony().eggs() - eggsBefore));
+        helper.succeed();
+    }
+
+    private static void cluster(GameTestHelper helper, BlockPos at, boolean eggs, boolean natural, Identifier species, @org.jspecify.annotations.Nullable BlockPos anthill) {
+        var block = eggs ? com.antcolonies.core.registry.ModDecor.ANT_EGG_CLUSTER : com.antcolonies.core.registry.ModDecor.LARVA_CLUSTER;
+        helper.setBlock(at, block.get().defaultBlockState().setValue(com.antcolonies.content.block.BroodClusterBlock.NATURAL, natural));
+        helper.getBlockEntity(at, com.antcolonies.content.blockentity.BroodClusterBlockEntity.class).set(species, anthill);
+    }
+
+    private static List<ItemStack> drops(GameTestHelper helper, BlockPos at, ItemStack tool) {
+        BlockPos pos = helper.absolutePos(at);
+        return Block.getDrops(helper.getBlockState(at), helper.getLevel(), pos, helper.getLevel().getBlockEntity(pos), null, tool);
     }
 
     // --- The alarm ---

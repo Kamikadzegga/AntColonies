@@ -1,0 +1,38 @@
+{
+  "tier": 2,
+  "category": "liquid",
+  "look": {
+    "body": "#3A1A10",
+    "gaster": "#5A2410",
+    "accent": "#5A2410",
+    "pattern": "plain",
+    "glow": true,
+    "crop": "#FF7A1A"
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.8
+  },
+  "liquid": {
+    "fluid": "minecraft:lava",
+    "droplet": "antcolonies:lava_droplet",
+    "rate": 0.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "minecraft:honey_bottle",
+        "count": 2
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  }
+}

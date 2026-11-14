@@ -11,9 +11,20 @@ import net.minecraft.world.item.ItemStack;
  * a tooltip per output: weight, stage, chance), and lines of text (rates, chances, requirements).
  */
 public record AntRecipe(Identifier id, List<List<ItemStack>> inputs, List<Output> outputs, List<Component> lines) {
-    public record Output(List<ItemStack> stacks, List<Component> tooltip) {
+    /**
+     * @param fluid an output that is a fluid instead of items (the Droplet Centrifuge's), or null
+     */
+    public record Output(List<ItemStack> stacks, List<Component> tooltip, net.neoforged.neoforge.fluids.@org.jspecify.annotations.Nullable FluidStack fluid) {
+        public Output(List<ItemStack> stacks, List<Component> tooltip) {
+            this(stacks, tooltip, null);
+        }
+
         public static Output of(ItemStack stack, Component... tooltip) {
             return new Output(List.of(stack), List.of(tooltip));
+        }
+
+        public static Output ofFluid(net.neoforged.neoforge.fluids.FluidStack fluid, Component... tooltip) {
+            return new Output(List.of(), List.of(tooltip), fluid);
         }
     }
 

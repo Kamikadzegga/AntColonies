@@ -125,8 +125,53 @@ public final class AntRecipes {
             if (data.needsSpecialFood()) {
                 lines.add(line("diet", data.diet().specialKind(), data.diet().specialPerEgg()));
             }
+            // What it brings: a Liquid Ant its one droplet, a farmer its harvest, anyone else their finds.
+            List<AntRecipe.Output> brings = data.makesLiquid() && data.liquid().isPresent() && data.liquid().get().available()
+                    ? List.of(AntRecipe.Output.of(new ItemStack(data.liquid().get().dropletItem().get())))
+                    : outputs(data.canFarm() ? data.farming().harvest() : data.production().outputs());
             list.add(new AntRecipe(id("species", id), List.of(List.of(queen(id)), List.of(ants(id, Caste.WORKER)), List.of(ants(id, Caste.SOLDIER))),
-                    outputs(data.canFarm() ? data.farming().harvest() : data.production().outputs()), lines));
+                    brings, lines));
+        }
+        return list;
+    }
+
+    /** Liquid Ants: each species and the one droplet its workers give at a Liquid Chamber. */
+    public List<AntRecipe> liquids() {
+        List<AntRecipe> list = new ArrayList<>();
+        for (Holder.Reference<AntSpecies> entry : species) {
+            Identifier id = entry.key().identifier();
+            AntSpecies data = entry.value();
+            AntSpecies.Liquid liquid = data.liquid().orElse(null);
+            if (!data.makesLiquid() || liquid == null || !liquid.available()) {
+                continue;
+            }
+            ItemStack droplet = new ItemStack(liquid.dropletItem().get());
+            list.add(new AntRecipe(id("liquid", id), List.of(List.of(queen(id)), List.of(ants(id, Caste.WORKER))),
+                    List.of(AntRecipe.Output.of(droplet, Component.translatable("info.antcolonies.liquid.fluid",
+                            liquid.fluidValue().get().getFluidType().getDescription()).withStyle(ChatFormatting.GRAY))),
+                    List.of(Tooltips.species(id).withStyle(ChatFormatting.DARK_GREEN), line("liquid.only"),
+                            line("liquid.rate", String.format(java.util.Locale.ROOT, "%.2f", liquid.rate()),
+                                    String.format(java.util.Locale.ROOT, "%.2f", data.diet().consumption())))));
+        }
+        return list;
+    }
+
+    /** The Droplet Centrifuge: every recipe the server sent (droplets, and whatever datapacks add), with its fluid. */
+    public List<AntRecipe> centrifuging() {
+        List<AntRecipe> list = new ArrayList<>();
+        int index = 0;
+        for (com.antcolonies.content.recipe.CentrifugingRecipe recipe : com.antcolonies.content.recipe.CentrifugingRecipe.all(
+                net.minecraft.client.Minecraft.getInstance().level)) {
+            List<ItemStack> inputs = recipe.ingredient().items().map(ItemStack::new).toList();
+            if (inputs.isEmpty()) {
+                continue;
+            }
+            net.neoforged.neoforge.fluids.FluidStack fluid = recipe.createResult();
+            Identifier input = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(inputs.getFirst().getItem());
+            list.add(new AntRecipe(AntColonies.id("centrifuging/" + input.getNamespace() + "/" + input.getPath() + "/" + index++), List.of(inputs),
+                    List.of(AntRecipe.Output.ofFluid(fluid)),
+                    List.of(line("centrifuging.fluid", recipe.amount(), fluid.getFluidType().getDescription(fluid)),
+                            line("centrifuging.cost", recipe.energyCost(), String.format(java.util.Locale.ROOT, "%.1f", recipe.duration() / 20.0)))));
         }
         return list;
     }

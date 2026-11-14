@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:latex_droplet",
+  "result": {
+    "id": "industrialforegoing:latex",
+    "amount": 50
+  },
+  "energy": 1200,
+  "time": 80,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "industrialforegoing"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:fluid",
+      "value": "industrialforegoing:latex"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:latex_droplet"
+    }
+  ]
+}

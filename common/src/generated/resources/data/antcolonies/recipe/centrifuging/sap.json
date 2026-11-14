@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:sap_droplet",
+  "result": {
+    "id": "thermal:sap",
+    "amount": 50
+  },
+  "energy": 800,
+  "time": 60,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "thermal"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:fluid",
+      "value": "thermal:sap"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:sap_droplet"
+    }
+  ]
+}

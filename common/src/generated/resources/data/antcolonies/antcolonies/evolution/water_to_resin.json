@@ -1,0 +1,25 @@
+{
+  "from": "antcolonies:water",
+  "to": "antcolonies:resin",
+  "item": "#antcolonies:liquid_feed/resin",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "thermal"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:fluid",
+      "value": "thermal:resin"
+    },
+    {
+      "type": "neoforge:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:resin_droplet"
+    }
+  ]
+}

@@ -50,6 +50,7 @@ public final class ModBlocks {
                     .lightLevel(state -> state.hasProperty(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE)
                             && state.getValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE) ? 9 : 0);
             case COLONY_CONNECTOR -> p.mapColor(MapColor.WOOD).strength(1.2F).sound(SoundType.WOOD).noOcclusion();
+            case LIQUID_CHAMBER -> p.mapColor(MapColor.TERRACOTTA_ORANGE).strength(1.0F).sound(SoundType.HONEY_BLOCK).noOcclusion();
             default -> p.mapColor(MapColor.DIRT).strength(1.2F).sound(SoundType.PACKED_MUD).noOcclusion();
         };
     }
@@ -58,8 +59,15 @@ public final class ModBlocks {
             p -> p.mapColor(MapColor.WOOD).strength(2.0F).sound(SoundType.WOOD).noOcclusion());
 
     public static final DeferredBlock<com.antcolonies.content.block.GeneratorBlock> GENERATOR = BLOCKS.registerBlock("generator", com.antcolonies.content.block.GeneratorBlock::new,
-            p -> p.mapColor(MapColor.METAL).strength(3.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+            // Not a full cube to the renderer: its firebox shows through the glass between its casing and its lid.
+            p -> p.mapColor(MapColor.METAL).strength(3.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
                     .lightLevel(state -> state.getValue(com.antcolonies.content.block.GeneratorBlock.LIT) ? 10 : 0));
+
+    /** The Droplet Centrifuge: spins Liquid Ants' droplets into fluid, for FE. */
+    public static final DeferredBlock<com.antcolonies.content.block.CentrifugeBlock> CENTRIFUGE = BLOCKS.registerBlock("centrifuge",
+            com.antcolonies.content.block.CentrifugeBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.COPPER).noOcclusion().requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(com.antcolonies.content.block.CentrifugeBlock.WORKING) ? 7 : 0));
 
     public static final DeferredBlock<GeneticLabBlock> GENETIC_LAB = BLOCKS.registerBlock("genetic_laboratory",
             GeneticLabBlock::new, p -> labProperties(p));

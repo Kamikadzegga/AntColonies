@@ -24,10 +24,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
  * @param look     how its ants are drawn (colors, pattern, crystals)
  * @param climate  where it thrives; elsewhere colony health suffers unless its genetics resist
  * @param spawn    where it lives in the wild (for JEI and natural spawning), if anywhere
+ * @param liquid   Liquid Ants only: the fluid they make droplets of
  */
 public record AntSpecies(int tier, Category category, AntLook look, Climate climate, Optional<TagKey<Biome>> spawn, Diet diet,
                          Production production, Farming farming, Combat combat, Rearing rearing, Breeding breeding,
-                         Optional<Holder<Item>> signature) {
+                         Optional<Holder<Item>> signature, Optional<Liquid> liquid) {
 
     public static final Codec<AntSpecies> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.intRange(0, 10).optionalFieldOf("tier", 0).forGetter(AntSpecies::tier),
@@ -41,7 +42,8 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
             Combat.CODEC.optionalFieldOf("combat", Combat.DEFAULT).forGetter(AntSpecies::combat),
             Rearing.CODEC.optionalFieldOf("rearing", Rearing.DEFAULT).forGetter(AntSpecies::rearing),
             Breeding.CODEC.optionalFieldOf("breeding", Breeding.DEFAULT).forGetter(AntSpecies::breeding),
-            BuiltInRegistries.ITEM.holderByNameCodec().optionalFieldOf("signature_item").forGetter(AntSpecies::signature)
+            BuiltInRegistries.ITEM.holderByNameCodec().optionalFieldOf("signature_item").forGetter(AntSpecies::signature),
+            Liquid.CODEC.optionalFieldOf("liquid").forGetter(AntSpecies::liquid)
     ).apply(i, AntSpecies::new));
 
     /** Whether its workers can tend a Harvesting Site. */
@@ -52,6 +54,11 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
     /** Whether its workers hunt at a Hunting Ground (hunter species only). */
     public boolean canHunt() {
         return category == Category.HUNTER;
+    }
+
+    /** Whether it is a Liquid Ant species: its workers only make droplets, at a Liquid Chamber. */
+    public boolean makesLiquid() {
+        return category == Category.LIQUID;
     }
 
     /** What its eggs need besides plain food: "" for nothing, else a special food kind (see the ant_food data map). */
@@ -121,6 +128,39 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
                 Cost.CODEC.listOf().optionalFieldOf("cost", List.of()).forGetter(Rearing::cost),
                 Codec.intRange(1, 10_000_000).optionalFieldOf("time", 2400).forGetter(Rearing::time)
         ).apply(i, Rearing::new));
+    }
+
+    /**
+     * What a Liquid Ant species makes: droplets of one fluid, and nothing else. Both are named by id and looked up when
+     * needed, so a species whose fluid or droplet is gone (its mod was removed) still loads: it just makes nothing, and
+     * its Liquid Chamber says why. The built-in species of other mods' fluids don't load at all without their fluid (their
+     * files carry "neoforge:conditions").
+     *
+     * @param fluid   the registered fluid the droplets are of (the Centrifuge's recipes decide what a droplet becomes)
+     * @param droplet the droplet item its workers give
+     * @param rate    droplets per minute compared to Water Ants
+     */
+    public record Liquid(Identifier fluid, Identifier droplet, double rate) {
+        public static final Codec<Liquid> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Identifier.CODEC.fieldOf("fluid").forGetter(Liquid::fluid),
+                Identifier.CODEC.fieldOf("droplet").forGetter(Liquid::droplet),
+                Codec.doubleRange(0, 1000).optionalFieldOf("rate", 1.0).forGetter(Liquid::rate)
+        ).apply(i, Liquid::new));
+
+        /** The droplet item, if it is registered. */
+        public Optional<Item> dropletItem() {
+            return BuiltInRegistries.ITEM.getOptional(droplet);
+        }
+
+        /** The fluid, if it is registered. */
+        public Optional<net.minecraft.world.level.material.Fluid> fluidValue() {
+            return BuiltInRegistries.FLUID.getOptional(fluid);
+        }
+
+        /** Whether both the fluid and the droplet exist in this game. */
+        public boolean available() {
+            return dropletItem().isPresent() && fluidValue().isPresent();
+        }
     }
 
     /** Egg laying and larvae growth compared to Common Ants. */

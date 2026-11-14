@@ -18,9 +18,13 @@ import net.minecraft.util.ExtraCodecs;
  * @param gaster  the abdomen
  * @param accent  the pattern over the gaster
  * @param crystal crystal growths on the back, if the species has them
- * @param glow    whether the crystals glow in the dark
+ * @param glow    whether the crystals (or the crop) glow in the dark
+ * @param crop    Liquid Ants: the colour of the liquid in their swollen crop. With it the gaster is drawn as a replete's:
+ *                always full, the plates of the gaster pulled apart over a see-through bag of the liquid. It is a fixed part
+ *                of the look, never a gauge: nothing about it changes while the colony works.
  */
-public record AntLook(int body, int gaster, int accent, Pattern pattern, Optional<Integer> crystal, boolean glow, float size) {
+public record AntLook(int body, int gaster, int accent, Pattern pattern, Optional<Integer> crystal, boolean glow, float size,
+                      Optional<Integer> crop) {
     public static final Codec<Integer> COLOR = Codec.either(Codec.STRING, ExtraCodecs.RGB_COLOR_CODEC).comapFlatMap(
             either -> either.map(AntLook::parseHex, DataResult::success),
             color -> Either.left(String.format(Locale.ROOT, "#%06X", color & 0xFFFFFF)));
@@ -32,11 +36,12 @@ public record AntLook(int body, int gaster, int accent, Pattern pattern, Optiona
             Pattern.CODEC.optionalFieldOf("pattern", Pattern.PLAIN).forGetter(AntLook::pattern),
             COLOR.optionalFieldOf("crystal").forGetter(AntLook::crystal),
             Codec.BOOL.optionalFieldOf("glow", false).forGetter(AntLook::glow),
-            Codec.floatRange(0.25F, 4.0F).optionalFieldOf("size", 1.0F).forGetter(AntLook::size)
+            Codec.floatRange(0.25F, 4.0F).optionalFieldOf("size", 1.0F).forGetter(AntLook::size),
+            COLOR.optionalFieldOf("crop").forGetter(AntLook::crop)
     ).apply(i, AntLook::new));
 
     /** Drawn for species that are unknown (a removed datapack). */
-    public static final AntLook UNKNOWN = new AntLook(0x3A2A20, 0x2A1E18, 0x000000, Pattern.PLAIN, Optional.empty(), false, 1.0F);
+    public static final AntLook UNKNOWN = new AntLook(0x3A2A20, 0x2A1E18, 0x000000, Pattern.PLAIN, Optional.empty(), false, 1.0F, Optional.empty());
 
     private static DataResult<Integer> parseHex(String text) {
         String hex = text.startsWith("#") ? text.substring(1) : text;

@@ -2,6 +2,7 @@
   "values": [
     "antcolonies:genetic_laboratory",
     "antcolonies:generator",
+    "antcolonies:centrifuge",
     "antcolonies:nether_foraging_site",
     "antcolonies:end_foraging_site",
     "antcolonies:packed_anthill_soil",
