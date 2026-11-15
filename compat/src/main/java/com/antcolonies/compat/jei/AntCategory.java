@@ -50,7 +50,21 @@ public class AntCategory extends AbstractRecipeCategory<AntRecipe> {
                     .setStandardSlotBackground()
                     .addItemStacks(recipe.inputs().get(i));
         }
-        for (int i = 0; i < recipe.outputs().size(); i++) {
+        // The category is as tall as its rows: when there are more outputs than slots (a species with 18 finds), the last
+        // slot shows the rest in turn, each with its own tooltip, instead of slots spilling over the text below.
+        int room = rows * OUTPUT_COLUMNS;
+        int shown = recipe.outputs().size() > room ? room - 1 : recipe.outputs().size();
+        if (shown < recipe.outputs().size()) {
+            List<AntRecipe.Output> rest = recipe.outputs().subList(shown, recipe.outputs().size());
+            List<net.minecraft.world.item.ItemStack> stacks = rest.stream().flatMap(o -> o.stacks().stream()).toList();
+            builder.addOutputSlot(OUTPUT_X + 1 + shown % OUTPUT_COLUMNS * STEP, 1 + shown / OUTPUT_COLUMNS * STEP)
+                    .setStandardSlotBackground()
+                    .addItemStacks(stacks)
+                    .addRichTooltipCallback((view, tooltip) -> view.getDisplayedItemStack().ifPresent(item -> rest.stream()
+                            .filter(o -> o.stacks().stream().anyMatch(s -> net.minecraft.world.item.ItemStack.isSameItemSameComponents(s, item)))
+                            .findFirst().ifPresent(o -> o.tooltip().forEach(tooltip::add))));
+        }
+        for (int i = 0; i < shown; i++) {
             AntRecipe.Output output = recipe.outputs().get(i);
             IRecipeSlotBuilder slot = builder.addOutputSlot(OUTPUT_X + 1 + i % OUTPUT_COLUMNS * STEP, 1 + i / OUTPUT_COLUMNS * STEP)
                     .setStandardSlotBackground();

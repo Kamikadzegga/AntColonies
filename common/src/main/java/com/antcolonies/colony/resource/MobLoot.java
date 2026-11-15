@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.WeakHashMap;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -27,7 +26,7 @@ import net.minecraft.world.phys.Vec3;
  * it expects. No player killed it, so player-only drops (like Wither Skeleton skulls from Looting) don't come.
  */
 public final class MobLoot {
-    private static final Map<ServerLevel, Map<EntityType<?>, Optional<LivingEntity>>> STAND_INS = new WeakHashMap<>();
+    private static final Map<ServerLevel, Map<EntityType<?>, Optional<LivingEntity>>> STAND_INS = new java.util.concurrent.ConcurrentHashMap<>();
 
     public static List<ItemStack> roll(ServerLevel level, EntityType<?> type, BlockPos pos) {
         Optional<LivingEntity> standIn = STAND_INS.computeIfAbsent(level, l -> new HashMap<>()).computeIfAbsent(type, t -> create(level, t));
@@ -58,6 +57,13 @@ public final class MobLoot {
             return entity instanceof LivingEntity living ? Optional.of(living) : Optional.empty();
         } catch (RuntimeException e) {
             return Optional.empty();
+        }
+    }
+
+    /** Forgets a level's stand-ins when it unloads: they hold the level, so the weak map alone would keep it alive. */
+    public static void onLevelUnload(net.neoforged.neoforge.event.level.LevelEvent.Unload event) {
+        if (event.getLevel() instanceof ServerLevel level) {
+            STAND_INS.remove(level);
         }
     }
 

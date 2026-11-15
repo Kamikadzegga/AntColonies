@@ -166,12 +166,12 @@ final class ColonyProviders {
         public void appendServerData(CompoundTag data, BlockAccessor accessor) {
             if (accessor.getBlockEntity() instanceof GeneratorBlockEntity generator) {
                 data.putInt("energy", generator.energy());
-                data.putInt("capacity", GeneratorBlockEntity.CAPACITY);
+                data.putInt("capacity", GeneratorBlockEntity.capacity());
                 data.putInt("output", generator.data().get(GeneratorBlockEntity.DATA_OUTPUT));
             } else if (accessor.getBlockEntity() instanceof GeneticLabBlockEntity lab) {
                 var labData = lab.data();
                 data.putInt("energy", labData.get(GeneticLabBlockEntity.DATA_ENERGY));
-                data.putInt("capacity", GeneticLabBlockEntity.ENERGY_CAPACITY);
+                data.putInt("capacity", GeneticLabBlockEntity.energyCapacity());
                 GeneticLabBlockEntity.Operation operation = GeneticLabBlockEntity.Operation.byId(labData.get(GeneticLabBlockEntity.DATA_OPERATION));
                 if (operation != GeneticLabBlockEntity.Operation.NONE) {
                     data.putString("operation", operation.name().toLowerCase(Locale.ROOT));

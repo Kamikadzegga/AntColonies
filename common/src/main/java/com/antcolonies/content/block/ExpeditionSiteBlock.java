@@ -41,6 +41,15 @@ public class ExpeditionSiteBlock extends StructureBlock {
         // Motes drifting out of the little portal.
         boolean nether = structureKind() == StructureKind.NETHER_FORAGING_SITE;
         net.minecraft.core.Direction front = state.getValue(FACING);
+        if (upright(state)) {
+            // In a stack the portal is in the chamber behind the glass: its motes drift out before it, or behind it.
+            double side = random.nextBoolean() ? 0.56 : -0.56;
+            double along = random.nextDouble() * 0.4 - 0.2;
+            level.addParticle(nether ? ParticleTypes.PORTAL : ParticleTypes.REVERSE_PORTAL,
+                    pos.getX() + 0.5 + front.getStepX() * side + front.getStepZ() * along, pos.getY() + 0.3 + random.nextDouble() * 0.4,
+                    pos.getZ() + 0.5 + front.getStepZ() * side + front.getStepX() * along, front.getStepX() * side * 0.2, 0.02, front.getStepZ() * side * 0.2);
+            return;
+        }
         // The portal stands a quarter block in from the front glass, across the chamber.
         double across = random.nextDouble() * 0.5 - 0.25;
         double x = pos.getX() + 0.5 + front.getStepX() * 0.3 + front.getStepZ() * across;

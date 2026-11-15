@@ -42,6 +42,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -182,15 +183,10 @@ public class WildAnt extends PathfinderMob implements AntLike {
 
     // --- Royal Guard Ants: the great Queen's guard ---
 
-    /** How near its post a Royal Guard Ant lets a player come before it attacks (blocks). */
-    public static final double GUARD_REACH = 4.0;
-    /** How far from its post a Royal Guard Ant follows anyone: it never leaves the Queen for long (blocks). */
-    public static final double GUARD_LEASH = 10.0;
-
     /**
      * A Royal Guard Ant: one of the great Queen's guard (an anthill soldier of royal rank). Its job is her, not the anthill:
      * it stands at its post in her chamber or the antechamber instead of roaming, takes on only those who come up to its
-     * post (or whom the anthill is alarmed at, or who hurt it) and never follows anyone farther than {@link #GUARD_LEASH}
+     * post (or whom the anthill is alarmed at, or who hurt it) and never follows anyone farther than the config's royalGuardLeash
      * from it, then goes back.
      */
     public boolean royalGuard() {
@@ -204,12 +200,12 @@ public class WildAnt extends PathfinderMob implements AntLike {
 
     /** Whether someone has come up to this Royal Guard Ant's post. */
     public boolean atPost(net.minecraft.world.entity.Entity other) {
-        return other.distanceToSqr(Vec3.atBottomCenterOf(post())) <= GUARD_REACH * GUARD_REACH;
+        return other.distanceToSqr(Vec3.atBottomCenterOf(post())) <= Mth.square(AntConfig.get(AntConfig.ROYAL_GUARD_REACH));
     }
 
     /** Whether someone is still within the ground a Royal Guard Ant keeps (it lets anyone farther away go). */
     public boolean withinLeash(net.minecraft.world.entity.Entity other) {
-        return other.distanceToSqr(Vec3.atBottomCenterOf(post())) <= GUARD_LEASH * GUARD_LEASH;
+        return other.distanceToSqr(Vec3.atBottomCenterOf(post())) <= Mth.square(AntConfig.get(AntConfig.ROYAL_GUARD_LEASH));
     }
 
     @Override
@@ -453,6 +449,8 @@ public class WildAnt extends PathfinderMob implements AntLike {
     /** Makes it one of an anthill's defenders, staying near it. */
     public void setGuardian(boolean guardian) {
         this.guardian = guardian;
+        // An anthill's ants keep chasing an intruder through its tunnels (as applyCaste sets it).
+        set(Attributes.FOLLOW_RANGE, guardian ? 24 : 12);
     }
 
     /**
@@ -642,14 +640,29 @@ public class WildAnt extends PathfinderMob implements AntLike {
 
     @Override
     public void die(DamageSource source) {
+        leaveHomeNest();
+        super.die(source);
+    }
+
+    /**
+     * Caught in Tweezers: it leaves the world without dying, so its home nest (if any) must still hear it is gone and raise
+     * another, and what it carried falls where it was.
+     */
+    public void caught() {
+        leaveHomeNest();
+        discard();
+    }
+
+    /** Tells its home nest it won't come back (the nest raises a new ant) and drops what it carried. */
+    private void leaveHomeNest() {
         if (nest != null && level() instanceof ServerLevel server) {
             if (server.getBlockEntity(nest) instanceof HomeNestBlockEntity home) {
                 home.lost();
             }
             carried.forEach(stack -> spawnAtLocation(server, stack));
             carried.clear();
+            nest = null;
         }
-        super.die(source);
     }
 
     /** Back in the nest: what it carried goes into the nest's store (what doesn't fit drops by the nest), and it is gone. */

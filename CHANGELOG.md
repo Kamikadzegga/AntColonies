@@ -6,6 +6,72 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-15
+
+### Added
+
+- **Upright nests.** A colony built upward becomes a vertical formicarium: once more of its blocks are stacked (one
+  right over another) than stand flat, every block of it is a slab of nest between two glasses, front and back. With
+  more flat blocks it is the glass cases it always was, and with as many of each it stays as it was.
+- **Each block of an upright colony shows its own chamber**, carved into the earth of the species' climate: the Queen's chamber,
+  shelves with the Storage's real items, a fungus garden, a portal, full Liquid Ants hanging over their pool.
+- **Tunnels join the blocks.** Tunnels are dug to the colony's blocks beside, above and below, so a tower or a wall is one
+  nest in one frame, the same from both sides. Ants walk from block to block: out to the sites and back with their finds.
+- **An upright Formicarium's nest grows with the colony:** a brood chamber at first, a food store from stage 2, a bigger
+  chamber for the Queen and a midden from stage 3, crystals at stage 4.
+
+### Changed
+
+- **More in the server config.** Generator and Genetic Laboratory energy storage, the Laboratory's input rate, Royal
+  Guard reach and leash, how far a Larva Cluster counts ants, brood per cluster, ants per Tweezers pinch, Queen growth
+  cap and traits per stage, and home nest ants and refill time. Every default is the old value.
+- **The Terrarium is now called the Formicarium** (and Terrarium Glass is Formicarium Glass), the proper name for an ant
+  nest behind glass. Searching "terrarium" still finds it in the creative tab, JEI and EMI. Worlds, configs and pack
+  scripts are untouched: the ids (`antcolonies:terrarium`) and config keys stay as they were.
+- **Colonies on the ground are one bed of soil.** The Formicarium and every chamber now share one ground height, with no
+  step or trench where blocks join. Tunnels behind the outer glass are cut on the pixel grid and run on from block to
+  block with ants walking them; worn trails on top lead from chamber to chamber. Storage items are drawn smaller.
+- **Clearer Statistics page.** The chart buttons have a colour chip instead of a line under their names, and each chart
+  shows its value now, how much it changed and its low and high, on a scale that fits the values. In/Out and the new
+  Births chart (ants born and died a minute) show both lines and the net.
+- **Working Sites at a glance.** In Visual mode every site is a tile with its own icon and a light: green working, red
+  a problem, grey off. Hover a tile for everything about it, click it to open it in Detailed mode. Detailed rows are
+  separate panels that say where each site is from the Formicarium ("1 W, 1 N") and number sites of one kind.
+- **Droplets match their fluids.** Each droplet keeps the same shape but now has its fluid's own colour, so lava and
+  liquid blaze, brine and hootch, and the dark oils are easy to tell apart. Hootch is see-through, like the fluid.
+
+### Fixed
+
+- **Every 3D ant moves on its own.** Ants drawn as models all took the pose of the last ant drawn, so their legs and
+  jaws moved in step; now each walks, grooms and bites in its own time.
+- **Taking ants out of a changing colony.** Taking workers out of a colony that was turning into a new species counted
+  them all as the new species, which could leave the colony finding only its old species' items for hours.
+- **A founding Queen fed with small foods starts her colony.** Food that comes 30 at a time stopped short of a full bar,
+  so she waited for ever; the last item now tops the bar up.
+- **Food is kept when a Storage is unloaded.** A Storage in an unloaded chunk shrank the colony's food room and the food
+  over it was deleted; now it is kept and eaten down.
+- **Coming back to a colony.** The catch-up after loading now knows the floor's climate, and runs over a few ticks
+  instead of all at once, so a big colony with Simulation Upgrades no longer freezes the server.
+- **Brood is safe from other species.** Ants of another species put into a Formicarium that holds only eggs or larvae
+  used to wipe them; now they wait until the brood is gone.
+- **Upgrade Station.** It could give a species upgrade without using anything up when an input was taken out while the
+  screen was open (by another player or a hopper).
+- **Ants caught from a home nest.** Catching them with Tweezers left the nest empty for good; now it raises new ones,
+  and what the ant carried drops.
+- **Shift-clicking.** Empty Test Tubes no longer go into the Queen slot (which took the Queen out), tubes go to the
+  Genetic Laboratory's catalyst slot, and Upgrade Bases to the Upgrade Station's base slot.
+- **Automation.** Hoppers and Storage Automation only put things the Formicarium's feed slot can use into it, so junk
+  can't block it, and a full Storage gives a full comparator signal.
+- **Jobs page buttons always act on the site in their row**, even if priorities just changed the order.
+- **JEI and EMI show species with many finds.** Outputs past the last row used to spill over the text; JEI now cycles
+  them in the last slot and EMI makes the entry taller.
+- **Smaller fixes.** Production page tooltips for Liquid Ant colonies, the book and Info page no longer scroll past
+  the end, the Network page forgets channels a colony left, and the contested-chamber mark goes as soon as it is over.
+  Animations stay smooth on old worlds, the Formicarium's surface decor stays the same between sessions, a world's
+  memory is freed after leaving it, and ants hatched from Larva Clusters chase intruders as far as other anthill ants.
+- **The Queen walks in her Formicarium.** She used to slide to and fro with her legs still; now she walks a few steps
+  with her legs stepping, rests (laying), and walks on, in flat and upright Formicariums alike.
+
 ## [0.3.0] - 2026-11-14
 
 The Liquid Ants update.
@@ -218,8 +284,8 @@ The first release, for Minecraft 26.3 and NeoForge 26.3.0.101 (Java 25).
   and KubeJS guide.
 - Tested together with MachinaOpus and its Tools Addon: no clashing recipes or names.
 
-[Unreleased]: https://github.com/Kamikadzegga/AntColonies/compare/v0.2.0...HEAD
-[0.3.0]: https://github.com/Kamikadzegga/AntColonies/compare/v0.2.0...main
+[0.4.0]: https://github.com/Kamikadzegga/AntColonies/compare/65d2387...main
+[0.3.0]: https://github.com/Kamikadzegga/AntColonies/compare/v0.2.0...65d2387
 [0.2.0]: https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.2.0
 [0.1.0]: https://github.com/Kamikadzegga/AntColonies/commit/340502d
 [0.0.2]: https://github.com/Kamikadzegga/AntColonies/commit/541da99

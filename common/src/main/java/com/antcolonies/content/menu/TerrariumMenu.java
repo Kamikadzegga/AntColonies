@@ -42,6 +42,15 @@ public class TerrariumMenu extends BaseMenu {
         addPlayerInventory(inventory, INVENTORY_X, INVENTORY_Y);
     }
 
+    /**
+     * An empty Test Tube in the Queen slot takes the Queen out: only ever on purpose, by hand. Shift-clicked tubes go to
+     * the feed slot.
+     */
+    @Override
+    protected boolean quickMovesInto(int slot, ItemStack stack) {
+        return !(slot == 0 && stack.is(ModItems.TEST_TUBE.get()));
+    }
+
     public static TerrariumMenu fromNetwork(int containerId, Inventory inventory, RegistryFriendlyByteBuf buffer) {
         BlockPos pos = buffer.readBlockPos();
         if (inventory.player.level().getBlockEntity(pos) instanceof TerrariumBlockEntity terrarium) {
@@ -71,7 +80,7 @@ public class TerrariumMenu extends BaseMenu {
                 }
                 int index = (id - BUTTON_ASSIGNMENT) / 20;
                 int action = (id - BUTTON_ASSIGNMENT) % 20;
-                List<Colony.Assignment> assignments = colony.assignments();
+                List<Colony.Assignment> assignments = terrarium.sentAssignments();
                 if (index >= assignments.size()) {
                     return false;
                 }

@@ -96,7 +96,95 @@ final class UpdateGameTests {
             test("chitin_only_from_ants", UpdateGameTests::chitinOnlyFromAnts),
             test("queen_grows_with_colony", UpdateGameTests::queenGrowsWithColony),
             test("food_slot", UpdateGameTests::foodSlot),
-            test("production_log_keeps_half_an_hour", UpdateGameTests::productionLogKeepsHalfAnHour));
+            test("production_log_keeps_half_an_hour", UpdateGameTests::productionLogKeepsHalfAnHour),
+            test("nest_tunnels_always_join", UpdateGameTests::nestTunnelsAlwaysJoin),
+            test("colony_stands_upright_when_stacked", UpdateGameTests::colonyStandsUprightWhenStacked));
+
+    /**
+     * A colony is upright or flat as a whole, by how its blocks are placed: stacked blocks (another block of the colony
+     * right over or under them) against flat ones. More stacked: every block is an upright nest, those on the ground
+     * too. More flat: every block is a glass case, the stacked ones too. As many of each: it stays as it was.
+     */
+    private static void colonyStandsUprightWhenStacked(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = new BlockPos(22, 1, 22);
+        TerrariumBlockEntity terrarium = AntColoniesGameTests.terrarium(helper, base, AntColonies.id("common"), 100, 0, 500);
+        java.util.List<BlockPos> parts = new java.util.ArrayList<>(java.util.List.of(base));
+        java.util.function.BiConsumer<Boolean, String> expect = (upright, when) -> {
+            terrarium.rescan(level);
+            for (BlockPos part : parts) {
+                helper.assertTrue(helper.getBlockState(part).getValue(com.antcolonies.content.block.ColonyPartBlock.UPRIGHT) == upright,
+                        when + ": the block at " + part + " should be " + (upright ? "an upright nest" : "a glass case"));
+            }
+        };
+        expect.accept(false, "A Formicarium alone");
+        AntColoniesGameTests.structure(helper, base.above(), StructureKind.NEST_CHAMBER);
+        parts.add(base.above());
+        expect.accept(true, "A chamber on top of it");
+        AntColoniesGameTests.structure(helper, base.east(), StructureKind.FORAGING_SITE);
+        parts.add(base.east());
+        expect.accept(true, "Two stacked, one on the ground beside");
+        AntColoniesGameTests.structure(helper, base.west(), StructureKind.STORAGE);
+        parts.add(base.west());
+        expect.accept(true, "Two stacked, two on the ground: it stays upright");
+        AntColoniesGameTests.structure(helper, base.north(), StructureKind.HARVESTING_SITE);
+        parts.add(base.north());
+        expect.accept(false, "Two stacked, three on the ground");
+        helper.setBlock(base.north(), Blocks.AIR);
+        parts.remove(base.north());
+        expect.accept(false, "Two stacked, two on the ground again: it stays flat");
+        helper.setBlock(base.west(), Blocks.AIR);
+        parts.remove(base.west());
+        expect.accept(true, "Two stacked, one on the ground again");
+        helper.succeed();
+    }
+
+    /**
+     * The nest drawn behind a colony block's glass (client NestLayout, plain Java): every kind of chamber has a layout,
+     * and whatever the seed, the colony's stage and the sides it touches other blocks on, a tunnel is dug from every such
+     * side to the chamber, the block has its burrow (or portal, or shaft), and every node of the ants' paths can be
+     * walked to. Two blocks ask for the same crossing of their shared side.
+     */
+    private static void nestTunnelsAlwaysJoin(GameTestHelper helper) {
+        var random = new java.util.Random(7);
+        for (var structure : com.antcolonies.colony.model.StructureKind.values()) {
+            helper.assertTrue(java.util.Arrays.stream(com.antcolonies.client.nest.NestLayout.Kind.values())
+                    .anyMatch(kind -> kind.name().equals(structure.name())), structure + " needs a row in NestLayout.Kind");
+        }
+        for (var kind : com.antcolonies.client.nest.NestLayout.Kind.values()) {
+            for (int i = 0; i < 300; i++) {
+                int[] gates = new int[4];
+                for (int side = 0; side < 4; side++) {
+                    gates[side] = random.nextInt(3) == 0 ? -1 : com.antcolonies.client.nest.NestLayout.GATE_MIN
+                            + random.nextInt(com.antcolonies.client.nest.NestLayout.GATE_SPAN);
+                }
+                var layout = com.antcolonies.client.nest.NestLayout.create(kind, random.nextLong(), gates, 1 + random.nextInt(4));
+                String what = kind + " with crossings " + java.util.Arrays.toString(gates);
+                int main = layout.find(com.antcolonies.client.nest.NestLayout.Spot.MAIN);
+                helper.assertTrue(main >= 0 && layout.find(com.antcolonies.client.nest.NestLayout.Spot.SOURCE) >= 0, what + ": a chamber and a burrow");
+                int[] distance = layout.distances(main);
+                for (int node = 0; node < layout.nodes.size(); node++) {
+                    helper.assertTrue(distance[node] < 100, what + ": node " + node + " can't be walked to");
+                }
+                for (int side = 0; side < 4; side++) {
+                    if (gates[side] < 0) {
+                        continue;
+                    }
+                    boolean carved = switch (side) {
+                        case com.antcolonies.client.nest.NestLayout.LEFT -> layout.carved(0, gates[side]);
+                        case com.antcolonies.client.nest.NestLayout.RIGHT -> layout.carved(15, gates[side]);
+                        case com.antcolonies.client.nest.NestLayout.UP -> layout.carved(gates[side], 15);
+                        default -> layout.carved(gates[side], 0);
+                    };
+                    helper.assertTrue(carved && layout.gate(side) >= 0, what + ": no tunnel to side " + side);
+                }
+            }
+        }
+        long lower = new BlockPos(12, 64, -7).asLong();
+        helper.assertTrue(com.antcolonies.client.nest.NestLayout.crossing(lower, 0) == com.antcolonies.client.nest.NestLayout.crossing(lower, 0)
+                && com.antcolonies.client.nest.NestLayout.crossing(lower, 0) < com.antcolonies.client.nest.NestLayout.GATE_SPAN, "a crossing is a fixed cell of the side");
+        helper.succeed();
+    }
 
     /**
      * The Production page's memory: what a colony's ants bring in is counted per item for the last 30 minutes, averaged

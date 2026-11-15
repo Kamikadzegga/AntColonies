@@ -36,8 +36,10 @@ final class FoodIntake {
     static Result take(ColonySimulator.Step step, double capacity) {
         Colony colony = step.colony;
         double specialRoom = capacity / 4;
-        double food = Math.min(ColonyAccess.food(colony), capacity);
-        double special = Math.min(ColonyAccess.specialFood(colony), specialRoom);
+        // Food over the room (a Storage in an unloaded chunk shrank it for now) is kept, not thrown away: nothing more is eaten
+        // until it is back under.
+        double food = ColonyAccess.food(colony);
+        double special = ColonyAccess.specialFood(colony);
         double eaten = 0;
         double specialEaten = 0;
         if (AntConfig.get(AntConfig.STORAGE_FEEDING)) {
@@ -66,10 +68,10 @@ final class FoodIntake {
                         continue;
                     }
                     stack.shrink(count);
-                    food = Math.min(capacity, food + count * value.food());
+                    food = Math.max(food, Math.min(capacity, food + count * value.food()));
                     eaten += count * value.food();
                     if (isSpecial) {
-                        special = Math.min(specialRoom, special + count * value.special());
+                        special = Math.max(special, Math.min(specialRoom, special + count * value.special()));
                         specialEaten += count * value.special();
                     }
                     changed = true;

@@ -396,8 +396,8 @@ final class AnthillGameTests {
         working.setItem(com.antcolonies.content.blockentity.TerrariumBlockEntity.SLOT_FEED, item.copy());
         working.processSlots(level);
         helper.assertTrue(working.getItem(com.antcolonies.content.blockentity.TerrariumBlockEntity.SLOT_FEED).isEmpty()
-                && working.colony().eggs() - eggsBefore == 2 * com.antcolonies.content.blockentity.TerrariumBlockEntity.CLUSTER_BROOD,
-                "A working colony of its species takes 2 clusters as " + 2 * com.antcolonies.content.blockentity.TerrariumBlockEntity.CLUSTER_BROOD
+                && working.colony().eggs() - eggsBefore == 2 * com.antcolonies.content.blockentity.TerrariumBlockEntity.clusterBrood(),
+                "A working colony of its species takes 2 clusters as " + 2 * com.antcolonies.content.blockentity.TerrariumBlockEntity.clusterBrood()
                         + " eggs: " + (working.colony().eggs() - eggsBefore));
         helper.succeed();
     }

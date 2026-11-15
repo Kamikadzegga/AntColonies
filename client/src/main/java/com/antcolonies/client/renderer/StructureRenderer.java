@@ -43,8 +43,8 @@ import org.jspecify.annotations.Nullable;
  */
 public class StructureRenderer implements BlockEntityRenderer<StructureBlockEntity, StructureRenderer.State> {
     private static final float LENGTH = 3.2F / 16;
-    /** Height of every chamber's floor inside its glass, in pixels (DataGen.FLOOR). */
-    public static final float FLOOR = 4;
+    /** Height of every chamber's floor inside its glass, in pixels: the colony's one ground height (DataGen.FLOOR). */
+    public static final float FLOOR = FlatGround.GROUND;
     private final AntDrawer drawer;
     private final AntPose pose = new AntPose();
     private final ItemModelResolver items;
@@ -61,7 +61,21 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         int carry;
         final List<ItemStackRenderState> heap = new ArrayList<>();
         final List<Integer> heapCounts = new ArrayList<>();
+        /** In a stack: drawn as an upright nest, from {@link #nest}. */
+        boolean upright;
+        final NestRenderer.State nest = new NestRenderer.State();
+        /** On the ground: the colony's soil under the chamber, run on into the blocks it joins (FlatGround). */
+        final FlatGround.Shape shape = new FlatGround.Shape();
+        final boolean[] facing = new boolean[4];
+        int soil = FlatGround.soilColor(com.antcolonies.colony.species.Climate.TEMPERATE);
+        int top = FlatGround.topColor(com.antcolonies.colony.species.Climate.TEMPERATE);
+        /** Ants walking the tunnels behind the glass: the chamber belongs to a colony with ants. */
+        boolean wallAnts;
+        AntLook wallLook = AntLook.UNKNOWN;
     }
+
+    /** A stacked Storage's shelves hold this many kinds of item. */
+    private static final int SHELF_ITEMS = 6;
 
     public StructureRenderer(BlockEntityRendererProvider.Context context) {
         this.drawer = new AntDrawer(context.entityModelSet());
@@ -77,13 +91,30 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
     public void extractRenderState(StructureBlockEntity structure, State state, float partialTicks, Vec3 camera,
                                    ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(structure, state, partialTicks, camera, breakProgress);
+        state.upright = com.antcolonies.content.block.ColonyPartBlock.upright(structure.getBlockState());
+        if (state.upright) {
+            extractNest(structure, state.nest, partialTicks, camera);
+            return;
+        }
         state.kind = structure.kind();
-        state.time = structure.getLevel() == null ? 0 : structure.getLevel().getGameTime() + partialTicks;
+        state.time = structure.getLevel() == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(structure.getLevel().getGameTime(), partialTicks);
         state.seed = structure.getBlockPos().asLong();
         double distance = AntConfig.client(AntConfig.VISUAL_DISTANCE);
         state.near = Vec3.atCenterOf(structure.getBlockPos()).distanceToSqr(camera) < distance * distance;
         state.ants = 0;
         state.soldiers = 0;
+        // The ground: the colony's soil in its climate's colours (the Formicarium's), its shape from the blocks around.
+        if (structure.getLevel() != null) {
+            FlatGround.extract(state.shape, structure.getLevel(), structure.getBlockPos(), structure.getBlockState());
+        }
+        FlatGround.facing(state.facing, (camera.x - structure.getBlockPos().getX()) * 16, (camera.z - structure.getBlockPos().getZ()) * 16);
+        var colony = structure.clientLinked() ? com.antcolonies.client.ClientHooks.colonyOf(structure) : null;
+        AntSpecies colonySpecies = colony == null ? null : ClientSpecies.get(colony.species());
+        com.antcolonies.colony.species.Climate climate = colonySpecies == null ? com.antcolonies.colony.species.Climate.TEMPERATE : colonySpecies.climate();
+        state.soil = FlatGround.soilColor(climate);
+        state.top = FlatGround.topColor(climate);
+        state.wallAnts = state.near && colony != null && colony.adults() > 0 && AntConfig.client(AntConfig.STRUCTURE_ANTS);
+        state.wallLook = colonySpecies == null ? AntLook.UNKNOWN : colonySpecies.look();
         // The working ants are 3D models, so (like the Terrarium's surface ants) only up close and with 3D ants on: further
         // away they would be a pixel or two, and a ring of busy chambers costs a lot of models.
         double detail = AntConfig.client(AntConfig.ANT_DETAIL_DISTANCE);
@@ -140,6 +171,11 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
+        if (state.upright) {
+            NestRenderer.submit(state.nest, poseStack, collector);
+            return;
+        }
+        drawGround(state, poseStack, collector);
         if (!state.near) {
             return;
         }
@@ -194,6 +230,83 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         }
     }
 
+    /**
+     * The chamber's soil, at the colony's one ground height: its walls behind the outer glass with tunnels running on
+     * into the next blocks', its surface with the trails to its neighbours, and (up close) ants walking the tunnels.
+     */
+    private static void drawGround(State state, PoseStack poseStack, SubmitNodeCollector collector) {
+        FlatGround.Shape shape = state.shape;
+        @SuppressWarnings("unchecked")
+        List<float[][]>[] paths = new List[4];
+        @SuppressWarnings("unchecked")
+        List<float[]>[] hollows = new List[4];
+        for (int side = 0; side < 4; side++) {
+            hollows[side] = new ArrayList<>();
+            paths[side] = shape.outer(side) && state.facing[side] ? FlatGround.chamberPaths(shape, side, hollows[side]) : List.of();
+        }
+        int light = state.lightCoords;
+        collector.submitCustomGeometry(poseStack, FlatGround.SOLID, (pose, buffer) -> {
+            Geometry g = new Geometry(pose, buffer, FlatGround.TEX, light);
+            FlatGround.soil(g, shape, state.soil, state.top, state.facing);
+            int dark = Geometry.shade(state.soil, 0.42F);
+            for (int side = 0; side < 4; side++) {
+                if (!paths[side].isEmpty() || !hollows[side].isEmpty()) {
+                    FlatGround.tunnels(g, side, shape, paths[side], hollows[side], dark);
+                }
+            }
+            FlatGround.trails(g, shape, FlatGround.trailColor(state.soil, state.top));
+        });
+        if (state.wallAnts) {
+            collector.submitCustomGeometry(poseStack, TerrariumRenderer.SIDE, (pose, buffer) -> {
+                Geometry g = new Geometry(pose, buffer, FlatGround.TEX, light);
+                for (int side = 0; side < 4; side++) {
+                    FlatGround.walkers(g, side, paths[side], state.wallLook, state.time, shape.seed, 0xFFD9B26A);
+                }
+            });
+        }
+    }
+
+    /** A chamber in a stack: its own chamber in the upright nest, the ants at work there, the Storage's items on its shelves. */
+    private void extractNest(StructureBlockEntity structure, NestRenderer.State nest, float partialTicks, Vec3 camera) {
+        var block = structure.getBlockState();
+        NestRenderer.extract(nest, structure.getBlockPos(), structure.getLevel(), block.getValue(com.antcolonies.content.block.ColonyEntityBlock.FACING), camera,
+                partialTicks, AntConfig.client(AntConfig.VISUAL_DISTANCE));
+        nest.visuals = structure.clientVisuals instanceof com.antcolonies.client.nest.NestVisuals visuals ? visuals : null;
+        nest.layout = nest.visuals == null ? null : nest.visuals.layout;
+        var colony = com.antcolonies.client.ClientHooks.colonyOf(structure);
+        AntSpecies species = colony == null ? null : ClientSpecies.get(colony.species());
+        AntSpecies former = colony == null ? null : ClientSpecies.get(colony.formerSpecies());
+        nest.climate = species == null ? com.antcolonies.colony.species.Climate.TEMPERATE : species.climate();
+        nest.look = species == null ? AntLook.UNKNOWN : species.look();
+        nest.former = former == null ? nest.look : former.look();
+        nest.queen = false;
+        nest.stage = 1;
+        nest.linked = structure.clientLinked();
+        nest.lit = block.hasProperty(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE) && block.getValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE);
+        nest.shown = nest.linked && structure.kind().job().any() && structure.assigned() > 0
+                ? (int) Math.min(6, 1 + Math.floor(Math.log(structure.assigned()) / Math.log(2.5))) : 0;
+        nest.items.clear();
+        if (structure.kind() == StructureKind.STORAGE && nest.near && nest.front) {
+            Map<Item, Integer> totals = new HashMap<>();
+            Map<Item, ItemStack> samples = new HashMap<>();
+            for (int slot = 0; slot < structure.getContainerSize(); slot++) {
+                ItemStack stack = structure.getItem(slot);
+                if (!stack.isEmpty()) {
+                    totals.merge(stack.getItem(), stack.getCount(), Integer::sum);
+                    samples.putIfAbsent(stack.getItem(), stack);
+                }
+            }
+            List<Map.Entry<Item, Integer>> sorted = new ArrayList<>(totals.entrySet());
+            sorted.sort(Map.Entry.<Item, Integer>comparingByValue(Comparator.reverseOrder()));
+            int seed = (int) structure.getBlockPos().asLong();
+            for (int i = 0; i < Math.min(SHELF_ITEMS, sorted.size()); i++) {
+                ItemStackRenderState item = new ItemStackRenderState();
+                items.updateForTopItem(item, samples.get(sorted.get(i).getKey()), ItemDisplayContext.FIXED, structure.getLevel(), null, seed + i);
+                nest.items.add(item);
+            }
+        }
+    }
+
     /** The most plentiful items, laid in a heap over the pile's crate; the more of one, the higher its stack. */
     private static void drawHeap(State state, PoseStack poseStack, SubmitNodeCollector collector) {
         float[][] spots = {{8, 8}, {5, 5}, {11, 5}, {5, 11}, {11, 11}};
@@ -202,13 +315,19 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             int layers = Math.min(4, 1 + state.heapCounts.get(i) / 48);
             for (int layer = 0; layer < layers; layer++) {
                 poseStack.pushPose();
-                poseStack.translate(spots[i][0] / 16, (FLOOR + 0.2F + layer * 0.9F + (i == 0 ? 0.8F : 0)) / 16, spots[i][1] / 16);
+                poseStack.translate(spots[i][0] / 16, (FLOOR + 1.1F + layer * 0.5F + (i == 0 ? 0.4F : 0)) / 16, spots[i][1] / 16);
                 poseStack.rotate(Axis.YP.rotationDegrees((i * 67 + layer * 41) % 360));
                 poseStack.rotate(Axis.XP.rotationDegrees(90));
-                poseStack.scale(0.42F, 0.42F, 0.42F);
+                // About 4 px across: a load the ants could carry in, not a block-sized item (the user, 2026-11-14: "too big").
+                poseStack.scale(0.24F, 0.24F, 0.24F);
                 item.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
                 poseStack.popPose();
             }
         }
+    }
+
+    @Override
+    public int getViewDistance() {
+        return 64;
     }
 }

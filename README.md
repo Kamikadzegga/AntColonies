@@ -4,7 +4,7 @@
 
 **Build a civilization, one ant at a time.**
 
-A NeoForge mod for Minecraft 26.3: catch wild ants, raise Queens in living Terrariums, put thousands of workers and
+A NeoForge mod for Minecraft 26.3: catch wild ants, raise Queens in living Formicariums, put thousands of workers and
 hunters to work, evolve mineral species and engineer their genes.
 
 [![Minecraft 26.3](https://img.shields.io/badge/Minecraft-26.3-62B47A?style=flat-square)](https://www.minecraft.net)
@@ -18,16 +18,16 @@ hunters to work, evolve mineral species and engineer their genes.
 
 </div>
 
-![A stage 4 Diamond Ant colony: a Terrarium and its chambers, joined into one build](docs/images/screenshots/overview.png)
+![A stage 4 Diamond Ant colony: a Formicarium and its chambers, joined into one build](docs/images/screenshots/overview.png)
 
 ## Features
 
-- **Living colonies.** A Terrarium holds a whole colony: Queen, eggs, larvae, workers, food and health. You
+- **Living colonies.** A Formicarium holds a whole colony: Queen, eggs, larvae, workers, food and health. You
   can watch the ants dig tunnels, carry food and work in the chambers. The simulation is plain numbers on the server,
   so even a colony of thousands costs almost nothing.
-- **One build that grows.** A Terrarium works on its own. Chambers placed against it join the colony and merge into one
+- **One build that grows.** A Formicarium works on its own. Chambers placed against it join the colony and merge into one
   glass case: Nest Chambers for a bigger colony, Foraging Sites where workers find resources, Hunting Grounds where
-  hunter species kill mobs for their drops and feed on them (no mob is ever spawned), Harvesting Sites for farmers, Storage and Queen Chambers. A block under the Terrarium
+  hunter species kill mobs for their drops and feed on them (no mob is ever spawned), Harvesting Sites for farmers, Storage and Queen Chambers. A block under the Formicarium
   sets its climate.
 - **Liquid Ants.** Water Ants and Lava Ants hang at a Liquid Chamber with crops full of their fluid and give droplets
   of it; a Droplet Centrifuge spins the droplets into the real fluid for FE, into buckets, tanks and pipes. With
@@ -44,9 +44,9 @@ hunters to work, evolve mineral species and engineer their genes.
   after some time at each bigger stage, two of her traits go up. There are 31 mutations, including
   flaws. The FE-powered **Genetic Laboratory** upgrades traits, rerolls, mutates and purges Queens and copies their
   genes.
-- **Founding and food.** Start a colony from a single Queen in an empty Terrarium: fill her food bar and she raises her
+- **Founding and food.** Start a colony from a single Queen in an empty Formicarium: fill her food bar and she raises her
   first workers. Food keeps a colony working: running low slows it, and Farmer colonies can feed the others. Food has
-  its own slot in the Terrarium.
+  its own slot in the Formicarium.
 - **Expeditions.** Nether- and End-adapted ants go on simulated expeditions from home, through the little portals of the
   Nether and End Foraging Sites, built from the trail pheromones a colony living in that dimension finds.
 - **Colony Connectors.** A mid-game (Nether) chamber: link colonies on a channel, and food flows from colonies with food
@@ -66,7 +66,7 @@ hunters to work, evolve mineral species and engineer their genes.
 - **Built for automation and modpacks.** Comparator outputs and redstone control. Items and FE move through any mod's
   pipes and cables. Species, evolutions, hybrids, mutations, lab costs, ant food and loot are all data packs, and a
   server config sets every number.
-- **Explained in game.** The Terrarium's Info page shows what its ants find and hunt, the climate they need (and the
+- **Explained in game.** The Formicarium's Info page shows what its ants find and hunt, the climate they need (and the
   block that fixes it) and what they evolve into. Tube tooltips and the Ant Identification Book say the same, and the
   book has how-to-play pages.
 - **Integrations.** JEI and EMI recipe categories for the whole progression, Jade tooltips (colonies, wild ants and
@@ -78,8 +78,8 @@ hunters to work, evolve mineral species and engineer their genes.
 
 | | |
 |:---:|:---:|
-| ![Terrarium](docs/images/screenshots/terrarium.png) | ![Colony screen](docs/images/screenshots/colony-screen.png) |
-| A living Terrarium | The colony screen |
+| ![Formicarium](docs/images/screenshots/terrarium.png) | ![Colony screen](docs/images/screenshots/colony-screen.png) |
+| A living Formicarium | The colony screen |
 | ![Jobs](docs/images/screenshots/jobs-screen.png) | ![Statistics](docs/images/screenshots/statistics-screen.png) |
 | Jobs: ants, priority and modes per site | Statistics: the colony over the last half hour |
 | ![Generator and Genetic Laboratory](docs/images/screenshots/machines.png) | ![Genetic Laboratory](docs/images/screenshots/genetic-laboratory.png) |
@@ -95,7 +95,7 @@ hunters to work, evolve mineral species and engineer their genes.
 | ![Ant Identification Book](docs/images/screenshots/identification-book.png) | ![Recipe viewer](docs/images/screenshots/recipe-viewer.png) |
 | The Ant Identification Book: how to play, and every species | Expeditions and the whole progression in JEI and EMI |
 | ![Jade tooltip](docs/images/screenshots/jade.png) | |
-| A Terrarium at a glance with Jade | |
+| A Formicarium at a glance with Jade | |
 
 ## Versions
 
@@ -118,9 +118,9 @@ Each Minecraft version has its own branch. You are reading the **26.3** branch.
 |---|---|
 | [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) 31.17+ | 13 recipe categories: species, evolutions, hybrids, production, the laboratory and more |
 | [EMI](https://modrinth.com/mod/pf-emi) (the 26.3 port, PF-EMI 1.1) | The same 13 categories in EMI |
-| [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) 26.3.5+ | Look at a Terrarium, job site or machine for its state |
+| [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) 26.3.5+ | Look at a Formicarium, job site or machine for its state |
 
-To start, craft **Tweezers** and **Test Tubes**, catch a wild Queen, and put her in a **Terrarium** with some ant food.
+To start, craft **Tweezers** and **Test Tubes**, catch a wild Queen, and put her in a **Formicarium** with some ant food.
 The [gameplay guide](docs/gameplay.md#getting-started) takes it from there.
 
 ## Documentation

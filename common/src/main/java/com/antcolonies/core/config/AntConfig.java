@@ -36,6 +36,8 @@ public final class AntConfig {
     public static final ModConfigSpec.DoubleValue MAINTENANCE_FRACTION;
     public static final ModConfigSpec.DoubleValue ADULT_LIFESPAN_MINUTES;
     public static final ModConfigSpec.ConfigValue<List<? extends Integer>> STAGE_POPULATIONS;
+    public static final ModConfigSpec.IntValue CLUSTER_BROOD;
+    public static final ModConfigSpec.IntValue TWEEZERS_ANTS;
 
     // --- Food ---
     public static final ModConfigSpec.DoubleValue QUEEN_FOOD;
@@ -93,6 +95,8 @@ public final class AntConfig {
     public static final ModConfigSpec.DoubleValue TRAIT_MAX_MULTIPLIER;
     public static final ModConfigSpec.IntValue MAX_TRAIT_LEVEL;
     public static final ModConfigSpec.DoubleValue QUEEN_GROWTH_MINUTES;
+    public static final ModConfigSpec.IntValue QUEEN_GROWTH_CAP;
+    public static final ModConfigSpec.IntValue QUEEN_GROWTH_TRAITS;
     public static final ModConfigSpec.ConfigValue<List<? extends Integer>> STARTING_LEVEL_WEIGHTS;
     public static final ModConfigSpec.DoubleValue INHERITANCE_VARIATION;
     public static final ModConfigSpec.DoubleValue BASE_MUTATION_CHANCE;
@@ -115,6 +119,11 @@ public final class AntConfig {
     public static final ModConfigSpec.IntValue ANTHILL_ALARM_SECONDS;
     public static final ModConfigSpec.DoubleValue BROOD_CLUSTER_MINUTES;
     public static final ModConfigSpec.IntValue ANTHILL_MAX_ANTS;
+    public static final ModConfigSpec.IntValue ANTHILL_CROWD_RANGE;
+    public static final ModConfigSpec.DoubleValue ROYAL_GUARD_REACH;
+    public static final ModConfigSpec.DoubleValue ROYAL_GUARD_LEASH;
+    public static final ModConfigSpec.IntValue HOME_NEST_ANTS;
+    public static final ModConfigSpec.DoubleValue HOME_NEST_REFILL_MINUTES;
 
     // --- Guard Ants ---
     public static final ModConfigSpec.IntValue GUARD_COST;
@@ -122,6 +131,9 @@ public final class AntConfig {
     // --- Connections ---
     public static final ModConfigSpec.IntValue GENERATOR_OUTPUT;
     public static final ModConfigSpec.IntValue GENERATOR_PUSH;
+    public static final ModConfigSpec.IntValue GENERATOR_CAPACITY;
+    public static final ModConfigSpec.IntValue LAB_ENERGY;
+    public static final ModConfigSpec.IntValue LAB_ENERGY_INPUT;
     public static final ModConfigSpec.IntValue CENTRIFUGE_ENERGY;
     public static final ModConfigSpec.IntValue CENTRIFUGE_TANK;
     public static final ModConfigSpec.IntValue CENTRIFUGE_PUSH;
@@ -143,22 +155,22 @@ public final class AntConfig {
         s.push("simulation");
         SIMULATION_INTERVAL = s.comment("Ticks between colony simulation steps. Larger steps cost less and give the same totals.")
                 .defineInRange("interval", 20, 5, 200);
-        OFFLINE_CATCH_UP_MINUTES = s.comment("Minutes of simulation a colony catches up on when its Terrarium loads again after being unloaded.",
+        OFFLINE_CATCH_UP_MINUTES = s.comment("Minutes of simulation a colony catches up on when its Formicarium loads again after being unloaded.",
                         "Production never runs while unloaded; this is the most it can make up afterwards (0 = none).")
                 .defineInRange("offlineCatchUpMinutes", 5, 0, 1440);
-        SIMULATION_UPGRADE_MINUTES = s.comment("Extra catch-up minutes from a Simulation Upgrade of tier 1, 2 and 3.")
+        SIMULATION_UPGRADE_MINUTES = s.comment("Extra catch-up minutes from a Simulation Upgrade of tier 1, 2, 3 and 4.")
                 .defineList("simulationUpgradeMinutes", List.of(15, 60, 240, 720), () -> 15, o -> o instanceof Integer i && i >= 0);
         MAX_COLONY_POPULATION = s.comment("Hard cap on the adults of one colony, whatever its housing.")
                 .defineInRange("maxColonyPopulation", 1_000_000L, 100L, 100_000_000L);
-        MAX_CHAMBERS = s.comment("Most chambers one colony takes. Touching chambers beyond it (the furthest from the Terrarium) don't join.")
+        MAX_CHAMBERS = s.comment("Most chambers one colony takes. Touching chambers beyond it (the furthest from the Formicarium) don't join.")
                 .defineInRange("maxChambers", 32, 1, 512);
         s.pop();
 
         s.push("population");
-        TERRARIUM_CAPACITY = s.comment("Adults a Terrarium houses on its own.").defineInRange("terrariumCapacity", 60, 1, 100000);
+        TERRARIUM_CAPACITY = s.comment("Adults a Formicarium houses on its own.").defineInRange("terrariumCapacity", 60, 1, 100000);
         NEST_ADULT_CAPACITY = s.comment("Adults each Nest Chamber adds (plus half as many again per Population Upgrade tier).")
                 .defineInRange("nestChamberAdults", 3000, 1, 1000000);
-        NEST_LARVAE_CAPACITY = s.comment("Larvae each Nest Chamber holds on top of the Terrarium's own room.")
+        NEST_LARVAE_CAPACITY = s.comment("Larvae each Nest Chamber holds on top of the Formicarium's own room.")
                 .defineInRange("nestChamberLarvae", 1500, 1, 1000000);
         NEST_GROWTH_BONUS = s.comment("Larvae growth speed added by each Nest Chamber (diminishing).").defineInRange("nestGrowthBonus", 0.5, 0, 10);
         BASE_EGGS_PER_MINUTE = s.comment("Eggs a Queen with average genetics lays per minute with one Nest Chamber.")
@@ -177,6 +189,10 @@ public final class AntConfig {
         STAGE_POPULATIONS = s.comment("Adults a colony needs for stages 2, 3 and 4 (stage 4 also needs a mineral or better species,",
                         "or average genetics of 5 or more).")
                 .defineList("stagePopulations", List.of(100, 1000, 5000), () -> 100, o -> o instanceof Integer i && i >= 0);
+        CLUSTER_BROOD = s.comment("Eggs (Ant Egg Cluster) or larvae (Larva Cluster) one brood cluster from an anthill gives a colony of its species.")
+                .defineInRange("clusterBrood", 3, 1, 10000);
+        TWEEZERS_ANTS = s.comment("Workers Tweezers take from a colony into a Test Tube in one use (a tube holds up to 1000).")
+                .defineInRange("tweezersAnts", 16, 1, 1000);
         s.pop();
 
         s.push("food");
@@ -186,7 +202,7 @@ public final class AntConfig {
         HUNT_FOOD = s.comment("Food a colony gets from each mob its hunters catch (they feed on it).").defineInRange("huntFood", 40.0, 0, 100000);
         LARVA_FOOD = s.comment("Food a larva eats per minute.").defineInRange("larva", 0.015, 0, 100);
         IDLE_ACTIVITY = s.comment("How much an ant without a job eats, compared to a busy one.").defineInRange("idleActivity", 0.5, 0, 1);
-        TERRARIUM_FOOD_CAPACITY = s.comment("Food a Terrarium stores on its own.").defineInRange("terrariumFoodCapacity", 2000, 1, Integer.MAX_VALUE);
+        TERRARIUM_FOOD_CAPACITY = s.comment("Food a Formicarium stores on its own.").defineInRange("terrariumFoodCapacity", 2000, 1, Integer.MAX_VALUE);
         STORAGE_FOOD_CAPACITY = s.comment("Food room each Storage adds (more with Storage Upgrades).").defineInRange("storageFoodCapacity", 25000, 1, Integer.MAX_VALUE);
         STARVATION_GRACE_MINUTES = s.comment("Minutes without food before the population starts to die.").defineInRange("starvationGraceMinutes", 3.0, 0, 1000);
         STARVATION_DECLINE = s.comment("Share of the population lost per minute of starvation after the grace period.")
@@ -207,7 +223,7 @@ public final class AntConfig {
         s.pop();
 
         s.push("founding");
-        FOUNDING_FOOD_SHARE = s.comment("Queen-only founding (a single Queen put into a completely empty Terrarium): the share of the Terrarium's own",
+        FOUNDING_FOOD_SHARE = s.comment("Queen-only founding (a single Queen put into a completely empty Formicarium): the share of the Formicarium's own",
                         "food room (terrariumFoodCapacity) the player must fill before the Queen lays her first eggs. 1 = a full food bar.",
                         "Colonies started or moved with workers, eggs or larvae never need this.")
                 .defineInRange("foundingFoodShare", 1.0, 0.0, 1.0);
@@ -282,6 +298,10 @@ public final class AntConfig {
         QUEEN_GROWTH_MINUTES = s.comment("A Queen grows with her colony: minutes her colony must spend at a bigger stage before she grows into it,",
                         "times the step (stage 2 takes this, stage 3 twice this, stage 4 three times). Each new stage raises two of her traits.")
                 .defineInRange("queenGrowthMinutes", 10.0, 0, 10000);
+        QUEEN_GROWTH_CAP = s.comment("Highest level growing can raise a Queen's trait to (the Genetic Laboratory can go further, up to maxTraitLevel).")
+                .defineInRange("queenGrowthCap", 7, 1, 10);
+        QUEEN_GROWTH_TRAITS = s.comment("Traits that go up by one each time a Queen grows into a bigger stage.")
+                .defineInRange("queenGrowthTraits", 2, 0, 10);
         STARTING_LEVEL_WEIGHTS = s.comment("Weights of starting trait levels 1 to 10 for a new wild Queen.")
                 .defineList("startingLevelWeights", List.of(30, 30, 18, 10, 6, 3, 2, 1, 0, 0), () -> 1, o -> o instanceof Integer i && i >= 0);
         INHERITANCE_VARIATION = s.comment("Chance per trait that a daughter Queen's level differs by one from her mother's.")
@@ -319,12 +339,21 @@ public final class AntConfig {
         BROOD_CLUSTER_MINUTES = s.comment("Minutes, on average, an anthill's Ant Egg Cluster takes to become a Larva Cluster, and a Larva Cluster to become",
                         "1 to 3 ants (only clusters an anthill was built with, and only while a player is near enough for the chunk to tick).")
                 .defineInRange("broodClusterMinutes", 10.0, 0.1, 10000);
-        ANTHILL_MAX_ANTS = s.comment("A Larva Cluster waits to hatch while this many wild ants or more are within 24 blocks of it.")
+        ANTHILL_MAX_ANTS = s.comment("A Larva Cluster waits to hatch while this many wild ants or more are within anthillCrowdRange blocks of it.")
                 .defineInRange("anthillMaxAnts", 60, 0, 1000);
+        ANTHILL_CROWD_RANGE = s.comment("Blocks around a Larva Cluster in which wild ants count towards anthillMaxAnts.")
+                .defineInRange("anthillCrowdRange", 24, 1, 128);
+        ROYAL_GUARD_REACH = s.comment("Royal Guard Ants (the great Queen's guards) attack a player who comes within this many blocks of their post.")
+                .defineInRange("royalGuardReach", 4.0, 0, 64);
+        ROYAL_GUARD_LEASH = s.comment("Royal Guard Ants stop chasing anyone more than this many blocks from their post and walk back to it.")
+                .defineInRange("royalGuardLeash", 10.0, 1, 128);
+        HOME_NEST_ANTS = s.comment("Ants living in a home nest (the wild nests a player places).").defineInRange("homeNestAnts", 3, 1, 32);
+        HOME_NEST_REFILL_MINUTES = s.comment("Minutes a home nest takes to raise a new ant after one of its ants died.")
+                .defineInRange("homeNestRefillMinutes", 5.0, 0.05, 10000);
         s.pop();
 
         s.push("guards");
-        GUARD_COST = s.comment("Ants a hunter colony gives up for one Guard Ant (a Rally Pheromone used on its Terrarium).")
+        GUARD_COST = s.comment("Ants a hunter colony gives up for one Guard Ant (a Rally Pheromone used on its Formicarium).")
                 .defineInRange("antCost", 50, 1, 1000000);
         s.pop();
 
@@ -332,6 +361,9 @@ public final class AntConfig {
         GENERATOR_OUTPUT = s.comment("FE a Generator makes per tick while it burns fuel (one coal burns for 1600 ticks).")
                 .defineInRange("generatorOutput", 40, 1, 100000);
         GENERATOR_PUSH = s.comment("Most FE a Generator gives to the blocks around it per tick.").defineInRange("generatorPush", 1000, 1, 1000000);
+        GENERATOR_CAPACITY = s.comment("FE a Generator stores.").defineInRange("generatorCapacity", 100000, 1000, 100000000);
+        LAB_ENERGY = s.comment("FE a Genetic Laboratory stores.").defineInRange("labEnergy", 1000000, 1000, 100000000);
+        LAB_ENERGY_INPUT = s.comment("Most FE a Genetic Laboratory takes in per tick.").defineInRange("labEnergyInput", 4000, 1, 100000000);
         CENTRIFUGE_ENERGY = s.comment("FE a Droplet Centrifuge stores.").defineInRange("centrifugeEnergy", 50000, 1000, 100000000);
         CENTRIFUGE_TANK = s.comment("Millibuckets of fluid a Droplet Centrifuge's tank holds.").defineInRange("centrifugeTank", 8000, 1000, 100000000);
         CENTRIFUGE_PUSH = s.comment("Most millibuckets a Droplet Centrifuge gives per tick to the tanks and pipes touching it (0: it only lets them take).",
@@ -346,18 +378,18 @@ public final class AntConfig {
         SERVER_SPEC = s.build();
 
         ModConfigSpec.Builder c = new ModConfigSpec.Builder();
-        MAX_VISUAL_ANTS = c.comment("Most animated ants drawn in one Terrarium (they only show the colony; they never decide anything).")
+        MAX_VISUAL_ANTS = c.comment("Most animated ants drawn in one Formicarium (they only show the colony; they never decide anything).")
                 .defineInRange("maxVisualAnts", 40, 0, 120);
-        STRUCTURE_ANTS = c.comment("Ants working on top of working chambers.").define("structureAnts", true);
+        STRUCTURE_ANTS = c.comment("Ants at work on and in the chambers.").define("structureAnts", true);
         PARTICLES = c.comment("Colony particles (soil, food, crystals, genetics).").define("particles", true);
         AMBIENT_SOUNDS = c.comment("Colony ambience and ant footsteps.").define("ambientSounds", true);
-        VISUAL_DISTANCE = c.comment("Blocks from which Terrarium ants are no longer drawn.").defineInRange("visualDistance", 32.0, 4, 128);
-        ANT_3D_MODELS = c.comment("Draw the ants on top of a Terrarium as 3D models up close. False draws them as 2D sprites like the ants in the",
+        VISUAL_DISTANCE = c.comment("Blocks from which the ants in a Formicarium and its chambers are no longer drawn.").defineInRange("visualDistance", 32.0, 4, 128);
+        ANT_3D_MODELS = c.comment("Draw the ants on top of a Formicarium as 3D models up close. False draws them as 2D sprites like the ants in the",
                 "tunnels: they look flatter but cost far less, which helps with many colonies in view.").define("ant3DModels", true);
-        ANT_DETAIL_DISTANCE = c.comment("Blocks within which the ants on top of a Terrarium are 3D models (if ant3DModels is on); further away (where they are a pixel or",
+        ANT_DETAIL_DISTANCE = c.comment("Blocks within which the ants on top of a Formicarium are 3D models (if ant3DModels is on); further away (where they are a pixel or",
                         "two) they are 2D sprites, which are far cheaper to draw.")
                 .defineInRange("antDetailDistance", 8.0, 0, 128);
-        DETAILED_COLONY_VIEW = c.comment("The Terrarium screen in Detailed Mode (exact numbers, rates per minute, efficiency) instead of Visual Mode",
+        DETAILED_COLONY_VIEW = c.comment("The Formicarium screen in Detailed Mode (exact numbers, rates per minute, efficiency) instead of Visual Mode",
                 "(pictures, bars and short notes). The screen's mode button switches it and remembers the choice here.")
                 .define("detailedColonyView", false);
         CLIENT_SPEC = c.build();

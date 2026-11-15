@@ -6,19 +6,20 @@
     "top": "antcolonies:block/nest_chamber_top",
     "mud": "minecraft:block/packed_mud",
     "egg": "minecraft:block/white_concrete",
-    "larva": "minecraft:block/white_terracotta"
+    "larva": "minecraft:block/white_terracotta",
+    "soil": "minecraft:block/dirt"
   },
   "elements": [
     {
       "from": [0, 0, 0],
-      "to": [16, 4.0, 16],
+      "to": [16, 1, 16],
       "faces": {
         "down": {
           "texture": "#side",
           "cullface": "down"
         },
         "up": {
-          "texture": "#top"
+          "texture": "#side"
         },
         "north": {
           "texture": "#side",
@@ -39,8 +40,29 @@
       }
     },
     {
-      "from": [3.0, 4.0, 3.0],
-      "to": [9.0, 6.5, 9.0],
+      "from": [2, 1, 2],
+      "to": [14, 8.0, 14],
+      "faces": {
+        "up": {
+          "texture": "#top"
+        },
+        "north": {
+          "texture": "#soil"
+        },
+        "south": {
+          "texture": "#soil"
+        },
+        "west": {
+          "texture": "#soil"
+        },
+        "east": {
+          "texture": "#soil"
+        }
+      }
+    },
+    {
+      "from": [3.0, 8.0, 3.0],
+      "to": [9.0, 10.5, 9.0],
       "faces": {
         "down": {
           "texture": "#mud"
@@ -63,8 +85,8 @@
       }
     },
     {
-      "from": [4.5, 6.5, 4.5],
-      "to": [7.5, 7.5, 7.5],
+      "from": [4.5, 10.5, 4.5],
+      "to": [7.5, 11.5, 7.5],
       "faces": {
         "down": {
           "texture": "#mud"
@@ -87,8 +109,8 @@
       }
     },
     {
-      "from": [10.5, 4.0, 4.0],
-      "to": [11.5, 5.5, 5.0],
+      "from": [10.5, 8.0, 4.0],
+      "to": [11.5, 9.5, 5.0],
       "faces": {
         "down": {
           "texture": "#egg"
@@ -111,8 +133,8 @@
       }
     },
     {
-      "from": [12.0, 4.0, 4.5],
-      "to": [13.0, 5.5, 5.5],
+      "from": [12.0, 8.0, 4.5],
+      "to": [13.0, 9.5, 5.5],
       "faces": {
         "down": {
           "texture": "#egg"
@@ -135,8 +157,8 @@
       }
     },
     {
-      "from": [11.0, 4.0, 6.0],
-      "to": [12.0, 5.5, 7.0],
+      "from": [11.0, 8.0, 6.0],
+      "to": [12.0, 9.5, 7.0],
       "faces": {
         "down": {
           "texture": "#egg"
@@ -159,8 +181,8 @@
       }
     },
     {
-      "from": [4.0, 4.0, 11.0],
-      "to": [7.0, 5.0, 12.0],
+      "from": [4.0, 8.0, 11.0],
+      "to": [7.0, 9.0, 12.0],
       "faces": {
         "down": {
           "texture": "#larva"
@@ -183,8 +205,8 @@
       }
     },
     {
-      "from": [9.0, 4.0, 11.5],
-      "to": [12.0, 5.0, 12.5],
+      "from": [9.0, 8.0, 11.5],
+      "to": [12.0, 9.0, 12.5],
       "faces": {
         "down": {
           "texture": "#larva"

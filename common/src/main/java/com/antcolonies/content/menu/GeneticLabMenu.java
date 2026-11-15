@@ -43,6 +43,12 @@ public class GeneticLabMenu extends BaseMenu {
         this(containerId, inventory, lab, lab.data());
     }
 
+    /** Empty Test Tubes are what Sample takes from the catalyst slot: shift-clicked ones go there, not to the materials. */
+    @Override
+    protected boolean quickMovesInto(int slot, ItemStack stack) {
+        return !(slot >= 1 && slot <= GeneticLabBlockEntity.MATERIAL_SLOTS && stack.is(ModItems.TEST_TUBE.get()));
+    }
+
     private GeneticLabMenu(int containerId, Inventory inventory, GeneticLabBlockEntity lab, ContainerData data) {
         super(ModMenus.GENETIC_LAB.get(), containerId);
         this.lab = lab;

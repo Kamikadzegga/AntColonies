@@ -10,7 +10,7 @@ world content, species, genetics and the settings. For data packs and modpacks s
 - [Getting started](#getting-started)
 - [Queen-only founding](#queen-only-founding)
 - [Food and work](#food-and-work)
-- [The Terrarium screen](#the-terrarium-screen)
+- [The Formicarium screen](#the-formicarium-screen)
 - [Structures](#structures)
 - [Foraging Site modes and job settings](#foraging-site-modes-and-job-settings)
 - [Nether and End Foraging Sites](#nether-and-end-foraging-sites)
@@ -29,17 +29,31 @@ world content, species, genetics and the settings. For data packs and modpacks s
 
 ## How colonies work
 
-A colony starts with a **Terrarium**, and a Terrarium works on its own: put a Queen in and feed her, and she lays eggs
-and raises ants. **Chambers** are additions. Put one against the Terrarium, or against a chamber that is already part
+A colony starts with a **Formicarium**, and a Formicarium works on its own: put a Queen in and feed her, and she lays eggs
+and raises ants. **Chambers** are additions. Put one against the Formicarium, or against a chamber that is already part
 of the colony, on any side (above and below too), and it joins. Any shape works, and none is required. Every block is the same glass case on a wooden base: where blocks touch, the glass between them goes, so the
 whole build is one closed case (the ants can't get out) with one frame around it. A colony takes up to 32
 chambers (`maxChambers`).
 
-When chambers touch two colonies, each chamber goes to the Terrarium it is fewer steps from. A chamber exactly as far
+**Built upward, a colony is an upright nest.** A colony is flat or upright as a whole. Count its blocks: a block is
+stacked when another block of the colony is right on top of it or under it, and flat otherwise. With more stacked
+blocks than flat ones the colony stands upright; with more flat ones it is glass cases; with as many of each it stays
+as it was (so a colony that stood up first stays up until its flat blocks outnumber the stacked ones). In an upright
+colony every block, those on the ground too, is a slab of nest between two glasses, one at the front (the side that
+faced you when you placed it) and one at the back.
+Carved into it is the block's own chamber: the Queen's chamber in the Formicarium, shelves
+with the Storage's items, the fungus garden of a Harvesting Site, a portal, full Liquid Ants hanging over their pool.
+Tunnels are dug to the colony's blocks beside, above and below it, so a tower or a wall of them is one nest in one
+frame, the same from both sides, and the ants walk from chamber to chamber, out to the sites and back with their finds.
+The nest is the earth of the species' climate (loam, frozen earth, sand, stone or netherrack), and the Formicarium's
+grows with the colony: a brood chamber at first, a food store from stage 2, a bigger chamber for the Queen and a midden
+from stage 3. The blocks of a wall must face the same way or the opposite way for their tunnels to join.
+
+When chambers touch two colonies, each chamber goes to the Formicarium it is fewer steps from. A chamber exactly as far
 from both joins neither, and says so in its screen.
 
 A colony's population is plain numbers on the server: eggs, larvae, workers, food, health. The ants you
-see in the Terrarium and the chambers are a picture of those numbers (how many, which jobs, hungry or not,
+see in the Formicarium and the chambers are a picture of those numbers (how many, which jobs, hungry or not,
 transforming or not). They never decide anything, and no ant entities are spawned for a colony.
 
 Every simulation step (1 second by default) a colony:
@@ -55,7 +69,7 @@ Every simulation step (1 second by default) a colony:
    colony's Storage; while it is full they wait in the Foraging Site's own store and move on when there is room,
 5. raises Queens in Queen Chambers.
 
-While a Terrarium is unloaded its colony stands still. When it loads again it catches up on at most 5 minutes (more
+While a Formicarium is unloaded its colony stands still. When it loads again it catches up on at most 5 minutes (more
 with Simulation Upgrades), never on the whole time away.
 
 ## Getting started
@@ -63,22 +77,22 @@ with Simulation Upgrades), never on the whole time away.
 1. Craft **Tweezers** and a few **Test Tubes**. Find wild ants (or a wild **Ant Nest**) in plains, forests, taigas,
    mountains, snowy biomes, deserts, jungles. Right-click an ant (or the nest) with Tweezers: it goes into an empty
    tube from your inventory. Queens are rare; nests give one now and then.
-2. Place a **Terrarium**, put the **Queen Test Tube** in (right-click or the Queen slot) and some **Ant Food**. Food
-   goes in the Terrarium's **food slot**, beside the feed slot (by hand, right-clicking the Terrarium, or a hopper or
+2. Place a **Formicarium**, put the **Queen Test Tube** in (right-click or the Queen slot) and some **Ant Food**. Food
+   goes in the Formicarium's **food slot**, beside the feed slot (by hand, right-clicking the Formicarium, or a hopper or
    pipe into it); it is eaten as the food bar has room and waits there while the bar is full. The colony also
    feeds itself from its Storage: food items there are eaten whenever there is room for them (Royal Jelly is kept).
    The Colony page shows how much of the food came from Storage.
-3. Check the Terrarium's **Info** page: if the climate is wrong, put the block it shows under the Terrarium (snow
+3. Check the Formicarium's **Info** page: if the climate is wrong, put the block it shows under the Formicarium (snow
    for cold species, sand for hot ones...).
 4. Add chambers as you go: a **Nest Chamber** for a bigger, faster-growing colony, a **Foraging Site** to put workers
    to work, a **Storage** for the finds.
 5. Grow: stage 2 needs 100 adults; stage 3 1,000 adults; stage 4 5,000 adults and a mineral species or good genetics.
-   Stages unlock outputs and change the Terrarium's look.
+   Stages unlock outputs and change the Formicarium's look.
 
 To move a colony, take it out in Test Tubes: an empty tube in the Queen slot takes the Queen out, and empty tubes in
 the feed slot fill with workers (up to 1,000 a tube). The Colony page's **Take out**
-buttons do the same from the tubes in your inventory. Then break the Terrarium and put the tubes into a new one.
-**Ants still in a Terrarium when it is broken are lost**, and so are its eggs, larvae and food.
+buttons do the same from the tubes in your inventory. Then break the Formicarium and put the tubes into a new one.
+**Ants still in a Formicarium when it is broken are lost**, and so are its eggs, larvae and food.
 
 The **Ant Identification Book** has how-to-play pages and a page for every species.
 
@@ -87,12 +101,12 @@ The **Ant Identification Book** has how-to-play pages and a page for every speci
 Every anthill has a Queen to catch (see [Giant anthills](#giant-anthills)), and there are two ways to start a colony
 with her:
 
-- **With ants**, as always: put the Queen and a tube of workers (or eggs, or larvae) into a Terrarium, or move a whole
+- **With ants**, as always: put the Queen and a tube of workers (or eggs, or larvae) into a Formicarium, or move a whole
   colony across in its tubes. The colony runs normally at once.
-- **With the Queen alone**: put her, and nothing else, into a **completely empty** Terrarium. That starts **Queen
+- **With the Queen alone**: put her, and nothing else, into a **completely empty** Formicarium. That starts **Queen
   Founding**, as real ant Queens found colonies:
-  1. She waits for her food. Feed the Terrarium until its food bar is full (2,000 food, ten Ant Food: the
-     `foundingFoodShare` option of the Terrarium's own food room). She lays nothing until then, and she lives on her
+  1. She waits for her food. Feed the Formicarium until its food bar is full (2,000 food, ten Ant Food: the
+     `foundingFoodShare` option of the Formicarium's own food room). She lays nothing until then, and she lives on her
      own reserves meanwhile, so she eats nothing.
   2. With the bar full she lays her first eggs. They hatch, the larvae grow, and the colony eats as usual.
   3. When her first 10 workers (`foundingWorkers`) are grown, the colony is founded and runs like any other.
@@ -107,7 +121,7 @@ A colony founded this way earns the advancement *From a Single Queen*.
 
 Food is what keeps a colony working. With at least 10 minutes of food left at what it eats (`lowFoodMinutes`), a colony
 works, lays eggs and raises its larvae at full speed. Below that it slows down evenly, to 60% (`lowFoodFactor`) when the
-food is just about gone, and the Terrarium says "Food running low". Out of food it is starving: work, laying and growth
+food is just about gone, and the Formicarium says "Food running low". Out of food it is starving: work, laying and growth
 drop to 20% (`starvedFactor`), and after 3 minutes it starts to lose ants, its brood first.
 
 More workers find more, but they also eat more, so a big colony needs a big food supply: Farmer Ants at Harvesting
@@ -116,9 +130,9 @@ Sites, hunters at Hunting Grounds, food in its Storage, or food from another col
 hungry the colony is, so a colony that can feed itself always recovers. The Overview page shows how much the food is
 holding the colony's work up; Detailed Mode gives the food in and out per minute.
 
-## The Terrarium screen
+## The Formicarium screen
 
-The Terrarium's screen has eight tabs, with an icon each:
+The Formicarium's screen has eight tabs, with an icon each:
 
 | Tab | What it shows |
 |---|---|
@@ -143,7 +157,7 @@ by job, instead.
 
 | Structure | What it does |
 |---|---|
-| Terrarium | The colony: Queen, food, evolution feeding, overview GUI (Colony, Genes, Jobs, Stats, Info). Houses 60 adults and lays eggs at half speed on its own. Its Queen and ants leave only in Test Tubes; broken, it keeps nothing. |
+| Formicarium | The colony: Queen, food, evolution feeding, overview GUI (Colony, Genes, Jobs, Stats, Info). Houses 60 adults and lays eggs at half speed on its own. Its Queen and ants leave only in Test Tubes; broken, it keeps nothing. |
 | Nest Chamber | Brood and housing: eggs at full speed, faster larvae, room for 3,000 adults and 1,500 larvae. More chambers lay faster (diminishing). |
 | Foraging Site | Workers find the species' outputs. Sends its finds to Storage; holds 9 stacks while the Storage is full. Takes species upgrades. |
 | Hunting Ground | Hunter species (see below) kill mobs: drops from the hunted mobs' own loot tables (vanilla or modded; no mobs spawn), and 40 food for the colony from each catch. Other species leave it alone. |
@@ -165,7 +179,7 @@ upgrade and tier. Upgrades of a kind in one block add up their tiers.
 ### Climate
 
 Each species likes a climate: temperate, cold, hot, underground or nether. In the wrong one a colony loses health
-(less with good Environmental Resistance). A block under the Terrarium gives it a climate, whatever the biome. Every variant of a block counts (any
+(less with good Environmental Resistance). A block under the Formicarium gives it a climate, whatever the biome. Every variant of a block counts (any
 terracotta colour, glazed too; any sandstone; any ice), and the Info page shows one icon per family, cycling through them:
 
 | Climate | Blocks (block tag `antcolonies:climate/<name>`) |
@@ -185,7 +199,7 @@ terracotta colour, glazed too; any sandstone; any ice), and the Info page shows 
 
 | Block | Comparator signal |
 |---|---|
-| Terrarium | How full its food is (0 when empty, 15 when full) |
+| Formicarium | How full its food is (0 when empty, 15 when full) |
 | Foraging Site, Harvesting Site | Its workers out of the most it takes |
 | Storage, Queen Chamber | How full the slots are, like a chest |
 | Generator, Genetic Laboratory | Stored FE |
@@ -193,7 +207,7 @@ terracotta colour, glazed too; any sandstone; any ice), and the Info page shows 
 ## Foraging Site modes and job settings
 
 Every working site (Foraging Sites, Harvesting Sites, Hunting Grounds, and the Nether and End Foraging Sites) has three
-settings, in its own screen and on the Terrarium's Jobs page:
+settings, in its own screen and on the Formicarium's Jobs page:
 
 - **Priority** (Low, Normal, High): the colony hands out its workers to higher priority sites first. Within a priority,
   food first (Harvesting Sites, Hunting Grounds), then foraging.
@@ -256,7 +270,7 @@ Each connector's settings:
 - A **redstone signal** stops a connector.
 
 The typical network is a Farmer colony supplying food to colonies that mine or hunt: they can then put more ants to
-work than their own food would keep. The Terrarium's Network page draws the network (food moving in green and orange
+work than their own food would keep. The Formicarium's Network page draws the network (food moving in green and orange
 along the lines), and Jade shows a connector's channel, settings and what it moved.
 
 ## Giant anthills
@@ -326,10 +340,10 @@ The **Ant Egg Clusters** and **Larva Clusters** on the floors of the nurseries, 
 Queen's chamber are alive. In time (about 10 minutes a stage on average, config `broodClusterMinutes`) an egg cluster
 becomes a larva cluster, and a larva cluster 1 to 3 workers of the anthill's species, who belong to that anthill. They
 only grow while a player is near enough for the chunk to tick, and a larva cluster waits while 60 or more wild ants are
-already within 24 blocks (config `anthillMaxAnts`).
+already within 24 blocks (config `anthillMaxAnts`, `anthillCrowdRange`).
 
 Clusters can't be crafted. Broken by hand or with a plain tool, a live cluster is lost; with **Silk Touch** you keep it,
-with the anthill's species. Its item goes into a Terrarium's feed slot, but only a **working colony** of the same species
+with the anthill's species. Its item goes into a Formicarium's feed slot, but only a **working colony** of the same species
 takes it (one with a Queen and workers, past founding): an Ant Egg Cluster adds 3 eggs, a Larva Cluster 3 larvae.
 Placed, a cluster is only a decoration: it never hatches, and it drops itself when broken.
 
@@ -371,7 +385,7 @@ A palette for players who build their own anthills, underground bases and labora
 
 Bricks, polished blocks and tiles have stairs and slabs (also from the stonecutter); the bricks have walls. Besides: the
 **Nest Door** and **Nest Trapdoor** (Chitin and packed soil, with round tunnel windows), the **Pheromone Lamp** (light 15),
-**Ant Egg Clusters** and **Larva Clusters** for nurseries (only a look: they never hatch), and **Terrarium Glass**.
+**Ant Egg Clusters** and **Larva Clusters** for nurseries (only a look: they never hatch), and **Formicarium Glass**.
 The resin family is called Amber so its names never clash with vanilla's Resin Block and Resin Bricks.
 
 ## Home nests
@@ -430,7 +444,7 @@ Three more tiers follow, each from the next chitin of the [Chitin ladder](#progr
 A hunter colony can give up some of its ants for a Guard Ant that follows you and fights for you:
 
 1. Craft a **Rally Pheromone** (Test Tube, Chitin Plate, sugar, redstone).
-2. Use it on the Terrarium of a hunter colony with a Queen and at least 50 ants (config `guards.antCost`). The colony
+2. Use it on the Formicarium of a hunter colony with a Queen and at least 50 ants (config `guards.antCost`). The colony
    loses the ants, and you get a **Guard Ant** in a tube.
 3. Use the tube on a block to let the ant out. It is tamed to you.
 
@@ -449,14 +463,14 @@ as big as a wild soldier.
 
 ## Advancements
 
-Thirty-four, under their own tab: from catching your first ants and Queen, through Home Sweet Home (a Terrarium
+Thirty-four, under their own tab: from catching your first ants and Queen, through Home Sweet Home (a Formicarium
 with a Queen), colony stages 2 and 4, evolving into a mineral species and raising a hybrid, finding a giant anthill, a
 full Chitin set and a Guard Ant, to three challenges: a Queen with a level-10 trait, a Netherite Ant colony and an Ender
 Ant colony. A second path leads through the dimensions: Hardened Chitin, a colony in the Nether, a Warped Ant colony, a
 Nether anthill, Infernal Chitin, a colony in the End, a Chorus Ant colony, Void Chitin, a tier IV upgrade, and two
 challenges, the Wither Ant and the Dragon Ant. The colony update added From a Single Queen (a colony founded by its Queen
 alone), Trail Network (two colonies linked by Colony Connectors), the trail pheromones and the Nether and End Foraging
-Sites, and finding an End anthill. Colony advancements are checked when you open the Terrarium and every few seconds while you stand within 16
+Sites, and finding an End anthill. Colony advancements are checked when you open the Formicarium and every few seconds while you stand within 16
 blocks of it.
 
 ## Liquid Ants and the Droplet Centrifuge
@@ -472,7 +486,7 @@ Foraging Sites alone, and no other species works at a Liquid Chamber.
 | Lava Ant | Honeypot Ant, in the Nether | Lava Bucket | Lava Droplet | 50 mB of lava, 2,000 FE, 5 s |
 
 The Queen takes one bucket per attempt (colony stage 2 and 300 adults; the 25th attempt always works) and the empty
-bucket comes back in the Terrarium's output slot. Honeypot Ants are the hybrid of Blossom and Farmer Ants.
+bucket comes back in the Formicarium's output slot. Honeypot Ants are the hybrid of Blossom and Farmer Ants.
 
 - Droplets come like any other work: more ants at the chamber make more (with the usual diminishing returns), Speed and
   Population Upgrades help, and a colony short of food slows down. Liquid Ants eat more than Common Ants (Water Ants
@@ -522,10 +536,10 @@ Ant Identification Book.
 
 The Overworld gets a colony going; the Nether and the End take it further.
 
-- **Evolutions bound to a dimension.** The Nether's line evolves only in a Terrarium standing in the Nether: Fire Ants
+- **Evolutions bound to a dimension.** The Nether's line evolves only in a Formicarium standing in the Nether: Fire Ants
   (from Desert or Warped), Inferno, Soul and Netherite, and the Wither Ant. The End's line evolves only in the End: Ender
   Ants (from Amethyst or Chorus) and the Dragon Ant. Bring the colony there in its Test Tubes, evolve it, and bring it
-  home: an evolved colony lives anywhere. Fed in the wrong dimension, the Queen keeps the material and the Terrarium
+  home: an evolved colony lives anywhere. Fed in the wrong dimension, the Queen keeps the material and the Formicarium
   says why; the Info page, the tooltips and JEI/EMI show which dimension each evolution needs.
 - **The Chitin ladder.** Chitin is never crafted: it comes only from ants.
   - **Chitin Plates**: wild ants leave one about a third of the time, and every foraging colony brings some home with
@@ -554,7 +568,7 @@ Queen can be perfected.
 **A Queen grows with her colony, in her own time.** While her colony is at a bigger stage than she has grown into,
 the time counts: after 10 minutes she grows into stage 2, after 20 more into stage 3 and after 30 more into stage 4
 (`queenGrowthMinutes`; one stage at a time, so a new Queen in a big colony takes an hour to catch up, and time already
-counted is kept while the colony is smaller). Each stage raises two of her traits (picked at random) by one, never past level 7 (higher is the Genetic Laboratory's work: Infernal Chitin, Void
+counted is kept while the colony is smaller). Each stage raises two of her traits (picked at random) by one, never past level 7 (config `queenGrowthTraits`, `queenGrowthCap`; higher is the Genetic Laboratory's work: Infernal Chitin, Void
 Chitin, a Nether Star). She remembers how far she has grown, in her Test Tube too, so moving her to a new colony
 doesn't grow her again. Her tooltip and the Genetics page's header show it (and the minutes to go), and players nearby get a note.
 Queens from before this version take their colony's stage the first time without growing for it.
@@ -575,13 +589,15 @@ single-player. Every option explains itself when you point at it. The same optio
 
 `config/antcolonies/server.toml` (synced to players): simulation interval, offline catch-up, capacities, egg and growth
 times, food use, starvation, production rates and diminishing returns, upgrade strengths, trait multipliers and
-starting weights, mutation and evolution chances, wild spawn and Queen chances, Generator output
-(`[power]`), the ants a Guard Ant costs (`[guards] antCost`), how much stacked bonuses are softened
+starting weights, mutation and evolution chances, Queen growth (`queenGrowthCap`, `queenGrowthTraits`), wild spawn and Queen chances,
+home nests (`homeNestAnts`, `homeNestRefillMinutes`), Royal Guard Ants (`royalGuardReach`, `royalGuardLeash`), brood clusters
+(`clusterBrood`, `anthillCrowdRange`), Tweezers (`tweezersAnts`), the machines' energy and tanks (`[power]`: Generator output and
+storage, Genetic Laboratory storage and input, Droplet Centrifuge), the ants a Guard Ant costs (`[guards] antCost`), how much stacked bonuses are softened
 (`bonusExponent`), the mutation cap, Queen-only founding (`[founding]`), how low food slows a colony (`lowFoodMinutes`,
 `lowFoodFactor`, `hungryFoodWorkFactor`), the Foraging Site modes (`focusedForagingBoost`, `focusedForagingPenalty`), expeditions
 (`expeditionRolls`), Colony Connectors (`[connectors]`), and `rareFindMultiplier` (scales the chance of every rare find at once, for modpacks: 0.5 halves diamonds, netherite scrap, shells and the like,
 0 turns them off; common finds and hunting loot are not changed).
-`config/antcolonies/client.toml`: how many ants a Terrarium and its chambers draw, particles, sounds, draw
+`config/antcolonies/client.toml`: how many ants a Formicarium and its chambers draw, particles, sounds, draw
 distance; `ant3DModels` (false draws the surface ants as 2D sprites, far cheaper with many
-colonies in view), `detailedColonyView` (the Terrarium screen's mode) and `antDetailDistance` (beyond it, default 8 blocks, surface ants are 2D anyway, and the ants inside chambers are only drawn closer than it with 3D models on).
+colonies in view), `detailedColonyView` (the Formicarium screen's mode) and `antDetailDistance` (beyond it, default 8 blocks, surface ants are 2D anyway, and the ants inside chambers are only drawn closer than it with 3D models on).
 

@@ -72,6 +72,10 @@ neoForge {
         client {
             client()
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // Screenshot runs (gradlew runClient -PshowcaseWindow): a 1920x1080 window, so shots match across versions.
+            if (providers.gradleProperty('showcaseWindow').isPresent()) {
+                programArguments.addAll('--width', '1920', '--height', '1080')
+            }
         }
         server {
             server()

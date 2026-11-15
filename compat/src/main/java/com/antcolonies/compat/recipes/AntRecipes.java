@@ -58,7 +58,7 @@ public final class AntRecipes {
     }
 
     private static ItemStack ants(Identifier species, Caste caste) {
-        return TweezersItem.antTube(new AntSample(species, caste, AntSample.PINCH));
+        return TweezersItem.antTube(new AntSample(species, caste, AntSample.pinch()));
     }
 
     private static ItemStack brood(Identifier species, boolean larva) {
@@ -465,7 +465,7 @@ public final class AntRecipes {
                         base = new ItemStack(ModItems.SPECIES_UPGRADE.get());
                         base.set(ModDataComponents.SPECIES_UPGRADE.get(), new SpeciesUpgrade(id, kind, tier - 1));
                     }
-                    list.add(new AntRecipe(AntColonies.id("species_upgrade/" + id.getPath() + "/" + kind.getSerializedName() + "/" + tier),
+                    list.add(new AntRecipe(id("species_upgrade", id.withSuffix("/" + kind.getSerializedName() + "/" + tier)),
                             List.of(List.of(base), List.of(signature.copyWithCount(UpgradeStationBlockEntity.materialFor(tier)))),
                             List.of(AntRecipe.Output.of(output)),
                             List.of(Tooltips.species(id), line("material_count", UpgradeStationBlockEntity.materialFor(tier)))));

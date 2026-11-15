@@ -59,8 +59,26 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     /** Job sites: how full their workforce is. Other structures: how full their slots are. */
     @Override
     public int comparatorSignal() {
-        return kind.job().any() ? com.antcolonies.content.block.ComparatorSource.fill(assigned, capacityShown)
-                : net.minecraft.world.inventory.AbstractContainerMenu.getRedstoneSignalFromContainer(this);
+        return kind.job().any() ? com.antcolonies.content.block.ComparatorSource.fill(assigned, capacityShown) : slotFill();
+    }
+
+    /**
+     * How full the slots that are open are (vanilla's container reading, but over the unlocked slots only: a Storage has
+     * room for 162 and opens 18 to 90 of them, so counting all 162 would never reach a full signal).
+     */
+    private int slotFill() {
+        int open = Math.min(unlockedSlots(), getContainerSize());
+        if (open <= 0) {
+            return 0;
+        }
+        float fill = 0;
+        for (int slot = 0; slot < open; slot++) {
+            ItemStack stack = getItem(slot);
+            if (!stack.isEmpty()) {
+                fill += (float) stack.getCount() / getMaxStackSize(stack);
+            }
+        }
+        return net.minecraft.util.Mth.lerpDiscrete(fill / open, 0, 15);
     }
 
     /** A structure not linked by any Terrarium for this long counts as disconnected. */
@@ -173,6 +191,9 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
             return DATA_COUNT;
         }
     };
+
+    /** The client's animation state (NestVisuals, while its colony is upright); untyped so the server never loads client classes. */
+    public @Nullable Object clientVisuals;
 
     public StructureBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STRUCTURE.get(), pos, state);
@@ -521,6 +542,10 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
             be.terrarium = null;
             be.assigned = 0;
             be.contentsChanged();
+            // No colony any more: a glass case again, whatever its colony was.
+            if (com.antcolonies.content.block.ColonyPartBlock.upright(state)) {
+                level.setBlock(pos, state.setValue(com.antcolonies.content.block.ColonyPartBlock.UPRIGHT, false), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            }
         }
         if ((time + pos.asLong()) % 20 == 0 && level instanceof ServerLevel serverLevel) {
             if (be.kind == StructureKind.STORAGE && be.upgradeTier(UpgradeType.AUTOMATION) > 0) {
@@ -734,6 +759,8 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         assigned = input.getIntOr("assigned", 0);
         if (input.getBooleanOr("contested", false)) {
             contestedAt = level != null ? level.getGameTime() : Long.MAX_VALUE / 2;
+        } else {
+            contestedAt = Long.MIN_VALUE / 2; // no longer contested: the badge goes at once
         }
         siteStatus = input.getIntOr("site_status", 0);
         colonyStatus = input.getIntOr("colony_status", 0);

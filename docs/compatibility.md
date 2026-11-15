@@ -8,7 +8,7 @@ Ant Colonies needs nothing but NeoForge. Everything below is optional.
 - **EMI**: the same fifteen categories, with the same layout and workstations. EMI itself has no official 26.3 build; the
   plugin was made against **PF-EMI** 1.1 ("EMI - Port Forward", an unofficial port on Modrinth). Tested in game with it
   (and with JEI installed alongside: EMI takes over and nothing shows twice).
-- **Jade** (26.3.5+): look at a Terrarium for its species, stage, adults, food and problems; at a job site for its ants,
+- **Jade** (26.3.5+): look at a Formicarium for its species, stage, adults, food and problems; at a job site for its ants,
   output per minute and status (and a Foraging Site's mode, whether an expedition site's portal is active); at a Colony Connector
   for its channel, settings and what it moved; at a Generator or the Genetic Laboratory for what it is doing (Jade draws the FE bar).
   Each part can be turned off in Jade's plugin settings. **WTHIT** has no NeoForge build for 26.x, so there is no WTHIT
@@ -22,7 +22,7 @@ Mekanism only unofficial ports). Everything goes through NeoForge's shared syste
 
 - **Items** (Create funnels, chutes and arms; Mekanism transporters; Ender IO conduits; AE2 and Refined Storage
   import, export and storage buses; hoppers): Storage chambers can be emptied, Queen Chamber Queens taken out, and the
-  Terrarium, Storage, Queen Chamber, Genetic Laboratory and Generator filled, from any side.
+  Formicarium, Storage, Queen Chamber, Genetic Laboratory and Generator filled, from any side.
 - **Energy** (Mekanism cables, Ender IO conduits, any FE network): the Genetic Laboratory takes FE from any side; the
   Generator gives FE out.
 - **Fluids** (any tank or fluid pipe): the Droplet Centrifuge's tank is an ordinary fluid handler on every side. Fluid
@@ -92,7 +92,7 @@ What is and isn't checked:
   ants. Brine and heavy water are ordinary fluids.
 - **Applied Energistics 2** stores and moves fluids but registers none of its own, so it has no Liquid Ant.
 - Thermal's crude oil and latex are left out: MachinaOpus and Industrial Foregoing already give ants of those names.
-- Removing a mod from a world keeps colonies of its Liquid Ants as they were: the Terrarium says *These ants need*
+- Removing a mod from a world keeps colonies of its Liquid Ants as they were: the Formicarium says *These ants need*
   and the mod's name, and they work again when it is back.
 
 ### MachinaOpus
@@ -115,6 +115,6 @@ Molybdenum, Sulfur and Rubber Ants name MachinaOpus's items directly, so they ha
 molybdenum ingot, sulfur and a rubber sheet.
 
 MachinaOpus's pipes and cables work with Ant Colonies' blocks (the `machinaopus_pipes` game test): an item pipe set to
-pull ("output" on the side touching it) empties a Storage; a pipe delivers Ant Food into a Terrarium, which feeds the
+pull ("output" on the side touching it) empties a Storage; a pipe delivers Ant Food into a Formicarium, which feeds the
 colony; an energy cable carries a Generator's FE into a Genetic Laboratory (the Generator pushes it, so the cable needs
 no setting).

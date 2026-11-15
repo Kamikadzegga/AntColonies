@@ -11,6 +11,17 @@ import dev.emi.emi.api.recipe.EmiRecipeCategory;
 final class EmiShowcase {
     private EmiShowcase() {}
 
+    /** Types a word into EMI's search box. */
+    static void search(String word) {
+        EmiApi.setSearchText(word);
+    }
+
+    /** The items EMI's search shows now. */
+    static List<net.minecraft.world.item.ItemStack> found() {
+        return dev.emi.emi.search.EmiSearch.stacks.stream().flatMap(ingredient -> ingredient.getEmiStacks().stream())
+                .map(dev.emi.emi.api.stack.EmiStack::getItemStack).filter(stack -> !stack.isEmpty()).toList();
+    }
+
     /** Opens one of the mod's EMI categories; returns what it found, for the result file. */
     static String open(String name) {
         List<EmiRecipeCategory> ours = EmiApi.getRecipeManager().getCategories().stream()

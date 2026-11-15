@@ -88,12 +88,31 @@ public final class TerrariumVisuals {
     public int carryColor = 0xFFD9B26A;
     public float queenPhase;
     public boolean queenLaying;
+    /**
+     * The Queen, walking about her chamber's floor on the front glass: her offset from the chamber's middle (u, px), how
+     * far she has walked (her legs' cycle follows it), which way she faces, and whether she is walking. She walks a few
+     * steps, rests (laying, when the colony lays), and walks on.
+     */
+    public float queenOffset;
+    public float prevQueenOffset;
+    public float queenWalked;
+    public float prevQueenWalked;
+    public boolean queenRight = true;
+    public boolean queenMoving;
+    private float queenTarget;
+    private float queenRange;
+    private int queenRest = 60;
     public int eggFlash;
     public float evolutionGlow;
     private int itemsHash;
     private int compositionHash;
     private long age;
     private final int[][] distances = new int[4 * TunnelLayout.ChamberType.values().length][];
+
+    /** The Formicarium's position, so its surface decor looks the same every session. */
+    public long seed() {
+        return seed;
+    }
 
     public TerrariumVisuals(long seed, int frontFace) {
         this.seed = seed;
@@ -113,6 +132,11 @@ public final class TerrariumVisuals {
             }
             Arrays.fill(distances, null);
             actors.clear();
+            int chamber = faces[frontFace].find(TunnelLayout.ChamberType.QUEEN);
+            // Her chamber's floor is about 0.7 of its width; she is 3.7 px long.
+            queenRange = chamber < 0 ? 0 : Math.max(0, faces[frontFace].nodes.get(chamber).radiusU() * 0.7F - 1.85F);
+            queenOffset = prevQueenOffset = Math.clamp(queenOffset, -queenRange, queenRange);
+            queenTarget = queenOffset;
             compositionHash = 0;
             itemsHash = 0;
         }
@@ -122,6 +146,9 @@ public final class TerrariumVisuals {
         }
         queenLaying = colony.activity().laying() && colony.queen() != null;
         queenPhase += queenLaying ? 1.0F : 0.4F;
+        if (animate) {
+            walkQueen();
+        }
         if (queenLaying && age % 60 == 0) {
             eggFlash = 20;
         }
@@ -271,7 +298,7 @@ public final class TerrariumVisuals {
             TunnelLayout.Node node = faces[chamber[0]].nodes.get(chamber[1]);
             float u = node.u() + (placement.nextFloat() - 0.5F) * node.radiusU() * 1.6F;
             // On the chamber's floor, piled a little.
-            float v = node.v() - node.radiusV() + size * 0.5F + placement.nextFloat() * node.radiusV() * 0.6F;
+            float v = com.antcolonies.client.renderer.FlatGround.chamberFloor(node.v(), node.radiusV()) + size * 0.5F + placement.nextFloat() * node.radiusV() * 0.6F;
             items.add(new Item(chamber[0], u, v, size * (0.85F + placement.nextFloat() * 0.3F), kind));
         }
     }
@@ -505,5 +532,35 @@ public final class TerrariumVisuals {
 
     public void evolved() {
         evolutionGlow = 1;
+    }
+
+    /** A slow walk to a spot of her floor, a rest there, and on to another. */
+    private void walkQueen() {
+        prevQueenOffset = queenOffset;
+        prevQueenWalked = queenWalked;
+        if (queenRest > 0) {
+            queenRest--;
+            queenMoving = false;
+            if (queenRest == 0) {
+                queenTarget = queenOffset;
+                for (int attempt = 0; attempt < 6 && Math.abs(queenTarget - queenOffset) < Math.min(1, queenRange); attempt++) {
+                    queenTarget = (random.nextFloat() * 2 - 1) * queenRange;
+                }
+            }
+            return;
+        }
+        float step = queenLaying ? 0.018F : 0.025F;
+        float left = queenTarget - queenOffset;
+        if (Math.abs(left) <= step) {
+            queenWalked += Math.abs(left);
+            queenOffset = queenTarget;
+            queenMoving = false;
+            queenRest = (queenLaying ? 120 : 50) + random.nextInt(120);
+            return;
+        }
+        queenRight = left > 0;
+        queenOffset += Math.signum(left) * step;
+        queenWalked += step;
+        queenMoving = true;
     }
 }

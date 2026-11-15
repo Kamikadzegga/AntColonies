@@ -61,7 +61,7 @@ public class CentrifugeRenderer implements BlockEntityRenderer<CentrifugeBlockEn
                                    ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(centrifuge, state, partialTicks, camera, breakProgress);
         state.working = centrifuge.working();
-        state.time = centrifuge.getLevel() == null ? 0 : centrifuge.getLevel().getGameTime() + partialTicks;
+        state.time = centrifuge.getLevel() == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(centrifuge.getLevel().getGameTime(), partialTicks);
         state.seed = centrifuge.getBlockPos().asLong();
         FluidStack fluid = centrifuge.fluid();
         if (fluid.isEmpty()) {

@@ -43,6 +43,11 @@ public abstract class BaseMenu extends AbstractContainerMenu {
         addStandardInventorySlots(inventory, x, y);
     }
 
+    /** Whether shift-clicking may put this stack into the block slot {@code slot} (which must accept it as well). */
+    protected boolean quickMovesInto(int slot, ItemStack stack) {
+        return true;
+    }
+
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         Slot slot = slots.get(index);
@@ -63,7 +68,7 @@ public abstract class BaseMenu extends AbstractContainerMenu {
                     continue;
                 }
                 Slot target = slots.get(i);
-                if (target.isActive() && target.mayPlace(stack)) {
+                if (target.isActive() && target.mayPlace(stack) && quickMovesInto(i, stack)) {
                     moved |= moveItemStackTo(stack, i, i + 1, false);
                 }
             }

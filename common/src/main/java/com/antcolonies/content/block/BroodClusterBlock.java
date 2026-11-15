@@ -42,8 +42,6 @@ public class BroodClusterBlock extends Block implements EntityBlock {
     /** Whether an anthill was built with it (and it hatches). A placed cluster never is. */
     public static final BooleanProperty NATURAL = BooleanProperty.create("natural");
     private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 5, 15);
-    /** How far round a larva cluster it counts wild ants before it hatches. */
-    private static final double CROWD_RANGE = 24;
 
     public BroodClusterBlock(Properties properties) {
         super(properties);
@@ -121,7 +119,7 @@ public class BroodClusterBlock extends Block implements EntityBlock {
             level.playSound(null, pos, SoundEvents.FROGSPAWN_HATCH, SoundSource.BLOCKS, 0.6F, 1.4F);
             return true;
         }
-        if (level.getEntitiesOfClass(WildAnt.class, new AABB(pos).inflate(CROWD_RANGE)).size() >= AntConfig.get(AntConfig.ANTHILL_MAX_ANTS)) {
+        if (level.getEntitiesOfClass(WildAnt.class, new AABB(pos).inflate(AntConfig.get(AntConfig.ANTHILL_CROWD_RANGE))).size() >= AntConfig.get(AntConfig.ANTHILL_MAX_ANTS)) {
             return false;
         }
         int count = 1 + random.nextInt(3);

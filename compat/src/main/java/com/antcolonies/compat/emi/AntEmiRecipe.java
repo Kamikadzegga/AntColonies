@@ -40,9 +40,9 @@ class AntEmiRecipe extends BasicEmiRecipe {
 
     AntEmiRecipe(EmiRecipeCategory category, AntRecipe recipe, int rows, int textLines) {
         // A leading "/" marks an id that is not a data pack recipe, as EMI asks.
-        super(category, AntColonies.id("/" + recipe.id().getPath()), WIDTH, rows * STEP + 4 + textLines * 10);
+        super(category, AntColonies.id("/" + recipe.id().getPath()), WIDTH, rowsFor(recipe, rows) * STEP + 4 + textLines * 10);
         this.recipe = recipe;
-        this.rows = rows;
+        this.rows = rowsFor(recipe, rows);
         this.textLines = textLines;
         for (List<ItemStack> slot : recipe.inputs()) {
             inputs.add(ingredient(slot));
@@ -55,6 +55,13 @@ class AntEmiRecipe extends BasicEmiRecipe {
                 outputs.add(EmiStack.of(stack));
             }
         }
+    }
+
+    /** EMI entries can each be their own height: one with more slots than the category's rows grows to fit them. */
+    private static int rowsFor(AntRecipe recipe, int rows) {
+        int inputs = (recipe.inputs().size() + INPUT_COLUMNS - 1) / INPUT_COLUMNS;
+        int outputs = (recipe.outputs().size() + OUTPUT_COLUMNS - 1) / OUTPUT_COLUMNS;
+        return Math.max(rows, Math.max(inputs, outputs));
     }
 
     private static EmiIngredient ingredient(List<ItemStack> alternatives) {

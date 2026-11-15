@@ -6,19 +6,20 @@
     "top": "antcolonies:block/harvesting_site_top",
     "stem": "minecraft:block/mushroom_stem",
     "cap": "minecraft:block/red_mushroom_block",
-    "cap2": "minecraft:block/brown_mushroom_block"
+    "cap2": "minecraft:block/brown_mushroom_block",
+    "soil": "minecraft:block/dirt"
   },
   "elements": [
     {
       "from": [0, 0, 0],
-      "to": [16, 4.0, 16],
+      "to": [16, 1, 16],
       "faces": {
         "down": {
           "texture": "#side",
           "cullface": "down"
         },
         "up": {
-          "texture": "#top"
+          "texture": "#side"
         },
         "north": {
           "texture": "#side",
@@ -39,8 +40,29 @@
       }
     },
     {
-      "from": [3.5, 4.0, 3.5],
-      "to": [4.5, 7.0, 4.5],
+      "from": [2, 1, 2],
+      "to": [14, 8.0, 14],
+      "faces": {
+        "up": {
+          "texture": "#top"
+        },
+        "north": {
+          "texture": "#soil"
+        },
+        "south": {
+          "texture": "#soil"
+        },
+        "west": {
+          "texture": "#soil"
+        },
+        "east": {
+          "texture": "#soil"
+        }
+      }
+    },
+    {
+      "from": [3.5, 8.0, 3.5],
+      "to": [4.5, 11.0, 4.5],
       "faces": {
         "down": {
           "texture": "#stem"
@@ -63,8 +85,8 @@
       }
     },
     {
-      "from": [2.5, 7.0, 2.5],
-      "to": [5.5, 8.0, 5.5],
+      "from": [2.5, 11.0, 2.5],
+      "to": [5.5, 12.0, 5.5],
       "faces": {
         "down": {
           "texture": "#cap"
@@ -87,8 +109,8 @@
       }
     },
     {
-      "from": [11.5, 4.0, 10.5],
-      "to": [12.5, 8.0, 11.5],
+      "from": [11.5, 8.0, 10.5],
+      "to": [12.5, 12.0, 11.5],
       "faces": {
         "down": {
           "texture": "#stem"
@@ -111,8 +133,8 @@
       }
     },
     {
-      "from": [10.0, 8.0, 9.0],
-      "to": [14.0, 9.0, 13.0],
+      "from": [10.0, 12.0, 9.0],
+      "to": [14.0, 13.0, 13.0],
       "faces": {
         "down": {
           "texture": "#cap2"
@@ -135,8 +157,8 @@
       }
     },
     {
-      "from": [11.0, 4.0, 4.0],
-      "to": [11.8, 5.2, 4.8],
+      "from": [11.0, 8.0, 4.0],
+      "to": [11.8, 9.2, 4.8],
       "faces": {
         "down": {
           "texture": "#stem"
@@ -159,8 +181,8 @@
       }
     },
     {
-      "from": [10.4, 5.2, 3.4],
-      "to": [12.4, 5.9, 5.4],
+      "from": [10.4, 9.2, 3.4],
+      "to": [12.4, 9.9, 5.4],
       "faces": {
         "down": {
           "texture": "#cap"
