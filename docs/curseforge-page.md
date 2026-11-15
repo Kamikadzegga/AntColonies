@@ -107,7 +107,7 @@ Upload these 19 from `docs/images/screenshots/`, in this order (they replace the
 | `building-blocks.png` | Building blocks | Anthill, chitin, amber, fungal and royal blocks |
 | `giant-anthill.png` | A giant anthill | A structure shaped by its biome, with loot and defenders |
 | `anthill-queen-chamber.png` | Inside an anthill | Tunnels and chambers, and a Queen to catch |
-| `machines.png` | The machines | The Genetic Laboratory and the Generator, working and idle |
+| `machines.png` | The machines | The Generator and the Droplet Centrifuge, working and idle |
 | `genetic-laboratory.png` | The Genetic Laboratory | Raise, reroll and mutate a Queen's traits |
 | `recipe-viewer.png` | JEI and EMI | Expeditions and every recipe |
 | `identification-book.png` | The Ant Identification Book | How to play, and every species |

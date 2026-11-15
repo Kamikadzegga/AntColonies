@@ -84,8 +84,8 @@ hunters to work, evolve mineral species and engineer their genes.
 | A colony built upward: one nest behind glass, its chambers joined by tunnels | Liquid Ants, each carrying its fluid, and the Droplet Centrifuge |
 | ![Jobs](docs/images/screenshots/jobs-screen.png) | ![Statistics](docs/images/screenshots/statistics-screen.png) |
 | Jobs: ants, priority and modes per site | Statistics: the colony over the last half hour |
-| ![Generator and Genetic Laboratory](docs/images/screenshots/machines.png) | ![Genetic Laboratory](docs/images/screenshots/genetic-laboratory.png) |
-| The Genetic Laboratory and the Generator, working and idle | The Genetic Laboratory at work |
+| ![Generator and Droplet Centrifuge](docs/images/screenshots/machines.png) | ![Genetic Laboratory](docs/images/screenshots/genetic-laboratory.png) |
+| The Generator and the Droplet Centrifuge, working and idle | The Genetic Laboratory at work |
 | ![Expedition sites](docs/images/screenshots/expedition-sites.png) | ![Connected colonies](docs/images/screenshots/connected-colonies.png) |
 | Nether and End Foraging Sites | Colonies linked by Colony Connectors |
 | ![Chitin armor tiers](docs/images/screenshots/chitin-tiers.png) | ![Chitin armor from behind](docs/images/screenshots/chitin-tiers-back.png) |
