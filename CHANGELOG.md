@@ -294,7 +294,7 @@ The first release, for Minecraft 26.3 and NeoForge 26.3.0.101 (Java 25).
   and KubeJS guide.
 - Tested together with MachinaOpus and its Tools Addon: no clashing recipes or names.
 
-[Unreleased]: https://github.com/Kamikadzegga/AntColonies/compare/717fdfd...26.1.2
-[0.3.0]: https://github.com/Kamikadzegga/AntColonies/compare/717fdfd...26.1.2
+[Unreleased]: https://github.com/Kamikadzegga/AntColonies/compare/v0.3.0-26.1.2...26.1.2
+[0.3.0]: https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.3.0-26.1.2
 [0.2.0]: https://github.com/Kamikadzegga/AntColonies/compare/v0.1.0-26.1.2...717fdfd
 [0.1.0]: https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.1.0-26.1.2

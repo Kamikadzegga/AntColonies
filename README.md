@@ -103,14 +103,14 @@ Each Minecraft version has its own branch. You are reading the **26.1.2** branch
 
 | Minecraft | Branch | Latest release | |
 |---|---|---|---|
-| 26.3 | [`main`](https://github.com/Kamikadzegga/AntColonies/tree/main) | [0.2.0](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.2.0) | The main version: new features land here first |
-| 26.1.2 | [`26.1.2`](https://github.com/Kamikadzegga/AntColonies/tree/26.1.2) | [0.1.0](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.1.0-26.1.2) | The same mod for 26.1.2 modpacks, tested with KubeJS; 0.1.0 has the same content as 0.2.0 for 26.3 |
+| 26.3 | [`main`](https://github.com/Kamikadzegga/AntColonies/tree/main) | [0.4.0](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.4.0) | The main version: new features land here first |
+| 26.1.2 | [`26.1.2`](https://github.com/Kamikadzegga/AntColonies/tree/26.1.2) | [0.3.0](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.3.0-26.1.2) | The same mod for 26.1.2 modpacks, tested with KubeJS; 0.3.0 has the same content as 0.4.0 for 26.3 |
 
 ## Installation
 
 1. Install [NeoForge](https://neoforged.net) **26.1.2.122** or newer for Minecraft **26.1.2** (Java 25).
-2. Download `antcolonies-26.1.2.0.1.0.jar` from the [0.1.0 for 26.1.2 release](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.1.0-26.1.2)
-   (the latest release on GitHub, 0.2.0, is for Minecraft 26.3) and put it into your `mods` folder. The mod is needed
+2. Download `antcolonies-26.1.2.0.3.0.jar` from the [0.3.0 for 26.1.2 release](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.3.0-26.1.2)
+   (the latest release on GitHub, 0.4.0, is for Minecraft 26.3) and put it into your `mods` folder. The mod is needed
    on both the server and the client.
 3. Optional companions:
 
