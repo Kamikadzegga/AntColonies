@@ -89,12 +89,14 @@ Free to use in any modpack (MIT License).
 
 ## 3. Images (Images tab, with the carousel turned on)
 
-Upload these 17 from `docs/images/screenshots/`, in this order (they replace the 0.0.2 images):
+Upload these 19 from `docs/images/screenshots/`, in this order (they replace the 0.0.2 images):
 
 | File | Title | Description |
 |---|---|---|
 | `overview.png` | A colony at work | A Formicarium and its chambers, joined into one glass build |
 | `terrarium.png` | A living Formicarium | Workers dig tunnels and carry food behind the glass |
+| `vertical-formicarium.png` | Built upward | Stacked blocks become one nest behind glass, chambers joined by tunnels |
+| `liquid-ants.png` | Liquid Ants | Ants that carry fluids, and the Droplet Centrifuge |
 | `colony-screen.png` | The colony screen | Queen, health, food and ants at a glance |
 | `jobs-screen.png` | Jobs | Ants, priority and modes for every working site |
 | `statistics-screen.png` | Statistics | The colony over the last half hour |
@@ -115,8 +117,8 @@ Upload these 17 from `docs/images/screenshots/`, in this order (they replace the
 
 | Field | Value |
 |---|---|
-| File | `build/libs/antcolonies-26.3.0.3.0.jar` |
-| Display name | `Ant Colonies 0.3.0` |
+| File | `build/libs/antcolonies-26.3.0.4.0.jar` |
+| Display name | `Ant Colonies 0.4.0` |
 | Release type | Beta (or Release once it has been played for a while) |
 | Game version | 26.3 |
 | Mod loader | NeoForge |
