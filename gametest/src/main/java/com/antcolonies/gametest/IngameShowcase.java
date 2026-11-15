@@ -802,6 +802,9 @@ public class IngameShowcase {
             state.setGameMode(WorldCreationUiState.SelectedGameMode.CREATIVE);
             state.setAllowCommands(true);
             state.setWorldType(flat);
+            // No villages: the screenshots show the mod's builds on clear ground (the user, 2026-11-15). Every scene is
+            // built by the showcase itself, anthills included, so nothing here needs world generation's structures.
+            state.setGenerateStructures(false);
             var onCreate = CreateWorldScreen.class.getDeclaredMethod("onCreate");
             onCreate.setAccessible(true);
             onCreate.invoke(create);
