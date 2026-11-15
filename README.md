@@ -92,12 +92,10 @@ hunters to work, evolve mineral species and engineer their genes.
 | Chitin, Hardened, Infernal and Void armor | Spines and a Queen's wings on the back |
 | ![Giant anthill](docs/images/screenshots/giant-anthill.png) | ![Inside a giant anthill](docs/images/screenshots/anthill-queen-chamber.png) |
 | A giant anthill | Inside it |
-| ![Building blocks](docs/images/screenshots/building-blocks.png) | ![Guard Ant and Chitin armor](docs/images/screenshots/guard-ant-and-chitin.png) |
-| Building blocks: anthill, chitin, amber, fungal and royal | A Guard Ant and Chitin armor |
-| ![Ant Identification Book](docs/images/screenshots/identification-book.png) | ![Recipe viewer](docs/images/screenshots/recipe-viewer.png) |
-| The Ant Identification Book: how to play, and every species | Expeditions and the whole progression in JEI and EMI |
-| ![Jade tooltip](docs/images/screenshots/jade.png) | |
-| A Formicarium at a glance with Jade | |
+| ![Building blocks](docs/images/screenshots/building-blocks.png) | ![Ant Identification Book](docs/images/screenshots/identification-book.png) |
+| Building blocks: anthill, chitin, amber, fungal and royal | The Ant Identification Book: how to play, and every species |
+| ![Recipe viewer](docs/images/screenshots/recipe-viewer.png) | ![Jade tooltip](docs/images/screenshots/jade.png) |
+| Expeditions and the whole progression in JEI and EMI | A Formicarium at a glance with Jade |
 
 ## Versions
 
