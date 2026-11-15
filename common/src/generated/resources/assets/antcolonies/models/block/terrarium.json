@@ -2,30 +2,59 @@
   "parent": "minecraft:block/block",
   "textures": {
     "particle": "antcolonies:block/terrarium_wood",
-    "wood": "antcolonies:block/terrarium_wood"
+    "wood": "antcolonies:block/terrarium_wood",
+    "side": "antcolonies:block/terrarium_wood",
+    "top": "minecraft:block/rooted_dirt",
+    "soil": "minecraft:block/dirt"
   },
   "elements": [
     {
-      "from": [0.0, 0.0, 0.0],
-      "to": [16.0, 1.0, 16.0],
+      "from": [0, 0, 0],
+      "to": [16, 1, 16],
       "faces": {
         "down": {
-          "texture": "#wood"
+          "texture": "#side",
+          "cullface": "down"
         },
         "up": {
-          "texture": "#wood"
+          "texture": "#side"
         },
         "north": {
-          "texture": "#wood"
+          "texture": "#side",
+          "cullface": "north"
         },
         "south": {
-          "texture": "#wood"
+          "texture": "#side",
+          "cullface": "south"
         },
         "west": {
-          "texture": "#wood"
+          "texture": "#side",
+          "cullface": "west"
         },
         "east": {
-          "texture": "#wood"
+          "texture": "#side",
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [2, 1, 2],
+      "to": [14, 8.0, 14],
+      "faces": {
+        "up": {
+          "texture": "#top"
+        },
+        "north": {
+          "texture": "#soil"
+        },
+        "south": {
+          "texture": "#soil"
+        },
+        "west": {
+          "texture": "#soil"
+        },
+        "east": {
+          "texture": "#soil"
         }
       }
     }

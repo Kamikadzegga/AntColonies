@@ -65,7 +65,7 @@ public class TweezersItem extends Item {
         }
         takeEmptyTube(player);
         give(player, caught);
-        ant.discard();
+        ant.caught();
         captured(player, stack, hand, caught);
         return InteractionResult.SUCCESS;
     }
@@ -122,7 +122,7 @@ public class TweezersItem extends Item {
             caught.set(ModDataComponents.SPECIES.get(), colony.species());
             give(player, caught);
         } else {
-            int count = (int) Math.min(AntSample.PINCH, colony.workers() - colony.maintenanceWorkers());
+            int count = (int) Math.min(AntSample.pinch(), colony.workers() - colony.maintenanceWorkers());
             if (count <= 0) {
                 player.sendOverlayMessage(Component.translatable("message.antcolonies.tweezers.no_workers").withStyle(ChatFormatting.RED));
                 return InteractionResult.FAIL;

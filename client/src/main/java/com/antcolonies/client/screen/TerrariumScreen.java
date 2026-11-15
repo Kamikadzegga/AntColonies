@@ -69,6 +69,8 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     private static final int BUTTON_MODE = -50;
     private static final int BUTTON_CARD = -60;
     private static final int BUTTON_SERIES = -80;
+    /** The Working Sites grid's tiles (Visual mode): one id per site, down from here. */
+    private static final int BUTTON_TILE = -300;
     private static final Identifier SIDE = AntColonies.id("textures/entity/ant_side.png");
     /** Card colours: a lighter slate than the glass, so pages read as bright panels, and an accent per page. */
     private static final int CARD = 0xFF1F3647;
@@ -79,6 +81,8 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     private static int colonyCard;
     private static int series;
     private int jobScroll;
+    /** Where the Production page's item cards start, as last drawn. */
+    private int productionCardsY = CONTENT_Y + 26;
     private final InfoPanel info = new InfoPanel();
     /** Network nodes drawn this frame, for their tooltips: x, y, radius, index into the colony's network list. */
     private final List<int[]> nodes = new ArrayList<>();
@@ -96,6 +100,11 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int xm, int ym) {
         graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, LABEL, false);
+    }
+
+    /** Which chart the Statistics page shows (the showcase's screenshots). */
+    public static void showSeries(int index) {
+        series = index;
     }
 
     /** Opens a page (for the in-game showcase). */
@@ -161,19 +170,41 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
 
     @Override
     protected void drawButton(GuiGraphicsExtractor graphics, Button button, boolean hovered) {
+        if (button.id() <= BUTTON_TILE && button.id() > BUTTON_TILE - 64) {
+            drawTile(graphics, button, hovered);
+            return;
+        }
         super.drawButton(graphics, button, hovered);
         int id = button.id();
         if (id <= -100 && id > -100 - PAGES.length && -100 - id < tabIconsThisFrame.length) {
             graphics.item(tabIconsThisFrame[-100 - id], button.x() + 3, button.y());
         }
-        if (id <= BUTTON_SERIES && id > BUTTON_SERIES - ColonyHistory.Series.values().length) {
-            ColonyHistory.Series s = ColonyHistory.Series.values()[BUTTON_SERIES - id];
-            graphics.fill(button.x() + 2, button.y() + button.h() - 3, button.x() + button.w() - 2, button.y() + button.h() - 2, s.color());
+        if (id <= BUTTON_SERIES && id > BUTTON_SERIES - VIEWS.length) {
+            // The chart's colour as a chip at the button's left edge, clear of the name; a pair's two colours one over the other.
+            View view = VIEWS[BUTTON_SERIES - id];
+            int x0 = button.x() + 2;
+            int y0 = button.y() + 2;
+            int y1 = button.y() + button.h() - 2;
+            if (view.second() == null) {
+                graphics.fill(x0, y0, x0 + 2, y1, view.main().color());
+            } else {
+                int mid = (y0 + y1) / 2;
+                graphics.fill(x0, y0, x0 + 2, mid, view.main().color());
+                graphics.fill(x0, mid, x0 + 2, y1, view.second().color());
+            }
         }
     }
 
     @Override
     protected void onButton(int id) {
+        if (id <= BUTTON_TILE && id > BUTTON_TILE - 64) {
+            // A site's tile: open it in the Detailed list, where its controls are.
+            AntConfig.DETAILED_COLONY_VIEW.set(true);
+            AntConfig.CLIENT_SPEC.save();
+            jobScroll = BUTTON_TILE - id;
+            clickSound();
+            return;
+        }
         if (id <= -100) {
             page = -100 - id;
             clickSound();
@@ -190,7 +221,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             clickSound();
             return;
         }
-        if (id <= BUTTON_SERIES && id > BUTTON_SERIES - ColonyHistory.Series.values().length) {
+        if (id <= BUTTON_SERIES && id > BUTTON_SERIES - VIEWS.length) {
             series = BUTTON_SERIES - id;
             clickSound();
             return;
@@ -632,7 +663,8 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         int x = CONTENT_X + 4;
         int y = CONTENT_Y + 5;
         List<Colony.Assignment> list = colony.assignments();
-        String range = list.size() > JOB_ROWS ? (jobScroll + 1) + "-" + Math.min(list.size(), jobScroll + JOB_ROWS) + "/" + list.size() : "";
+        liquidIcon = colonyDroplet(colony);
+        String range = detailed() && list.size() > JOB_ROWS ? (jobScroll + 1) + "-" + Math.min(list.size(), jobScroll + JOB_ROWS) + "/" + list.size() : "";
         int rangeW = range.isEmpty() ? 0 : font.width(range) + 4;
         label(graphics, fit(Component.translatable("gui.antcolonies.jobs_header", colony.maintenanceWorkers()).getString(), CONTENT_W - 8 - rangeW),
                 x, y, LABEL);
@@ -644,36 +676,45 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             label(graphics, Component.translatable("gui.antcolonies.no_jobs"), x, y, DIM);
             return;
         }
+        if (!detailed()) {
+            siteGrid(list, x, y);
+            return;
+        }
         jobScroll = Math.clamp(jobScroll, 0, Math.max(0, list.size() - JOB_ROWS));
         for (int row = 0; row < JOB_ROWS && jobScroll + row < list.size(); row++) {
             int index = jobScroll + row;
             Colony.Assignment job = list.get(index);
             int rowY = y + row * JOB_ROW_H;
             boolean problem = ColonyStatus.of(job.status()).stream().anyMatch(ColonyStatus::problem);
-            card(graphics, x - 2, rowY - 1, CONTENT_W - 4, JOB_ROW_H - 1, job.enabled() ? (problem ? BAD : ACCENTS[2]) : FAINT, false);
-            graphics.item(new ItemStack(ModBlocks.STRUCTURES.get(job.kind()).get()), leftPos + x, topPos + rowY + 2);
+            // Each site its own plate, with a dark gap to the next (the user: a clear separation between sites; the green
+            // line along each plate's top read as a bar between them). Its state is a stripe down its left edge.
+            int plateTop = topPos + rowY - 1;
+            int plateBottom = topPos + rowY + JOB_ROW_H - 3;
+            graphics.outline(leftPos + x - 3, plateTop - 1, CONTENT_W - 2, plateBottom - plateTop + 2, 0xFF0B1820);
+            graphics.fill(leftPos + x - 2, plateTop, leftPos + x - 2 + CONTENT_W - 4, plateBottom, row % 2 == 0 ? CARD : 0xFF243F52);
+            graphics.fill(leftPos + x - 2, plateTop, leftPos + x, plateBottom, job.enabled() ? (problem ? BAD : GOOD) : FAINT);
+            // An icon per kind of site (as items they are all the same glass case).
+            siteIconAt(graphics, job.kind(), leftPos + x + 1, topPos + rowY + 1);
             int right = CONTENT_X + CONTENT_W - 6;
-            // Line 1: its name, then how full it is (a bar in Visual Mode, the numbers in Detailed), and its rate.
+            // Line 1: its name, numbered when the colony has more than one of the kind, and its rate.
             String perMinute = rate(job.rate()) + Component.translatable("gui.antcolonies.per_minute").getString();
             int rateX = right - font.width(perMinute) + 1;
-            label(graphics, fit(Component.translatable(job.kind().translationKey()).getString(), rateX - x - 22), x + 19, rowY + 1,
-                    job.enabled() ? LABEL : DIM);
-            value(graphics, perMinute, rateX, rowY + 1, INFO);
-            if (detailed()) {
-                String workers = Component.translatable("gui.antcolonies.job_workers", job.assigned(), job.capacity()).getString();
-                String note = ColonyStatus.of(job.status()).stream().filter(ColonyStatus::problem).findFirst()
-                        .map(s -> " - " + Component.translatable(s.translationKey() + ".short").getString()).orElse("");
-                label(graphics, fit(workers + note, right - x - 18), x + 19, rowY + 11, problem ? BAD : INFO);
-            } else {
-                drawBar(graphics, leftPos + x + 20, topPos + rowY + 12, right - x - 22, 5, job.assigned() / (double) Math.max(1, job.capacity()),
-                        problem ? BAD : GOOD);
-            }
+            label(graphics, fit(siteName(list, index), rateX - x - 22), x + 19, rowY, job.enabled() ? LABEL : DIM);
+            value(graphics, perMinute, rateX, rowY, INFO);
+            // Line 2: where it is from the Formicarium (the user: three "Foraging Site" rows could not be told apart), and
+            // its ants as numbers in both modes; a problem's short name in red after the place.
+            String workers = Component.translatable("gui.antcolonies.job_workers", job.assigned(), job.capacity()).getString();
+            int workersX = right - font.width(workers) + 1;
+            value(graphics, workers, workersX, rowY + 9, problem ? BAD : INFO);
+            String note = ColonyStatus.of(job.status()).stream().filter(ColonyStatus::problem).findFirst()
+                    .map(s -> " - " + Component.translatable(s.translationKey() + ".short").getString()).orElse("");
+            label(graphics, fit(sitePlace(job.pos()) + note, workersX - x - 23), x + 19, rowY + 9, problem ? BAD : DIM);
             // Line 2: how many ants it wants: the step buttons and Auto.
             int base = TerrariumMenu.BUTTON_ASSIGNMENT + index * 20;
             String[] steps = {"less_10", "less_1", "more_1", "more_10"};
             int[] ids = {StructureMenu.LESS_10, StructureMenu.LESS, StructureMenu.MORE, StructureMenu.MORE_10};
             int bx = x;
-            int lineY = rowY + 21;
+            int lineY = rowY + 19;
             for (int i = 0; i < steps.length; i++) {
                 Component text = Component.translatable("gui.antcolonies." + steps[i]);
                 int w = buttonWidth(text.getString());
@@ -707,6 +748,120 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                 }
             }
         }
+    }
+
+    /** The Working Sites grid's tile size and step, px: eight across, four down, room for a colony's 32 chambers. */
+    private static final int TILE = 23;
+    private static final int TILE_STEP = 24;
+    /** The site each tile shows this frame, by its index in the list (for drawing the tile). */
+    private final java.util.Map<Integer, Colony.Assignment> tileSites = new java.util.HashMap<>();
+
+    /**
+     * Visual mode: every site as a tile in a grid (the user: "a grid of working sites with a small color green/red to
+     * indicate if they're working"), its icon and a status light; hovered, all about it; clicked, it opens in the
+     * Detailed list.
+     */
+    private void siteGrid(List<Colony.Assignment> list, int x, int y) {
+        tileSites.clear();
+        int columns = Math.max(1, (CONTENT_W - 4) / TILE_STEP);
+        for (int i = 0; i < list.size() && i < 64; i++) {
+            Colony.Assignment job = list.get(i);
+            int tx = x - 2 + (i % columns) * TILE_STEP;
+            int ty = y + (i / columns) * TILE_STEP;
+            if (ty + TILE > CONTENT_Y + CONTENT_H) {
+                break;
+            }
+            tileSites.put(i, job);
+            List<Component> tooltip = new ArrayList<>(jobTooltip(job));
+            tooltip.add(Component.translatable("gui.antcolonies.site.tile.hint").withStyle(ChatFormatting.DARK_GRAY));
+            button(tx, ty, TILE, TILE, "", BUTTON_TILE - i, tooltip, true);
+        }
+    }
+
+    /** One site's tile: its icon on a plate, and a light in the corner: green working, red a problem, grey switched off. */
+    private void drawTile(GuiGraphicsExtractor graphics, Button button, boolean hovered) {
+        Colony.Assignment job = tileSites.get(BUTTON_TILE - button.id());
+        if (job == null) {
+            return;
+        }
+        int x = button.x();
+        int y = button.y();
+        graphics.outline(x - 1, y - 1, button.w() + 2, button.h() + 2, 0xFF0B1820);
+        graphics.fill(x, y, x + button.w(), y + button.h(), hovered ? CARD_HI : CARD);
+        if (hovered) {
+            graphics.outline(x, y, button.w(), button.h(), 0xFF9FE3FF);
+        }
+        siteIconAt(graphics, job.kind(), x + 2, y + 2);
+        boolean problem = ColonyStatus.of(job.status()).stream().anyMatch(ColonyStatus::problem);
+        int light = job.enabled() ? (problem ? BAD : GOOD) : FAINT;
+        int lx = x + button.w() - 6;
+        int ly = y + button.h() - 6;
+        graphics.fill(lx - 1, ly - 1, lx + 6, ly + 6, 0xFF0B1820);
+        graphics.fill(lx, ly, lx + 5, ly + 5, light);
+        graphics.fill(lx, ly, lx + 2, ly + 2, 0x55FFFFFF);
+    }
+
+    /**
+     * A site's own icon (TexGen siteIcons: the chamber itself, not what it makes; the user found a honey bottle for the
+     * Liquid Chamber misleading). A sprite name for {@link #sprite}.
+     */
+    private static String siteIcon(StructureKind kind) {
+        return "site_" + kind.getSerializedName();
+    }
+
+    /** The colony's own droplet while its ants are Liquid Ants (the Liquid Chamber's icon then), else empty. */
+    private ItemStack liquidIcon = ItemStack.EMPTY;
+
+    private static ItemStack colonyDroplet(Colony colony) {
+        AntSpecies species = ClientSpecies.get(colony.species());
+        return species == null ? ItemStack.EMPTY : species.liquid()
+                .map(liquid -> net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(liquid.droplet()).map(ItemStack::new).orElse(ItemStack.EMPTY))
+                .orElse(ItemStack.EMPTY);
+    }
+
+    /** A site's icon at a screen position: a Liquid Chamber of a Liquid Ant colony shows that colony's droplet. */
+    private void siteIconAt(GuiGraphicsExtractor graphics, StructureKind kind, int x, int y) {
+        if (kind == StructureKind.LIQUID_CHAMBER && !liquidIcon.isEmpty()) {
+            graphics.item(liquidIcon, x, y);
+        } else {
+            sprite(graphics, siteIcon(kind), x, y, 16, 16);
+        }
+    }
+
+    /** "Foraging Site", or "Foraging Site 2" when the colony has more than one: numbered in the list's order. */
+    private static String siteName(List<Colony.Assignment> list, int index) {
+        StructureKind kind = list.get(index).kind();
+        int same = 0;
+        int number = 0;
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).kind() == kind) {
+                same++;
+                if (i <= index) {
+                    number = same;
+                }
+            }
+        }
+        String name = Component.translatable(kind.translationKey()).getString();
+        return same > 1 ? name + " " + number : name;
+    }
+
+    /** Where a site is from the Formicarium, by the compass: "2 W, 1 N", "1 up". */
+    private String sitePlace(net.minecraft.core.BlockPos pos) {
+        net.minecraft.core.BlockPos home = menu.terrarium().getBlockPos();
+        int dx = pos.getX() - home.getX();
+        int dy = pos.getY() - home.getY();
+        int dz = pos.getZ() - home.getZ();
+        List<String> parts = new ArrayList<>();
+        if (dx != 0) {
+            parts.add(Component.translatable(dx > 0 ? "gui.antcolonies.site.east" : "gui.antcolonies.site.west", Math.abs(dx)).getString());
+        }
+        if (dz != 0) {
+            parts.add(Component.translatable(dz > 0 ? "gui.antcolonies.site.south" : "gui.antcolonies.site.north", Math.abs(dz)).getString());
+        }
+        if (dy != 0) {
+            parts.add(Component.translatable(dy > 0 ? "gui.antcolonies.site.up" : "gui.antcolonies.site.down", Math.abs(dy)).getString());
+        }
+        return String.join(", ", parts);
     }
 
     @Override
@@ -812,6 +967,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             // Icons: the item, how many are stored, a green bar for how fast it comes in.
             double most = finds.stream().mapToDouble(Find::perMinute).max().orElse(1);
             int perRow = 7;
+            productionCardsY = y; // the hover looks here too (a Liquid Ant colony's liquid line pushes the cards down)
             for (int i = 0; i < finds.size() && i < perRow * 2; i++) {
                 Find find = finds.get(i);
                 int cx = x + (i % perRow) * 27;
@@ -1151,83 +1307,179 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
 
     // --- Statistics ---
 
+    /**
+     * One chart of the Statistics page: a series, and for a pair a second one drawn with it (food in and out, ants born and
+     * died). {@code rate}: a per-minute series, charted from zero and summed up as a total; else a count, charted over the
+     * range it moved in.
+     */
+    private record View(String key, ColonyHistory.Series main, ColonyHistory.@Nullable Series second, boolean rate) {}
+
+    private static final View[] VIEWS = {
+            new View("adults", ColonyHistory.Series.ADULTS, null, false),
+            new View("brood", ColonyHistory.Series.BROOD, null, false),
+            new View("food", ColonyHistory.Series.FOOD, null, false),
+            new View("eggs_laid", ColonyHistory.Series.EGGS_LAID, null, true),
+            new View("finds", ColonyHistory.Series.FINDS, null, true),
+            new View("food_flow", ColonyHistory.Series.FOOD_IN, ColonyHistory.Series.FOOD_OUT, true),
+            new View("born_died", ColonyHistory.Series.BORN, ColonyHistory.Series.DIED, true)};
+
+    private static String viewKey(View view) {
+        return "gui.antcolonies.stats.view." + view.key();
+    }
+
     private void statistics(GuiGraphicsExtractor graphics, Colony colony, int mouseX, int mouseY) {
         int x = CONTENT_X + 4;
         int y = CONTENT_Y + 5;
         ColonyHistory history = colony.history();
-        ColonyHistory.Series[] all = ColonyHistory.Series.values();
-        // Series buttons down the left, each underlined in its chart colour.
-        for (int i = 0; i < all.length; i++) {
-            String text = Component.translatable(all[i].translationKey() + ".short").getString();
-            toggle(x - 1, y + i * 15, 40, 13, text, BUTTON_SERIES - i, List.of(Component.translatable(all[i].translationKey())), series == i);
+        // The charts down the left; each button has its colour as a chip at its left edge (the user: coloured lines under
+        // the names made them hard to read).
+        for (int i = 0; i < VIEWS.length; i++) {
+            toggle(x - 1, y + i * 15, 44, 13, Component.translatable(viewKey(VIEWS[i]) + ".short").getString(), BUTTON_SERIES - i,
+                    List.of(Component.translatable(viewKey(VIEWS[i]))), series == i);
         }
-        ColonyHistory.Series shown = all[Math.clamp(series, 0, all.length - 1)];
-        int chartX = x + 46;
-        // The scale sits outside the chart (its top value above it, the bottom one under it), never over the line.
+        View view = VIEWS[Math.clamp(series, 0, VIEWS.length - 1)];
+        int chartX = x + 50;
         int chartY = y + 11;
-        int chartW = CONTENT_W - 56;
-        int chartH = detailed() ? 60 : 82;
-        card(graphics, chartX - 2, chartY - 2, chartW + 4, chartH + 4, shown.color(), false);
-        float[] values = history.values(shown);
+        int chartW = CONTENT_W - 60;
+        int chartH = detailed() ? 56 : 76;
+        card(graphics, chartX - 2, chartY - 2, chartW + 4, chartH + 4, view.main().color(), false);
+        float[] values = history.values(view.main());
         if (values.length < 2) {
             wrapped(graphics, Component.translatable("gui.antcolonies.stats.collecting", ColonyHistory.INTERVAL / 20), chartX + 2, chartY + 4, chartW - 4, 9, DIM);
             return;
         }
-        // Food in and out together; any other series alone.
-        float[] second = shown == ColonyHistory.Series.FOOD_IN ? history.values(ColonyHistory.Series.FOOD_OUT)
-                : shown == ColonyHistory.Series.FOOD_OUT ? history.values(ColonyHistory.Series.FOOD_IN) : null;
-        float max = 0;
-        float min = Float.MAX_VALUE;
+        float[] second = view.second() == null ? null : history.values(view.second());
+        float lowest = Float.MAX_VALUE;
+        float highest = -Float.MAX_VALUE;
+        float sum = 0;
         for (float v : values) {
-            max = Math.max(max, v);
-            min = Math.min(min, v);
+            lowest = Math.min(lowest, v);
+            highest = Math.max(highest, v);
+            sum += v;
         }
-        float lowest = min;
-        float highest = max;
+        float top = highest;
+        float bottom = lowest;
         if (second != null) {
             for (float v : second) {
-                max = Math.max(max, v);
-                min = Math.min(min, v);
+                top = Math.max(top, v);
+                bottom = Math.min(bottom, v);
             }
         }
-        min = Math.min(0, min);
+        // The scale: rates from zero; counts over the range they moved in (with a little room), so a change shows.
+        float min;
+        float max;
+        if (view.rate()) {
+            min = 0;
+            max = Math.max(top * 1.1F, 0.01F);
+        } else {
+            float pad = Math.max((top - bottom) * 0.15F, Math.max(1, Math.abs(top) * 0.02F));
+            min = Math.max(0, bottom - pad);
+            max = top + pad;
+        }
         float span = Math.max(0.0001F, max - min);
-        // Grid lines at a quarter, half and three quarters.
         for (int g = 1; g < 4; g++) {
             int gy = chartY + chartH - chartH * g / 4;
             graphics.fill(leftPos + chartX, topPos + gy, leftPos + chartX + chartW, topPos + gy + 1, 0x20FFFFFF);
         }
         if (second != null) {
-            plot(graphics, second, chartX, chartY, chartW, chartH, min, span, (shown == ColonyHistory.Series.FOOD_IN ? ColonyHistory.Series.FOOD_OUT
-                    : ColonyHistory.Series.FOOD_IN).color() & 0x99FFFFFF);
+            plot(graphics, second, chartX, chartY, chartW, chartH, min, span, view.second().color());
         }
-        plot(graphics, values, chartX, chartY, chartW, chartH, min, span, shown.color());
-        // The top of the scale and the time span above the chart, the bottom of the scale under it.
-        String minutes = Component.translatable("gui.antcolonies.stats.span", (values.length - 1) * ColonyHistory.INTERVAL / 1200.0).getString();
-        value(graphics, fit("▲ " + number(max), chartW - font.width(minutes) - 6), chartX - 2, chartY - 11, LABEL);
-        label(graphics, minutes, chartX + chartW + 2 - font.width(minutes), chartY - 11, DIM);
-        value(graphics, "▼ " + number(min), chartX - 2, chartY + chartH + 4, LABEL);
+        plot(graphics, values, chartX, chartY, chartW, chartH, min, span, view.main().color());
+        float now = values[values.length - 1];
+        double minutes = (values.length - 1) * ColonyHistory.INTERVAL / 1200.0;
+        String perMinute = Component.translatable("gui.antcolonies.per_minute").getString();
+        // Above the chart: where it stands now. A count with how much it changed over the chart; a pair with both its
+        // numbers, each in its line's colour.
+        int ty = chartY - 11;
+        int topEnd;
+        if (second != null) {
+            String a = Component.translatable(view.main().translationKey() + ".short").getString() + " " + number(now) + perMinute;
+            String b = Component.translatable(view.second().translationKey() + ".short").getString() + " " + number(second[second.length - 1]) + perMinute;
+            value(graphics, fit(a, chartW / 2), chartX - 2, ty, view.main().color());
+            int bx = chartX - 2 + Math.min(chartW / 2, font.width(a) + 8);
+            String shownB = fit(b, chartW / 2);
+            value(graphics, shownB, bx, ty, view.second().color());
+            topEnd = bx + font.width(shownB);
+        } else if (view.rate()) {
+            String nowText = fit(number(now) + perMinute, chartW + 4);
+            value(graphics, nowText, chartX - 2, ty, view.main().color());
+            topEnd = chartX - 2 + font.width(nowText);
+        } else {
+            String nowText = number(now);
+            value(graphics, nowText, chartX - 2, ty, view.main().color());
+            float change = now - values[0];
+            String changeText = (change >= 0 ? "+" : "-") + number(Math.abs(change));
+            if (values[0] > 0 && Math.abs(change) >= 0.5F) {
+                changeText += " (" + Math.round(Math.abs(change) / values[0] * 100) + "%)";
+            }
+            int cx = chartX - 2 + font.width(nowText) + 6;
+            String shownChange = fit(changeText, chartX + chartW + 2 - cx);
+            value(graphics, shownChange, cx, ty, change > 0.5F ? GOOD : change < -0.5F ? BAD : DIM);
+            topEnd = cx + font.width(shownChange);
+        }
+        // Under it: its low and high, and how long it covers.
+        int by = chartY + chartH + 4;
+        String span2 = Component.translatable("gui.antcolonies.stats.minutes", oneDecimal(minutes)).getString();
+        int spanX = chartX + chartW + 2 - font.width(span2);
+        // The chart's minutes at the top right when the numbers there leave room, else under the chart.
+        boolean spanOnTop = topEnd + 6 <= spanX;
+        label(graphics, span2, spanX, spanOnTop ? ty : by, DIM);
+        int bottomW = spanOnTop ? chartW + 4 : chartW - font.width(span2) - 2;
+        float otherAverage = 0;
+        if (second != null) {
+            for (float v : second) {
+                otherAverage += v;
+            }
+            otherAverage /= second.length;
+            // A pair: what it comes to, in minus out (born minus died), over the chart's minutes.
+            float net = sum / values.length - otherAverage;
+            label(graphics, fit(Component.translatable("gui.antcolonies.stats.net", (net >= 0 ? "+" : "-") + number(Math.abs(net)) + perMinute).getString(),
+                    bottomW), chartX - 2, by, net >= 0 ? GOOD : BAD);
+        } else {
+            label(graphics, fit(Component.translatable("gui.antcolonies.stats.low_high", number(lowest), number(highest)).getString(), bottomW),
+                    chartX - 2, by, LABEL);
+        }
         // The value under the mouse.
         if (over(mouseX, mouseY, chartX, chartY, chartW, chartH)) {
             int index = (int) Math.round((mouseX - leftPos - chartX) / (double) chartW * (values.length - 1));
             index = Math.clamp(index, 0, values.length - 1);
             int px = chartX + (int) Math.round(index * chartW / (double) (values.length - 1));
             graphics.fill(leftPos + px, topPos + chartY, leftPos + px + 1, topPos + chartY + chartH, 0x60FFFFFF);
-            hoverStat = List.of(Component.translatable(shown.translationKey()), Component.literal(number(values[index])).withStyle(ChatFormatting.AQUA),
-                    Component.translatable("gui.antcolonies.stats.ago", (values.length - 1 - index) * ColonyHistory.INTERVAL / 1200.0)
-                            .withStyle(ChatFormatting.DARK_GRAY));
+            List<Component> lines = new ArrayList<>();
+            lines.add(Component.translatable(view.main().translationKey()));
+            lines.add(Component.literal(number(values[index]) + (view.rate() ? perMinute : "")).withColor(view.main().color() & 0xFFFFFF));
+            if (second != null) {
+                lines.add(Component.translatable(view.second().translationKey()));
+                lines.add(Component.literal(number(second[Math.min(index, second.length - 1)]) + perMinute).withColor(view.second().color() & 0xFFFFFF));
+            }
+            lines.add(Component.translatable("gui.antcolonies.stats.ago", oneDecimal((values.length - 1 - index) * ColonyHistory.INTERVAL / 1200.0))
+                    .withStyle(ChatFormatting.DARK_GRAY));
+            hoverStat = lines;
         }
         if (detailed()) {
-            float sum = 0;
-            for (float v : values) {
-                sum += v;
+            int sy = by + 11;
+            float average = sum / values.length;
+            if (view.rate()) {
+                // Rates: the average and what it came to over the chart's minutes; a pair's each side named in its colour.
+                String main = Component.translatable("gui.antcolonies.stats.average_total", number(average) + perMinute, number(average * minutes)).getString();
+                if (second == null) {
+                    label(graphics, fit(main, chartW + 4), chartX - 2, sy, LABEL);
+                } else {
+                    String mainName = Component.translatable(view.main().translationKey() + ".short").getString() + ": ";
+                    String otherName = Component.translatable(view.second().translationKey() + ".short").getString() + ": ";
+                    label(graphics, fit(mainName + main, chartW + 4), chartX - 2, sy, view.main().color());
+                    label(graphics, fit(otherName + Component.translatable("gui.antcolonies.stats.average_total", number(otherAverage) + perMinute,
+                            number(otherAverage * minutes)).getString(), chartW + 4), chartX - 2, sy + 10, view.second().color());
+                }
+            } else {
+                label(graphics, fit(Component.translatable("gui.antcolonies.stats.average_only", number(average)).getString(), chartW + 4),
+                        chartX - 2, sy, LABEL);
             }
-            int sy = chartY + chartH + 14;
-            label(graphics, fit(Component.translatable("gui.antcolonies.stats.range", number(lowest), number(highest)).getString(), chartW + 4),
-                    chartX - 2, sy, LABEL);
-            label(graphics, fit(Component.translatable("gui.antcolonies.stats.average", number(sum / values.length),
-                    number(values[values.length - 1])).getString(), chartW + 4), chartX - 2, sy + 10, LABEL);
         }
+    }
+
+    private static String oneDecimal(double value) {
+        return String.format(java.util.Locale.ROOT, "%.1f", value);
     }
 
     private @Nullable List<Component> hoverStat;
@@ -1313,7 +1565,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             if (!detailed()) {
                 for (int i = 0; i < finds.size() && i < 14; i++) {
                     int cx = CONTENT_X + 4 + (i % 7) * 27;
-                    int cy = CONTENT_Y + 26 + (i / 7) * 33;
+                    int cy = productionCardsY + (i / 7) * 33;
                     if (over(mouseX, mouseY, cx, cy, 25, 31)) {
                         Find find = finds.get(i);
                         double window = productionWindow(menu.colony());
@@ -1353,7 +1605,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             return;
         }
         hoverStat = null;
-        if (page == 2) {
+        if (page == 2 && detailed()) {
             List<Colony.Assignment> list = menu.colony().assignments();
             for (int row = 0; row < JOB_ROWS && jobScroll + row < list.size(); row++) {
                 Colony.Assignment job = list.get(jobScroll + row);
@@ -1367,8 +1619,9 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
 
     private List<Component> jobTooltip(Colony.Assignment job) {
         List<Component> lines = new ArrayList<>();
-        lines.add(Component.translatable(job.kind().translationKey()));
-        lines.add(Component.literal(job.pos().getX() + ", " + job.pos().getY() + ", " + job.pos().getZ()).withStyle(ChatFormatting.DARK_GRAY));
+        lines.add(Component.literal(siteName(menu.colony().assignments(), Math.max(0, menu.colony().assignments().indexOf(job)))));
+        lines.add(Component.translatable("gui.antcolonies.site.place", sitePlace(job.pos()), job.pos().getX() + ", " + job.pos().getY() + ", " + job.pos().getZ())
+                .withStyle(ChatFormatting.DARK_GRAY));
         lines.add(Component.translatable(job.kind() == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.farmers"
                 : job.kind() == StructureKind.HUNTING_GROUND ? "gui.antcolonies.site.hunters"
                 : job.kind() == StructureKind.LIQUID_CHAMBER ? "gui.antcolonies.site.liquid_ants" : "gui.antcolonies.site.workers", job.assigned(), job.capacity(),

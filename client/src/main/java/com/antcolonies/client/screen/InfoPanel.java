@@ -333,7 +333,8 @@ public final class InfoPanel {
     /** Draws the rows that fit in the box, from the scrolled-to row on. */
     public void draw(GuiGraphicsExtractor graphics, Font font, int x, int y, int h) {
         hovers.clear();
-        scroll = Math.clamp(scroll, 0, Math.max(0, rows.size() - 1));
+        shownHeight = h;
+        scroll = Math.clamp(scroll, 0, maxScroll());
         int top = y;
         for (int i = scroll; i < rows.size(); i++) {
             Row row = rows.get(i);
@@ -351,6 +352,24 @@ public final class InfoPanel {
         }
     }
 
+    /** The box's height as last drawn (until then, any row can be the top one). */
+    private int shownHeight = Integer.MAX_VALUE;
+
+    /** The furthest row the page scrolls to: the one from which the last rows just fill the box, never past the end. */
+    private int maxScroll() {
+        if (shownHeight == Integer.MAX_VALUE) {
+            return Math.max(0, rows.size() - 1);
+        }
+        int used = 0;
+        for (int i = rows.size() - 1; i >= 0; i--) {
+            used += rows.get(i).height();
+            if (used > shownHeight) {
+                return Math.min(i + 1, rows.size() - 1);
+            }
+        }
+        return 0;
+    }
+
     private boolean canScrollDown(int top, int h) {
         int used = 0;
         for (int i = scroll; i < rows.size(); i++) {
@@ -365,7 +384,7 @@ public final class InfoPanel {
     /** Scrolls a row at a time; true if the page moved. */
     public boolean scroll(double amount) {
         int before = scroll;
-        scroll = Math.clamp(scroll - (int) Math.signum(amount), 0, Math.max(0, rows.size() - 1));
+        scroll = Math.clamp(scroll - (int) Math.signum(amount), 0, maxScroll());
         return scroll != before;
     }
 

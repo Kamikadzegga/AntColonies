@@ -251,9 +251,9 @@ public final class ColonySimulator {
             food = 0;
             starvedMinutes += step.dt * (1 - fedShare);
         }
-        if (food > foodCapacity) {
-            food = foodCapacity;
-        }
+        // Farming can't fill past the food room, but food already over it (the room shrank while a Storage's chunk is
+        // unloaded) is kept and eaten down, not deleted.
+        food = Math.min(food, Math.max(foodCapacity, ColonyAccess.food(colony)));
         if (starvedMinutes > 0) {
             step.status |= ColonyStatus.STARVING.bit() | ColonyStatus.NO_FOOD.bit();
         } else if (food <= 0 && consumption > 0) {
@@ -288,7 +288,8 @@ public final class ColonySimulator {
             hunts += site.rate();
         }
         if (hunted > 0) {
-            ColonyAccess.setFood(colony, Math.min(foodCapacity, ColonyAccess.food(colony) + hunted), ColonyAccess.starvedMinutes(colony));
+            ColonyAccess.setFood(colony, Math.max(ColonyAccess.food(colony), Math.min(foodCapacity, ColonyAccess.food(colony) + hunted)),
+                    ColonyAccess.starvedMinutes(colony));
         }
         for (Allocation.Site site : allocation.of(StructureKind.HARVESTING_SITE)) {
             Farming.harvest(step, site);

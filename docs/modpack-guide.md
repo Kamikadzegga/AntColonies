@@ -80,7 +80,7 @@ world is loaded (singleplayer: when you open the world; server: at startup), and
 
 ## 3. Recipes
 
-Every crafted item (Terrarium, chambers, upgrades, tools, foods, the lab) uses ordinary vanilla recipe types
+Every crafted item (Formicarium, chambers, upgrades, tools, foods, the lab) uses ordinary vanilla recipe types
 (`minecraft:crafting_shaped`, `crafting_shapeless`), 72 recipes in all, in `data/antcolonies/recipe/`. Change them like
 any vanilla recipe: replace the file with the same name, or remove and add recipes with KubeJS.
 
@@ -158,7 +158,7 @@ KubeJS (tested, see the note at the top):
 ```js
 // kubejs/server_scripts/antcolonies_recipes.js
 ServerEvents.recipes(event => {
-  // A harder Terrarium: replace the built-in recipe.
+  // A harder Formicarium: replace the built-in recipe.
   event.remove({ output: 'antcolonies:terrarium' })
   event.shaped('antcolonies:terrarium', [
     'GGG',
@@ -199,7 +199,7 @@ the recipes as KubeJS changed them.
 ## 4. Ant food
 
 What colonies can eat, and how much food each item is worth, is the data map `antcolonies:ant_food`. Items that are not
-in it can't be fed to a Terrarium.
+in it can't be fed to a Formicarium.
 
 File: `data/antcolonies/data_maps/item/ant_food.json`. Data maps from several packs **merge**, so your file adds to and
 overrides single entries of the built-in one; it doesn't have to repeat them.
@@ -269,7 +269,7 @@ required; every other field has a default.
 | `look.crystal` | none | A color adds crystal spikes. |
 | `look.glow` | `false` | Crystals glow in the dark. |
 | `look.size` | `1.0` | 0.25–4. |
-| `climate` | `temperate` | `temperate`, `cold`, `hot`, `underground`, `nether` or `any`. A Terrarium in the wrong climate loses health, unless it stands on a block of the block tag `antcolonies:climate/<climate>` (add your own blocks to those tags; snow and ice for cold, sand for hot...). |
+| `climate` | `temperate` | `temperate`, `cold`, `hot`, `underground`, `nether` or `any`. A Formicarium in the wrong climate loses health, unless it stands on a block of the block tag `antcolonies:climate/<climate>` (add your own blocks to those tags; snow and ice for cold, sand for hot...). |
 | `spawn_biomes` | none | A biome tag where wild ants of this species appear (section 11). Without it the species is never wild. |
 | `diet.consumption` | `1.0` | Food use multiplier. |
 | `diet.special_food`, `diet.special_per_egg` | none, `0` | Special food the eggs need (section 4). |
@@ -405,7 +405,7 @@ species don't list (another mod with tin, say), replace the species file and its
 
 ## 6. Evolutions
 
-File: `data/<ns>/antcolonies/evolution/<id>.json`. Feeding `item` to a Terrarium of species `from` gives a chance per
+File: `data/<ns>/antcolonies/evolution/<id>.json`. Feeding `item` to a Formicarium of species `from` gives a chance per
 attempt to turn the colony into `to`.
 
 ```json
@@ -423,12 +423,12 @@ attempt to turn the colony into `to`.
 | Field | Default | Meaning |
 |---|---|---|
 | `from`, `to` | required | Species ids. |
-| `item` | required | The ingredient fed to the Terrarium. |
+| `item` | required | The ingredient fed to the Formicarium. |
 | `chance` | required | 0–1 per attempt (multiplied by the config's evolution chance multiplier). |
 | `guaranteed_after` | `32` | Attempts after which it always works. |
 | `min_stage` | `1` | Colony stage needed. |
 | `min_population` | `0` | Adults needed. |
-| `dimension` | none | If set (e.g. `"minecraft:the_nether"`), the Terrarium must be in that dimension. |
+| `dimension` | none | If set (e.g. `"minecraft:the_nether"`), the Formicarium must be in that dimension. |
 
 To remove a built-in evolution, replace its file (for example `data/antcolonies/antcolonies/evolution/stone_to_iron.json`)
 with one whose `chance` is `0` and `guaranteed_after` is very large (`100000`).
@@ -526,8 +526,10 @@ Any mod's cables, batteries or generators can power it. Ant Colonies adds one si
 - Recipe: iron ingots around a furnace, copper ingots and redstone underneath (`antcolonies:generator`; change it like
   any recipe, section 3).
 
-The two Generator numbers are in the server config (section 13), under `[power]`: `generatorOutput` (FE per tick,
-default 40) and `generatorPush` (most FE given out per tick, default 1000).
+The Generator numbers are in the server config (section 13), under `[power]`: `generatorOutput` (FE per tick,
+default 40), `generatorPush` (most FE given out per tick, default 1000) and `generatorCapacity` (FE stored, default 100,000).
+The Genetic Laboratory's are next to them: `labEnergy` (FE stored, default 1,000,000) and `labEnergyInput` (most FE taken in per
+tick, default 4,000).
 
 What lab work costs, in FE:
 
@@ -674,7 +676,9 @@ The key is `species.<namespace>.<id>` and `mutation.<namespace>.<id>`, matching 
 `config/antcolonies/server.toml` is created on first launch and synced to players. It holds the numbers that are not
 per species: simulation interval and offline catch-up, capacities, egg and growth times, food use and starvation,
 production rates, upgrade strengths, trait multipliers and starting weights, mutation, evolution and hybrid chance
-multipliers, wild Queen and soldier chances, the Generator's output (`[power]`), the ants a Guard Ant
+multipliers, Queen growth (`queenGrowthCap`, `queenGrowthTraits`), wild Queen and soldier chances, home nests (`homeNestAnts`,
+`homeNestRefillMinutes`), Royal Guard Ants (`royalGuardReach`, `royalGuardLeash`), brood clusters (`clusterBrood`,
+`anthillCrowdRange`), Tweezers (`tweezersAnts`), the machines' energy and tanks (`[power]`), the ants a Guard Ant
 costs (`[guards] antCost`), Queen-only founding (`[founding]`), how low food slows a colony (`lowFoodMinutes`, `lowFoodFactor`,
 `hungryFoodWorkFactor`), the Foraging Site modes and expeditions (`focusedForagingBoost`, `focusedForagingPenalty`,
 `expeditionRolls`) and Colony Connectors (`[connectors]`: `transferInterval`, `maxFoodPerMinute`, `maxItemsPerMinute`, `connectorRange`). To make every rare
@@ -744,8 +748,8 @@ The mod's 35 advancements are ordinary data files in `data/antcolonies/advanceme
 file at the same path to change it.
 
 For your own advancements, and for quest mods that complete quests from advancements (FTB Quests, Heracles), use the
-mod's trigger **`antcolonies:colony`**. It fires when a player opens a Terrarium, and every few seconds for players
-within 16 blocks of one. It checks that Terrarium's colony. All conditions are optional; leave them all out and any
+mod's trigger **`antcolonies:colony`**. It fires when a player opens a Formicarium, and every few seconds for players
+within 16 blocks of one. It checks that Formicarium's colony. All conditions are optional; leave them all out and any
 colony counts.
 
 | Condition | Type | Meaning |
@@ -781,7 +785,7 @@ A pack's "1,000 Diamond Ants" goal (`data/mypack/advancement/diamond_thousand.js
 ```
 
 Redstone and comparators work the same in every pack (see the [gameplay guide](gameplay.md#structures)): a redstone signal pauses a job site or a
-Generator, and comparators read a Terrarium's food, a job site's ants, storage fullness and stored FE.
+Generator, and comparators read a Formicarium's food, a job site's ants, storage fullness and stored FE.
 
 ## 16. What cannot be changed with data
 

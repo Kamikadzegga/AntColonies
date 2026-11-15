@@ -69,6 +69,10 @@ public class AntColoniesEmiPlugin implements EmiPlugin {
     public void register(EmiRegistry registry) {
         // The creative tab's icon item is not an ingredient of anything.
         registry.removeEmiStacks(dev.emi.emi.api.stack.EmiStack.of(ModItems.ANT_HEAD.get()));
+        // The Formicarium was the Terrarium: a search for the old word still finds it and its glass.
+        Component alias = Component.translatable("alias.antcolonies.terrarium");
+        registry.addAlias(EmiStack.of(ModItems.TERRARIUM.get()), alias);
+        registry.addAlias(EmiStack.of(com.antcolonies.core.registry.ModDecor.TERRARIUM_GLASS.asItem()), alias);
         var level = Objects.requireNonNull(Minecraft.getInstance().level, "EMI registers recipes in a world");
         AntRecipes recipes = new AntRecipes(level.registryAccess());
         for (Kind kind : kinds()) {

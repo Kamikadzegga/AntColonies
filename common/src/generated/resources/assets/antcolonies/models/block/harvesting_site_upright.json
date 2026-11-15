@@ -1,0 +1,36 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "antcolonies:block/formicarium_panel",
+    "panel": "antcolonies:block/formicarium_panel",
+    "front": "antcolonies:block/harvesting_site_front"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 3.05],
+      "to": [16, 16, 12.95],
+      "faces": {
+        "north": {
+          "uv": [0, 0, 16, 16],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [16, 0, 0, 16],
+          "texture": "#front"
+        },
+        "west": {
+          "texture": "#panel"
+        },
+        "east": {
+          "texture": "#panel"
+        },
+        "up": {
+          "texture": "#panel"
+        },
+        "down": {
+          "texture": "#panel"
+        }
+      }
+    }
+  ]
+}

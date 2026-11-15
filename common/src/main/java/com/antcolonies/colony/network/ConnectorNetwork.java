@@ -146,6 +146,7 @@ public final class ConnectorNetwork {
     /** One pass over every channel of this level. Game tests call it directly. */
     public static void tick(ServerLevel level) {
         Registry registry = registry(level);
+        forgetQuietChannels(level);
         if (registry.channels.isEmpty()) {
             return;
         }
@@ -302,10 +303,12 @@ public final class ConnectorNetwork {
             Colony colony = entry.getKey().colony();
             List<Colony.NetworkLink> merged = new ArrayList<>();
             // Keep what the colony knows of its other channels (they pass on their own).
-            colony.network().stream().filter(link -> link.channel() != channel && NETWORK_SEEN.getOrDefault(entry.getKey(), 0L) >= now - 200).forEach(merged::add);
+            Map<Integer, Long> seen = NETWORK_SEEN.computeIfAbsent(entry.getKey(), t -> new HashMap<>());
+            colony.network().stream().filter(link -> link.channel() != channel && seen.getOrDefault(link.channel(), Long.MIN_VALUE / 2) >= now - quietTicks())
+                    .forEach(merged::add);
             merged.addAll(entry.getValue());
             ColonyAccess.setNetwork(colony, merged);
-            NETWORK_SEEN.put(entry.getKey(), now);
+            seen.put(channel, now);
         }
     }
 
@@ -318,8 +321,38 @@ public final class ConnectorNetwork {
         return Math.abs(a.getX() - b.getX()) <= range && Math.abs(a.getZ() - b.getZ()) <= range;
     }
 
-    /** When each colony last heard from a network (other channels' entries expire when it stops hearing). */
-    private static final java.util.WeakHashMap<TerrariumBlockEntity, Long> NETWORK_SEEN = new java.util.WeakHashMap<>();
+    /** When each colony last heard from each channel (a channel's entries expire when it stops hearing from it). */
+    private static final java.util.WeakHashMap<TerrariumBlockEntity, Map<Integer, Long>> NETWORK_SEEN = new java.util.WeakHashMap<>();
+
+    /** How long a colony keeps a channel's entries on its Network page after it last heard from it. */
+    private static long quietTicks() {
+        return Math.max(200, 2L * AntConfig.get(AntConfig.CONNECTOR_INTERVAL));
+    }
+
+    /**
+     * Drops the channels a colony no longer hears from (its connector was switched to another channel, or broken) from its
+     * Network page. Without this a colony whose last connector is gone would show its old network for ever.
+     */
+    private static void forgetQuietChannels(ServerLevel level) {
+        long now = level.getGameTime();
+        var it = NETWORK_SEEN.entrySet().iterator();
+        while (it.hasNext()) {
+            var entry = it.next();
+            TerrariumBlockEntity terrarium = entry.getKey();
+            if (terrarium.getLevel() != level) {
+                continue;
+            }
+            Map<Integer, Long> seen = entry.getValue();
+            if (!seen.values().removeIf(time -> time < now - quietTicks())) {
+                continue;
+            }
+            Colony colony = terrarium.colony();
+            ColonyAccess.setNetwork(colony, colony.network().stream().filter(link -> seen.containsKey(link.channel())).toList());
+            if (seen.isEmpty()) {
+                it.remove();
+            }
+        }
+    }
 
     private static void moveFood(Colony from, Colony to, double amount) {
         ColonyAccess.setFood(from, ColonyAccess.food(from) - amount, ColonyAccess.starvedMinutes(from));

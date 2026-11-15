@@ -72,7 +72,7 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
     }
 
     private float time() {
-        return minecraft.level == null ? 0 : minecraft.level.getGameTime() + minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        return minecraft.level == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(minecraft.level.getGameTime(), minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false));
     }
 
     private @Nullable QueenData queen() {
@@ -162,7 +162,7 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
         int y0 = topPos + 107;
         int w = LEFT_W - 8;
         graphics.fill(x0, y0, x0 + w, y0 + 7, 0xFF06121A);
-        int filled = (int) Math.round((w - 2) * Math.clamp(energy / (double) GeneticLabBlockEntity.ENERGY_CAPACITY, 0, 1));
+        int filled = (int) Math.round((w - 2) * Math.clamp(energy / (double) GeneticLabBlockEntity.energyCapacity(), 0, 1));
         if (filled > 0) {
             graphics.fillGradient(x0 + 1, y0 + 1, x0 + 1 + filled, y0 + 6, 0xFF7FF0FF, 0xFF1F8FB8);
             float t = time();
@@ -500,7 +500,7 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
         if (over(mouseX, mouseY, LEFT_X + 3, 106, LEFT_W - 6, 9)) {
             graphics.setComponentTooltipForNextFrame(font, List.of(
                     Component.translatable("gui.antcolonies.lab.energy_stored", String.format(Locale.ROOT, "%,d", menu.data(GeneticLabBlockEntity.DATA_ENERGY)),
-                            String.format(Locale.ROOT, "%,d", GeneticLabBlockEntity.ENERGY_CAPACITY)),
+                            String.format(Locale.ROOT, "%,d", GeneticLabBlockEntity.energyCapacity())),
                     Component.translatable("gui.antcolonies.lab.power_hint").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
             return;
         }

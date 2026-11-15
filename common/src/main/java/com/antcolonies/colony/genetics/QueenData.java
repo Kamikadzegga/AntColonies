@@ -23,10 +23,10 @@ import net.minecraft.util.RandomSource;
  * @param growth minutes her colony has spent at a bigger stage than {@code grown}, towards growing into the next one
  */
 public record QueenData(Identifier species, Genome genome, int grown, float growth) {
-    /** The highest level a Queen's trait reaches by growing with her colony: higher takes the Genetic Laboratory. */
-    public static final int GROWTH_CAP = 7;
-    /** Traits that go up by one at each new colony stage. */
-    public static final int TRAITS_PER_STAGE = 2;
+    /** The highest level a Queen's trait reaches by growing with her colony (config queenGrowthCap): higher takes the Genetic Laboratory. */
+    public static int growthCap() {
+        return AntConfig.get(AntConfig.QUEEN_GROWTH_CAP);
+    }
 
     public static final Codec<QueenData> CODEC = RecordCodecBuilder.create(i -> i.group(
             Identifier.CODEC.fieldOf("species").forGetter(QueenData::species),
@@ -74,7 +74,7 @@ public record QueenData(Identifier species, Genome genome, int grown, float grow
     /**
      * The Queen grows with her colony, in her own time: while her colony is at a bigger stage than she has grown into,
      * {@code minutes} count towards the next stage ({@link #minutesFor}); once enough have passed she grows into it, and
-     * two traits picked at random (among those below {@link #GROWTH_CAP} and the configured maximum) go up by one. One
+     * queenGrowthTraits traits picked at random (among those below {@link #growthCap} and the maximum level) go up by one. One
      * stage at a time, so a new Queen in a big colony takes a while to catch up. Time already counted is kept if the
      * colony shrinks. A Queen saved before Queens grew only takes the stage. Returns this Queen unchanged when nothing
      * changes; the traits raised are added to {@code raised}.
@@ -91,7 +91,7 @@ public record QueenData(Identifier species, Genome genome, int grown, float grow
         if (progress < need) {
             return new QueenData(species, genome, grown, (float) progress);
         }
-        int cap = Math.min(GROWTH_CAP, Trait.maxLevel());
+        int cap = Math.min(growthCap(), Trait.maxLevel());
         Genome next = genome;
         List<Trait> open = new ArrayList<>();
         for (Trait trait : Trait.values()) {
@@ -99,7 +99,7 @@ public record QueenData(Identifier species, Genome genome, int grown, float grow
                 open.add(trait);
             }
         }
-        for (int n = 0; n < TRAITS_PER_STAGE && !open.isEmpty(); n++) {
+        for (int n = 0, traits = AntConfig.get(AntConfig.QUEEN_GROWTH_TRAITS); n < traits && !open.isEmpty(); n++) {
             Trait trait = open.remove(random.nextInt(open.size()));
             next = next.withLevel(trait, next.level(trait) + 1);
             raised.add(trait);

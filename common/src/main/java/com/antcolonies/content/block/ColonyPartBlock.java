@@ -30,13 +30,25 @@ public abstract class ColonyPartBlock extends ColonyEntityBlock {
         for (BooleanProperty property : CONNECTED.values()) {
             state = state.setValue(property, false);
         }
-        registerDefaultState(state);
+        registerDefaultState(state.setValue(UPRIGHT, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         CONNECTED.values().forEach(builder::add);
+        builder.add(UPRIGHT);
+    }
+
+    /**
+     * Whether the part's colony is built upright. A colony's Formicarium decides it for the whole build (see
+     * TerrariumBlockEntity#updateStance): the parts of a colony built flat on the ground are glass cases; those of one
+     * built upward are an upright nest, seen through a glass at the front and at the back.
+     */
+    public static final BooleanProperty UPRIGHT = BooleanProperty.create("upright");
+
+    public static boolean upright(BlockState state) {
+        return state.getBlock() instanceof ColonyPartBlock && state.getValue(UPRIGHT);
     }
 
     /** Whether a neighbour is part of a colony build (any colony: the frame is only a look). */

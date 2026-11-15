@@ -47,6 +47,15 @@ public class UpgradeStationMenu extends BaseMenu {
                 return false;
             }
 
+            /**
+             * Only what the inputs make right now: the slot can be out of date (another player or a hopper took an input
+             * while this screen was open), and an out-of-date result would come for free.
+             */
+            @Override
+            public boolean mayPickup(Player taker) {
+                return resultIsCurrent();
+            }
+
             @Override
             public void onTake(Player taker, ItemStack stack) {
                 Optional<UpgradeStationBlockEntity.Result> made = current();
@@ -75,6 +84,13 @@ public class UpgradeStationMenu extends BaseMenu {
         slotsChanged(station);
     }
 
+    /** Shift-clicking puts an Upgrade Base in the base slot and anything else in the material slot. */
+    @Override
+    protected boolean quickMovesInto(int slot, ItemStack stack) {
+        boolean base = stack.is(com.antcolonies.core.registry.ModItems.UPGRADE_BASE.get());
+        return slot == 0 ? base : slot != 1 || !base;
+    }
+
     public static UpgradeStationMenu fromNetwork(int containerId, Inventory inventory, RegistryFriendlyByteBuf buffer) {
         BlockPos pos = buffer.readBlockPos();
         UpgradeStationBlockEntity station = inventory.player.level().getBlockEntity(pos) instanceof UpgradeStationBlockEntity be ? be
@@ -89,6 +105,24 @@ public class UpgradeStationMenu extends BaseMenu {
     private Optional<UpgradeStationBlockEntity.Result> current() {
         return UpgradeStationBlockEntity.result(player.level().registryAccess(), station.getItem(UpgradeStationBlockEntity.SLOT_BASE),
                 station.getItem(UpgradeStationBlockEntity.SLOT_MATERIAL), selected());
+    }
+
+    /** Whether the result slot shows exactly what the inputs make now. */
+    private boolean resultIsCurrent() {
+        ItemStack shown = result.getItem(0);
+        return !shown.isEmpty() && current().map(made -> ItemStack.matches(made.output(), shown)).orElse(false);
+    }
+
+    /** Keeps the result in step with the inputs even when they change from outside this screen. */
+    @Override
+    public void broadcastChanges() {
+        if (!player.level().isClientSide() && !resultIsCurrent()) {
+            ItemStack now = current().map(UpgradeStationBlockEntity.Result::output).orElse(ItemStack.EMPTY);
+            if (!ItemStack.matches(now, result.getItem(0))) {
+                result.setItem(0, now);
+            }
+        }
+        super.broadcastChanges();
     }
 
     @Override
@@ -111,7 +145,8 @@ public class UpgradeStationMenu extends BaseMenu {
     public ItemStack quickMoveStack(Player player, int index) {
         if (index == 2) {
             Slot slot = slots.get(2);
-            if (!slot.hasItem()) {
+            if (!slot.hasItem() || !resultIsCurrent()) {
+                slotsChanged(station);
                 return ItemStack.EMPTY;
             }
             ItemStack stack = slot.getItem().copy();

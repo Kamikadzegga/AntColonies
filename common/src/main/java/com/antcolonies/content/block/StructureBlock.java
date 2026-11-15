@@ -26,7 +26,7 @@ public class StructureBlock extends ColonyPartBlock {
     public StructureBlock(StructureKind kind, Properties properties) {
         super(properties);
         this.kind = kind;
-        // Every chamber is a full glass case (its ants and the Storage's heap are inside, on its floor).
+        // Every chamber is a full block: a nest behind a front glass.
         this.shape = Shapes.block();
     }
 
@@ -46,7 +46,10 @@ public class StructureBlock extends ColonyPartBlock {
 
     @Override
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null : createTickerHelper(type, ModBlockEntities.STRUCTURE.get(), StructureBlockEntity::serverTick);
+        if (level.isClientSide()) {
+            return createTickerHelper(type, ModBlockEntities.STRUCTURE.get(), (l, pos, s, be) -> com.antcolonies.client.ClientHooks.structureTick(be));
+        }
+        return createTickerHelper(type, ModBlockEntities.STRUCTURE.get(), StructureBlockEntity::serverTick);
     }
 
     @Override

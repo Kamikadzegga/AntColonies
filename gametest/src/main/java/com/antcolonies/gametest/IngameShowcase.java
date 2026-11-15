@@ -76,7 +76,7 @@ public class IngameShowcase {
 
     public IngameShowcase(IEventBus modEventBus) {
         if (Files.exists(MARKER) || Files.exists(GUI_MARKER) || Files.exists(UPDATE_MARKER) || Files.exists(STRESS_MARKER) || Files.exists(MACHINE_MARKER)
-                || Files.exists(ANTHILL_MARKER) || Files.exists(HOVER_MARKER) || Files.exists(LIQUID_MARKER)) {
+                || Files.exists(ANTHILL_MARKER) || Files.exists(HOVER_MARKER) || Files.exists(LIQUID_MARKER) || Files.exists(SEARCH_MARKER) || Files.exists(NEST_MARKER) || Files.exists(ANIM_MARKER) || Files.exists(FLAT_MARKER)) {
             LOGGER.info("[Showcase] marker found");
             NeoForge.EVENT_BUS.addListener(this::onClientTick);
         } else if (Files.exists(CONFIG_MARKER)) {
@@ -558,6 +558,7 @@ public class IngameShowcase {
             int page = (int) target[4];
             if (phase == 0) {
                 com.antcolonies.client.screen.TerrariumScreen.showDetailed((boolean) target[5]);
+                com.antcolonies.client.screen.TerrariumScreen.showSeries(target.length > 6 ? (int) target[6] : 0);
                 if (page >= 0) {
                     com.antcolonies.client.screen.TerrariumScreen.showPage(page);
                 }
@@ -747,7 +748,15 @@ public class IngameShowcase {
                 return;
             }
             ticks++;
-            if (liquidCheck) {
+            if (flatCheck) {
+                flatStep(minecraft, minecraft.getSingleplayerServer());
+            } else if (animCheck) {
+                animStep(minecraft, minecraft.getSingleplayerServer());
+            } else if (nestCheck) {
+                nestStep(minecraft, minecraft.getSingleplayerServer());
+            } else if (searchCheck) {
+                searchStep(minecraft);
+            } else if (liquidCheck) {
                 liquidStep(minecraft, minecraft.getSingleplayerServer());
             } else if (hoverCheck) {
                 hoverStep(minecraft, minecraft.getSingleplayerServer());
@@ -814,6 +823,7 @@ public class IngameShowcase {
             {"u09_genetics_visual", 0, 0, 5, 4, false}, {"u10_genetics_detailed", 0, 0, 5, 4, true},
             {"u11_network_visual", 8, 0, 5, 5, false}, {"u12_network_detailed", 8, 0, 5, 5, true},
             {"u13_statistics_visual", 0, 0, 5, 6, false}, {"u14_statistics_detailed", 0, 0, 5, 6, true},
+            {"u14b_statistics_food_flow", 0, 0, 5, 6, true, 5}, {"u14c_statistics_births", 0, 0, 5, 6, false, 6},
             {"u15_info", 0, 0, 5, 7, false},
             {"u16_founding_feeding", 4, 0, 12, 0, false}, {"u17_founding_detailed", 4, 0, 12, 0, true},
             {"u18_empty_network", 0, 0, 5, 5, false},
@@ -848,6 +858,7 @@ public class IngameShowcase {
             int page = (int) target[4];
             if (phase == 0) {
                 com.antcolonies.client.screen.TerrariumScreen.showDetailed((boolean) target[5]);
+                com.antcolonies.client.screen.TerrariumScreen.showSeries(target.length > 6 ? (int) target[6] : 0);
                 if (page >= 0) {
                     com.antcolonies.client.screen.TerrariumScreen.showPage(page);
                 }
@@ -909,6 +920,379 @@ public class IngameShowcase {
      * one (wrong ants), a Queen founding alone, settings on the Diamond colony's sites, half an hour of history, and a
      * gallery of the building blocks behind the player.
      */
+    // ------------------------------------------------------------------ Ant animations (marker "anim-check")
+
+    /**
+     * A file named {@code anim-check} in the run folder: films the ants, a frame every few ticks, to look at how they move.
+     * (a) an upright colony's Formicarium close up: its Queen walking her floor, workers in the tunnels and chambers;
+     * (b) a flat Formicarium's front glass: its Queen and the tunnel ants; (c) an anthill's great Queen walking.
+     */
+    private static final Path ANIM_MARKER = FMLPaths.GAMEDIR.get().resolve("anim-check");
+    private final boolean animCheck = Files.exists(ANIM_MARKER);
+    private com.antcolonies.content.entity.@org.jspecify.annotations.Nullable WildAnt filmedQueen;
+
+    private void animStep(Minecraft minecraft, IntegratedServer server) {
+        if (ticks == 60) {
+            origin = minecraft.player.blockPosition();
+            minecraft.options.pauseOnLostFocus = false;
+            minecraft.options.hideGui = true;
+            server.execute(() -> {
+                ServerLevel level = server.overworld();
+                command(server, "time set noon");
+                command(server, "difficulty peaceful");
+                command(server, "gamerule doDaylightCycle false");
+                // (a) Upright: a Formicarium with a Nest Chamber and a Foraging Site on it.
+                colony(level, origin.offset(0, 0, 6), "fire", 3000, 15000);
+                structure(level, origin.offset(0, 1, 6), StructureKind.NEST_CHAMBER);
+                structure(level, origin.offset(0, 2, 6), StructureKind.FORAGING_SITE);
+                // (b) Flat: a Formicarium on its own.
+                colony(level, origin.offset(6, 0, 6), "fire", 3000, 15000);
+                // (c) The great Queen of an anthill, on open ground.
+                var queen = com.antcolonies.core.registry.ModEntities.WILD_ANT.get().create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                if (queen != null) {
+                    BlockPos at = origin.offset(-6, 0, 6);
+                    queen.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, 90, 0);
+                    queen.setSpecies(AntColonies.id("fire"));
+                    queen.setCaste(Caste.QUEEN);
+                    queen.setGuardian(true);
+                    queen.setRank(com.antcolonies.content.entity.WildAnt.Rank.GREAT_QUEEN);
+                    queen.setAnthill(at);
+                    queen.setPersistenceRequired();
+                    level.addFreshEntity(queen);
+                    filmedQueen = queen;
+                }
+            });
+            return;
+        }
+        if (ticks == 380) {
+            camera(server, 0.5, 0.55 - 1.62, 5.05, 0, 0);
+        } else if (ticks >= 400 && ticks < 528 && (ticks - 400) % 8 == 0) {
+            screenshot(minecraft, String.format("anim-a%02d", (ticks - 400) / 8 + 1));
+        } else if (ticks == 530) {
+            camera(server, 6.5, 0.5 - 1.62, 5.1, 0, 12);
+        } else if (ticks >= 550 && ticks < 678 && (ticks - 550) % 8 == 0) {
+            screenshot(minecraft, String.format("anim-b%02d", (ticks - 550) / 8 + 1));
+        } else if (ticks == 680) {
+            camera(server, -5.5, 1.3 - 1.62, 2.4, 0, 18);
+        } else if (ticks >= 700 && ticks < 796 && (ticks - 700) % 4 == 0) {
+            screenshot(minecraft, String.format("anim-c%02d", (ticks - 700) / 4 + 1));
+        } else if (ticks == 800) {
+            finish(minecraft);
+        }
+        // The great Queen walks to and fro in front of the camera (she strolls rarely by herself).
+        if (ticks >= 640 && ticks % 40 == 0 && filmedQueen != null) {
+            var queen = filmedQueen;
+            double x = origin.getX() + ((ticks / 40) % 2 == 0 ? -8.5 : -3.5);
+            server.execute(() -> queen.getNavigation().moveTo(x, origin.getY(), origin.getZ() + 6.5, 1.0));
+        }
+    }
+
+    // ------------------------------------------------------------------ The nest behind the glass (marker "nest-check")
+
+    /**
+     * A file named {@code nest-check} in the run folder: colony blocks in stacks, which are upright nests seen through a
+     * glass at the front and at the back. A wall of every chamber joined to one Formicarium (their tunnels must meet), a
+     * stack of each climate, colonies of Liquid Ants and of hunters at work, stacks facing each way, a stack with a
+     * chamber on the ground beside it, and a colony built flat on the ground, which must look as it always did;
+     * screenshot from the front, close up, from an angle and from behind.
+     */
+    private static final Path NEST_MARKER = FMLPaths.GAMEDIR.get().resolve("nest-check");
+    private final boolean nestCheck = Files.exists(NEST_MARKER);
+
+    private void nestStep(Minecraft minecraft, IntegratedServer server) {
+        switch (ticks) {
+            case 60 -> {
+                origin = minecraft.player.blockPosition();
+                minecraft.options.pauseOnLostFocus = false;
+                minecraft.options.hideGui = true;
+                server.execute(() -> {
+                    ServerLevel level = server.overworld();
+                    command(server, "time set noon");
+                    command(server, "difficulty peaceful");
+                    // The wall: three rows of four, the Formicarium in it, every chamber touching the build.
+                    colony(level, origin.offset(3, 1, 6), "fire", 6000, 20000);
+                    StructureKind[][] wall = {
+                            {StructureKind.NETHER_FORAGING_SITE, StructureKind.LIQUID_CHAMBER, StructureKind.END_FORAGING_SITE, StructureKind.FORAGING_SITE},
+                            {StructureKind.FORAGING_SITE, null, StructureKind.HUNTING_GROUND, StructureKind.COLONY_CONNECTOR},
+                            {StructureKind.HARVESTING_SITE, StructureKind.NEST_CHAMBER, StructureKind.QUEEN_CHAMBER, StructureKind.STORAGE}};
+                    for (int y = 0; y < 3; y++) {
+                        for (int x = 0; x < 4; x++) {
+                            if (wall[y][x] != null) {
+                                StructureBlockEntity chamber = structure(level, origin.offset(2 + x, y, 6), wall[y][x]);
+                                if (wall[y][x] == StructureKind.STORAGE) {
+                                    chamber.setItem(0, new ItemStack(Items.BLAZE_POWDER, 64));
+                                    chamber.setItem(1, new ItemStack(Items.MAGMA_CREAM, 48));
+                                    chamber.setItem(2, new ItemStack(Items.GOLD_NUGGET, 40));
+                                    chamber.setItem(3, new ItemStack(Items.NETHERRACK, 30));
+                                    chamber.setItem(4, new ItemStack(Items.QUARTZ, 20));
+                                    chamber.setItem(5, new ItemStack(Items.DIAMOND, 10));
+                                }
+                            }
+                        }
+                    }
+                    // A stack of each climate: a Formicarium with a Nest Chamber on it. The last Formicarium has no Queen.
+                    String[] climates = {"common", "snow", "desert", "stone", "fire"};
+                    for (int i = 0; i < climates.length; i++) {
+                        colony(level, origin.offset(-2 - i * 2, 0, 6), climates[i], 300 + i * 900, 1500);
+                        structure(level, origin.offset(-2 - i * 2, 1, 6), StructureKind.NEST_CHAMBER);
+                    }
+                    place(level, origin.offset(-12, 0, 6), ModBlocks.TERRARIUM.get().defaultBlockState().setValue(ColonyEntityBlock.FACING, Direction.NORTH));
+                    structure(level, origin.offset(-12, 1, 6), StructureKind.STORAGE);
+                    // Colonies at work, built upward: Water Ants (a Liquid Chamber on the Formicarium, a Storage on that),
+                    // Army Ants (two by two, with a Hunting Ground), and Farmer Ants with a Harvesting Site over them and
+                    // a Foraging Site on the ground beside: two stacked against one flat, so that one is upright too.
+                    colony(level, origin.offset(9, 0, 6), "water", 3000, 15000);
+                    structure(level, origin.offset(9, 1, 6), StructureKind.LIQUID_CHAMBER);
+                    structure(level, origin.offset(9, 2, 6), StructureKind.STORAGE);
+                    colony(level, origin.offset(13, 0, 6), "army", 3000, 15000);
+                    structure(level, origin.offset(13, 1, 6), StructureKind.HUNTING_GROUND);
+                    structure(level, origin.offset(12, 0, 6), StructureKind.NEST_CHAMBER);
+                    structure(level, origin.offset(12, 1, 6), StructureKind.STORAGE);
+                    colony(level, origin.offset(17, 0, 6), "farmer", 3000, 15000);
+                    structure(level, origin.offset(17, 1, 6), StructureKind.HARVESTING_SITE);
+                    structure(level, origin.offset(16, 0, 6), StructureKind.FORAGING_SITE);
+                    // A colony built flat on the ground, as before: glass cases, nothing upright.
+                    colony(level, origin.offset(22, 0, 6), "diamond", 6000, 20000);
+                    structure(level, origin.offset(21, 0, 6), StructureKind.FORAGING_SITE);
+                    structure(level, origin.offset(23, 0, 6), StructureKind.NEST_CHAMBER);
+                    structure(level, origin.offset(22, 0, 7), StructureKind.STORAGE);
+                    // More flat than stacked (three on the ground against two): glass cases, the stacked two as well.
+                    colony(level, origin.offset(27, 0, 6), "common", 800, 1500);
+                    structure(level, origin.offset(27, 1, 6), StructureKind.NEST_CHAMBER);
+                    structure(level, origin.offset(26, 0, 6), StructureKind.FORAGING_SITE);
+                    structure(level, origin.offset(28, 0, 6), StructureKind.STORAGE);
+                    structure(level, origin.offset(29, 0, 6), StructureKind.HARVESTING_SITE);
+                    // Stacks facing each way round a post: each shows its nest at the front and at the back.
+                    BlockPos post = origin.offset(4, 0, -6);
+                    place(level, post, net.minecraft.world.level.block.Blocks.STONE_BRICKS.defaultBlockState());
+                    place(level, post.above(), net.minecraft.world.level.block.Blocks.STONE_BRICKS.defaultBlockState());
+                    for (Direction direction : Direction.Plane.HORIZONTAL) {
+                        BlockPos at = post.relative(direction, 2);
+                        colony(level, at, "common", 800, 1500);
+                        level.setBlock(at, level.getBlockState(at).setValue(ColonyEntityBlock.FACING, direction), Block.UPDATE_ALL);
+                        structure(level, at.above(), StructureKind.FORAGING_SITE);
+                        level.setBlock(at.above(), level.getBlockState(at.above()).setValue(ColonyEntityBlock.FACING, direction), Block.UPDATE_ALL);
+                    }
+                    for (String item : new String[] {"terrarium", "nest_chamber", "foraging_site", "hunting_ground", "harvesting_site", "storage",
+                            "queen_chamber", "nether_foraging_site", "end_foraging_site"}) {
+                        command(server, "give @s antcolonies:" + item);
+                    }
+                    command(server, "give @s antcolonies:colony_connector");
+                    command(server, "give @s antcolonies:liquid_chamber");
+                });
+            }
+            // The ants need a while to come out of their burrows and spread through the build.
+            case 700 -> camera(server, 4.0, 1.5 - 1.62, 1.6, 0, 0);
+            case 740 -> screenshot(minecraft, "n01_wall");
+            case 745 -> camera(server, 3.5, 1.5 - 1.62, 4.2, 0, 0);
+            case 785 -> screenshot(minecraft, "n02_formicarium_close");
+            case 790 -> camera(server, 4.0, 2.5 - 1.62, 3.6, 0, 0);
+            case 830 -> screenshot(minecraft, "n03_top_row");
+            case 835 -> camera(server, 4.0, 1.5 - 1.62, 3.6, 0, 0);
+            case 875 -> screenshot(minecraft, "n04_middle_row");
+            case 880 -> camera(server, 4.0, 0.5 - 1.62, 3.6, 0, 0);
+            case 920 -> screenshot(minecraft, "n05_bottom_row");
+            case 925 -> camera(server, 7.6, 2.4 - 1.62, 3.0, 40, 12);
+            case 965 -> screenshot(minecraft, "n06_wall_angle");
+            case 970 -> camera(server, 4.0, 1.5 - 1.62, 11.6, 180, 0);
+            case 1010 -> screenshot(minecraft, "n07_wall_back");
+            case 1015 -> camera(server, -6.5, 1.1 - 1.62, 1.6, 0, 0);
+            case 1055 -> screenshot(minecraft, "n08_climates");
+            case 1060 -> camera(server, -4.0, 1.0 - 1.62, 3.6, 0, 0);
+            case 1100 -> screenshot(minecraft, "n09_climates_close");
+            case 1105 -> camera(server, 9.5, 1.5 - 1.62, 3.0, 0, 0);
+            case 1145 -> screenshot(minecraft, "n10_water_colony");
+            case 1150 -> camera(server, 13.0, 1.0 - 1.62, 3.6, 0, 0);
+            case 1190 -> screenshot(minecraft, "n11_army_colony");
+            case 1195 -> camera(server, 17.0, 1.0 - 1.62, 3.4, 0, 0);
+            case 1235 -> screenshot(minecraft, "n12_farmer_colony");
+            case 1240 -> camera(server, 9.6, 2.6 - 1.62, -10.4, 50, 18);
+            case 1280 -> screenshot(minecraft, "n13_facing_each_way");
+            case 1285 -> camera(server, -0.6, 2.6 - 1.62, -1.6, -130, 18);
+            case 1325 -> screenshot(minecraft, "n14_facing_other_side");
+            case 1330 -> camera(server, 25.5, 2.8 - 1.62, 2.2, 0, 30);
+            case 1370 -> screenshot(minecraft, "n15_flat_on_the_ground");
+            case 1375 -> camera(server, 6.4, 3.4 - 1.62, 9.4, 150, 20);
+            case 1415 -> screenshot(minecraft, "n16_wall_back_angle");
+            case 1420 -> finish(minecraft);
+            default -> { }
+        }
+    }
+
+    // ------------------------------------------------------------------ Colonies on the ground (marker "flat-check")
+
+    /**
+     * A file named {@code flat-check} in the run folder: colonies built flat on the ground, which share one ground height
+     * with no step or trench between blocks, tunnels behind the outer glass running on from block to block, and trails on
+     * top (the user, 2026-11-14). A row, an L (with an inner corner), a two by two, a ring round the Formicarium, a lone
+     * chamber and a lone Formicarium, each in its own climate; screenshot level with the glass, from above and at angles.
+     */
+    private static final Path FLAT_MARKER = FMLPaths.GAMEDIR.get().resolve("flat-check");
+    private final boolean flatCheck = Files.exists(FLAT_MARKER);
+
+    private void flatStep(Minecraft minecraft, IntegratedServer server) {
+        switch (ticks) {
+            case 60 -> {
+                origin = minecraft.player.blockPosition();
+                minecraft.options.pauseOnLostFocus = false;
+                if (!minecraft.options.hideGui) {
+                    minecraft.options.hideGui = true;
+                }
+                server.execute(() -> {
+                    ServerLevel level = server.overworld();
+                    command(server, "time set noon");
+                    command(server, "difficulty peaceful");
+                    // A row: Storage, Formicarium, Nest Chamber, Foraging Site.
+                    structure(level, origin.offset(0, 0, 6), StructureKind.STORAGE).setItem(0, new ItemStack(Items.WHEAT_SEEDS, 64));
+                    colony(level, origin.offset(1, 0, 6), "common", 3000, 8000);
+                    structure(level, origin.offset(2, 0, 6), StructureKind.NEST_CHAMBER);
+                    structure(level, origin.offset(3, 0, 6), StructureKind.FORAGING_SITE);
+                    // An L: the corner at (8, 7) is left open, an inner corner.
+                    colony(level, origin.offset(8, 0, 6), "desert", 3000, 8000);
+                    structure(level, origin.offset(9, 0, 6), StructureKind.HARVESTING_SITE);
+                    structure(level, origin.offset(9, 0, 7), StructureKind.QUEEN_CHAMBER);
+                    // Two by two.
+                    colony(level, origin.offset(13, 0, 6), "stone", 3000, 8000);
+                    structure(level, origin.offset(14, 0, 6), StructureKind.HUNTING_GROUND);
+                    structure(level, origin.offset(13, 0, 7), StructureKind.COLONY_CONNECTOR);
+                    structure(level, origin.offset(14, 0, 7), StructureKind.LIQUID_CHAMBER);
+                    // A ring of eight round the Formicarium.
+                    colony(level, origin.offset(19, 0, 7), "snow", 6000, 20000);
+                    StructureKind[] ring = {StructureKind.NEST_CHAMBER, StructureKind.FORAGING_SITE, StructureKind.STORAGE, StructureKind.HARVESTING_SITE,
+                            StructureKind.QUEEN_CHAMBER, StructureKind.END_FORAGING_SITE, StructureKind.NETHER_FORAGING_SITE, StructureKind.HUNTING_GROUND};
+                    int k = 0;
+                    for (int dz = -1; dz <= 1; dz++) {
+                        for (int dx = -1; dx <= 1; dx++) {
+                            if (dx != 0 || dz != 0) {
+                                structure(level, origin.offset(19 + dx, 0, 7 + dz), ring[k++]);
+                            }
+                        }
+                    }
+                    // A chamber on its own, and a Formicarium on its own.
+                    structure(level, origin.offset(24, 0, 6), StructureKind.NEST_CHAMBER);
+                    colony(level, origin.offset(26, 0, 6), "fire", 3000, 8000);
+                });
+            }
+            case 700 -> camera(server, 2.0, 0.5 - 1.62, 4.2, 0, 0);
+            case 740 -> screenshot(minecraft, "f01_row_level");
+            case 745 -> camera(server, 2.0, 2.2 - 1.62, 3.6, 0, 35);
+            case 785 -> screenshot(minecraft, "f02_row_above");
+            case 790 -> camera(server, 2.0, 3.6 - 1.62, 6.5, 0, 90);
+            case 830 -> screenshot(minecraft, "f03_row_top");
+            case 835 -> camera(server, 1.6, 0.45 - 1.62, 5.1, 0, 0);
+            case 875 -> screenshot(minecraft, "f04_row_join_close");
+            case 880 -> camera(server, 9.0, 0.5 - 1.62, 4.3, 0, 0);
+            case 920 -> screenshot(minecraft, "f05_l_level");
+            case 925 -> camera(server, 7.2, 1.6 - 1.62, 9.6, -135, 25);
+            case 965 -> screenshot(minecraft, "f06_l_inner_corner");
+            case 970 -> camera(server, 9.0, 3.2 - 1.62, 7.0, 0, 90);
+            case 1010 -> screenshot(minecraft, "f07_l_top");
+            case 1015 -> camera(server, 12.0, 2.0 - 1.62, 4.0, -35, 30);
+            case 1055 -> screenshot(minecraft, "f08_square_angle");
+            case 1060 -> camera(server, 19.5, 2.8 - 1.62, 3.4, 0, 40);
+            case 1100 -> screenshot(minecraft, "f09_ring_angle");
+            case 1105 -> camera(server, 19.5, 4.6 - 1.62, 7.5, 0, 90);
+            case 1145 -> screenshot(minecraft, "f10_ring_top");
+            case 1150 -> camera(server, 19.5, 0.5 - 1.62, 4.2, 0, 0);
+            case 1190 -> screenshot(minecraft, "f11_ring_level");
+            case 1195 -> camera(server, 25.5, 1.4 - 1.62, 3.8, 0, 20);
+            case 1235 -> screenshot(minecraft, "f12_lone_blocks");
+            case 1240 -> finish(minecraft);
+            default -> { }
+        }
+    }
+
+    // ------------------------------------------------------------------ Search check (marker "search-check")
+
+    /**
+     * A file named {@code search-check} in the run folder: the Formicarium was called the Terrarium, so a search for
+     * "terrarium" must still find it in the creative tab, in JEI and in EMI. Each is asked and the answers go to the
+     * result file; the creative tab and the item viewer are screenshot with the word typed in.
+     */
+    private static final Path SEARCH_MARKER = FMLPaths.GAMEDIR.get().resolve("search-check");
+    private final boolean searchCheck = Files.exists(SEARCH_MARKER);
+
+    private void searchStep(Minecraft minecraft) throws ReflectiveOperationException {
+        Class<?> creative = net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.class;
+        switch (ticks) {
+            case 60 -> {
+                minecraft.options.pauseOnLostFocus = false;
+                minecraft.setScreen(new net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen(minecraft.player,
+                        minecraft.player.connection.enabledFeatures(), false));
+            }
+            case 100 -> {
+                for (String word : new String[] {"terrarium", "formicarium", "terrarium glass"}) {
+                    searched("creative tab", word, minecraft.player.connection.searchTrees().creativeNameSearch().search(word));
+                }
+                // As a player does it: the search tab, with the old word typed in.
+                if (creative.isInstance(minecraft.screen)) {
+                    var selectTab = creative.getDeclaredMethod("selectTab", net.minecraft.world.item.CreativeModeTab.class);
+                    selectTab.setAccessible(true);
+                    selectTab.invoke(minecraft.screen, net.minecraft.world.item.CreativeModeTabs.searchTab());
+                    var box = creative.getDeclaredField("searchBox");
+                    box.setAccessible(true);
+                    ((net.minecraft.client.gui.components.EditBox) box.get(minecraft.screen)).setValue("terrarium");
+                    var refresh = creative.getDeclaredMethod("refreshSearchResults");
+                    refresh.setAccessible(true);
+                    refresh.invoke(minecraft.screen);
+                }
+            }
+            case 120 -> screenshot(minecraft, "s1_creative_search_terrarium");
+            case 125 -> {
+                var runtime = com.antcolonies.compat.jei.AntColoniesJeiPlugin.runtime;
+                if (!net.neoforged.fml.ModList.get().isLoaded("jei")) {
+                    result("JEI is not installed");
+                } else if (runtime == null) {
+                    // JEI does not start beside EMI: run this check once without EMI to ask JEI.
+                    result((net.neoforged.fml.ModList.get().isLoaded("emi") ? "note JEI gives way to EMI" : "FAIL JEI runtime missing"));
+                } else {
+                    var filter = runtime.getIngredientFilter();
+                    String before = filter.getFilterText();
+                    for (String word : new String[] {"terrarium", "formicarium", "terrarium glass"}) {
+                        filter.setFilterText(word);
+                        searched("JEI", word, filter.getFilteredItemStacks());
+                    }
+                    // Without EMI, JEI's own list is on the screen: leave the old word in it for the picture.
+                    filter.setFilterText(net.neoforged.fml.ModList.get().isLoaded("emi") ? before : "terrarium");
+                }
+                minecraft.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(minecraft.player));
+            }
+            case 135 -> {
+                if (net.neoforged.fml.ModList.get().isLoaded("emi")) {
+                    EmiShowcase.search("terrarium");
+                } else {
+                    result("EMI is not installed");
+                }
+            }
+            case 175 -> {
+                if (net.neoforged.fml.ModList.get().isLoaded("emi")) {
+                    searched("EMI", "terrarium", EmiShowcase.found());
+                }
+                screenshot(minecraft, "s2_viewer_search_terrarium");
+            }
+            case 180 -> {
+                if (net.neoforged.fml.ModList.get().isLoaded("emi")) {
+                    EmiShowcase.search("");
+                } else if (com.antcolonies.compat.jei.AntColoniesJeiPlugin.runtime != null) {
+                    com.antcolonies.compat.jei.AntColoniesJeiPlugin.runtime.getIngredientFilter().setFilterText("");
+                }
+            }
+            case 185 -> finish(minecraft);
+            default -> { }
+        }
+    }
+
+    /** One search's answer for the result file: the Formicarium must be in it (its glass, when asked for by name). */
+    private void searched(String where, String word, List<ItemStack> found) {
+        boolean glass = word.endsWith("glass");
+        var wanted = glass ? com.antcolonies.core.registry.ModDecor.TERRARIUM_GLASS.asItem() : ModItems.TERRARIUM.get();
+        boolean ok = found.stream().anyMatch(stack -> stack.is(wanted));
+        // The creative tab reads names and tooltips only, and the glass has no tooltip: there its new name is the way.
+        boolean expected = !(glass && where.equals("creative tab"));
+        result((ok ? "ok" : expected ? "FAIL" : "note") + " " + where + " search \"" + word + "\": " + found.size() + " found: "
+                + found.stream().limit(6).map(stack -> stack.getHoverName().getString()).toList());
+    }
+
     // ------------------------------------------------------------------ Hover check (marker "hover-check")
 
     /**
@@ -922,7 +1306,10 @@ public class IngameShowcase {
     private static final Object[][] HOVER_TARGETS = {
             {"hover1_nether_needs", 28, 0, 6, -1, false, 40, 118},
             {"hover2_queen_name", 0, 0, 5, 0, false, 150, 39},
-            {"hover3_queen_name_detailed", 0, 0, 5, 0, true, 150, 39}, {"hover4_nest_upgrade_hint", 1, 0, 6, -1, false, 120, 52}};
+            {"hover3_queen_name_detailed", 0, 0, 5, 0, true, 150, 39}, {"hover4_nest_upgrade_hint", 1, 0, 6, -1, false, 120, 52},
+            // The Working Sites grid (Visual mode): the Diamond colony's, a tile hovered; then a colony with many sites.
+            {"hover5_site_grid", 0, 0, 5, 2, false, 61, 47}, {"hover6_site_grid_many", 34, 0, 5, 2, false, 109, 71},
+            {"hover7_site_list_many", 34, 0, 5, 2, true, 5, 5}};
 
     private void hoverStep(Minecraft minecraft, IntegratedServer server) throws ReflectiveOperationException {
         if (ticks == 60) {
@@ -935,6 +1322,18 @@ public class IngameShowcase {
                 ServerLevel level = server.overworld();
                 colony(level, origin.offset(28, 0, 5), "common", 500, 5000);
                 structure(level, origin.offset(28, 0, 6), StructureKind.NETHER_FORAGING_SITE);
+                // A colony with many sites of every kind, two switched off: the Working Sites grid full of tiles.
+                colony(level, origin.offset(34, 0, 5), "farmer", 6000, 20000);
+                StructureKind[] kinds = {StructureKind.FORAGING_SITE, StructureKind.HARVESTING_SITE, StructureKind.FORAGING_SITE, StructureKind.NEST_CHAMBER,
+                        StructureKind.STORAGE, StructureKind.FORAGING_SITE, StructureKind.HUNTING_GROUND, StructureKind.HARVESTING_SITE,
+                        StructureKind.NETHER_FORAGING_SITE, StructureKind.END_FORAGING_SITE, StructureKind.QUEEN_CHAMBER, StructureKind.FORAGING_SITE,
+                        StructureKind.LIQUID_CHAMBER, StructureKind.HARVESTING_SITE};
+                for (int k = 0; k < kinds.length; k++) {
+                    StructureBlockEntity site = structure(level, origin.offset(35 + k, 0, 5), kinds[k]);
+                    if (k == 2 || k == 7) {
+                        site.setEnabled(false);
+                    }
+                }
                 TerrariumBlockEntity diamond = (TerrariumBlockEntity) level.getBlockEntity(origin.offset(0, 0, 5));
                 var queen = diamond.colony().queen();
                 var lineage = queen.genome().lineage();

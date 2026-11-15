@@ -3,6 +3,7 @@ package com.antcolonies.content.blockentity;
 import com.antcolonies.colony.species.Caste;
 import com.antcolonies.content.block.WildNestBlock;
 import com.antcolonies.content.entity.WildAnt;
+import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.core.registry.ModBlockEntities;
 import com.antcolonies.core.registry.ModEntities;
 
@@ -35,22 +36,26 @@ import org.jspecify.annotations.Nullable;
  * every few minutes. Wild nests from world generation have no block entity and no residents.
  */
 public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer {
-    /** How many ants live in a nest. */
-    public static final int RESIDENTS = 3;
-    /** At most this many out at once. */
-    public static final int MAX_OUT = 2;
-    /** Ticks for a lost ant to be replaced. */
-    public static final int REPLACE_TICKS = 6000;
     public static final int SLOTS = 9;
     private static final int[] ALL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
-    private int inside = RESIDENTS;
+    private int inside = residents();
     private int out;
     private int replaceTimer;
 
     public HomeNestBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.HOME_NEST.get(), pos, state);
+    }
+
+    /** How many ants live in a nest (config homeNestAnts). */
+    public static int residents() {
+        return AntConfig.get(AntConfig.HOME_NEST_ANTS);
+    }
+
+    /** At most this many out at once: all but one, so the nest is never left empty. */
+    private static int maxOut() {
+        return Math.max(1, residents() - 1);
     }
 
     public int inside() {
@@ -70,12 +75,13 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
         if (!(level instanceof ServerLevel server) || level.getGameTime() % 20 != 0) {
             return;
         }
-        if (nest.inside + nest.out < RESIDENTS && (nest.replaceTimer += 20) >= REPLACE_TICKS) {
+        if (nest.inside + nest.out < residents()
+                && (nest.replaceTimer += 20) >= AntConfig.get(AntConfig.HOME_NEST_REFILL_MINUTES) * 1200) {
             nest.replaceTimer = 0;
             nest.inside++;
             nest.setChanged();
         }
-        if (foragingWeather(level) && nest.inside > 0 && nest.out < MAX_OUT && level.getRandom().nextInt(8) == 0) {
+        if (foragingWeather(level) && nest.inside > 0 && nest.out < maxOut() && level.getRandom().nextInt(8) == 0) {
             nest.release(server);
         }
     }
@@ -124,7 +130,7 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
     /** An ant came home with what it carried; what doesn't fit in the store is returned. */
     public ItemStack returned(ItemStack carried) {
         out = Math.max(0, out - 1);
-        inside = Math.min(RESIDENTS, inside + 1);
+        inside = Math.min(residents(), inside + 1);
         ItemStack rest = store(carried);
         setChanged();
         return rest;
@@ -187,7 +193,7 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
-        inside = input.getIntOr("inside", RESIDENTS);
+        inside = input.getIntOr("inside", residents());
         out = input.getIntOr("out", 0);
         replaceTimer = input.getIntOr("replace_timer", 0);
         items.clear();

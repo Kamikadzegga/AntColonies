@@ -32,7 +32,7 @@ public class BroodClusterItem extends BlockItem {
         if (species != null) {
             tooltip.accept(Tooltips.species(species).withStyle(ChatFormatting.AQUA));
         }
-        tooltip.accept(Component.translatable("tooltip.antcolonies.brood_cluster.use." + (eggs ? "eggs" : "larvae"), TerrariumBlockEntity.CLUSTER_BROOD)
+        tooltip.accept(Component.translatable("tooltip.antcolonies.brood_cluster.use." + (eggs ? "eggs" : "larvae"), TerrariumBlockEntity.clusterBrood())
                 .withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable("tooltip.antcolonies.brood_cluster.placed").withStyle(ChatFormatting.DARK_GRAY));
     }

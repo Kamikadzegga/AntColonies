@@ -32,4 +32,21 @@ public final class AntPose {
         seed = 0;
         return this;
     }
+
+    /** A copy that keeps this frame's values while the renderer goes on to reuse this one for the next ant. */
+    public AntPose copy() {
+        AntPose copy = new AntPose();
+        copy.walkPhase = walkPhase;
+        copy.walkAmount = walkAmount;
+        copy.groom = groom;
+        copy.rear = rear;
+        copy.headPitch = headPitch;
+        copy.headYaw = headYaw;
+        copy.gasterPulse = gasterPulse;
+        copy.mandibleOpen = mandibleOpen;
+        copy.alert = alert;
+        copy.time = time;
+        copy.seed = seed;
+        return copy;
+    }
 }

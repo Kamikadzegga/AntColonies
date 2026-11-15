@@ -22,7 +22,7 @@ Category names as CurseForge lists them may differ slightly; pick the closest in
 **Summary** (shown in search results; CurseForge wants one sentence):
 
 ---
-Catch wild ants, raise Queens in living Terrariums, and grow colonies that mine, farm, hunt and evolve.
+Catch wild ants, raise Queens in living Formicariums, and grow colonies that mine, farm, hunt and evolve.
 ---
 
 **Links** (project settings, after creation):
@@ -40,14 +40,14 @@ A shorter version of the GitHub README. Images load from the repository once it 
 ---
 ![Ant Colonies](https://raw.githubusercontent.com/Kamikadzegga/AntColonies/main/docs/images/banner.png)
 
-**Build a civilization, one ant at a time.** Catch wild ants, raise a Queen in a living Terrarium and grow her colony
+**Build a civilization, one ant at a time.** Catch wild ants, raise a Queen in a living Formicarium and grow her colony
 into thousands of workers that mine, farm, hunt and evolve.
 
 ![A colony at work](https://raw.githubusercontent.com/Kamikadzegga/AntColonies/main/docs/images/screenshots/terrarium.png)
 
 ## Features
 
-- **Living colonies.** A Terrarium holds a whole colony you can watch: tunnels, eggs, larvae and workers. Place
+- **Living colonies.** A Formicarium holds a whole colony you can watch: tunnels, eggs, larvae and workers. Place
   chambers against it to grow it: nests, Foraging and Harvesting Sites, Hunting Grounds and Storage.
 - **48 species.** Catch 16 wild ones, evolve them into iron, diamond, netherite and other mineral ants, breed hybrids,
   and reach the endgame Wither and Dragon Ants.
@@ -70,7 +70,7 @@ into thousands of workers that mine, farm, hunt and evolve.
 
 1. Craft **Tweezers** and **Test Tubes**.
 2. Use the Tweezers on a wild ant nest until you catch a Queen.
-3. Place a **Terrarium** and put the Queen and some Ant Food in it.
+3. Place a **Formicarium** and put the Queen and some Ant Food in it.
 4. Add chambers as the colony grows. JEI or EMI shows every recipe.
 
 ## Requirements
@@ -93,8 +93,8 @@ Upload these 17 from `docs/images/screenshots/`, in this order (they replace the
 
 | File | Title | Description |
 |---|---|---|
-| `overview.png` | A colony at work | A Terrarium and its chambers, joined into one glass build |
-| `terrarium.png` | A living Terrarium | Workers dig tunnels and carry food behind the glass |
+| `overview.png` | A colony at work | A Formicarium and its chambers, joined into one glass build |
+| `terrarium.png` | A living Formicarium | Workers dig tunnels and carry food behind the glass |
 | `colony-screen.png` | The colony screen | Queen, health, food and ants at a glance |
 | `jobs-screen.png` | Jobs | Ants, priority and modes for every working site |
 | `statistics-screen.png` | Statistics | The colony over the last half hour |
@@ -109,7 +109,7 @@ Upload these 17 from `docs/images/screenshots/`, in this order (they replace the
 | `genetic-laboratory.png` | The Genetic Laboratory | Raise, reroll and mutate a Queen's traits |
 | `recipe-viewer.png` | JEI and EMI | Expeditions and every recipe |
 | `identification-book.png` | The Ant Identification Book | How to play, and every species |
-| `jade.png` | Jade | A Terrarium's state without opening it |
+| `jade.png` | Jade | A Formicarium's state without opening it |
 
 ## 4. Files (upload a file)
 

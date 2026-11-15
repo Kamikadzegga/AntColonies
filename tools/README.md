@@ -12,6 +12,19 @@ overwrites its output, so change the program rather than the files it writes.
 All art is pixel art painted in code: shapes, palettes and shading are in the programs, so it can be changed, rescaled or
 recolored and regenerated at any time.
 
+## The nest behind the glass
+
+A colony built flat is glass cases; one built upward (more of its blocks stacked than flat, decided by its Formicarium
+and kept in the blocks' `upright` state) is an upright nest between two glasses. What is carved into an upright block is
+worked out in the game, by
+`client/src/main/java/com/antcolonies/client/nest/NestLayout.java`: each kind's chamber is drawn there by hand, as rows
+of text (`TEMPLATES`), and the tunnels are dug by rule. That class is plain Java on purpose: `TexGen.java` compiles it
+and asks it for a layout of each kind to paint the blocks' nest pictures (`block/<block>_front.png`, shown by upright
+blocks too far away for their renderer), so the pictures always match the game. After changing a template, run
+`TexGen.java` again. A new kind of colony block needs a row in `NestLayout.Kind` and `TEMPLATES`, the same row in
+TexGen's `NEST_BLOCKS`, its features drawn in `NestRenderer.drawFeatures`, and a `colonyPart` call in `DataGen.java`
+(which writes its upright model too), besides its glass-case model.
+
 ## Adding a fluid for Liquid Ants
 
 One row in each of three tables, with the same name:
@@ -19,7 +32,7 @@ One row in each of three tables, with the same name:
 1. `tools/DataGen.java`, `LIQUIDS`: the ant's name, the mod and fluid id, the fluid's English name (the droplet is named
    "<fluid> Droplet"), what it evolves from and is fed, its colours, its rate and its Centrifuge recipe. This writes the
    species, the evolution, the feed tag, the recipe, the item model and the names.
-2. `tools/TexGen.java`, `LIQUIDS`: the droplet's colour and finish (clear, thick, slime or molten). This paints
+2. `tools/TexGen.java`, `LIQUIDS`: the droplet's colour (the fluid's own: its still texture times its tint) and finish (clear, glass, thick, oil, slime or molten). This paints
    `item/<name>_droplet.png` from the shared droplet shape.
 3. A `LiquidKinds.offer(LiquidKind.of(name, modId, fluidId))` call in the mod: a class in
    `compat/src/main/java/com/antcolonies/compat/liquid/` listed in `LiquidIntegrations` (or, from another mod, its own

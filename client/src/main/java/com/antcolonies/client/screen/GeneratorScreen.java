@@ -34,14 +34,14 @@ public class GeneratorScreen extends AntScreen<GeneratorMenu> {
         drawFlame(graphics, leftPos + GeneratorMenu.FUEL_X + 1, topPos + GeneratorMenu.FUEL_Y - 18, burn > 0 ? burn / (double) total : 0);
         // The buffer.
         drawWell(graphics, leftPos + GAUGE_X - 4, topPos + GAUGE_Y - 4, GAUGE_W + 8, 52);
-        drawBar(graphics, leftPos + GAUGE_X, topPos + GAUGE_Y, GAUGE_W, GAUGE_H, energy / (double) GeneratorBlockEntity.CAPACITY, 0xFFE0A030);
-        label(graphics, fe(energy) + " / " + fe(GeneratorBlockEntity.CAPACITY).replace(" FE", ""), GAUGE_X, GAUGE_Y + 16, LABEL);
+        drawBar(graphics, leftPos + GAUGE_X, topPos + GAUGE_Y, GAUGE_W, GAUGE_H, energy / (double) GeneratorBlockEntity.capacity(), 0xFFE0A030);
+        label(graphics, fe(energy) + " / " + fe(GeneratorBlockEntity.capacity()).replace(" FE", ""), GAUGE_X, GAUGE_Y + 16, LABEL);
         Component state;
         int color;
         if (output > 0) {
             state = Component.translatable("gui.antcolonies.generator.making", output);
             color = GOOD;
-        } else if (energy >= GeneratorBlockEntity.CAPACITY - 1000) {
+        } else if (energy >= GeneratorBlockEntity.capacity() - 1000) {
             state = Component.translatable("gui.antcolonies.generator.full");
             color = WARN;
         } else {
@@ -93,7 +93,7 @@ public class GeneratorScreen extends AntScreen<GeneratorMenu> {
         if (over(mouseX, mouseY, GAUGE_X, GAUGE_Y, GAUGE_W, GAUGE_H)) {
             graphics.setComponentTooltipForNextFrame(font, List.of(
                     Component.literal(String.format(java.util.Locale.ROOT, "%,d / %,d FE", menu.data(GeneratorBlockEntity.DATA_ENERGY),
-                            GeneratorBlockEntity.CAPACITY)),
+                            GeneratorBlockEntity.capacity())),
                     Component.translatable("gui.antcolonies.generator.push").withStyle(ChatFormatting.GRAY),
                     Component.translatable("gui.antcolonies.generator.hint").withStyle(ChatFormatting.DARK_AQUA)), mouseX, mouseY);
         }

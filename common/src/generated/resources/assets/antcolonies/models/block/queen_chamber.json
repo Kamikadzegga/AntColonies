@@ -5,19 +5,20 @@
     "side": "antcolonies:block/terrarium_wood",
     "top": "antcolonies:block/queen_chamber_top",
     "gold": "minecraft:block/gold_block",
-    "comb": "minecraft:block/honeycomb_block"
+    "comb": "minecraft:block/honeycomb_block",
+    "soil": "minecraft:block/dirt"
   },
   "elements": [
     {
       "from": [0, 0, 0],
-      "to": [16, 4.0, 16],
+      "to": [16, 1, 16],
       "faces": {
         "down": {
           "texture": "#side",
           "cullface": "down"
         },
         "up": {
-          "texture": "#top"
+          "texture": "#side"
         },
         "north": {
           "texture": "#side",
@@ -38,8 +39,29 @@
       }
     },
     {
-      "from": [4.0, 4.0, 4.0],
-      "to": [12.0, 5.0, 12.0],
+      "from": [2, 1, 2],
+      "to": [14, 8.0, 14],
+      "faces": {
+        "up": {
+          "texture": "#top"
+        },
+        "north": {
+          "texture": "#soil"
+        },
+        "south": {
+          "texture": "#soil"
+        },
+        "west": {
+          "texture": "#soil"
+        },
+        "east": {
+          "texture": "#soil"
+        }
+      }
+    },
+    {
+      "from": [4.0, 8.0, 4.0],
+      "to": [12.0, 9.0, 12.0],
       "faces": {
         "down": {
           "texture": "#gold"
@@ -62,8 +84,8 @@
       }
     },
     {
-      "from": [6.0, 5.0, 6.0],
-      "to": [10.0, 7.5, 10.0],
+      "from": [6.0, 9.0, 6.0],
+      "to": [10.0, 11.5, 10.0],
       "faces": {
         "down": {
           "texture": "#comb"

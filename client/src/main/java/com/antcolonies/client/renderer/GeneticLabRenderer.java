@@ -50,7 +50,7 @@ public class GeneticLabRenderer implements BlockEntityRenderer<GeneticLabBlockEn
                                    ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(lab, state, partialTicks, camera, breakProgress);
         state.working = lab.operation() != GeneticLabBlockEntity.Operation.NONE;
-        state.time = lab.getLevel() == null ? 0 : lab.getLevel().getGameTime() + partialTicks;
+        state.time = lab.getLevel() == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(lab.getLevel().getGameTime(), partialTicks);
         QueenData queen = lab.queen();
         if (queen != null) {
             AntLook look = ClientSpecies.look(queen.species());

@@ -373,10 +373,10 @@ public final class Colony {
             endFounding();
         }
         workers += count;
-        if (formerSpecies != null) {
-            // New arrivals are the current species.
+        if (formerSpecies != null && count > 0) {
+            // New arrivals are the current species. Ants taken out are a fair share of both, so the share stays as it is.
             double adults = exactAdults();
-            conversion = adults <= 0 ? 1 : Math.min(1, (conversion * (adults - count) + count) / adults);
+            conversion = adults <= 0 ? 1 : Math.clamp((conversion * (adults - count) + count) / adults, 0, 1);
         }
     }
 

@@ -27,7 +27,11 @@ public final class ColonyHistory {
         EGGS_LAID(0xFFFFF2C0),
         FINDS(0xFF4FE3FF),
         FOOD_IN(0xFF8BE36C),
-        FOOD_OUT(0xFFFF8A6E);
+        FOOD_OUT(0xFFFF8A6E),
+        /** New adults a minute (brood grown up). */
+        BORN(0xFF9FD8FF),
+        /** Adults lost a minute (old age, hunger, fights). */
+        DIED(0xFFE5655A);
 
         private final int color;
 
@@ -64,7 +68,9 @@ public final class ColonyHistory {
                 (float) stats.eggsLaid(),
                 (float) stats.finds(),
                 (float) stats.foodIn(),
-                (float) stats.foodOut()};
+                (float) stats.foodOut(),
+                (float) stats.adultsRaised(),
+                (float) stats.deaths()};
         for (int series = 0; series < sample.length; series++) {
             values[series][head] = sample[series];
         }
@@ -113,7 +119,10 @@ public final class ColonyHistory {
             int loaded = saved;
             for (Series series : Series.values()) {
                 int[] bits = child.getIntArray(series.name().toLowerCase(Locale.ROOT)).orElse(new int[0]);
-                loaded = Math.min(loaded, bits.length);
+                // A series added after the save was written is simply empty (zeros); it doesn't cut the others short.
+                if (bits.length > 0) {
+                    loaded = Math.min(loaded, bits.length);
+                }
                 for (int i = 0; i < Math.min(saved, bits.length); i++) {
                     values[series.ordinal()][i] = Float.intBitsToFloat(bits[i]);
                 }

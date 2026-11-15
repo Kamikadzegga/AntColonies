@@ -40,10 +40,14 @@ public class GeneratorBlockEntity extends BaseContainerBlockEntity implements Wo
     /** Comparators read how full the FE buffer is. */
     @Override
     public int comparatorSignal() {
-        return com.antcolonies.content.block.ComparatorSource.fill(energy.getAmountAsInt(), CAPACITY);
+        return com.antcolonies.content.block.ComparatorSource.fill(energy.getAmountAsInt(), energy.getCapacityAsInt());
     }
 
-    public static final int CAPACITY = 100_000;
+    /** FE a Generator stores (config generatorCapacity). */
+    public static int capacity() {
+        return AntConfig.get(AntConfig.GENERATOR_CAPACITY);
+    }
+
     public static final int DATA_ENERGY = 0;
     public static final int DATA_BURN = 1;
     public static final int DATA_BURN_TOTAL = 2;
@@ -52,7 +56,7 @@ public class GeneratorBlockEntity extends BaseContainerBlockEntity implements Wo
     private static final int[] SLOTS = {0};
 
     private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
-    private final SimpleEnergyHandler energy = new SimpleEnergyHandler(CAPACITY, 0, Integer.MAX_VALUE) {
+    private final SimpleEnergyHandler energy = new SimpleEnergyHandler(capacity(), 0, Integer.MAX_VALUE) {
         @Override
         protected void onEnergyChanged(int previous) {
             GeneratorBlockEntity.this.setChanged();
@@ -122,7 +126,7 @@ public class GeneratorBlockEntity extends BaseContainerBlockEntity implements Wo
     private void tick(ServerLevel level, BlockPos pos, BlockState state) {
         int rate = AntConfig.get(AntConfig.GENERATOR_OUTPUT);
         // A redstone signal turns the Generator off: it keeps its fuel and its burn time, and still gives out what it holds.
-        boolean room = energy.getAmountAsInt() + rate <= CAPACITY && !level.hasNeighborSignal(pos);
+        boolean room = energy.getAmountAsInt() + rate <= energy.getCapacityAsInt() && !level.hasNeighborSignal(pos);
         output = 0;
         if (burn <= 0 && room) {
             ItemStack fuel = items.get(0);
@@ -239,7 +243,7 @@ public class GeneratorBlockEntity extends BaseContainerBlockEntity implements Wo
         super.loadAdditional(input);
         items = NonNullList.withSize(1, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
-        energy.set(Math.clamp(input.getIntOr("energy", 0), 0, CAPACITY));
+        energy.set(Math.clamp(input.getIntOr("energy", 0), 0, energy.getCapacityAsInt()));
         burn = input.getIntOr("burn", 0);
         burnTotal = input.getIntOr("burn_total", 0);
     }

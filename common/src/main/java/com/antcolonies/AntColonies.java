@@ -63,6 +63,7 @@ public class AntColonies {
         modEventBus.addListener(ModCapabilities::register);
         // Any colony block placed or broken makes nearby Terrariums look at their network again.
         NeoForge.EVENT_BUS.addListener(ColonyNetwork::onLevelUnload);
+        NeoForge.EVENT_BUS.addListener(com.antcolonies.colony.resource.MobLoot::onLevelUnload);
         NeoForge.EVENT_BUS.addListener(com.antcolonies.content.item.ChitinGear::onPlayerTick);
         // Opening or breaking an anthill's chests raises its alarm.
         NeoForge.EVENT_BUS.addListener(com.antcolonies.content.worldgen.AnthillAlarm::onRightClickBlock);

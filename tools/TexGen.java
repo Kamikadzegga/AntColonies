@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 
 /**
  * Paints every texture of Ant Colonies at build time: the ant skins (one grey layout per caste, tinted per species in
- * game), their gaster patterns and crystals, the Terrarium's inside, every block and item, and the particles.
+ * game), their gaster patterns and crystals, the Formicarium's inside, every block and item, and the particles.
  * Run from the project root with JDK 25: {@code java tools/TexGen.java}. Original art, no third-party textures.
  */
 public class TexGen {
@@ -364,7 +364,7 @@ public class TexGen {
         }
     }
 
-    // ------------------------------------------------------------------ Terrarium inside
+    // ------------------------------------------------------------------ Formicarium inside
 
     static void terrariumInside() {
         Img img = new Img(64, 64);
@@ -794,7 +794,7 @@ public class TexGen {
 
     static void blocks() {
         Random random = new Random(3);
-        // Terrarium: oak frame and clear glass.
+        // Formicarium: oak frame and clear glass.
         Img wood = new Img(16, 16);
         planks(wood, rgb(150, 108, 64), random);
         wood.save("block/terrarium_wood");
@@ -807,6 +807,13 @@ public class TexGen {
         line(glass, 2, 12, 6, 8, argb(110, 255, 255, 255));
         line(glass, 3, 13, 8, 8, argb(70, 255, 255, 255));
         glass.save("block/terrarium_glass");
+        // The glass of a stacked part's nest: one short glint near the top left (a long streak would repeat on every
+        // block of a wall).
+        Img pane = new Img(16, 16);
+        pane.fill(0, 0, 16, 16, argb(28, 220, 240, 255));
+        line(pane, 2, 4, 4, 2, argb(80, 255, 255, 255));
+        line(pane, 3, 5, 5, 3, argb(45, 255, 255, 255));
+        pane.save("block/formicarium_pane");
 
         // Chambers: every chamber is the same glass case on the same wooden base; only its floor (and what its model puts
         // on it) shows what it is. No borders: touching chambers' floors run into each other.
@@ -2860,7 +2867,7 @@ public class TexGen {
             larvae.save("block/larva_cluster");
         }
         {
-            // Terrarium Glass: the colony case's glass with its wooden corner posts (faintly tinted, see-through).
+            // Formicarium Glass: the colony case's glass with its wooden corner posts (faintly tinted, see-through).
             Img img = new Img(16, 16);
             int frame = hex(0x7A5634);
             int frameDark = hex(0x553B22);
@@ -3285,6 +3292,221 @@ public class TexGen {
         img.save("item/" + name);
     }
 
+    // ------------------------------------------------------------------ Working Sites icons
+
+    /** One site icon: 16x16 rows of palette letters ('.' clear). */
+    record SiteIcon(String name, String[] rows, java.util.Map<Character, Integer> palette) {}
+
+    static java.util.Map<Character, Integer> iconPalette(Object... kv) {
+        java.util.Map<Character, Integer> m = new java.util.HashMap<>();
+        for (int i = 0; i < kv.length; i += 2) {
+            m.put((Character) kv[i], (Integer) kv[i + 1]);
+        }
+        return m;
+    }
+
+    /**
+     * gui/sprites/lab/site_<kind>: the Formicarium screen's icon for each kind of site (the user, 2026-11-14: icons "should be
+     * unique for them"; a honey bottle for the Liquid Chamber read as "producing honey"). Each shows the chamber, not
+     * what comes out of it: a carried leaf, a fungus garden, mandibles, a droplet (the colony's own when it has Liquid Ants), eggs, a
+     * crown, a crate, two little portals and a scent trail. Item style: dark outline, lit from the top left.
+     */
+    static void siteIcons() {
+        SiteIcon[] icons = {
+            // Foraging Site: a cut leaf, carried home (leaf, midrib, a bite out of its edge).
+            new SiteIcon("foraging_site", new String[] {
+                "................",
+                "...........ooo..",
+                ".........oohlo..",
+                "........ohllmo..",
+                ".......ohlmmmo..",
+                "......ohlmmrmo..",
+                ".....ohlmmrmdo..",
+                ".....olmmrmmdo..",
+                "....olmmrmmdo...",
+                "....olmrmmddo...",
+                "...olmrmmddo....",
+                "...omrmddoo.....",
+                "...orddoo.......",
+                "..oroo..........",
+                ".oo.............",
+                "................"},
+                iconPalette('o', 0xFF1E3A14, 'h', 0xFFC8EE84, 'l', 0xFF8FCF4E, 'm', 0xFF5FA232, 'd', 0xFF3D7424, 'r', 0xFFB8D86A)),
+            // Harvesting Site: a fungus garden: two pale caps on stalks over a mound of tended soil.
+            new SiteIcon("harvesting_site", new String[] {
+                "................",
+                "................",
+                "....oooo........",
+                "...ohhlmo...ooo.",
+                "..ohllmmmo.ohlmo",
+                "..ommmmddo.ommdo",
+                "...oosoo....oso.",
+                ".....so.....os..",
+                ".....so....oso..",
+                "...ooosoooooso..",
+                "..oEeeeeeeeeeEo.",
+                ".oEeEeeEeeEeeEEo",
+                ".oEEEEEEEEEEEEEo",
+                "..oooooooooooo..",
+                "................",
+                "................"},
+                iconPalette('o', 0xFF2A1E16, 'h', 0xFFF6EEDC, 'l', 0xFFE2D2B4, 'm', 0xFFC4AE8A, 'd', 0xFF9C8466, 's', 0xFFD8CCB4,
+                        'e', 0xFF8A6240, 'E', 0xFF6A4630)),
+            // Hunting Ground: an ant's open mandibles, toothed, ready to close.
+            new SiteIcon("hunting_ground", new String[] {
+                "................",
+                "..oo........oo..",
+                ".ohlo......olmo.",
+                ".olmo......omdo.",
+                "..olmo....omdo..",
+                "..olmto..otmdo..",
+                "...olmo..omdo...",
+                "...olmto.tmdo...",
+                "....olmooomdo...",
+                "....ollmmmmdo...",
+                "...ohllmmmmddo..",
+                "...olmmmmmmmdo..",
+                "....olmmmmmdo...",
+                ".....oommddo....",
+                ".......oooo.....",
+                "................"},
+                iconPalette('o', 0xFF241008, 'h', 0xFFE8A07A, 'l', 0xFFC0603A, 'm', 0xFF96402A, 'd', 0xFF6A2818, 't', 0xFFEDE2CC)),
+            // Liquid Chamber: a droplet (the user's choice), the shape of the mod's droplets, in a neutral silver so it names
+            // no fluid. A colony of Liquid Ants shows its own droplet instead (TerrariumScreen).
+            new SiteIcon("liquid_chamber", DROPLET, iconPalette('o', 0xFF2E343C, 'h', 0xFFFFFFFF, 'l', 0xFFDCE3EA, 'm', 0xFFB4BEC9, 'd', 0xFF8792A0)),
+            // Nest Chamber: a heap of eggs, the brood.
+            new SiteIcon("nest_chamber", new String[] {
+                "................",
+                "................",
+                "......ooo.......",
+                ".....ohlmo......",
+                ".....olmmo.ooo..",
+                "..ooo.ommoohlmo.",
+                ".ohlmoooo.olmmo.",
+                ".olmmoohlmoommo.",
+                ".olmmoolmmo.oo..",
+                "..ommoolmmooo...",
+                "...ooohommohlo..",
+                "....ohlmooolmmo.",
+                "....olmmo.olmmo.",
+                ".....ommo..ooo..",
+                "......oo........",
+                "................"},
+                iconPalette('o', 0xFF4A4034, 'h', 0xFFFFFFFA, 'l', 0xFFF2ECDC, 'm', 0xFFD8CCB2)),
+            // Queen Chamber: a crown.
+            new SiteIcon("queen_chamber", new String[] {
+                "................",
+                "................",
+                "................",
+                ".o.....o.....o..",
+                "oho...oho...oho.",
+                ".olo..olo..olo..",
+                ".olmo.olo.omlo..",
+                ".ollmoolmomllo..",
+                ".olllmmrmmllmo..",
+                ".olmlllmllmlmo..",
+                ".olrmlmrmlmrdo..",
+                ".odddddddddddo..",
+                ".olllllllllldo..",
+                ".odddddddddddo..",
+                "..ooooooooooo...",
+                "................"},
+                iconPalette('o', 0xFF3A2606, 'h', 0xFFFFF4B0, 'l', 0xFFF2C840, 'm', 0xFFD69E22, 'd', 0xFFA87418, 'r', 0xFFD8364A)),
+            // Storage: a crate with iron bands.
+            new SiteIcon("storage", new String[] {
+                "................",
+                "................",
+                "..oooooooooooo..",
+                "..ohhhhhhhhhlo..",
+                "..ogggggggggdo..",
+                "..ohlllollllmo..",
+                "..ollllollllmo..",
+                "..ogggggggggdo..",
+                "..ohlllollllmo..",
+                "..ollllollllmo..",
+                "..ollllollllmo..",
+                "..ogggggggggdo..",
+                "..ommmmommmmdo..",
+                "..oooooooooooo..",
+                "................",
+                "................"},
+                iconPalette('o', 0xFF2A1A0E, 'h', 0xFFD8A866, 'l', 0xFFB88A4E, 'm', 0xFF8E6436, 'd', 0xFF6A4628, 'g', 0xFF8A8E96)),
+            // Nether Foraging Site: a little portal of dark stone, its pane purple.
+            new SiteIcon("nether_foraging_site", new String[] {
+                "................",
+                "....oooooooo....",
+                "...ossssssssd...",
+                "...osppqpppsd...",
+                "...ospqppqpsd...",
+                "...osppqqppsd...",
+                "...osqppqppsd...",
+                "...ospqppppsd...",
+                "...osppqpqpsd...",
+                "...ospqppqpsd...",
+                "...osqppqppsd...",
+                "...osppqpppsd...",
+                "..ossssssssssd..",
+                "..odddddddddddo.",
+                "...oooooooooooo.",
+                "................"},
+                iconPalette('o', 0xFF0C0814, 's', 0xFF3A2E52, 'd', 0xFF1E1830, 'p', 0xFF8A3ADA, 'q', 0xFFC88AF6)),
+            // End Foraging Site: a little gate of end stone, its pane the dark of the void with a star.
+            new SiteIcon("end_foraging_site", new String[] {
+                "................",
+                "....oooooooo....",
+                "...ossssssssd...",
+                "...oseeeeeeesd..",
+                "...osevveeeesd..",
+                "...oseeeeeeesd..",
+                "...oseeeeveesd..",
+                "...oseeeeeeesd..",
+                "...osevveeeesd..",
+                "...oseeeeeeesd..",
+                "...oseeeevvesd..",
+                "...oseeeeeeesd..",
+                "..ossssssssssd..",
+                "..odddddddddddo.",
+                "...oooooooooooo.",
+                "................"},
+                iconPalette('o', 0xFF2A2A1A, 's', 0xFFE6E2A6, 'd', 0xFFB4B07A, 'e', 0xFF0E1E1C, 'v', 0xFF6FE0C8)),
+            // Colony Connector: a scent trail between two marks, the way another colony follows.
+            new SiteIcon("colony_connector", new String[] {
+                "................",
+                "..ooo...........",
+                ".ohlmo..........",
+                ".olmmo..........",
+                ".ommdo..........",
+                "..ooo.t.........",
+                ".......t........",
+                "........t.t.....",
+                "...........t....",
+                "............t...",
+                "...........ooo..",
+                "..........ohlmo.",
+                "..........olmmo.",
+                "..........ommdo.",
+                "...........ooo..",
+                "................"},
+                iconPalette('o', 0xFF141A10, 'h', 0xFFE6FFB0, 'l', 0xFFB4E05C, 'm', 0xFF84B83A, 'd', 0xFF5A8A26, 't', 0xFFB4E05C)),
+        };
+        for (SiteIcon icon : icons) {
+            Img img = new Img(16, 16);
+            for (int y = 0; y < 16; y++) {
+                String row = icon.rows()[y];
+                if (row.length() != 16) {
+                    throw new IllegalStateException(icon.name() + " row " + y + " is " + row.length() + " wide");
+                }
+                for (int x = 0; x < 16; x++) {
+                    char c = row.charAt(x);
+                    if (c != '.') {
+                        img.set(x, y, icon.palette().get(c));
+                    }
+                }
+            }
+            img.save("gui/sprites/lab/site_" + icon.name());
+        }
+    }
+
     // ------------------------------------------------------------------ Liquid Ants, droplets and the Droplet Centrifuge
 
     /**
@@ -3292,20 +3514,36 @@ public class TexGen {
      * mod's code (LiquidKinds and compat/liquid). Colours are the fluid's own tint where its mod gives it one, else the
      * colour of its texture.
      *
-     * @param style clear (thin, see-through liquids: a spark of light let through at the far side), thick (oils and syrups:
-     *              a long gloss and a heavy underside), slime (bubbles), molten (a bright core under a dark crust)
+     * <p>Checked against each mod's real fluid on 2026-11-14 (the user: "droplets should have the same texture shape but the
+     * color should be different to match the fluid"): the average of the mod's still texture times its tint, from the mods'
+     * public sources. Very dark fluids are lifted a little so the drop still reads in a slot. Pairs that are close in
+     * colour are told apart by their finish: lava is red-orange with a yellow core, liquid blaze gold with a white-hot
+     * core; honey is a soft gloss with no glow; crude oil black with a cool sheen, creosote dark brown with warm lights;
+     * hootch is clear and colourless (Ender IO draws it white and see-through), brine pale yellow.
+     *
+     * @param style clear (thin, see-through liquids: a spark of light let through at the far side), glass (clear and colourless: the body itself is see-through), thick (oils and syrups:
+     *              a long gloss and a heavy underside), oil (thick, with a cool rainbow-less sheen), slime (bubbles),
+     *              molten (a bright core under a dark crust)
      */
     record LiquidArt(String id, int color, String style) {}
 
     static final LiquidArt[] LIQUIDS = {
-            new LiquidArt("water", 0x3F76E4, "clear"), new LiquidArt("lava", 0xF2701A, "molten"),
-            new LiquidArt("crude_oil", 0x2B211A, "thick"), new LiquidArt("liquid_blaze", 0xFFA020, "molten"),
-            new LiquidArt("brine", 0xFEEF9C, "clear"), new LiquidArt("heavy_water", 0x2A3AB0, "clear"),
-            new LiquidArt("honey", 0xE8A126, "thick"), new LiquidArt("chocolate", 0x8A4A30, "thick"), new LiquidArt("tea", 0xCF755A, "clear"),
-            new LiquidArt("pink_slime", 0xD09DCD, "slime"), new LiquidArt("latex", 0xE4E4E4, "slime"),
-            new LiquidArt("nutrient_distillation", 0x6E7A10, "thick"), new LiquidArt("hootch", 0xE6D9A8, "clear"),
-            new LiquidArt("resin", 0xB87A10, "thick"), new LiquidArt("sap", 0xD85A10, "thick"),
-            new LiquidArt("creosote", 0x4A2208, "thick"), new LiquidArt("plant_oil", 0xA8A450, "thick"),
+            // vanilla water_still is tinted 3F76E4; lava_still averages D8681A with C73405 shades and FAEB72 lights.
+            new LiquidArt("water", 0x3F76E4, "clear"), new LiquidArt("lava", 0xE05A16, "molten"),
+            // MachinaOpus: crude oil tint 1E1A16 (lifted), liquid blaze FFA020 over the glowing molten texture.
+            new LiquidArt("crude_oil", 0x24201C, "oil"), new LiquidArt("liquid_blaze", 0xFFA020, "molten"),
+            // Mekanism: brine tint FEEF9C; heavy water is vanilla water tinted 0D1455 (a deep navy, lifted).
+            new LiquidArt("brine", 0xFEEF9C, "clear"), new LiquidArt("heavy_water", 0x1C2A78, "clear"),
+            // Create: honey E7A026, chocolate 9D483B, builder's tea CE7559.
+            new LiquidArt("honey", 0xE7A026, "thick"), new LiquidArt("chocolate", 0x9D483B, "thick"), new LiquidArt("tea", 0xCE7559, "clear"),
+            // Industrial Foregoing: pink slime CF9DCD, latex E3E3E3 (milky, opaque).
+            new LiquidArt("pink_slime", 0xCF9DCD, "slime"), new LiquidArt("latex", 0xE3E3E3, "slime"),
+            // Ender IO: nutrient distillation 535C00 (lifted); hootch is white and see-through: clear, cool, nearly colourless.
+            new LiquidArt("nutrient_distillation", 0x5A6406, "thick"), new LiquidArt("hootch", 0xD4DEE2, "glass"),
+            // Thermal: resin 9A6600 (dark amber), sap C04400 (deep red-brown, no glow).
+            new LiquidArt("resin", 0x9E6806, "thick"), new LiquidArt("sap", 0xA03A08, "thick"),
+            // Immersive Engineering: creosote 361300 (lifted), plant oil 918F4A.
+            new LiquidArt("creosote", 0x3E1A04, "thick"), new LiquidArt("plant_oil", 0x918F4A, "thick"),
     };
 
     /** The one droplet shape every fluid shares: o outline, h highlight, l light, m body, d shade. Lit from the top left. */
@@ -3352,11 +3590,14 @@ public class TexGen {
             boolean dark = value < 0.35;
             boolean molten = art.style().equals("molten");
             // The ramp: lights lean warm and pale, shades lean cool and deep. Very dark fluids get lights they can show.
-            int highlight = molten ? hex(0xFFF4B8) : mix(base, hex(0xFFFFFF), dark ? 0.62 : 0.78);
-            int light = molten ? mix(base, hex(0xFFE070), 0.6) : dark ? mix(base, hex(0xFFFFFF), 0.24) : tone(mix(base, hex(0xFFFFFF), 0.32), 1, 0.9, 6);
+            boolean oil = art.style().equals("oil");
+            // Molten ramps come from the fluid's own hue, so lava stays red-orange and liquid blaze stays gold.
+            int highlight = molten ? mix(base, hex(0xFFFBE0), 0.78) : oil ? hex(0x9AA8C8) : mix(base, hex(0xFFFFFF), dark ? 0.62 : 0.78);
+            int light = molten ? mix(base, hex(0xFFF07A), 0.48) : oil ? hex(0x4A4E62)
+                    : dark ? tone(mix(base, hex(0xFFFFFF), 0.24), 1.05, 1.1, 8) : tone(mix(base, hex(0xFFFFFF), 0.32), 1, 0.9, 6);
             int body = base;
-            int shadeTone = molten ? tone(base, 0.72, 1.1, -10) : tone(base, dark ? 0.62 : 0.74, 1.12, -8);
-            int outlineTone = molten ? hex(0x6E2206) : tone(base, dark ? 0.36 : 0.42, 1.15, -12);
+            int shadeTone = molten ? tone(base, 0.74, 1.12, -12) : tone(base, dark ? 0.62 : 0.74, 1.12, -8);
+            int outlineTone = molten ? tone(base, 0.4, 1.2, -16) : oil ? hex(0x0C0A0A) : tone(base, dark ? 0.36 : 0.42, 1.15, -12);
             Img img = item();
             paint(img, 0, 0, DROPLET, 'o', outlineTone, 'h', highlight, 'l', light, 'm', body, 'd', shadeTone);
             // The lit side's outline a touch lighter than the far side's, so the drop sits in the light.
@@ -3364,11 +3605,33 @@ public class TexGen {
                 img.set(p[0], p[1], mix(outlineTone, body, 0.28));
             }
             switch (art.style()) {
-                case "clear" -> {
+                case "clear", "glass" -> {
                     // Light let through: a small bright crescent low on the far side.
                     img.set(10, 11, light);
                     img.set(9, 12, light);
                     img.set(10, 12, mix(light, highlight, 0.5));
+                    if (art.style().equals("glass")) {
+                        // A colourless liquid (hootch): the body and its shade are see-through, the rim and gloss stay solid.
+                        for (int y = 0; y < 16; y++) {
+                            for (int x = 0; x < 16; x++) {
+                                int c = img.get(x, y);
+                                int rgb = c & 0xFFFFFF;
+                                if ((c >>> 24) != 0 && (rgb == (body & 0xFFFFFF) || rgb == (shadeTone & 0xFFFFFF))) {
+                                    img.set(x, y, (rgb == (body & 0xFFFFFF) ? 0x70 : 0xA0) << 24 | rgb);
+                                }
+                            }
+                        }
+                    }
+                }
+                case "oil" -> {
+                    // A cool sheen on black: a blue-grey gloss down the lit side and a faint violet glint low on the far side.
+                    img.set(5, 9, highlight);
+                    img.set(5, 10, light);
+                    img.set(10, 11, hex(0x3C3450));
+                    img.set(9, 12, hex(0x2E2A3E));
+                    for (int x = 6; x <= 10; x++) {
+                        img.set(x, 14, tone(shadeTone, 0.82, 1, 0));
+                    }
                 }
                 case "thick" -> {
                     // A long gloss down the lit side, and a heavier underside.
@@ -3393,7 +3656,7 @@ public class TexGen {
                     img.set(6, 11, light);
                     img.set(7, 11, highlight);
                     img.set(8, 11, light);
-                    img.set(10, 9, hex(0x6E2206));
+                    img.set(10, 9, outlineTone);
                     img.set(10, 10, tone(shadeTone, 0.8, 1, 0));
                 }
             }
@@ -3634,9 +3897,238 @@ public class TexGen {
 
     static void liquids() {
         droplets();
+        siteIcons();
         cropSkins();
         liquidChamber();
         centrifuge();
+    }
+
+    // ------------------------------------------------------------------ The nest behind the glass
+    //
+    // Every colony block (the Formicarium and the chambers) is a slab of nest material behind a front glass, with its
+    // chamber and tunnels carved into it (client NestLayout, drawn by NestRenderer). The slab comes in the five climates
+    // of the species, each with a face and a darker floor for what is carved; each material has its own signature:
+    // loam with soil pellets, frozen earth with frost, sand in thin strata, cracked stone, pitted netherrack.
+
+    /** The slab's face by climate, in NestRenderer's row order: temperate, cold, hot, underground, nether. */
+    static final int[][] NEST_FACE = {
+            ramp(0x644329, 0x765233, 0x8A6240, 0x9B724D, 0xAC825A),
+            ramp(0x584E45, 0x696055, 0x7C7065, 0x8D8176, 0xB4BDC6),
+            ramp(0xB09058, 0xC2A368, 0xD6BA7A, 0xE2C98A, 0xECD79C),
+            ramp(0x4F4C47, 0x615E58, 0x74716B, 0x86837D, 0x97948E),
+            ramp(0x461A18, 0x5A2422, 0x6E2E2A, 0x80383A, 0x91453F)};
+    /** The floor of what is carved, by climate: the same earth, deeper and in shadow (about half as bright as the face). */
+    static final int[][] NEST_FLOOR = {
+            ramp(0x2C1D13, 0x362419, 0x402B1F),
+            ramp(0x25201B, 0x2E2722, 0x372F29),
+            ramp(0x514027, 0x5D4A2E, 0x695536),
+            ramp(0x201F1E, 0x282725, 0x31302D),
+            ramp(0x1D0A09, 0x260E0D, 0x301312)};
+
+    /** The tone map of a climate's slab face (tones 0 to 4 of its ramp). */
+    static int[][] nestFace(int climate) {
+        int[][] t = clusters(700 + climate * 13, 4, 0.3, 0);
+        Random random = new Random(900 + climate);
+        switch (climate) {
+            case 0 -> pellets(t, 4, 731, 4);
+            case 1 -> {
+                // Frost: a bright crystal with a paler one beside it.
+                for (int i = 0; i < 6; i++) {
+                    int x = random.nextInt(16);
+                    int y = random.nextInt(16);
+                    t[y][x] = 4;
+                    tone(t, x + 1, y, 1, 3);
+                }
+            }
+            case 2 -> {
+                // Strata: a thin darker seam every few rows, wavering a pixel, lit just under it.
+                double[][] wave = valueNoise(741, 8);
+                for (int y = 0; y < 16; y++) {
+                    for (int x = 0; x < 16; x++) {
+                        int band = Math.floorMod(y + (int) Math.round(wave[0][x] * 2), 5);
+                        if (band == 0) {
+                            t[y][x] = Math.max(0, t[y][x] - 1);
+                        } else if (band == 1) {
+                            t[y][x] = Math.min(4, t[y][x] + 1);
+                        }
+                    }
+                }
+            }
+            case 3 -> {
+                // Cracks: short dark runs stepping down to the right.
+                for (int i = 0; i < 4; i++) {
+                    int x = random.nextInt(16);
+                    int y = random.nextInt(16);
+                    for (int k = 0; k < 3 + random.nextInt(2); k++) {
+                        t[Math.floorMod(y + k / 2, 16)][Math.floorMod(x + k, 16)] = 0;
+                    }
+                }
+            }
+            default -> {
+                // Pits: a dark hollow two wide, its lower lip lit.
+                for (int i = 0; i < 5; i++) {
+                    int x = random.nextInt(16);
+                    int y = random.nextInt(16);
+                    t[y][x] = 0;
+                    t[y][(x + 1) % 16] = 0;
+                    tone(t, x, y + 1, 1, 4);
+                    tone(t, x + 1, y + 1, 1, 4);
+                }
+            }
+        }
+        return t;
+    }
+
+    static void nest() {
+        Img atlas = new Img(128, 128);
+        int[][][] face = new int[5][][];
+        int[][][] floor = new int[5][][];
+        for (int climate = 0; climate < 5; climate++) {
+            face[climate] = nestFace(climate);
+            floor[climate] = clusters(800 + climate * 17, 3, 0.15, 0);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    atlas.set(x, climate * 16 + y, NEST_FACE[climate][Math.clamp(face[climate][y][x], 0, 4)]);
+                    atlas.set(16 + x, climate * 16 + y, NEST_FLOOR[climate][Math.clamp(floor[climate][y][x], 0, 2)]);
+                }
+            }
+        }
+        // Plain white, tinted in game: brood, crumbs, shelves, portals, whatever lies in a chamber.
+        atlas.fill(112, 112, 128, 128, 0xFFFFFFFF);
+        atlas.save("entity/nest");
+
+        // The case: plaster panels in the oak frame. Calm clusters, a few pores (a dark pit, its lower right rim lit) and
+        // two faint trowel strokes.
+        int[][] t = clusters(761, 3, 0.1, 0);
+        for (int[] row : t) {
+            for (int x = 0; x < 16; x++) {
+                row[x] += 1;
+            }
+        }
+        Random random = new Random(762);
+        for (int i = 0; i < 7; i++) {
+            int x = random.nextInt(16);
+            int y = random.nextInt(16);
+            t[y][x] = 0;
+            tone(t, x + 1, y + 1, 1, 4);
+        }
+        for (int i = 0; i < 2; i++) {
+            int x = random.nextInt(16);
+            int y = random.nextInt(16);
+            for (int k = 0; k < 5 + random.nextInt(3); k++) {
+                tone(t, x + k, y, 1, 4);
+            }
+        }
+        Img panel = new Img(16, 16);
+        render(panel, t, ramp(0xB3A88F, 0xCDC3AC, 0xD7CEB9, 0xE0D8C5, 0xEAE3D2));
+        panel.save("block/formicarium_panel");
+
+        nestFronts(face[0], floor[0]);
+    }
+
+    /** The colony blocks, in the order of the client's NestLayout.Kind. */
+    static final String[] NEST_BLOCKS = {"terrarium", "nest_chamber", "foraging_site", "hunting_ground", "harvesting_site", "storage", "queen_chamber",
+            "nether_foraging_site", "end_foraging_site", "colony_connector", "liquid_chamber"};
+
+    /**
+     * A picture of each colony block's front, for its item and for blocks too far away for their renderer: the block's
+     * own chamber and burrow as the game digs them. So the two never differ, this compiles the client's NestLayout (plain
+     * Java) and asks it for a layout of each kind, standing alone.
+     */
+    static void nestFronts(int[][] face, int[][] floor) {
+        try {
+            Path out = Files.createTempDirectory("nestlayout");
+            int failed = javax.tools.ToolProvider.getSystemJavaCompiler().run(null, null, null, "-d", out.toString(),
+                    "client/src/main/java/com/antcolonies/client/nest/NestLayout.java");
+            if (failed != 0) {
+                throw new IllegalStateException("NestLayout.java did not compile");
+            }
+            try (java.net.URLClassLoader loader = new java.net.URLClassLoader(new java.net.URL[] {out.toUri().toURL()})) {
+                Class<?> layoutClass = loader.loadClass("com.antcolonies.client.nest.NestLayout");
+                Class<?> kindClass = loader.loadClass("com.antcolonies.client.nest.NestLayout$Kind");
+                Class<?> featureClass = loader.loadClass("com.antcolonies.client.nest.NestLayout$Feature");
+                java.lang.reflect.Method create = layoutClass.getMethod("create", kindClass, long.class, int[].class, int.class);
+                Object[] kinds = kindClass.getEnumConstants();
+                if (kinds.length != NEST_BLOCKS.length) {
+                    throw new IllegalStateException("NEST_BLOCKS must list the " + kinds.length + " kinds of NestLayout.Kind, in its order");
+                }
+                for (int k = 0; k < kinds.length; k++) {
+                    Object layout = create.invoke(null, kinds[k], 7L, new int[] {-1, -1, -1, -1}, 2);
+                    boolean[] carved = (boolean[]) layoutClass.getField("carved").get(layout);
+                    java.util.List<?> features = (java.util.List<?>) layoutClass.getField("features").get(layout);
+                    Img img = new Img(16, 16);
+                    for (int v = 0; v < 16; v++) {
+                        for (int u = 0; u < 16; u++) {
+                            boolean above = v < 15 && carved[(v + 1) * 16 + u];
+                            boolean below = v > 0 && carved[(v - 1) * 16 + u];
+                            int y = 15 - v;
+                            if (carved[v * 16 + u]) {
+                                boolean wall = u > 0 && !carved[v * 16 + u - 1];
+                                img.set(u, y, shade(NEST_FLOOR[0][Math.clamp(floor[y][u], 0, 2)], v < 15 && !above ? 0.68 : wall ? 0.84 : 1));
+                            } else {
+                                img.set(u, y, shade(NEST_FACE[0][Math.clamp(face[y][u], 0, 4)], above ? 1.07 : below ? 0.9 : 1));
+                            }
+                        }
+                    }
+                    boolean nether = NEST_BLOCKS[k].startsWith("nether");
+                    int seen = 0;
+                    for (Object feature : features) {
+                        char type = (char) featureClass.getMethod("type").invoke(feature);
+                        int u = (int) featureClass.getMethod("u").invoke(feature);
+                        int y = 15 - (int) featureClass.getMethod("v").invoke(feature);
+                        boolean odd = seen++ % 2 == 1;
+                        switch (type) {
+                            case 'q' -> {
+                                // The Queen: head, thorax and a big gaster.
+                                img.set(u - 1, y, hex(0x8A5A30));
+                                img.set(u, y, hex(0xA06C3A));
+                                img.set(u + 1, y, hex(0xC68A4C));
+                                img.set(u + 1, y - 1, hex(0xD9A260));
+                            }
+                            case 'e' -> {
+                                if (!odd) {
+                                    img.set(u, y, hex(0xF2ECDB));
+                                }
+                            }
+                            case 'c' -> {
+                                if (!odd) {
+                                    img.set(u, y, hex(0xD9B26A));
+                                }
+                            }
+                            case 'w' -> img.set(u, y, hex(0x33221A));
+                            case 'k' -> img.set(u, y, hex(y > 0 && img.get(u, y - 1) == hex(0xF1E6C8) ? 0xDDCDA6 : 0xF1E6C8));
+                            case 'm' -> img.set(u, y, hex(0xD9B040));
+                            case 'i' -> {
+                                int color = new int[] {0x5DAA3C, 0xC9A45C, 0x8FD3E8}[seen % 3];
+                                img.set(u, y, hex(color));
+                                img.set(u, y - 1, shade(hex(color), 1.15));
+                            }
+                            case 's' -> img.set(u, y, hex((u & 3) == 0 ? 0x8C6238 : 0x9A6F44));
+                            case 'f' -> {
+                                img.set(u, y, hex(0xE8DDC8));
+                                img.set(u, y - 1, hex(odd ? 0xC9A57A : 0xB5462E));
+                            }
+                            case 'b' -> img.set(u, y, hex(0xE9E3D2));
+                            case 'r' -> {
+                                img.set(u, y, hex(0x3A2A20));
+                                img.set(u, y + 1, hex(0xE0A030));
+                            }
+                            case 'l' -> img.set(u, y, hex(0x4F9AD6));
+                            case 'o' -> img.set(u, y, hex(nether ? 0x1B1029 : 0xDBDE9E));
+                            case 'p' -> img.set(u, y, hex(nether ? (odd ? 0x9A3DF0 : 0x7B2BC8) : (odd ? 0x14463A : 0x1D6150)));
+                            case 'g' -> img.set(u, y, hex(0x97EBC6));
+                            case 'h' -> img.set(u, y, hex(0x140C08));
+                            case 'H' -> img.set(u, y, hex(NEST_BLOCKS[k].equals("foraging_site") ? 0xCFE8FF : 0x1A100A));
+                            default -> {
+                            }
+                        }
+                    }
+                    img.save("block/" + NEST_BLOCKS[k] + "_front");
+                }
+            }
+        } catch (ReflectiveOperationException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void main(String[] args) {
@@ -3654,6 +4146,7 @@ public class TexGen {
         nestBlocks();
         newChambers();
         nestItems();
+        nest();
         System.out.println("Wrote " + written + " textures.");
     }
 }

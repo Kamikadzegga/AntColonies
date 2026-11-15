@@ -73,6 +73,13 @@ public class AntColoniesJeiPlugin implements IModPlugin {
         return AntColonies.id("jei_plugin");
     }
 
+    /** The Formicarium was the Terrarium: a search for the old word still finds it and its glass. */
+    @Override
+    public void registerIngredientAliases(mezz.jei.api.registration.IIngredientAliasRegistration registration) {
+        registration.addAlias(ModItems.TERRARIUM.get(), "alias.antcolonies.terrarium");
+        registration.addAlias(com.antcolonies.core.registry.ModDecor.TERRARIUM_GLASS.asItem(), "alias.antcolonies.terrarium");
+    }
+
     /** Tubes, samples, brood and species upgrades of each species are different entries. */
     @Override
     public void registerItemSubtypes(ISubtypeRegistration registration) {

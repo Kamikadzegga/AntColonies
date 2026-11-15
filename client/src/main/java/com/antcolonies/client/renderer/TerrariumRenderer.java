@@ -5,7 +5,10 @@ import java.util.List;
 
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.content.block.ColonyEntityBlock;
+import com.antcolonies.content.block.ColonyPartBlock;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
+import com.antcolonies.client.nest.NestVisuals;
 import com.antcolonies.client.ClientSpecies;
 import com.antcolonies.client.model.AntDrawer;
 import com.antcolonies.client.model.AntPose;
@@ -40,6 +43,9 @@ import org.jspecify.annotations.Nullable;
  * into every side, eggs, larvae and food in the chambers, the Queen in her chamber on the front, the colony's
  * representative ants at work, and on the surface whatever the colony grows (fungus gardens, crystals at stage 4).
  * Everything follows the synced colony; nothing here feeds back into it.
+ *
+ * <p>That is the Formicarium standing on the ground. With another part of a colony over or under it, it is an upright
+ * nest instead, drawn by {@link NestRenderer}.
  */
 public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEntity, TerrariumRenderer.State> {
     private static final Identifier TEXTURE = AntColonies.id("textures/entity/terrarium_inside.png");
@@ -56,7 +62,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
     private static final int MAX_MODEL_ANTS = 12;
     /** The side-view sprite sheet: 24x12 cells, four frames across, per caste body, gaster and crystal rows. */
     private static final Identifier SIDE_TEXTURE = AntColonies.id("textures/entity/ant_side.png");
-    private static final RenderType SIDE = RenderTypes.entityCutout(SIDE_TEXTURE);
+    static final RenderType SIDE = RenderTypes.entityCutout(SIDE_TEXTURE);
     private static final int SIDE_CELL_W = 24;
     private static final int SIDE_CELL_H = 12;
     private static final int SIDE_TEX_W = 96;
@@ -65,7 +71,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
     private static final int SIDE_CROP_ROW = 10;
     private static final int SIDE_PLATES_ROW = 13;
     /** A tunnel worker sprite's length, px. */
-    private static final float SPRITE_LENGTH = 2.1F;
+    static final float SPRITE_LENGTH = 2.1F;
 
     private final AntDrawer drawer;
     private final AntPose pose = new AntPose();
@@ -82,6 +88,11 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         @Nullable AntSpecies former;
         /** Which glass sides (north, east, south, west) face the camera; the others are behind the soil. */
         final boolean[] facing = new boolean[4];
+        /** Its place in the build: the sides joined to chambers have no glass and no wall, the soil runs on there. */
+        final FlatGround.Shape shape = new FlatGround.Shape();
+        /** In a stack: drawn as an upright nest, from {@link #nest}. */
+        boolean upright;
+        final NestRenderer.State nest = new NestRenderer.State();
     }
 
     public TerrariumRenderer(BlockEntityRendererProvider.Context context) {
@@ -97,10 +108,30 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
     public void extractRenderState(TerrariumBlockEntity terrarium, State state, float partialTicks, Vec3 camera,
                                    ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(terrarium, state, partialTicks, camera, breakProgress);
+        state.upright = ColonyPartBlock.upright(terrarium.getBlockState());
+        if (state.upright) {
+            NestRenderer.State nest = state.nest;
+            NestRenderer.extract(nest, terrarium.getBlockPos(), terrarium.getLevel(), terrarium.getBlockState().getValue(ColonyEntityBlock.FACING), camera,
+                    partialTicks, AntConfig.client(AntConfig.VISUAL_DISTANCE));
+            nest.visuals = terrarium.clientVisuals instanceof NestVisuals visuals ? visuals : null;
+            nest.layout = nest.visuals == null ? null : nest.visuals.layout;
+            AntSpecies species = ClientSpecies.get(terrarium.colony().species());
+            AntSpecies former = ClientSpecies.get(terrarium.colony().formerSpecies());
+            nest.climate = species == null ? Climate.TEMPERATE : species.climate();
+            nest.look = species == null ? AntLook.UNKNOWN : species.look();
+            nest.former = former == null ? nest.look : former.look();
+            nest.queen = terrarium.colony().queen() != null;
+            nest.stage = terrarium.colony().stage();
+            nest.linked = true;
+            nest.lit = false;
+            nest.shown = 0;
+            nest.items.clear();
+            return;
+        }
         state.visuals = terrarium.clientVisuals instanceof TerrariumVisuals visuals ? visuals : null;
         state.colony = terrarium.colony();
         state.partialTicks = partialTicks;
-        state.time = terrarium.getLevel() == null ? 0 : terrarium.getLevel().getGameTime() + partialTicks;
+        state.time = terrarium.getLevel() == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(terrarium.getLevel().getGameTime(), partialTicks);
         double distance = AntConfig.client(AntConfig.VISUAL_DISTANCE);
         state.near = Vec3.atCenterOf(terrarium.getBlockPos()).distanceToSqr(camera) < distance * distance;
         double detail = AntConfig.client(AntConfig.ANT_DETAIL_DISTANCE);
@@ -111,14 +142,18 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         // when many Terrariums are in view.
         double cx = (camera.x - terrarium.getBlockPos().getX()) * 16;
         double cz = (camera.z - terrarium.getBlockPos().getZ()) * 16;
-        state.facing[0] = cz < MIN;
-        state.facing[1] = cx > MAX;
-        state.facing[2] = cz > MAX;
-        state.facing[3] = cx < MIN;
+        FlatGround.facing(state.facing, cx, cz);
+        if (terrarium.getLevel() != null) {
+            FlatGround.extract(state.shape, terrarium.getLevel(), terrarium.getBlockPos(), terrarium.getBlockState());
+        }
     }
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
+        if (state.upright) {
+            NestRenderer.submit(state.nest, poseStack, collector);
+            return;
+        }
         TerrariumVisuals visuals = state.visuals;
         if (visuals == null || visuals.faces[0] == null || state.colony == null) {
             return;
@@ -127,16 +162,47 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         int soil = soilColor(climate);
         int top = topColor(climate);
         int light = state.lightCoords;
+        FlatGround.Shape shape = state.shape;
+        // Where the Formicarium's tunnels leave it: on into the next block's wall, or round a corner.
+        @SuppressWarnings("unchecked")
+        List<float[][]>[] exits = new List[4];
+        for (int face = 0; face < 4; face++) {
+            exits[face] = shape.outer(face) && state.facing[face] ? FlatGround.exits(shape, face, visuals.faces[face]) : List.of();
+        }
         collector.submitCustomGeometry(poseStack, SOLID, (pose, buffer) -> {
             Geometry g = new Geometry(pose, buffer, TEX, light);
-            drawSoil(g, soil, top, state.facing);
+            FlatGround.soil(g, shape, soil, top, state.facing);
+            int dark = Geometry.shade(soil, 0.42F);
             for (int face = 0; face < 4; face++) {
-                if (!state.facing[face]) {
+                // A side joined to a chamber has no glass: the soil runs on, nothing of the tunnels shows there.
+                if (!state.facing[face] || !shape.outer(face)) {
                     continue;
                 }
-                drawTunnels(g, face, visuals.faces[face], Geometry.shade(soil, 0.42F), soil);
+                // The colony's own tunnels and chambers on this side, and its ways out, cut on the pixel grid together.
+                TunnelLayout layout = visuals.faces[face];
+                List<float[][]> paths = new ArrayList<>(exits[face]);
+                float[] p = new float[2];
+                for (TunnelLayout.Edge edge : layout.edges) {
+                    float[][] points = new float[9][];
+                    for (int i = 0; i <= 8; i++) {
+                        points[i] = layout.point(edge, edge.a(), i / 8F, p).clone();
+                    }
+                    paths.add(points);
+                }
+                List<float[]> hollows = new ArrayList<>();
+                for (TunnelLayout.Node node : layout.nodes) {
+                    hollows.add(new float[] {node.u(), node.v(), node.radiusU(), node.radiusV(), node.type() == TunnelLayout.ChamberType.CRYSTAL ? 1 : 0});
+                }
+                FlatGround.tunnels(g, face, shape, paths, hollows, dark);
             }
             drawItems(g, visuals, state);
+            if (shape.anyJoined()) {
+                FlatGround.trails(g, shape, FlatGround.trailColor(soil, top));
+                // The main entrance, where the trails from the chambers meet.
+                float[] c = FlatGround.trailCentre(shape);
+                g.box(c[0] - 1.3F, TOP, c[1] - 1.3F, c[0] + 1.3F, TOP + 0.45F, c[1] + 1.3F, Geometry.shade(soil, 0.7F), 17, 1, 23, 7);
+                g.box(c[0] - 0.55F, TOP + 0.01F, c[1] - 0.55F, c[0] + 0.55F, TOP + 0.47F, c[1] + 0.55F, 0xFF1E140C, 17, 1, 19, 3);
+            }
             drawSurface(g, visuals, state);
         });
         AntLook look = state.species == null ? AntLook.UNKNOWN : state.species.look();
@@ -152,15 +218,22 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         // The ants in the tunnels and the Queen are flat side-view sprites, seen through the glass like a real ant farm.
         collector.submitCustomGeometry(poseStack, SIDE, (pose, buffer) -> {
             Geometry g = new Geometry(pose, buffer, TEX, light);
-            drawQueenSprite(g, visuals, state, look);
+            if (shape.outer(visuals.frontFace)) {
+                drawQueenSprite(g, visuals, state, look);
+            }
             int surface = 0;
             for (TerrariumVisuals.Actor actor : visuals.actors) {
                 if (actor.face != TerrariumVisuals.SURFACE) {
-                    if (state.facing[actor.face]) {
+                    if (state.facing[actor.face] && shape.outer(actor.face)) {
                         drawActorSprite(g, actor, state, actor.former ? former : look);
                     }
                 } else if (!state.detailed || surface++ >= MAX_MODEL_ANTS) {
                     drawSurfaceSprite(g, actor, state, actor.former ? former : look);
+                }
+            }
+            if (state.colony.adults() > 0) {
+                for (int face = 0; face < 4; face++) {
+                    FlatGround.walkers(g, face, exits[face], look, state.time, shape.seed, visuals.carryColor);
                 }
             }
         });
@@ -173,52 +246,17 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         }
     }
 
-    // --- Colors by climate ---
+    // --- Colors by climate (shared with the chambers: FlatGround) ---
 
     private static int soilColor(Climate climate) {
-        return switch (climate) {
-            case COLD -> 0xFF7A6857;
-            case HOT -> 0xFFD6BA7A;
-            case UNDERGROUND -> 0xFF75716B;
-            case NETHER -> 0xFF6E2E2A;
-            default -> 0xFF8A6240;
-        };
+        return FlatGround.soilColor(climate);
     }
 
     private static int topColor(Climate climate) {
-        return switch (climate) {
-            case COLD -> 0xFFF2F6FA;
-            case HOT -> 0xFFE3CD8E;
-            case UNDERGROUND -> 0xFF8A857E;
-            case NETHER -> 0xFF8C2E26;
-            default -> 0xFF6DA544;
-        };
+        return FlatGround.topColor(climate);
     }
 
-    // --- Soil and tunnels ---
-
-    private static void drawSoil(Geometry g, int soil, int top, boolean[] facing) {
-        float e = 0;
-        // Sides: only those facing the camera.
-        if (facing[0]) {
-            g.quad(new float[] {MAX, BOTTOM, MIN - e}, new float[] {MIN, BOTTOM, MIN - e}, new float[] {MIN, TOP, MIN - e}, new float[] {MAX, TOP, MIN - e},
-                    Geometry.shade(soil, 0.85F), 0, 0, 12, 10, 0, 0, -1);
-        }
-        if (facing[2]) {
-            g.quad(new float[] {MIN, BOTTOM, MAX + e}, new float[] {MAX, BOTTOM, MAX + e}, new float[] {MAX, TOP, MAX + e}, new float[] {MIN, TOP, MAX + e},
-                    Geometry.shade(soil, 0.85F), 2, 2, 14, 12, 0, 0, 1);
-        }
-        if (facing[3]) {
-            g.quad(new float[] {MIN - e, BOTTOM, MIN}, new float[] {MIN - e, BOTTOM, MAX}, new float[] {MIN - e, TOP, MAX}, new float[] {MIN - e, TOP, MIN},
-                    Geometry.shade(soil, 0.7F), 1, 3, 13, 13, -1, 0, 0);
-        }
-        if (facing[1]) {
-            g.quad(new float[] {MAX + e, BOTTOM, MAX}, new float[] {MAX + e, BOTTOM, MIN}, new float[] {MAX + e, TOP, MIN}, new float[] {MAX + e, TOP, MAX},
-                    Geometry.shade(soil, 0.7F), 3, 1, 15, 11, 1, 0, 0);
-        }
-        // The surface.
-        g.quad(new float[] {MIN, TOP, MIN}, new float[] {MIN, TOP, MAX}, new float[] {MAX, TOP, MAX}, new float[] {MAX, TOP, MIN}, top, 34, 2, 46, 14, 0, 1, 0);
-    }
+    // --- Tunnels ---
 
     /** Where a point of a side's 2D layout is in the block, px; {@code out} is how far in front of the soil. */
     static float[] onFace(int face, float u, float v, float out, float[] into) {
@@ -249,96 +287,12 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
     /** The direction of +u on each side, in the block. */
     private static final float[][] U_DIR = {{-1, 0, 0}, {0, 0, -1}, {1, 0, 0}, {0, 0, 1}};
 
-    /** One tunnel or chamber quad on a side, its corners already wound to face out of the soil. Kind: 0 tunnel, 1 chamber, 2 crystal chamber. */
-    private record TunnelQuad(float[] a, float[] b, float[] c, float[] d, int kind) {}
-
-    /**
-     * The tunnels and chambers of one side. Their shape only changes when the colony's layout does (a new stage), so the
-     * quads are worked out once per layout and kept on it; each frame only sends them on.
-     */
-    private static void drawTunnels(Geometry g, int face, TunnelLayout layout, int dark, int soil) {
-        @SuppressWarnings("unchecked")
-        List<TunnelQuad> quads = layout.renderCache instanceof List<?> cached ? (List<TunnelQuad>) cached : null;
-        if (quads == null) {
-            quads = bakeTunnels(face, layout);
-            layout.renderCache = quads;
-        }
-        float[] n = NORMALS[face];
-        int crystal = Geometry.shade(dark, 1.3F);
-        for (TunnelQuad q : quads) {
-            if (q.kind() == 0) {
-                g.quad(q.a(), q.b(), q.c(), q.d(), dark, 18, 2, 30, 4, n[0], n[1], n[2]);
-            } else {
-                g.quad(q.a(), q.b(), q.c(), q.d(), q.kind() == 2 ? crystal : dark, 18, 6, 30, 14, n[0], n[1], n[2]);
-            }
-        }
-    }
-
-    private static List<TunnelQuad> bakeTunnels(int face, TunnelLayout layout) {
-        List<TunnelQuad> quads = new ArrayList<>();
-        float[] n = NORMALS[face];
-        float out = 0.03F;
-        float[] p = new float[2];
-        int segments = 7;
-        for (TunnelLayout.Edge edge : layout.edges) {
-            float halfWidth = 0.7F;
-            float[] prev = null;
-            float prevNu = 0;
-            float prevNv = 0;
-            for (int i = 0; i <= segments; i++) {
-                float[] point = layout.point(edge, edge.a(), i / (float) segments, p).clone();
-                if (prev != null) {
-                    float du = point[0] - prev[0];
-                    float dv = point[1] - prev[1];
-                    float len = Math.max(1e-4F, Mth.sqrt(du * du + dv * dv));
-                    float nu = -dv / len * halfWidth;
-                    float nv = du / len * halfWidth;
-                    if (i == 1) {
-                        prevNu = nu;
-                        prevNv = nv;
-                    }
-                    quads.add(facing(n, onFace(face, prev[0] - prevNu, prev[1] - prevNv, out, new float[3]),
-                            onFace(face, point[0] - nu, point[1] - nv, out, new float[3]), onFace(face, point[0] + nu, point[1] + nv, out, new float[3]),
-                            onFace(face, prev[0] + prevNu, prev[1] + prevNv, out, new float[3]), 0));
-                    prevNu = nu;
-                    prevNv = nv;
-                }
-                prev = point;
-            }
-        }
-        // Chambers: rounded hollows, flat at the bottom.
-        int sides = 12;
-        for (TunnelLayout.Node node : layout.nodes) {
-            float ru = node.radiusU();
-            float rv = node.radiusV();
-            int kind = node.type() == TunnelLayout.ChamberType.CRYSTAL ? 2 : 1;
-            for (int i = 0; i < sides; i++) {
-                float a0 = i * Mth.TWO_PI / sides;
-                float a1 = (i + 1) * Mth.TWO_PI / sides;
-                float v0 = Math.max(-0.65F, Mth.sin(a0));
-                float v1 = Math.max(-0.65F, Mth.sin(a1));
-                float[] c = onFace(face, node.u() + Mth.cos(a1) * ru, node.v() + v1 * rv, out + 0.005F, new float[3]);
-                quads.add(facing(n, onFace(face, node.u(), node.v(), out + 0.005F, new float[3]),
-                        onFace(face, node.u() + Mth.cos(a0) * ru, node.v() + v0 * rv, out + 0.005F, new float[3]), c, c.clone(), kind));
-            }
-        }
-        return quads;
-    }
-
-    /** The quad with its corners in the order that faces along {@code n}. */
-    private static TunnelQuad facing(float[] n, float[] a, float[] b, float[] c, float[] d, int kind) {
-        float[] ab = {b[0] - a[0], b[1] - a[1], b[2] - a[2]};
-        float[] ac = {c[0] - a[0], c[1] - a[1], c[2] - a[2]};
-        float cross = (ab[1] * ac[2] - ab[2] * ac[1]) * n[0] + (ab[2] * ac[0] - ab[0] * ac[2]) * n[1] + (ab[0] * ac[1] - ab[1] * ac[0]) * n[2];
-        return cross >= 0 ? new TunnelQuad(a, b, c, d, kind) : new TunnelQuad(d, c, b, a, kind);
-    }
-
     // --- Brood, food, surface ---
 
     private static void drawItems(Geometry g, TerrariumVisuals visuals, State state) {
         float[] at = new float[3];
         for (TerrariumVisuals.Item item : visuals.items) {
-            if (item.face() >= 0 && item.face() < 4 && !state.facing[item.face()]) {
+            if (item.face() >= 0 && item.face() < 4 && (!state.facing[item.face()] || !state.shape.outer(item.face()))) {
                 continue;
             }
             onFace(item.face(), item.u(), item.v(), 0.3F, at);
@@ -361,7 +315,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
 
     private static void drawSurface(Geometry g, TerrariumVisuals visuals, State state) {
         AntSpecies species = state.species;
-        long seed = visuals.hashCode();
+        long seed = visuals.seed();
         net.minecraft.util.RandomSource random = net.minecraft.util.RandomSource.create(seed);
         // Entrance mounds.
         for (int i = 0; i < 2 + Math.min(2, visuals.stage); i++) {
@@ -387,7 +341,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
     }
 
     private static void drawCrystals(Geometry g, TerrariumVisuals visuals, int color) {
-        net.minecraft.util.RandomSource random = net.minecraft.util.RandomSource.create(visuals.hashCode() * 7L);
+        net.minecraft.util.RandomSource random = net.minecraft.util.RandomSource.create(visuals.seed() * 7L);
         for (int i = 0; i < 5; i++) {
             float x = 3 + random.nextFloat() * 10;
             float z = 3 + random.nextFloat() * 10;
@@ -416,13 +370,17 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
             return;
         }
         TunnelLayout.Node node = layout.nodes.get(chamber);
-        float shuffle = Mth.sin(visuals.queenPhase * 0.02F) * node.radiusU() * 0.25F;
-        boolean positive = Mth.cos(visuals.queenPhase * 0.02F) > 0;
-        // Her gaster swells a little while she lays; she shifts her legs now and then.
-        float pulse = 1 + (visuals.queenLaying ? 0.06F : 0.02F) * Mth.sin(state.time * 0.25F);
-        int frame = (int) (state.time / 12) % 2 == 0 ? 0 : 2;
+        // She walks her chamber's floor (TerrariumVisuals): her legs step with the distance she covers, and stand still
+        // while she rests.
+        float shuffle = Mth.lerp(state.partialTicks, visuals.prevQueenOffset, visuals.queenOffset);
+        boolean positive = visuals.queenRight;
+        boolean walking = visuals.queenMoving;
+        // Resting, her gaster swells a little (more while she lays) and she shifts a leg now and then.
+        float walked = Mth.lerp(state.partialTicks, visuals.prevQueenWalked, visuals.queenWalked);
+        float pulse = walking ? 1 : 1 + (visuals.queenLaying ? 0.06F : 0.02F) * Mth.sin(state.time * 0.25F);
+        int frame = walking ? Math.floorMod((int) (walked * 2.4F), 4) : (int) (state.time / 40) % 6 == 0 ? 2 : 0;
         int light = visuals.evolutionGlow > 0.05F ? LightCoordsUtil.FULL_BRIGHT : g.light;
-        drawSprite(g, visuals.frontFace, node.u() + shuffle, node.v() - node.radiusV() + 0.15F, positive, 0, Caste.QUEEN, look,
+        drawSprite(g, visuals.frontFace, node.u() + shuffle, FlatGround.chamberFloor(node.v(), node.radiusV()) + 0.02F, positive, 0, Caste.QUEEN, look,
                 SPRITE_LENGTH * 1.75F, frame, 0, light, pulse);
     }
 
@@ -435,7 +393,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
                 : actor.action == TerrariumVisuals.Action.GROOM ? (int) (state.time / 4) % 2 : 0;
         float length = SPRITE_LENGTH * (actor.caste == Caste.SOLDIER ? 1.15F : 1);
         // The tunnel's centre line is a little above its floor.
-        drawSprite(g, actor.face, u, v - 0.55F, actor.facingPositive, Mth.lerp(pt, actor.prevPitch, actor.pitch), actor.caste, look, length, frame,
+        drawSprite(g, actor.face, u, FlatGround.tunnelFloor(v), actor.facingPositive, 0, actor.caste, look, length, frame,
                 actor.carry, g.light, 1);
     }
 
@@ -443,7 +401,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
      * One side-view ant in a glass side's plane: feet at (u, v), walking along +u or -u, tilted up a slope by
      * {@code pitch}. Gaster, body and crystals are layers of the sprite sheet, each in the species' color.
      */
-    private static void drawSprite(Geometry g, int face, float u, float v, boolean positive, float pitch, Caste caste, AntLook look, float length,
+    static void drawSprite(Geometry g, int face, float u, float v, boolean positive, float pitch, Caste caste, AntLook look, float length,
                                    int frame, int carry, int light, float gasterScale) {
         float d = positive ? 1 : -1;
         float fu = d * Mth.cos(pitch);

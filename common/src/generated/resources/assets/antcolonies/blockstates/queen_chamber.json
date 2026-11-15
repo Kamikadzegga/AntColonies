@@ -2,7 +2,8 @@
   "multipart": [
     {
       "when": {
-        "facing": "north"
+        "facing": "north",
+        "upright": "false"
       },
       "apply": {
         "model": "antcolonies:block/queen_chamber"
@@ -10,7 +11,17 @@
     },
     {
       "when": {
-        "facing": "east"
+        "facing": "north",
+        "upright": "true"
+      },
+      "apply": {
+        "model": "antcolonies:block/queen_chamber_upright"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "upright": "false"
       },
       "apply": {
         "model": "antcolonies:block/queen_chamber",
@@ -19,7 +30,18 @@
     },
     {
       "when": {
-        "facing": "south"
+        "facing": "east",
+        "upright": "true"
+      },
+      "apply": {
+        "model": "antcolonies:block/queen_chamber_upright",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "upright": "false"
       },
       "apply": {
         "model": "antcolonies:block/queen_chamber",
@@ -28,10 +50,31 @@
     },
     {
       "when": {
-        "facing": "west"
+        "facing": "south",
+        "upright": "true"
+      },
+      "apply": {
+        "model": "antcolonies:block/queen_chamber_upright",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "upright": "false"
       },
       "apply": {
         "model": "antcolonies:block/queen_chamber",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "upright": "true"
+      },
+      "apply": {
+        "model": "antcolonies:block/queen_chamber_upright",
         "y": 270
       }
     },
@@ -145,7 +188,8 @@
     },
     {
       "when": {
-        "north": "false"
+        "north": "false",
+        "upright": "false"
       },
       "apply": {
         "model": "antcolonies:block/frame/glass_north"
@@ -153,7 +197,8 @@
     },
     {
       "when": {
-        "east": "false"
+        "east": "false",
+        "upright": "false"
       },
       "apply": {
         "model": "antcolonies:block/frame/glass_east"
@@ -161,7 +206,8 @@
     },
     {
       "when": {
-        "south": "false"
+        "south": "false",
+        "upright": "false"
       },
       "apply": {
         "model": "antcolonies:block/frame/glass_south"
@@ -169,7 +215,8 @@
     },
     {
       "when": {
-        "west": "false"
+        "west": "false",
+        "upright": "false"
       },
       "apply": {
         "model": "antcolonies:block/frame/glass_west"
@@ -177,10 +224,51 @@
     },
     {
       "when": {
-        "up": "false"
+        "up": "false",
+        "upright": "false"
       },
       "apply": {
         "model": "antcolonies:block/frame/glass_up"
+      }
+    },
+    {
+      "when": {
+        "facing": "north|south",
+        "north": "false",
+        "upright": "true"
+      },
+      "apply": {
+        "model": "antcolonies:block/frame/pane_north"
+      }
+    },
+    {
+      "when": {
+        "facing": "north|south",
+        "south": "false",
+        "upright": "true"
+      },
+      "apply": {
+        "model": "antcolonies:block/frame/pane_south"
+      }
+    },
+    {
+      "when": {
+        "facing": "east|west",
+        "east": "false",
+        "upright": "true"
+      },
+      "apply": {
+        "model": "antcolonies:block/frame/pane_east"
+      }
+    },
+    {
+      "when": {
+        "facing": "east|west",
+        "west": "false",
+        "upright": "true"
+      },
+      "apply": {
+        "model": "antcolonies:block/frame/pane_west"
       }
     }
   ]

@@ -78,7 +78,7 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
     /** Comparators read how full the lab's FE store is. */
     @Override
     public int comparatorSignal() {
-        return com.antcolonies.content.block.ComparatorSource.fill(energy.getAmountAsInt(), ENERGY_CAPACITY);
+        return com.antcolonies.content.block.ComparatorSource.fill(energy.getAmountAsInt(), energy.getCapacityAsInt());
     }
 
     public static final int SLOT_QUEEN = 0;
@@ -87,9 +87,10 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
     public static final int SLOT_CATALYST = 4;
     public static final int SLOTS = 5;
     public static final int UPGRADE_SLOTS = 2;
-    /** FE the lab stores, and the most it takes in per tick (from a Generator or any mod's cable). */
-    public static final int ENERGY_CAPACITY = 1_000_000;
-    public static final int MAX_RECEIVE = 4_000;
+    /** FE the lab stores (config labEnergy; it takes in at most labEnergyInput per tick, from a Generator or any mod's cable). */
+    public static int energyCapacity() {
+        return AntConfig.get(AntConfig.LAB_ENERGY);
+    }
 
     public enum Operation {
         NONE, UPGRADE, REROLL, MUTATE, PURGE, SAMPLE;
@@ -125,7 +126,7 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
             GeneticLabBlockEntity.this.setChanged();
         }
     };
-    private final SimpleEnergyHandler energy = new SimpleEnergyHandler(ENERGY_CAPACITY, MAX_RECEIVE, 0) {
+    private final SimpleEnergyHandler energy = new SimpleEnergyHandler(energyCapacity(), AntConfig.get(AntConfig.LAB_ENERGY_INPUT), 0) {
         @Override
         protected void onEnergyChanged(int previous) {
             GeneticLabBlockEntity.this.setChanged();
@@ -570,7 +571,7 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
                 upgrades.setItem(slot++, stack);
             }
         }
-        energy.set(Math.clamp(input.getIntOr("energy", 0), 0, ENERGY_CAPACITY));
+        energy.set(Math.clamp(input.getIntOr("energy", 0), 0, energy.getCapacityAsInt()));
         operation = Operation.byId(input.getIntOr("operation", 0));
         selectedTrait = input.getIntOr("trait", 0);
         progress = input.getIntOr("progress", 0);

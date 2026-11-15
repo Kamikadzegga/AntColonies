@@ -68,7 +68,7 @@ public final class Tooltips {
                     .withStyle(ChatFormatting.DARK_GREEN));
         }
         if (detailed && queen.grown() < 4) {
-            tooltip.accept(Component.translatable("tooltip.antcolonies.queen_grows", (int) Math.round(QueenData.minutesFor(2)), QueenData.GROWTH_CAP)
+            tooltip.accept(Component.translatable("tooltip.antcolonies.queen_grows", (int) Math.round(QueenData.minutesFor(2)), QueenData.growthCap())
                     .withStyle(ChatFormatting.DARK_GRAY));
         }
         speciesFacts(registries, queen.species(), tooltip, detailed);
