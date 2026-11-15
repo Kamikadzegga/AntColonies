@@ -80,6 +80,8 @@ hunters to work, evolve mineral species and engineer their genes.
 |:---:|:---:|
 | ![Formicarium](docs/images/screenshots/terrarium.png) | ![Colony screen](docs/images/screenshots/colony-screen.png) |
 | A living Formicarium | The colony screen |
+| ![Vertical Formicarium](docs/images/screenshots/vertical-formicarium.png) | ![Liquid Ants](docs/images/screenshots/liquid-ants.png) |
+| A colony built upward: one nest behind glass, its chambers joined by tunnels | Liquid Ants, each carrying its fluid, and the Droplet Centrifuge |
 | ![Jobs](docs/images/screenshots/jobs-screen.png) | ![Statistics](docs/images/screenshots/statistics-screen.png) |
 | Jobs: ants, priority and modes per site | Statistics: the colony over the last half hour |
 | ![Generator and Genetic Laboratory](docs/images/screenshots/machines.png) | ![Genetic Laboratory](docs/images/screenshots/genetic-laboratory.png) |
