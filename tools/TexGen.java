@@ -1,10 +1,19 @@
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
+import javax.tools.ToolProvider;
 
 /**
  * Paints every texture of Ant Colonies in code; original art, no third-party textures.
@@ -14,7 +23,7 @@ public class TexGen {
     static final Path TEX = Path.of("common/src/generated/resources/assets/antcolonies/textures");
     static int written;
 
-    // ------------------------------------------------------------------ Canvas
+    // --- Canvas ---
 
     static final class Img {
         final BufferedImage image;
@@ -166,7 +175,7 @@ public class TexGen {
         }
     }
 
-    // ------------------------------------------------------------------ Ant skins
+    // --- Ant skins ---
 
     /** One box of the ant model: its texture corner and size (units = texels). */
     record Box(String part, double u, double v, double w, double h, double d) {}
@@ -361,7 +370,7 @@ public class TexGen {
         }
     }
 
-    // ------------------------------------------------------------------ Formicarium inside
+    // --- Formicarium inside ---
 
     static void terrariumInside() {
         Img img = new Img(64, 64);
@@ -403,7 +412,7 @@ public class TexGen {
         img.save("entity/terrarium_inside");
     }
 
-    // ------------------------------------------------------------------ Blocks
+    // --- Blocks ---
 
     static Img block(int color, int amount, long seed) {
         Img img = new Img(16, 16);
@@ -446,7 +455,7 @@ public class TexGen {
         }
     }
 
-    // ------------------------------------------------------------------ The Generator and the Genetic Laboratory
+    // --- The Generator and the Genetic Laboratory ---
 
     // The machines' palettes. Their faces are shaded symmetrically: lighter at the top, the same edge all round.
     static final int[] ENAMEL = ramp(0x9AA3A8, 0xB9C1C5, 0xD3D9DC, 0xE4E9EB, 0xF3F6F7);
@@ -460,7 +469,7 @@ public class TexGen {
 
     /** A grid of letters as pixels: each letter's colour from the pairs given; '.' leaves the pixel as it is. */
     static void paint(Img img, int x0, int y0, String[] rows, Object... pairs) {
-        java.util.Map<Character, Integer> colors = new java.util.HashMap<>();
+        Map<Character, Integer> colors = new HashMap<>();
         for (int i = 0; i < pairs.length; i += 2) {
             colors.put((Character) pairs[i], (Integer) pairs[i + 1]);
         }
@@ -573,7 +582,7 @@ public class TexGen {
         frame(deck, 4, 4, 12, 12, GRAPHITE[3]);
         deck.save("block/generator_deck");
 
-        // --- The chamber's plating. The model uses columns 2-13 of rows 2-7 of each (between the corner posts). ---
+        // --- The chamber's plating. The model uses columns 2-13 of rows 2-7 of each (between the corner posts) ---
         // Front: a viewport with cut corners in a steel frame, a teal pip either side (cutout).
         Img port = plating(181);
         for (int y = 2; y < 8; y++) {
@@ -624,7 +633,7 @@ public class TexGen {
         fins.set(10, 6, GRAPHITE[1]);
         fins.save("block/generator_chamber_back");
 
-        // --- The burn core. Idle: a dark slug with a few dull red seams. ---
+        // --- The burn core. Idle: a dark slug with a few dull red seams ---
         Img core = new Img(16, 16);
         brushed(core, 0, 0, 16, 16, COAL, 3.0, 1.4, 0.8, 184);
         for (int[] seam : new int[][] {{6, 7}, {7, 7}, {9, 8}, {5, 9}, {10, 6}, {8, 10}, {6, 5}, {9, 5}}) {
@@ -905,7 +914,7 @@ public class TexGen {
         }
     }
 
-    // ------------------------------------------------------------------ Items
+    // --- Items ---
 
     static Img item() {
         return new Img(16, 16);
@@ -1269,7 +1278,7 @@ public class TexGen {
         }
     }
 
-    // ------------------------------------------------------------------ Particles
+    // --- Particles ---
 
     static void particles() {
         for (int i = 0; i < 4; i++) {
@@ -1302,7 +1311,7 @@ public class TexGen {
         }
     }
 
-    // ------------------------------------------------------------------ GUI sprites (the Genetic Laboratory console)
+    // --- GUI sprites (the Genetic Laboratory console) ---
 
     /** Writes a nine-slice .mcmeta next to a sprite. */
     static void nineSlice(String path, int w, int h, int border) {
@@ -1413,7 +1422,7 @@ public class TexGen {
         capsule.save("gui/sprites/lab/capsule");
     }
 
-    // ------------------------------------------------------------------ Side-view ant sprites (the ants in the tunnels)
+    // --- Side-view ant sprites (the ants in the tunnels) ---
 
     static final int SIDE_CELL_W = 24;
     static final int SIDE_CELL_H = 12;
@@ -1553,7 +1562,7 @@ public class TexGen {
         }
     }
 
-    // ------------------------------------------------------------------ Chitin gear, Guard Ants
+    // --- Chitin gear, Guard Ants ---
 
     static final int CH_OUT = rgb(52, 30, 16);
     static final int CH_DARK = rgb(104, 58, 30);
@@ -2074,7 +2083,7 @@ public class TexGen {
         }
     }
 
-    // ------------------------------------------------------------------ The nest-building palette and the new chambers
+    // --- The nest-building palette and the new chambers ---
     //
     // Painted on a tone map: each pixel is an index into the material's ramp (dark to light), so shading is +-1 tone.
 
@@ -2249,7 +2258,7 @@ public class TexGen {
     static int[][] grid(int value) {
         int[][] g = new int[16][16];
         for (int[] row : g) {
-            java.util.Arrays.fill(row, value);
+            Arrays.fill(row, value);
         }
         return g;
     }
@@ -3033,7 +3042,7 @@ public class TexGen {
         img.save(path);
     }
 
-    // ------------------------------------------------------------------ Chitin gear tiers
+    // --- Chitin gear tiers ---
 
     /** One tier of chitin gear: its colour ramp (outline to shine), its handle, its eye glint and its surface detail. */
     record GearTier(String name, int[] ramp, int handle, int handleDark, int eyeShine, char detail) {}
@@ -3204,13 +3213,13 @@ public class TexGen {
         img.save("item/" + name);
     }
 
-    // ------------------------------------------------------------------ Working Sites icons
+    // --- Working Sites icons ---
 
     /** One site icon: 16x16 rows of palette letters ('.' clear). */
-    record SiteIcon(String name, String[] rows, java.util.Map<Character, Integer> palette) {}
+    record SiteIcon(String name, String[] rows, Map<Character, Integer> palette) {}
 
-    static java.util.Map<Character, Integer> iconPalette(Object... kv) {
-        java.util.Map<Character, Integer> m = new java.util.HashMap<>();
+    static Map<Character, Integer> iconPalette(Object... kv) {
+        Map<Character, Integer> m = new HashMap<>();
         for (int i = 0; i < kv.length; i += 2) {
             m.put((Character) kv[i], (Integer) kv[i + 1]);
         }
@@ -3413,7 +3422,7 @@ public class TexGen {
         }
     }
 
-    // ------------------------------------------------------------------ Liquid Ants, droplets and the Droplet Centrifuge
+    // --- Liquid Ants, droplets and the Droplet Centrifuge ---
 
     /**
      * One fluid's droplet: its colour and its finish (clear, glass, thick, oil, slime or molten). The same rows are in
@@ -3462,11 +3471,11 @@ public class TexGen {
 
     /** A colour moved in brightness and saturation (factors) and turned in hue (degrees): shades run cooler, lights warmer. */
     static int tone(int rgb, double brightness, double saturation, double hueShift) {
-        float[] hsb = java.awt.Color.RGBtoHSB((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, null);
+        float[] hsb = Color.RGBtoHSB((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, null);
         float h = (float) ((hsb[0] + hueShift / 360.0 + 1) % 1.0);
         float s = (float) Math.clamp(hsb[1] * saturation, 0, 1);
         float b = (float) Math.clamp(hsb[2] * brightness, 0, 1);
-        return 0xFF000000 | (java.awt.Color.HSBtoRGB(h, s, b) & 0xFFFFFF);
+        return 0xFF000000 | (Color.HSBtoRGB(h, s, b) & 0xFFFFFF);
     }
 
     static int mix(int a, int b, double t) {
@@ -3480,7 +3489,7 @@ public class TexGen {
     static void droplets() {
         for (LiquidArt art : LIQUIDS) {
             int base = hex(art.color());
-            float value = java.awt.Color.RGBtoHSB((base >> 16) & 0xFF, (base >> 8) & 0xFF, base & 0xFF, null)[2];
+            float value = Color.RGBtoHSB((base >> 16) & 0xFF, (base >> 8) & 0xFF, base & 0xFF, null)[2];
             boolean dark = value < 0.35;
             boolean molten = art.style().equals("molten");
             // The ramp: lights lean warm and pale, shades lean cool and deep. Very dark fluids get lights they can show.
@@ -3779,7 +3788,7 @@ public class TexGen {
         centrifuge();
     }
 
-    // ------------------------------------------------------------------ The nest behind the glass
+    // --- The nest behind the glass ---
     //
     // Every colony block is a slab of nest material behind glass: per climate, a face and a darker floor for what is carved.
 
@@ -3909,16 +3918,16 @@ public class TexGen {
     static void nestFronts(int[][] face, int[][] floor) {
         try {
             Path out = Files.createTempDirectory("nestlayout");
-            int failed = javax.tools.ToolProvider.getSystemJavaCompiler().run(null, null, null, "-d", out.toString(),
+            int failed = ToolProvider.getSystemJavaCompiler().run(null, null, null, "-d", out.toString(),
                     "client/src/main/java/com/antcolonies/client/nest/NestLayout.java");
             if (failed != 0) {
                 throw new IllegalStateException("NestLayout.java did not compile");
             }
-            try (java.net.URLClassLoader loader = new java.net.URLClassLoader(new java.net.URL[] {out.toUri().toURL()})) {
+            try (URLClassLoader loader = new URLClassLoader(new URL[] {out.toUri().toURL()})) {
                 Class<?> layoutClass = loader.loadClass("com.antcolonies.client.nest.NestLayout");
                 Class<?> kindClass = loader.loadClass("com.antcolonies.client.nest.NestLayout$Kind");
                 Class<?> featureClass = loader.loadClass("com.antcolonies.client.nest.NestLayout$Feature");
-                java.lang.reflect.Method create = layoutClass.getMethod("create", kindClass, long.class, int[].class, int.class);
+                Method create = layoutClass.getMethod("create", kindClass, long.class, int[].class, int.class);
                 Object[] kinds = kindClass.getEnumConstants();
                 if (kinds.length != NEST_BLOCKS.length) {
                     throw new IllegalStateException("NEST_BLOCKS must list the " + kinds.length + " kinds of NestLayout.Kind, in its order");
@@ -3926,7 +3935,7 @@ public class TexGen {
                 for (int k = 0; k < kinds.length; k++) {
                     Object layout = create.invoke(null, kinds[k], 7L, new int[] {-1, -1, -1, -1}, 2);
                     boolean[] carved = (boolean[]) layoutClass.getField("carved").get(layout);
-                    java.util.List<?> features = (java.util.List<?>) layoutClass.getField("features").get(layout);
+                    List<?> features = (List<?>) layoutClass.getField("features").get(layout);
                     Img img = new Img(16, 16);
                     for (int v = 0; v < 16; v++) {
                         for (int u = 0; u < 16; u++) {

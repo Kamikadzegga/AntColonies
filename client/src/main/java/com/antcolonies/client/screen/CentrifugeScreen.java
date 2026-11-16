@@ -8,6 +8,7 @@ import com.antcolonies.content.blockentity.CentrifugeBlockEntity;
 import com.antcolonies.content.blockentity.CentrifugeBlockEntity.Status;
 import com.antcolonies.content.menu.CentrifugeMenu;
 
+import java.util.Locale;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -57,7 +58,7 @@ public class CentrifugeScreen extends AntScreen<CentrifugeMenu> {
     }
 
     private static String amount(int millibuckets) {
-        return String.format(java.util.Locale.ROOT, "%,d", millibuckets);
+        return String.format(Locale.ROOT, "%,d", millibuckets);
     }
 
     @Override
@@ -209,7 +210,7 @@ public class CentrifugeScreen extends AntScreen<CentrifugeMenu> {
             List<Component> lines = new ArrayList<>();
             lines.add(held > 0 && tank != Fluids.EMPTY ? tank.getFluidType().getDescription()
                     : Component.translatable("gui.antcolonies.centrifuge.empty"));
-            lines.add(Component.literal(String.format(java.util.Locale.ROOT, "%,d / %,d mB", held, menu.data(CentrifugeBlockEntity.DATA_CAPACITY)))
+            lines.add(Component.literal(String.format(Locale.ROOT, "%,d / %,d mB", held, menu.data(CentrifugeBlockEntity.DATA_CAPACITY)))
                     .withStyle(ChatFormatting.GRAY));
             lines.add(Component.translatable("gui.antcolonies.centrifuge.tank.hint").withStyle(ChatFormatting.DARK_AQUA));
             graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
@@ -219,14 +220,14 @@ public class CentrifugeScreen extends AntScreen<CentrifugeMenu> {
             int duration = menu.data(CentrifugeBlockEntity.DATA_DURATION);
             if (duration > 0) {
                 graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.centrifuge.run",
-                        String.format(java.util.Locale.ROOT, "%.1f", menu.data(CentrifugeBlockEntity.DATA_PROGRESS) / 20.0),
-                        String.format(java.util.Locale.ROOT, "%.1f", duration / 20.0))), mouseX, mouseY);
+                        String.format(Locale.ROOT, "%.1f", menu.data(CentrifugeBlockEntity.DATA_PROGRESS) / 20.0),
+                        String.format(Locale.ROOT, "%.1f", duration / 20.0))), mouseX, mouseY);
             }
             return;
         }
         if (over(mouseX, mouseY, ENERGY_X, ENERGY_Y - 10, ENERGY_W, ENERGY_H + 10)) {
             graphics.setComponentTooltipForNextFrame(font, List.of(
-                    Component.literal(String.format(java.util.Locale.ROOT, "%,d / %,d FE", menu.data(CentrifugeBlockEntity.DATA_ENERGY),
+                    Component.literal(String.format(Locale.ROOT, "%,d / %,d FE", menu.data(CentrifugeBlockEntity.DATA_ENERGY),
                             menu.data(CentrifugeBlockEntity.DATA_ENERGY_CAPACITY))),
                     Component.translatable("gui.antcolonies.centrifuge.energy.hint").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
         }

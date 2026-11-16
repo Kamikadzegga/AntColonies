@@ -58,9 +58,8 @@ public class GeneratorBlock extends BaseEntityBlock {
         return true;
     }
 
-    /** How full its FE store is. */
     @Override
-    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, net.minecraft.core.Direction direction) {
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
         return level.getBlockEntity(pos) instanceof ComparatorSource source ? source.comparatorSignal() : 0;
     }
 

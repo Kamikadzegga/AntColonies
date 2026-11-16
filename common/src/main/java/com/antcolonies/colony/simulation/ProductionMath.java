@@ -2,7 +2,6 @@ package com.antcolonies.colony.simulation;
 
 import com.antcolonies.core.config.AntConfig;
 
-/** The shared formulas. */
 public final class ProductionMath {
     /** n ants work like n^exponent ants: twice the ants never quite doubles the output. */
     public static double effective(double assigned) {

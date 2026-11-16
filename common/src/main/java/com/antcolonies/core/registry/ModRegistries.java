@@ -5,6 +5,7 @@ import java.util.Optional;
 import com.antcolonies.AntColonies;
 import com.antcolonies.colony.breeding.Hybrid;
 import com.antcolonies.colony.evolution.Evolution;
+import com.antcolonies.colony.expedition.Expedition;
 import com.antcolonies.colony.genetics.Mutation;
 import com.antcolonies.colony.genetics.TraitUpgrade;
 import com.antcolonies.colony.species.AntSpecies;
@@ -25,7 +26,7 @@ public final class ModRegistries {
     public static final ResourceKey<Registry<Mutation>> MUTATION = ResourceKey.createRegistryKey(AntColonies.id("mutation"));
     public static final ResourceKey<Registry<TraitUpgrade>> TRAIT_UPGRADE = ResourceKey.createRegistryKey(AntColonies.id("trait_upgrade"));
     /** The Nether and End Foraging Sites' expedition tables. */
-    public static final ResourceKey<Registry<com.antcolonies.colony.expedition.Expedition>> EXPEDITION =
+    public static final ResourceKey<Registry<Expedition>> EXPEDITION =
             ResourceKey.createRegistryKey(AntColonies.id("expedition"));
 
     /** The species every new player starts with, and the fallback of unknown ids. */
@@ -37,7 +38,7 @@ public final class ModRegistries {
         event.worldRegistry(HYBRID, Hybrid.CODEC, Hybrid.CODEC);
         event.worldRegistry(MUTATION, Mutation.CODEC, Mutation.CODEC);
         event.worldRegistry(TRAIT_UPGRADE, TraitUpgrade.CODEC, TraitUpgrade.CODEC);
-        event.worldRegistry(EXPEDITION, com.antcolonies.colony.expedition.Expedition.CODEC, com.antcolonies.colony.expedition.Expedition.CODEC);
+        event.worldRegistry(EXPEDITION, Expedition.CODEC, Expedition.CODEC);
     }
 
     public static @Nullable AntSpecies species(HolderLookup.@Nullable Provider registries, @Nullable Identifier id) {

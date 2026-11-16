@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import com.antcolonies.AntColonies;
+import com.antcolonies.client.ClientHooks;
+import com.antcolonies.colony.genetics.Genetics;
 import com.antcolonies.content.blockentity.GeneticLabBlockEntity;
 import com.antcolonies.client.ClientSpecies;
 import com.antcolonies.colony.model.ColonyStatus;
@@ -14,6 +15,7 @@ import com.antcolonies.colony.genetics.QueenData;
 import com.antcolonies.colony.genetics.Trait;
 import com.antcolonies.content.item.Tooltips;
 import com.antcolonies.content.menu.GeneticLabMenu;
+import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.core.registry.ModDataComponents;
 import com.antcolonies.core.registry.ModRegistries;
 import com.antcolonies.colony.species.AntLook;
@@ -21,12 +23,10 @@ import com.antcolonies.colony.species.Cost;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
@@ -67,7 +67,7 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
     }
 
     private float time() {
-        return minecraft.level == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(minecraft.level.getGameTime(),
+        return minecraft.level == null ? 0 : ClientHooks.animationTime(minecraft.level.getGameTime(),
                 minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false));
     }
 
@@ -79,7 +79,6 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
         return Trait.values()[Math.clamp(menu.data(GeneticLabBlockEntity.DATA_TRAIT), 0, Trait.values().length - 1)];
     }
 
-    /** Whether the lab has energy to work with. */
     private boolean powered() {
         return menu.data(GeneticLabBlockEntity.DATA_ENERGY) > 0;
     }
@@ -132,7 +131,7 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
         specimen(graphics, queen);
         genome(graphics, queen, mouseX, mouseY);
         detail(graphics, queen);
-        tools(graphics, queen);
+        tools(queen);
         strip(graphics, queen);
     }
 
@@ -293,7 +292,7 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
 
 
     /** The row under the panels: upgrades (they need no buttons), the catalyst slot and the lab's tools. */
-    private void tools(GuiGraphicsExtractor graphics, @Nullable QueenData queen) {
+    private void tools(@Nullable QueenData queen) {
         boolean ready = idle() && queen != null;
         int y = GeneticLabMenu.TOOLS_Y + 1;
         String[][] tools = {{"reroll", String.valueOf(GeneticLabMenu.BUTTON_REROLL)}, {"mutate", String.valueOf(GeneticLabMenu.BUTTON_MUTATE)},
@@ -303,9 +302,9 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
             tooltip.add(Component.translatable("gui.antcolonies.lab." + tools[i][0] + ".hint"));
             if (tools[i][0].equals("mutate")) {
                 if (queen != null && ClientSpecies.registries() != null
-                        && !com.antcolonies.colony.genetics.Genetics.roomForBeneficial(queen.genome().mutations(), ClientSpecies.registries())) {
+                        && !Genetics.roomForBeneficial(queen.genome().mutations(), ClientSpecies.registries())) {
                     tooltip.add(Component.translatable("gui.antcolonies.lab.mutation_cap",
-                            com.antcolonies.core.config.AntConfig.get(com.antcolonies.core.config.AntConfig.MAX_BENEFICIAL_MUTATIONS)).withStyle(ChatFormatting.RED));
+                            AntConfig.get(AntConfig.MAX_BENEFICIAL_MUTATIONS)).withStyle(ChatFormatting.RED));
                 }
                 Component gives = catalystMutation(queen);
                 if (gives != null) {

@@ -1,7 +1,9 @@
 package com.antcolonies.content.item;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 
 import com.antcolonies.colony.genetics.Genome;
@@ -18,7 +20,9 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 /** Shared tooltip and name pieces: species names, rarity colors, genome summaries. */
@@ -27,7 +31,7 @@ public final class Tooltips {
             ChatFormatting.GOLD, ChatFormatting.RED};
 
     /** A dimension's name for text ("the Nether"); unknown ones by their id. */
-    public static MutableComponent dimension(net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension) {
+    public static MutableComponent dimension(ResourceKey<Level> dimension) {
         Identifier id = dimension.identifier();
         return Component.translatableWithFallback("dimension." + id.getNamespace() + "." + id.getPath(), id.toString());
     }
@@ -57,7 +61,7 @@ public final class Tooltips {
         }
         tooltip.accept(Component.translatable("tooltip.antcolonies.queen.species", species(queen.species())).withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable("tooltip.antcolonies.queen.genetics", rarity(genome.rarity()),
-                String.format(java.util.Locale.ROOT, "%.1f", genome.averageLevel())).withStyle(ChatFormatting.GRAY));
+                String.format(Locale.ROOT, "%.1f", genome.averageLevel())).withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable("tooltip.antcolonies.queen.generation", genome.lineage().generation()).withStyle(ChatFormatting.GRAY));
         // How far she has grown with a colony, and how she grows.
         if (queen.grown() > 1) {
@@ -142,7 +146,7 @@ public final class Tooltips {
     /** The Queen's two best traits, for the short tooltip. */
     public static void bestTraits(Genome genome, Consumer<Component> tooltip) {
         List<Trait> traits = new ArrayList<>(List.of(Trait.values()));
-        traits.sort(java.util.Comparator.comparingInt(genome::level).reversed());
+        traits.sort(Comparator.comparingInt(genome::level).reversed());
         MutableComponent line = Component.empty();
         for (int i = 0; i < 2 && i < traits.size(); i++) {
             int level = genome.level(traits.get(i));

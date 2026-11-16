@@ -1,8 +1,15 @@
 package com.antcolonies.content.blockentity;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.antcolonies.colony.model.ForagingMode;
+import com.antcolonies.colony.network.ConnectorNetwork;
+import com.antcolonies.content.block.ColonyPartBlock;
+import com.antcolonies.content.block.ComparatorSource;
+import com.antcolonies.content.block.ExpeditionSiteBlock;
 import com.antcolonies.content.block.StructureBlock;
 import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.colony.model.StructureKind;
@@ -12,7 +19,6 @@ import com.antcolonies.content.item.UpgradeItem;
 import com.antcolonies.content.menu.StructureMenu;
 import com.antcolonies.core.registry.ModBlockEntities;
 import com.antcolonies.core.registry.ModDataComponents;
-import com.antcolonies.core.registry.ModDataMaps;
 import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.colony.species.SpeciesOutput;
 import com.antcolonies.colony.upgrade.SpeciesUpgradeKind;
@@ -29,6 +35,7 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
@@ -47,15 +54,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jspecify.annotations.Nullable;
 
 /** Any colony chamber: its slots, upgrades and settings. Its Terrarium's colony does the simulating and tells it the results. */
-public class StructureBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, com.antcolonies.content.block.ComparatorSource {
+public class StructureBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, ComparatorSource {
     /** Job sites: how full their workforce is. Other structures: how full their slots are. */
     @Override
     public int comparatorSignal() {
-        return kind.job().any() ? com.antcolonies.content.block.ComparatorSource.fill(assigned, capacityShown) : slotFill();
+        return kind.job().any() ? ComparatorSource.fill(assigned, capacityShown) : slotFill();
     }
 
     /** How full the open slots are: vanilla's reading counts locked Storage slots too and would never reach a full signal. */
@@ -71,7 +79,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
                 fill += (float) stack.getCount() / getMaxStackSize(stack);
             }
         }
-        return net.minecraft.util.Mth.lerpDiscrete(fill / open, 0, 15);
+        return Mth.lerpDiscrete(fill / open, 0, 15);
     }
 
     /** A structure not linked by any Terrarium for this long counts as disconnected. */
@@ -134,7 +142,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     private boolean syncPending;
     private int queensRaised;
     /** An ordinary Foraging Site's mode (what its workers look for). */
-    private com.antcolonies.colony.model.ForagingMode mode = com.antcolonies.colony.model.ForagingMode.BALANCED;
+    private ForagingMode mode = ForagingMode.BALANCED;
     /** A job site turned off in the Jobs page takes no ants (like a redstone signal). */
     private boolean enabled = true;
     private int priority = PRIORITY_NORMAL;
@@ -314,10 +322,10 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         }
         setChanged();
         // A Nether or End Foraging Site's portal glows while ants are out on expeditions through it.
-        if (kind.expedition() && level != null && getBlockState().hasProperty(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE)) {
+        if (kind.expedition() && level != null && getBlockState().hasProperty(ExpeditionSiteBlock.ACTIVE)) {
             boolean active = assigned > 0;
-            if (getBlockState().getValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE) != active) {
-                level.setBlock(worldPosition, getBlockState().setValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE, active),
+            if (getBlockState().getValue(ExpeditionSiteBlock.ACTIVE) != active) {
+                level.setBlock(worldPosition, getBlockState().setValue(ExpeditionSiteBlock.ACTIVE, active),
                         Block.UPDATE_CLIENTS);
             }
         }
@@ -328,11 +336,11 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     }
 
     /** What an ordinary Foraging Site's workers look for (other sites: Balanced). */
-    public com.antcolonies.colony.model.ForagingMode mode() {
-        return kind == StructureKind.FORAGING_SITE ? mode : com.antcolonies.colony.model.ForagingMode.BALANCED;
+    public ForagingMode mode() {
+        return kind == StructureKind.FORAGING_SITE ? mode : ForagingMode.BALANCED;
     }
 
-    public void setMode(com.antcolonies.colony.model.ForagingMode mode) {
+    public void setMode(ForagingMode mode) {
         this.mode = mode;
         setChanged();
         contentsChanged();
@@ -360,7 +368,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         contentsChanged();
     }
 
-    /** A Colony Connector's settings; null for other chambers. */
     public @Nullable ConnectorSettings connector() {
         return connector;
     }
@@ -492,10 +499,10 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
 
     /** One saved slot: the item (as a single) and how many. */
     public record StoredSlot(int slot, ItemStack item, int count) {
-        public static final com.mojang.serialization.Codec<StoredSlot> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.create(i -> i.group(
-                com.mojang.serialization.Codec.INT.fieldOf("slot").forGetter(StoredSlot::slot),
+        public static final Codec<StoredSlot> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.INT.fieldOf("slot").forGetter(StoredSlot::slot),
                 ItemStack.CODEC.fieldOf("item").forGetter(StoredSlot::item),
-                com.mojang.serialization.Codec.intRange(1, Integer.MAX_VALUE).fieldOf("count").forGetter(StoredSlot::count)
+                Codec.intRange(1, Integer.MAX_VALUE).fieldOf("count").forGetter(StoredSlot::count)
         ).apply(i, StoredSlot::new));
     }
 
@@ -529,9 +536,9 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
             be.assigned = 0;
             be.contentsChanged();
             // No colony any more: a glass case again, whatever its colony was.
-            if (com.antcolonies.content.block.ColonyPartBlock.upright(state)) {
-                level.setBlock(pos, state.setValue(com.antcolonies.content.block.ColonyPartBlock.UPRIGHT, false),
-                        net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            if (ColonyPartBlock.upright(state)) {
+                level.setBlock(pos, state.setValue(ColonyPartBlock.UPRIGHT, false),
+                        Block.UPDATE_CLIENTS);
             }
         }
         if ((time + pos.asLong()) % 20 == 0 && level instanceof ServerLevel serverLevel) {
@@ -547,7 +554,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
 
     /** Automation: a Storage empties into the container under it, a stack per second per tier. */
     private void pushDown(ServerLevel level, BlockPos pos) {
-        var target = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Item.BLOCK, pos.below(), Direction.UP);
+        var target = level.getCapability(Capabilities.Item.BLOCK, pos.below(), Direction.UP);
         if (target == null) {
             return;
         }
@@ -688,7 +695,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
             Containers.dropContents(level, pos, items);
             Containers.dropContents(level, pos, upgrades);
             if (connector != null && level instanceof ServerLevel serverLevel) {
-                com.antcolonies.colony.network.ConnectorNetwork.unregister(serverLevel, pos);
+                ConnectorNetwork.unregister(serverLevel, pos);
             }
         }
     }
@@ -698,14 +705,14 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     public void onLoad() {
         super.onLoad();
         if (connector != null && level instanceof ServerLevel serverLevel) {
-            com.antcolonies.colony.network.ConnectorNetwork.register(serverLevel, worldPosition, connector.channel);
+            ConnectorNetwork.register(serverLevel, worldPosition, connector.channel);
         }
     }
 
     /** A Colony Connector's settings changed (its screen): saved, sent, and its channel known to the network. */
     public void connectorChanged() {
         if (connector != null && level instanceof ServerLevel serverLevel) {
-            com.antcolonies.colony.network.ConnectorNetwork.register(serverLevel, worldPosition, connector.channel);
+            ConnectorNetwork.register(serverLevel, worldPosition, connector.channel);
         }
         setChanged();
         contentsChanged();
@@ -736,7 +743,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         rearingStatus = input.getIntOr("rearing_status", 0);
         queensRaised = input.getIntOr("queens_raised", 0);
         // Chambers saved before modes, switches and priorities existed load as Balanced, on and normal.
-        mode = com.antcolonies.colony.model.ForagingMode.byId(input.getIntOr("mode", 0));
+        mode = ForagingMode.byId(input.getIntOr("mode", 0));
         enabled = input.getBooleanOr("enabled", true);
         priority = Math.clamp(input.getIntOr("priority", PRIORITY_NORMAL), PRIORITY_LOW, PRIORITY_HIGH);
         if (connector != null) {

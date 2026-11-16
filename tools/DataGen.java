@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Writes every JSON data and asset file of Ant Colonies, and the English language file.
@@ -22,7 +24,7 @@ public class DataGen {
     static final Map<String, String> LANG = new TreeMap<>();
     static int written;
 
-    // ------------------------------------------------------------------ JSON
+    // --- JSON ---
 
     /** A tiny JSON writer: maps, lists, strings, numbers, booleans and raw text. */
     static String json(Object value, int indent) {
@@ -115,7 +117,7 @@ public class DataGen {
         return out.toString();
     }
 
-    // ------------------------------------------------------------------ Species
+    // --- Species ---
 
     record Out(String item, int count, double weight, int stage, boolean special, String processed, int ratio, boolean tag) {
         static Out of(String item, double weight) {
@@ -311,7 +313,7 @@ public class DataGen {
                 "Drill Extraction", "Ore Processing", "Clockwork Efficiency",
                 "A hybrid of Stone and Redstone Ants: tireless miners that bring a bit of everything."));
 
-        // --- More wild species: one per kind of biome the first six don't cover. ---
+        // --- More wild species: one per kind of biome the first six don't cover ---
         SPECIES.add(new Species("jungle", "Jungle Ant", 0, "base", "temperate", "spawns/jungle", "4A3A12", "6B8E23", "C9A227", "banded", null, false,
                 1.0, 1.0, "", 0, 0.95,
                 List.of(Out.of("jungle_log", 22), Out.of("bamboo", 18), Out.of("stick", 12), Out.of("vine", 10), Out.of("jungle_sapling", 6),
@@ -370,7 +372,7 @@ public class DataGen {
                 0, List.of(), 1.1, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"terracotta", "8"}), 2400, 1.0, 1.05,
                 "terracotta", "Mesa Extraction", "Clay Firing", "Canyon Thrift",
                 "Rust-red ants of the badlands. Bring red sand and terracotta in all the badlands colors, and a little gold."));
-        // --- The Stone line goes deeper: copper, coal and deepslate. ---
+        // --- The Stone line goes deeper: copper, coal and deepslate ---
         SPECIES.add(new Species("copper", "Copper Ant", 1, "mineral", "any", null, "8A4A2A", "D8803A", "4AC0A0", "metallic", "E09050", false,
                 1.05, 1.3, "mineral", 0.4, 0.65,
                 List.of(Out.of("copper_nugget", 40).processed("copper_ingot", 9), Out.of("raw_copper", 12).atStage(2), Out.of("cobblestone", 12),
@@ -392,7 +394,7 @@ public class DataGen {
                 0, List.of(), 1.3, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"cobbled_deepslate", "16"}), 3000, 0.9, 0.9,
                 "cobbled_deepslate", "Deep Extraction", "Slate Splitting", "Darkness Efficiency",
                 "Stone Ants that went down. Live best underground; bring deepslate, tuff, dripstone and glow lichen."));
-        // --- The Nether line: Fire Ants from Desert Ants, Soul Ants from Fire Ants. ---
+        // --- The Nether line: Fire Ants from Desert Ants, Soul Ants from Fire Ants ---
         List<String[]> netherRearing = List.of(new String[] {ac("royal_jelly"), "2"}, new String[] {ac("nether_ant_food"), "4"});
         SPECIES.add(new Species("fire", "Fire Ant", 2, "mineral", "hot", null, "8A1A0A", "E04A1A", "FFB040", "striped", "FF7A1A", true,
                 1.0, 1.5, "nether", 0.4, 0.5,
@@ -461,7 +463,7 @@ public class DataGen {
                 0, List.of(), 1.8, List.of(), mineralRearing, 6000, 0.8, 0.85, "obsidian",
                 "Lava Rock Extraction", "Glass Forging", "Cooling Efficiency",
                 "A hybrid of Stone and Fire Ants: where lava meets stone. Bring obsidian, basalt and magma; crying obsidian at stage 3."));
-        // --- The End: Ender Ants from Amethyst Ants. ---
+        // --- The End: Ender Ants from Amethyst Ants ---
         SPECIES.add(new Species("ender", "Ender Ant", 4, "endgame", "any", null, "0E0E14", "2A1A3A", "C870FF", "faceted", "D090FF", true,
                 1.15, 2.2, "crystal", 1.5, 0.03,
                 List.of(Out.of("end_stone", 30), Out.of("chorus_fruit", 18), Out.of("purpur_block", 6).atStage(2), Out.of("ender_pearl", 8).atStage(2),
@@ -473,7 +475,7 @@ public class DataGen {
                 "Void Extraction", "Chorus Refining", "Phase Efficiency",
                 "Amethyst Ants changed by eyes of ender. Black with violet eyes; bring end stone, chorus and ender pearls, and very rarely shulker shells."));
 
-        // --- More hybrids: crosses between the wild and evolved lines, each for things no single species brings. ---
+        // --- More hybrids: crosses between the wild and evolved lines, each for things no single species brings ---
         SPECIES.add(new Species("honeypot", "Honeypot Ant", 2, "hybrid", "temperate", null, "6A3A12", "F0B030", "FFE08A", "banded", null, false,
                 1.0, 1.0, "", 0, 0.7,
                 List.of(Out.of("honeycomb", 18).processed("honeycomb_block", 4), Out.of("sugar", 16), Out.of("sweet_berries", 10), Out.of("pink_petals", 8),
@@ -528,7 +530,7 @@ public class DataGen {
                 "Dig Site Extraction", "Find Cleaning", "Careful Digging",
                 "A hybrid of Desert and Deepslate Ants that digs like an archaeologist: bones, pottery sherds, ancient seeds, even sniffer eggs."));
 
-        // --- The Nether's and the End's own wild ants (nests there only), and the boss-gated endgame species. ---
+        // --- The Nether's and the End's own wild ants (nests there only), and the boss-gated endgame species ---
         SPECIES.add(new Species("warped", "Warped Ant", 0, "base", "nether", "spawns/warped", "1A4A4A", "2AA59A", "5AE8D8", "speckled", null, false,
                 1.0, 1.0, "", 0, 0.9,
                 List.of(Out.of("netherrack", 26), Out.of("warped_fungus", 10), Out.of("crimson_fungus", 8), Out.of("warped_roots", 6),
@@ -565,7 +567,7 @@ public class DataGen {
                 "Soul Ants fed a Nether Star in the Nether. Ash-black and grim, they bring soul sand, coal and bones, wither roses "
                         + "and skulls, and very rarely a Nether Star of their own."));
 
-        // --- Species for other mods' metals and crystals: loaded only with such a mod, finds through c: tags, no signature item. ---
+        // --- Species for other mods' metals and crystals: loaded only with such a mod, finds through c: tags, no signature item ---
         compat("osmium", "Osmium Ant", 2, "any", "5A6E80", "A8C0D0", "D8E8F0", "metallic", "B0D0E8", false, "osmium", List.of("mekanism"),
                 "Stone Ants fed osmium. Bring osmium for Mekanism's machines.");
         compat("tin", "Tin Ant", 1, "any", "6A6A70", "C8C8D0", "E8E8F0", "metallic", null, false, "tin", List.of("mekanism", "thermal", "machinaopus"),
@@ -660,7 +662,7 @@ public class DataGen {
         }
     }
 
-    // ------------------------------------------------------------------ Evolutions, hybrids, mutations
+    // --- Evolutions, hybrids, mutations ---
 
     // Evolutions that happen only in a Formicarium in this dimension (the colony can live anywhere afterwards).
     static final String NETHER = "minecraft:the_nether";
@@ -746,7 +748,7 @@ public class DataGen {
         }
     }
 
-    // ------------------------------------------------------------------ Advancements
+    // --- Advancements ---
 
     /** One advancement: id, parent (null for the root), icon item, frame, title, description, its one criterion. */
     static void advancement(String id, String parent, String icon, String frame, String title, String description, Map<String, Object> criterion) {
@@ -960,7 +962,7 @@ public class DataGen {
         write(DATA.resolve("data_maps/item/ant_food.json"), obj("values", values));
     }
 
-    // ------------------------------------------------------------------ Recipes
+    // --- Recipes ---
 
     static void shaped(String name, String result, int count, String[] pattern, Object... keys) {
         Map<String, Object> key = new LinkedHashMap<>();
@@ -1040,7 +1042,7 @@ public class DataGen {
         return out;
     }
 
-    // ------------------------------------------------------------------ Blocks, items, loot, tags, worldgen, models
+    // --- Blocks, items, loot, tags, worldgen, models ---
 
     static final String[] STRUCTURES = {"nest_chamber", "foraging_site", "harvesting_site", "hunting_ground", "storage", "queen_chamber"};
     static final String[] NESTS = {"common", "wood", "stone", "snow", "desert", "farmer", "jungle", "swamp", "savanna", "shore", "blossom", "pale",
@@ -1293,7 +1295,7 @@ public class DataGen {
         }
     }
 
-    // ------------------------------------------------------------------ The colony frame
+    // --- The colony frame ---
 
     /** How thick the colony frame is, and how far it stands out of the faces it lies on (so the two never share pixels). */
     static final double FRAME = 2;
@@ -1547,7 +1549,7 @@ public class DataGen {
         write(ASSETS.resolve("sounds.json"), sounds);
     }
 
-    // ------------------------------------------------------------------ Hand-shaped block models
+    // --- Hand-shaped block models ---
 
     static Map<String, Object> face(String texture) {
         return obj("texture", texture);
@@ -1635,14 +1637,14 @@ public class DataGen {
                 box(p(3, 4, 3), p(13, 5, 13), "#leg", "#leg")));
     }
 
-    // ------------------------------------------------------------------ Language
+    // --- Language ---
 
-    // ------------------------------------------------------------------ Chitin gear, Guard Ants, giant anthills
+    // --- Chitin gear, Guard Ants, giant anthills ---
 
     static final String[] CHITIN_ARMOR = {"chitin_helmet", "chitin_chestplate", "chitin_leggings", "chitin_boots"};
     static final String[] CHITIN_TOOLS = {"chitin_sword", "chitin_pickaxe", "chitin_axe", "chitin_shovel", "chitin_hoe"};
 
-    // ------------------------------------------------------------------ Chitin gear tiers
+    // --- Chitin gear tiers ---
 
     static final String[] TIERS = {"hardened", "infernal", "void"};
     static final String[] TIER_NAMES = {"Hardened", "Infernal", "Void"};
@@ -1899,7 +1901,7 @@ public class DataGen {
                 "count", min == max ? min : obj("type", "minecraft:uniform", "max", max, "min", min)), "name", item, "weight", weight);
     }
 
-    // ------------------------------------------------------------------ Config screen
+    // --- Config screen ---
 
     /** Readable names for options whose camelCase name doesn't read well on its own. */
     static final Map<String, String> CONFIG_NAMES = Map.of(
@@ -1977,17 +1979,17 @@ public class DataGen {
         String text;
         try {
             text = Files.readString(source);
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        java.util.regex.Matcher option = java.util.regex.Pattern.compile(
+        Matcher option = Pattern.compile(
                 "\\.comment\\(((?:\\s*\"(?:[^\"\\\\]|\\\\.)*\"\\s*,?)+)\\)\\s*\\.define\\w*\\(\\s*\"(\\w+)\"").matcher(text);
-        java.util.regex.Pattern part = java.util.regex.Pattern.compile("\"((?:[^\"\\\\]|\\\\.)*)\"");
+        Pattern part = Pattern.compile("\"((?:[^\"\\\\]|\\\\.)*)\"");
         int options = 0;
         while (option.find()) {
             String name = option.group(2);
             StringBuilder comment = new StringBuilder();
-            java.util.regex.Matcher pieces = part.matcher(option.group(1));
+            Matcher pieces = part.matcher(option.group(1));
             while (pieces.find()) {
                 comment.append(comment.isEmpty() ? "" : " ").append(pieces.group(1).replace("\\\"", "\""));
             }
@@ -1999,7 +2001,7 @@ public class DataGen {
             LANG.put(key + ".tooltip", comment.toString());
             options++;
         }
-        java.util.regex.Matcher section = java.util.regex.Pattern.compile("\\.push\\(\"(\\w+)\"\\)").matcher(text);
+        Matcher section = Pattern.compile("\\.push\\(\"(\\w+)\"\\)").matcher(text);
         while (section.find()) {
             String title = words(section.group(1));
             LANG.put(NS + ".configuration.section." + section.group(1), title);
@@ -2324,7 +2326,7 @@ public class DataGen {
         write(ASSETS.resolve("lang/en_us.json"), out);
     }
 
-    // ------------------------------------------------------------------ The colony update: building blocks, expeditions, connectors
+    // --- The colony update: building blocks, expeditions, connectors ---
 
     /** A decorative block: id, display name, how it is modelled (cube, pillar, door, trapdoor, cluster) and its tool. */
     record Decor(String id, String name, String model, String tool) {}
@@ -3119,7 +3121,7 @@ public class DataGen {
         l.put("jade." + NS + ".expedition.active", "Ants out on expeditions");
         l.put("jade." + NS + ".expedition.idle", "Portal dark: no expedition");
     }
-    // ------------------------------------------------------------------ Liquid Ants, droplets and the Droplet Centrifuge
+    // --- Liquid Ants, droplets and the Droplet Centrifuge ---
 
     /**
      * One fluid Liquid Ants make droplets of; the same rows are in TexGen (LIQUIDS), LiquidKinds and compat/liquid.
@@ -3254,7 +3256,7 @@ public class DataGen {
                 throw new IllegalStateException("A liquid kind and a species share the id " + liquid.id());
             }
             List<Object> conditions = liquidConditions(liquid);
-            // --- The species: a Liquid Ant, with its crop colour and its one droplet. ---
+            // --- The species: a Liquid Ant, with its crop colour and its one droplet ---
             Map<String, Object> species = obj("tier", liquid.tier(), "category", "liquid",
                     "look", obj("body", "#" + liquid.body(), "gaster", "#" + liquid.plates(), "accent", "#" + liquid.plates(), "pattern", "plain",
                             "glow", liquid.glow() ? true : null, "crop", "#" + liquid.crop()),
@@ -3271,7 +3273,7 @@ public class DataGen {
             write(DATA.resolve(NS + "/species/" + liquid.id() + ".json"), species);
             l.put("species." + NS + "." + liquid.id(), liquid.ant());
             l.put("species." + NS + "." + liquid.id() + ".desc", liquid.description());
-            // --- How to get it: its parent species' Queen fed the fluid (what she is fed is a tag, so packs can add to it). ---
+            // --- How to get it: its parent species' Queen fed the fluid (what she is fed is a tag, so packs can add to it) ---
             Map<String, Object> evolution = obj("from", ac(liquid.from()), "to", ac(liquid.id()), "item", "#" + ac("liquid_feed/" + liquid.id()),
                     "chance", 0.08, "guaranteed_after", 24, "min_stage", 2, "min_population", 300L);
             if (liquid.dimension() != null) {
@@ -3283,14 +3285,14 @@ public class DataGen {
             write(DATA.resolve(NS + "/evolution/" + liquid.from() + "_to_" + liquid.id() + ".json"), evolution);
             write(DATA.resolve("tags/item/liquid_feed/" + liquid.id() + ".json"), obj("values", arr(
                     liquid.mod() == null ? liquid.feed() : obj("id", liquid.feed(), "required", false))));
-            // --- The droplet: its name from the fluid's, its flat model. ---
+            // --- The droplet: its name from the fluid's, its flat model ---
             l.put("item." + NS + "." + liquid.droplet(), liquid.fluidName() + " Droplet");
             write(ASSETS.resolve("models/item/" + liquid.droplet() + ".json"), obj("parent", "minecraft:item/generated",
                     "textures", obj("layer0", ac("item/" + liquid.droplet()))));
             write(ASSETS.resolve("items/" + liquid.droplet() + ".json"),
                     obj("model", obj("type", "minecraft:model", "model", ac("item/" + liquid.droplet()))));
             droplets.add(liquid.mod() == null ? ac(liquid.droplet()) : obj("id", ac(liquid.droplet()), "required", false));
-            // --- The Centrifuge recipe: one droplet into the fluid. ---
+            // --- The Centrifuge recipe: one droplet into the fluid ---
             Map<String, Object> recipe = obj("type", ac("centrifuging"), "ingredient", ac(liquid.droplet()),
                     "result", obj("id", liquid.fluid(), "amount", liquid.amount()), "energy", liquid.energy(), "time", liquid.time());
             if (conditions != null) {
@@ -3307,7 +3309,7 @@ public class DataGen {
         }
         l.put("tooltip." + NS + ".droplet", "A drop of %s from Liquid Ants. A Droplet Centrifuge spins it into the fluid.");
 
-        // --- The Liquid Chamber: a rack the full ants hang from (as honeypot ants do), over a bowl that catches the drips. ---
+        // --- The Liquid Chamber: a rack the full ants hang from (as honeypot ants do), over a bowl that catches the drips ---
         String wood = ac("block/terrarium_wood");
         String top = ac("block/liquid_chamber_top");
         double y = FLOOR;
@@ -3330,7 +3332,7 @@ public class DataGen {
         l.put("tooltip." + NS + ".liquid_chamber",
                 "Liquid Ants hang here with full crops and give droplets of their fluid. Only Liquid Ants work here.");
 
-        // --- The Droplet Centrifuge: casing, glass drum section, lid; its front panel lights up while it works. ---
+        // --- The Droplet Centrifuge: casing, glass drum section, lid; its front panel lights up while it works ---
         for (String working : new String[] {"", "_working"}) {
             labMachine("centrifuge" + working, obj("particle", ac("block/centrifuge_side"), "side", ac("block/centrifuge_side"),
                     "front", ac("block/centrifuge_front" + working), "top", ac("block/centrifuge_top"), "deck", ac("block/centrifuge_deck"),

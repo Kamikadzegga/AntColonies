@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.antcolonies.client.renderer.FlatGround;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.client.ClientSpecies;
 import com.antcolonies.colony.model.Colony;
@@ -290,7 +291,7 @@ public final class TerrariumVisuals {
             TunnelLayout.Node node = faces[chamber[0]].nodes.get(chamber[1]);
             float u = node.u() + (placement.nextFloat() - 0.5F) * node.radiusU() * 1.6F;
             // On the chamber's floor, piled a little.
-            float v = com.antcolonies.client.renderer.FlatGround.chamberFloor(node.v(), node.radiusV()) + size * 0.5F
+            float v = FlatGround.chamberFloor(node.v(), node.radiusV()) + size * 0.5F
                     + placement.nextFloat() * node.radiusV() * 0.6F;
             items.add(new Item(chamber[0], u, v, size * (0.85F + placement.nextFloat() * 0.3F), kind));
         }

@@ -4,7 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.content.block.BroodClusterBlock;
 import com.antcolonies.content.block.WildNestBlock;
+import com.antcolonies.content.blockentity.BroodClusterBlockEntity;
 import com.antcolonies.content.entity.WildAnt;
 import com.antcolonies.core.registry.ModBlocks;
 import com.antcolonies.core.registry.ModDecor;
@@ -16,6 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -29,6 +32,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -237,7 +241,7 @@ public class AnthillPiece extends StructurePiece {
                     }
                     if (layout.shell(rx, ry, rz)) {
                         // Ant-dug walls; caves and water stay as they are. Lava is walled off too, so it never pours in.
-                        boolean wallOff = here.getFluidState().isEmpty() || here.getFluidState().is(net.minecraft.tags.FluidTags.LAVA);
+                        boolean wallOff = here.getFluidState().isEmpty() || here.getFluidState().is(FluidTags.LAVA);
                         if ((!here.isAir() || kind == Kind.END) && wallOff) {
                             boolean floor = layout.carved(rx, ry + 1, rz);
                             AnthillLayout.Room room = floor ? layout.roomAt(rx, ry + 1, rz) : null;
@@ -646,8 +650,8 @@ public class AnthillPiece extends StructurePiece {
     private static void cluster(WorldGenLevel level, BoundingBox chunkBB, BlockPos pos, boolean eggs, Identifier species, BlockPos anthill) {
         if (chunkBB.isInside(pos) && free(level.getBlockState(pos)) && !free(level.getBlockState(pos.below()))) {
             level.setBlock(pos, (eggs ? ModDecor.ANT_EGG_CLUSTER : ModDecor.LARVA_CLUSTER).get().defaultBlockState()
-                    .setValue(com.antcolonies.content.block.BroodClusterBlock.NATURAL, true), Block.UPDATE_CLIENTS);
-            if (level.getBlockEntity(pos) instanceof com.antcolonies.content.blockentity.BroodClusterBlockEntity cluster) {
+                    .setValue(BroodClusterBlock.NATURAL, true), Block.UPDATE_CLIENTS);
+            if (level.getBlockEntity(pos) instanceof BroodClusterBlockEntity cluster) {
                 cluster.set(species, anthill);
             }
         }
@@ -669,8 +673,8 @@ public class AnthillPiece extends StructurePiece {
 
     /** A Nether anthill's ants: Warped Ants in the fungus forests, Fire Ants elsewhere. */
     private static Identifier netherSpecies(Holder<Biome> biome) {
-        boolean forest = biome.is(net.minecraft.world.level.biome.Biomes.WARPED_FOREST)
-                || biome.is(net.minecraft.world.level.biome.Biomes.CRIMSON_FOREST);
+        boolean forest = biome.is(Biomes.WARPED_FOREST)
+                || biome.is(Biomes.CRIMSON_FOREST);
         return AntColonies.id(forest ? "warped" : "fire");
     }
 

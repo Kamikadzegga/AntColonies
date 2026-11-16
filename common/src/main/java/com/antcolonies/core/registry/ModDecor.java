@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import com.antcolonies.content.block.BroodClusterBlock;
@@ -95,7 +96,7 @@ public final class ModDecor {
                     .isValidSpawn((state, level, pos, type) -> false).isRedstoneConductor((state, level, pos) -> false)
                     .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, near) -> false));
 
-    private static <T extends Block> DeferredBlock<T> register(String id, java.util.function.Function<BlockBehaviour.Properties, T> factory,
+    private static <T extends Block> DeferredBlock<T> register(String id, Function<BlockBehaviour.Properties, T> factory,
                                                                UnaryOperator<BlockBehaviour.Properties> properties) {
         DeferredBlock<T> block = ModBlocks.BLOCKS.registerBlock(id, factory, properties);
         ALL.put(id, block);

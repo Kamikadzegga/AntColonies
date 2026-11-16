@@ -20,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -205,13 +206,13 @@ public class TweezersItem extends Item {
                     other.set(ModDataComponents.ANTS.get(), there.withCount(there.count() + sample.count()));
                     // The tube taken for the catch isn't needed after all.
                     if (!player.isCreative()) {
-                        inventory.placeItemBackInInventory(new ItemStack(ModItems.TEST_TUBE.get()), net.minecraft.util.Prediction.SERVER_ONLY);
+                        inventory.placeItemBackInInventory(new ItemStack(ModItems.TEST_TUBE.get()), Prediction.SERVER_ONLY);
                     }
                     return;
                 }
             }
         }
-        player.getInventory().placeItemBackInInventory(caught, net.minecraft.util.Prediction.SERVER_ONLY);
+        player.getInventory().placeItemBackInInventory(caught, Prediction.SERVER_ONLY);
     }
 
     @Override

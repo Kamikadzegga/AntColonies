@@ -7,8 +7,10 @@ import java.util.function.Supplier;
 import com.antcolonies.client.ClientSpecies;
 import com.antcolonies.colony.model.StructureKind;
 import com.antcolonies.colony.species.AntSpecies;
+import com.antcolonies.content.item.ChitinGear;
 import com.antcolonies.content.item.Tooltips;
 import com.antcolonies.core.registry.ModBlocks;
+import com.antcolonies.core.registry.ModDecor;
 import com.antcolonies.core.registry.ModItems;
 import com.mojang.blaze3d.platform.InputConstants;
 
@@ -19,6 +21,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ItemLike;
 
 /** The Ant Identification Book: how-to-play pages first, then a page for every species of the loaded data. */
 public class IdentificationBookScreen extends Screen {
@@ -53,13 +56,13 @@ public class IdentificationBookScreen extends Screen {
                     ModBlocks.STRUCTURES.get(StructureKind.NETHER_FORAGING_SITE).get(),
                     ModItems.END_TRAIL_PHEROMONE.get(), ModBlocks.STRUCTURES.get(StructureKind.END_FORAGING_SITE).get())),
             new Guide("connectors", () -> stacks(ModBlocks.STRUCTURES.get(StructureKind.COLONY_CONNECTOR).get())),
-            new Guide("building", () -> stacks(com.antcolonies.core.registry.ModDecor.ANTHILL_BRICKS.get(),
-                    com.antcolonies.core.registry.ModDecor.CHITIN_BRICKS.get(),
-                    com.antcolonies.core.registry.ModDecor.AMBER_BLOCK.get(), com.antcolonies.core.registry.ModDecor.ROYAL_CHITIN_BLOCK.get())),
+            new Guide("building", () -> stacks(ModDecor.ANTHILL_BRICKS.get(),
+                    ModDecor.CHITIN_BRICKS.get(),
+                    ModDecor.AMBER_BLOCK.get(), ModDecor.ROYAL_CHITIN_BLOCK.get())),
             new Guide("gear", () -> stacks(ModItems.CHITIN_CHESTPLATE.get(),
-                    ModItems.CHITIN_TIERS.get(com.antcolonies.content.item.ChitinGear.Tier.HARDENED).get("chestplate").get(),
-                    ModItems.CHITIN_TIERS.get(com.antcolonies.content.item.ChitinGear.Tier.INFERNAL).get("chestplate").get(),
-                    ModItems.CHITIN_TIERS.get(com.antcolonies.content.item.ChitinGear.Tier.VOID).get("chestplate").get())));
+                    ModItems.CHITIN_TIERS.get(ChitinGear.Tier.HARDENED).get("chestplate").get(),
+                    ModItems.CHITIN_TIERS.get(ChitinGear.Tier.INFERNAL).get("chestplate").get(),
+                    ModItems.CHITIN_TIERS.get(ChitinGear.Tier.VOID).get("chestplate").get())));
 
     private final List<Holder.Reference<AntSpecies>> species = new ArrayList<>(ClientSpecies.all());
     private final InfoPanel info = new InfoPanel();
@@ -70,9 +73,9 @@ public class IdentificationBookScreen extends Screen {
         super(Component.translatable("item.antcolonies.ant_identification_book"));
     }
 
-    private static List<ItemStack> stacks(net.minecraft.world.level.ItemLike... items) {
+    private static List<ItemStack> stacks(ItemLike... items) {
         List<ItemStack> list = new ArrayList<>();
-        for (net.minecraft.world.level.ItemLike item : items) {
+        for (ItemLike item : items) {
             list.add(new ItemStack(item));
         }
         return list;

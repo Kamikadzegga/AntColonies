@@ -7,8 +7,11 @@ import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.core.registry.ModBlockEntities;
 import com.antcolonies.core.registry.ModEntities;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -102,8 +105,8 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
 
     /** A free spot beside the nest, one with ground under it if there is one, or null if walled in. */
     private @Nullable BlockPos exit(ServerLevel level) {
-        List<Direction> sides = new java.util.ArrayList<>(Direction.Plane.HORIZONTAL.stream().toList());
-        java.util.Collections.shuffle(sides, new java.util.Random(level.getRandom().nextLong()));
+        List<Direction> sides = new ArrayList<>(Direction.Plane.HORIZONTAL.stream().toList());
+        Collections.shuffle(sides, new Random(level.getRandom().nextLong()));
         BlockPos open = null;
         for (Direction side : sides) {
             BlockPos spot = worldPosition.relative(side);
@@ -190,7 +193,7 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
         ContainerHelper.loadAllItems(input, items);
     }
 
-    // --- The store: hoppers and pipes take from it on any side; nothing goes in from outside. ---
+    // --- The store: hoppers and pipes take from it on any side; nothing goes in from outside ---
 
     @Override
     public int[] getSlotsForFace(Direction side) {

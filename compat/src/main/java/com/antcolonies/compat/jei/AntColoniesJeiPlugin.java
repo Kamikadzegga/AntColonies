@@ -1,5 +1,6 @@
 package com.antcolonies.compat.jei;
 
+import com.antcolonies.colony.upgrade.UpgradeType;
 import com.antcolonies.compat.recipes.AntRecipe;
 import com.antcolonies.compat.recipes.AntRecipes;
 import java.util.Objects;
@@ -11,22 +12,28 @@ import com.antcolonies.content.item.AntSample;
 import com.antcolonies.content.item.SpeciesUpgrade;
 import com.antcolonies.core.registry.ModBlocks;
 import com.antcolonies.core.registry.ModDataComponents;
+import com.antcolonies.core.registry.ModDecor;
 import com.antcolonies.core.registry.ModItems;
 
 import java.util.List;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.recipe.types.IRecipeType;
+import mezz.jei.api.registration.IIngredientAliasRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.helpers.IGuiHelper;
+import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
+import org.jspecify.annotations.Nullable;
 
 /** JEI integration: every category's entries are made from the synced data. Only loaded when JEI is installed. */
 @JeiPlugin
@@ -50,14 +57,14 @@ public class AntColoniesJeiPlugin implements IModPlugin {
     public static final IRecipeType<AntRecipe> COLONY_UPGRADE = AntCategory.type("colony_upgrade");
 
     /** JEI's runtime once it is up (used by the dev showcase to open categories). */
-    public static mezz.jei.api.runtime.@org.jspecify.annotations.Nullable IJeiRuntime runtime;
+    public static mezz.jei.api.runtime.@Nullable IJeiRuntime runtime;
 
     @Override
-    public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime jeiRuntime) {
+    public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
         runtime = jeiRuntime;
         // The creative tab's icon item is not an ingredient of anything: hide it.
-        jeiRuntime.getIngredientManager().removeIngredientsAtRuntime(mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
-                List.of(new net.minecraft.world.item.ItemStack(ModItems.ANT_HEAD.get())));
+        jeiRuntime.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK,
+                List.of(new ItemStack(ModItems.ANT_HEAD.get())));
     }
 
     @Override
@@ -72,9 +79,9 @@ public class AntColoniesJeiPlugin implements IModPlugin {
 
     /** The Formicarium was the Terrarium: a search for the old word still finds it and its glass. */
     @Override
-    public void registerIngredientAliases(mezz.jei.api.registration.IIngredientAliasRegistration registration) {
+    public void registerIngredientAliases(IIngredientAliasRegistration registration) {
         registration.addAlias(ModItems.TERRARIUM.get(), "alias.antcolonies.terrarium");
-        registration.addAlias(com.antcolonies.core.registry.ModDecor.TERRARIUM_GLASS.asItem(), "alias.antcolonies.terrarium");
+        registration.addAlias(ModDecor.TERRARIUM_GLASS.asItem(), "alias.antcolonies.terrarium");
     }
 
     /** Tubes, samples, brood and species upgrades of each species are different entries. */
@@ -125,7 +132,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
                 new AntCategory(LAB, "lab", ModItems.GENETIC_LAB.get(), gui, 1, 4),
                 new AntCategory(TRAIT, "trait", ModItems.GENETIC_ANALYZER.get(), gui, 1, 3),
                 new AntCategory(SPECIES_UPGRADE, "species_upgrade", ModItems.UPGRADE_STATION.get(), gui, 1, 2),
-                new AntCategory(COLONY_UPGRADE, "colony_upgrade", ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.SPEED, 1), gui, 2, 9));
+                new AntCategory(COLONY_UPGRADE, "colony_upgrade", ModItems.upgrade(UpgradeType.SPEED, 1), gui, 2, 9));
     }
 
     private static ItemLike structure(StructureKind kind) {

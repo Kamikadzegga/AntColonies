@@ -3,6 +3,7 @@ package com.antcolonies.colony.resource;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.antcolonies.colony.model.ColonyAccess;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.colony.model.Colony;
 import com.antcolonies.colony.model.StructureKind;
@@ -10,6 +11,7 @@ import com.antcolonies.colony.model.StructureKind;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
 
 /** A colony's stores as one: finds go to Storage first, then into the small stores of its job sites. */
@@ -30,7 +32,6 @@ public final class ColonyStorage {
         return piles;
     }
 
-    /** The colony's Storage chambers. */
     public static List<StructureBlockEntity> storages(ServerLevel level, Colony colony) {
         List<StructureBlockEntity> storages = new ArrayList<>();
         for (BlockPos pos : colony.layout().of(StructureKind.STORAGE)) {
@@ -97,7 +98,7 @@ public final class ColonyStorage {
             }
         }
         items.sort((a, b) -> Long.compare(b.count(), a.count()));
-        com.antcolonies.colony.model.ColonyAccess.setStored(colony, items, used, slots);
+        ColonyAccess.setStored(colony, items, used, slots);
     }
 
     /** Whether all of the stacks would fit (checked before a find, so nothing is ever lost). */
@@ -163,7 +164,7 @@ public final class ColonyStorage {
         // An empty slot takes as much as the least compacting store allows (counting on the most could overfill).
         int compacting = Integer.MAX_VALUE;
         for (StructureBlockEntity pile : piles) {
-            compacting = Math.min(compacting, pile.slotLimit(new ItemStack(net.minecraft.world.item.Items.STONE)) / 64);
+            compacting = Math.min(compacting, pile.slotLimit(new ItemStack(Items.STONE)) / 64);
         }
         int needed = 0;
         for (int i = 0; i < wanted.size(); i++) {

@@ -1,6 +1,7 @@
 package com.antcolonies.client.screen;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -11,9 +12,12 @@ import com.antcolonies.colony.species.AntSpecies;
 import com.antcolonies.colony.species.Climate;
 import com.antcolonies.colony.species.SpeciesOutput;
 import com.antcolonies.content.item.Tooltips;
+import com.antcolonies.content.recipe.CentrifugingRecipe;
 import com.antcolonies.core.registry.ModRegistries;
 
+import java.util.Map;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.Holder;
@@ -22,6 +26,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import org.jspecify.annotations.Nullable;
@@ -71,7 +76,7 @@ public final class InfoPanel {
 
         @Override
         public void draw(GuiGraphicsExtractor graphics, Font font, int x, int y, int w, List<Hover> hovers) {
-            long second = net.minecraft.util.Util.getMillis() / 1000;
+            long second = Util.getMillis() / 1000;
             for (int i = 0; i < stacks.size(); i++) {
                 List<ItemStack> family = stacks.get(i);
                 graphics.item(family.get((int) (second % family.size())), x + i * 18, y);
@@ -130,8 +135,8 @@ public final class InfoPanel {
     }
 
     /** A climate's floor blocks in families: a family is the last word of the blocks' names, after dropping "block". */
-    static java.util.Map<String, List<ItemStack>> floorFamilies(Climate climate) {
-        java.util.Map<String, List<ItemStack>> families = new java.util.LinkedHashMap<>();
+    static Map<String, List<ItemStack>> floorFamilies(Climate climate) {
+        Map<String, List<ItemStack>> families = new LinkedHashMap<>();
         for (Holder<Block> block : BuiltInRegistries.BLOCK.getTagOrEmpty(climate.floorTag())) {
             ItemStack stack = new ItemStack(block.value());
             if (stack.isEmpty()) {
@@ -204,9 +209,9 @@ public final class InfoPanel {
                 ItemStack droplet = new ItemStack(liquid.dropletItem().get());
                 Component fluid = liquid.fluidValue().get().getFluidType().getDescription();
                 Component line = Component.translatable("info.antcolonies.liquid.makes", droplet.getHoverName());
-                List<Component> tip = new java.util.ArrayList<>(List.of(droplet.getHoverName(),
+                List<Component> tip = new ArrayList<>(List.of(droplet.getHoverName(),
                         Component.translatable("info.antcolonies.liquid.fluid", fluid).withStyle(ChatFormatting.GRAY)));
-                var recipe = com.antcolonies.content.recipe.CentrifugingRecipe.find(net.minecraft.client.Minecraft.getInstance().level, droplet);
+                var recipe = CentrifugingRecipe.find(Minecraft.getInstance().level, droplet);
                 if (recipe != null) {
                     tip.add(Component.translatable("info.antcolonies.liquid.centrifuge", recipe.amount(),
                             recipe.fluid().getFluidType().getDescription(), recipe.energyCost()).withStyle(ChatFormatting.AQUA));
@@ -255,7 +260,7 @@ public final class InfoPanel {
                 ItemStack item = evolution.item().items().findFirst().map(ItemStack::new).orElse(ItemStack.EMPTY);
                 Component line = into ? Component.translatable("info.antcolonies.evolves_into", Tooltips.species(evolution.to()))
                         : Component.translatable("info.antcolonies.evolves_from", Tooltips.species(evolution.from()));
-                List<Component> tip = new java.util.ArrayList<>(List.of(line,
+                List<Component> tip = new ArrayList<>(List.of(line,
                         Component.translatable("info.antcolonies.evolution.feed", item.getHoverName()).withStyle(ChatFormatting.GRAY),
                         Component.translatable("info.antcolonies.evolution.needs", evolution.minStage(), evolution.minPopulation(),
                                 Math.round(evolution.chance() * 100), evolution.guaranteedAfter()).withStyle(ChatFormatting.GRAY)));
@@ -336,7 +341,7 @@ public final class InfoPanel {
         if (scroll > 0) {
             graphics.text(font, "^", x + width - 6, top, DIM, false);
         }
-        if (canScrollDown(top, h)) {
+        if (canScrollDown(h)) {
             graphics.text(font, "v", x + width - 6, top + h - 9, DIM, false);
         }
     }
@@ -359,7 +364,7 @@ public final class InfoPanel {
         return 0;
     }
 
-    private boolean canScrollDown(int top, int h) {
+    private boolean canScrollDown(int h) {
         int used = 0;
         for (int i = scroll; i < rows.size(); i++) {
             used += rows.get(i).height();

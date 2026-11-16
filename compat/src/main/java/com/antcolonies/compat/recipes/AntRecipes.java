@@ -5,8 +5,13 @@ import java.util.List;
 import java.util.Locale;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.colony.expedition.Expedition;
+import com.antcolonies.colony.simulation.ColonySimulator;
+import com.antcolonies.colony.upgrade.UpgradeEffects;
+import com.antcolonies.colony.upgrade.UpgradeType;
 import com.antcolonies.content.blockentity.UpgradeStationBlockEntity;
 import com.antcolonies.colony.breeding.Hybrid;
+import com.antcolonies.content.recipe.CentrifugingRecipe;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.colony.evolution.Evolution;
 import com.antcolonies.colony.genetics.Genetics;
@@ -17,6 +22,7 @@ import com.antcolonies.content.item.AntSample;
 import com.antcolonies.content.item.SpeciesUpgrade;
 import com.antcolonies.content.item.Tooltips;
 import com.antcolonies.content.item.TweezersItem;
+import com.antcolonies.core.registry.ModBlocks;
 import com.antcolonies.core.registry.ModDataComponents;
 import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModRegistries;
@@ -27,14 +33,20 @@ import com.antcolonies.colony.species.SpeciesOutput;
 import com.antcolonies.colony.upgrade.SpeciesUpgradeKind;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 /** Builds every JEI and EMI entry from the synced species, evolution, hybrid, mutation and trait upgrade data. */
 public final class AntRecipes {
@@ -71,7 +83,7 @@ public final class AntRecipes {
         return cost.ingredient().items().map(item -> new ItemStack(item, cost.count())).toList();
     }
 
-    private static net.minecraft.network.chat.MutableComponent line(String key, Object... args) {
+    private static MutableComponent line(String key, Object... args) {
         return Component.translatable("jei.antcolonies." + key, args);
     }
 
@@ -88,14 +100,14 @@ public final class AntRecipes {
     private static List<AntRecipe.Output> outputs(List<SpeciesOutput> list) {
         List<AntRecipe.Output> outputs = new ArrayList<>();
         // Chances as the simulation picks them (rare finds scaled by the config's rareFindMultiplier), before genetics.
-        double total = list.stream().mapToDouble(o -> com.antcolonies.colony.simulation.ColonySimulator.pickWeight(o, 1)).sum();
+        double total = list.stream().mapToDouble(o -> ColonySimulator.pickWeight(o, 1)).sum();
         for (SpeciesOutput output : list) {
             ItemStack stack = output.create();
             if (stack.isEmpty()) {
                 continue;
             }
             List<Component> tooltip = new ArrayList<>();
-            tooltip.add(line("weight", percent(com.antcolonies.colony.simulation.ColonySimulator.pickWeight(output, 1)
+            tooltip.add(line("weight", percent(ColonySimulator.pickWeight(output, 1)
                     / Math.max(0.0001, total)) + "%").withStyle(ChatFormatting.GRAY));
             if (output.minStage() > 1) {
                 tooltip.add(line("stage", output.minStage()).withStyle(ChatFormatting.GOLD));
@@ -153,8 +165,8 @@ public final class AntRecipes {
                     List.of(AntRecipe.Output.of(droplet, Component.translatable("info.antcolonies.liquid.fluid",
                             liquid.fluidValue().get().getFluidType().getDescription()).withStyle(ChatFormatting.GRAY))),
                     List.of(Tooltips.species(id).withStyle(ChatFormatting.DARK_GREEN), line("liquid.only"),
-                            line("liquid.rate", String.format(java.util.Locale.ROOT, "%.2f", liquid.rate()),
-                                    String.format(java.util.Locale.ROOT, "%.2f", data.diet().consumption())))));
+                            line("liquid.rate", String.format(Locale.ROOT, "%.2f", liquid.rate()),
+                                    String.format(Locale.ROOT, "%.2f", data.diet().consumption())))));
         }
         return list;
     }
@@ -163,18 +175,18 @@ public final class AntRecipes {
     public List<AntRecipe> centrifuging() {
         List<AntRecipe> list = new ArrayList<>();
         int index = 0;
-        for (com.antcolonies.content.recipe.CentrifugingRecipe recipe : com.antcolonies.content.recipe.CentrifugingRecipe.all(
-                net.minecraft.client.Minecraft.getInstance().level)) {
+        for (CentrifugingRecipe recipe : CentrifugingRecipe.all(
+                Minecraft.getInstance().level)) {
             List<ItemStack> inputs = recipe.ingredient().items().map(ItemStack::new).toList();
             if (inputs.isEmpty()) {
                 continue;
             }
-            net.neoforged.neoforge.fluids.FluidStack fluid = recipe.createResult();
-            Identifier input = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(inputs.getFirst().getItem());
+            FluidStack fluid = recipe.createResult();
+            Identifier input = BuiltInRegistries.ITEM.getKey(inputs.getFirst().getItem());
             list.add(new AntRecipe(AntColonies.id("centrifuging/" + input.getNamespace() + "/" + input.getPath() + "/" + index++), List.of(inputs),
                     List.of(AntRecipe.Output.ofFluid(fluid)),
                     List.of(line("centrifuging.fluid", recipe.amount(), fluid.getFluidType().getDescription(fluid)),
-                            line("centrifuging.cost", recipe.energyCost(), String.format(java.util.Locale.ROOT, "%.1f", recipe.duration() / 20.0)))));
+                            line("centrifuging.cost", recipe.energyCost(), String.format(Locale.ROOT, "%.1f", recipe.duration() / 20.0)))));
         }
         return list;
     }
@@ -208,7 +220,7 @@ public final class AntRecipes {
                                     line("needs_stage", evolution.minStage(), evolution.minPopulation()))
                             : List.of(line("chance", percent(chance)), line("guaranteed", evolution.guaranteedAfter()),
                                     line("needs_stage", evolution.minStage(), evolution.minPopulation()),
-                                    line("dimension", com.antcolonies.content.item.Tooltips.dimension(evolution.dimension().get())).withStyle(ChatFormatting.RED))));
+                                    line("dimension", Tooltips.dimension(evolution.dimension().get())).withStyle(ChatFormatting.RED))));
         }));
         return list;
     }
@@ -263,7 +275,7 @@ public final class AntRecipes {
         if (e.heatResistant()) {
             parts.add(Component.translatable("jei.antcolonies.effect.heat_resistant"));
         }
-        net.minecraft.network.chat.MutableComponent out = Component.empty();
+        MutableComponent out = Component.empty();
         for (int i = 0; i < parts.size(); i++) {
             out.append(i == 0 ? Component.empty() : Component.literal(", ")).append(parts.get(i));
         }
@@ -326,8 +338,8 @@ public final class AntRecipes {
     public List<AntRecipe> expeditions() {
         List<AntRecipe> list = new ArrayList<>();
         double base = AntConfig.get(AntConfig.EXPEDITION_ROLLS);
-        for (com.antcolonies.colony.expedition.Expedition expedition : com.antcolonies.colony.expedition.Expedition.all(registries)) {
-            ItemStack site = new ItemStack(com.antcolonies.core.registry.ModBlocks.STRUCTURES.get(expedition.site()).get());
+        for (Expedition expedition : Expedition.all(registries)) {
+            ItemStack site = new ItemStack(ModBlocks.STRUCTURES.get(expedition.site()).get());
             for (Identifier id : expedition.adaptedSpecies(registries)) {
                 List<SpeciesOutput> finds = expedition.outputsFor(id);
                 if (finds.isEmpty()) {
@@ -382,15 +394,15 @@ public final class AntRecipes {
     }
 
     private static List<AntSpecies.Combat.Target> defaultTargets() {
-        return List.of(new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityTypes.ZOMBIE.builtInRegistryHolder(), 30),
-                new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityTypes.SKELETON.builtInRegistryHolder(), 25),
-                new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityTypes.SPIDER.builtInRegistryHolder(), 25),
-                new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityTypes.CREEPER.builtInRegistryHolder(), 15),
-                new AntSpecies.Combat.Target(net.minecraft.world.entity.EntityTypes.SLIME.builtInRegistryHolder(), 5));
+        return List.of(new AntSpecies.Combat.Target(EntityTypes.ZOMBIE.builtInRegistryHolder(), 30),
+                new AntSpecies.Combat.Target(EntityTypes.SKELETON.builtInRegistryHolder(), 25),
+                new AntSpecies.Combat.Target(EntityTypes.SPIDER.builtInRegistryHolder(), 25),
+                new AntSpecies.Combat.Target(EntityTypes.CREEPER.builtInRegistryHolder(), 15),
+                new AntSpecies.Combat.Target(EntityTypes.SLIME.builtInRegistryHolder(), 5));
     }
 
     private static ItemStack spawnEgg(EntityType<?> type) {
-        return SpawnEggItem.byId(type).map(ItemStack::new).orElseGet(() -> new ItemStack(net.minecraft.world.item.Items.BONE));
+        return SpawnEggItem.byId(type).map(ItemStack::new).orElseGet(() -> new ItemStack(Items.BONE));
     }
 
     public List<AntRecipe> lab() {
@@ -441,13 +453,13 @@ public final class AntRecipes {
     /** Colony upgrades, one entry per type and tier: the upgrade, every block it goes in, and its tooltip's lines underneath. */
     public List<AntRecipe> colonyUpgrades() {
         List<AntRecipe> list = new ArrayList<>();
-        for (var type : com.antcolonies.colony.upgrade.UpgradeType.values()) {
-            List<AntRecipe.Output> places = com.antcolonies.colony.upgrade.UpgradeEffects.placements(type).stream()
+        for (var type : UpgradeType.values()) {
+            List<AntRecipe.Output> places = UpgradeEffects.placements(type).stream()
                     .map(place -> AntRecipe.Output.of(place, line("goes_in").withStyle(ChatFormatting.GRAY))).toList();
-            for (int tier = 1; tier <= com.antcolonies.colony.upgrade.UpgradeType.MAX_TIER; tier++) {
+            for (int tier = 1; tier <= UpgradeType.MAX_TIER; tier++) {
                 list.add(new AntRecipe(AntColonies.id("colony_upgrade/" + type.getSerializedName() + "/" + tier),
                         List.of(List.of(new ItemStack(ModItems.upgrade(type, tier)))), places,
-                        com.antcolonies.colony.upgrade.UpgradeEffects.lines(type, tier)));
+                        UpgradeEffects.lines(type, tier)));
             }
         }
         return list;

@@ -6,6 +6,7 @@ import com.antcolonies.client.model.AntPose;
 import com.antcolonies.content.entity.AntLike;
 import com.antcolonies.colony.species.AntLook;
 import com.antcolonies.colony.species.Caste;
+import com.antcolonies.content.entity.WildAnt;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 
@@ -16,9 +17,10 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Mob;
 
 /** Draws wild ants and Guard Ants with the shared ant model, in their species' colors. */
-public class WildAntRenderer<T extends net.minecraft.world.entity.Mob & AntLike> extends EntityRenderer<T, WildAntRenderer.State> {
+public class WildAntRenderer<T extends Mob & AntLike> extends EntityRenderer<T, WildAntRenderer.State> {
     private final AntDrawer drawer;
     private final AntPose pose = new AntPose();
 
@@ -63,7 +65,7 @@ public class WildAntRenderer<T extends net.minecraft.world.entity.Mob & AntLike>
         state.seed = (ant.getId() % 97) * 0.37F;
         state.scale = ant.renderScale();
         state.sitting = ant.sitting();
-        state.carry = ant instanceof com.antcolonies.content.entity.WildAnt wild ? wild.carryColor() : 0;
+        state.carry = ant instanceof WildAnt wild ? wild.carryColor() : 0;
     }
 
     @Override

@@ -54,7 +54,6 @@ public record CentrifugingRecipe(Ingredient ingredient, FluidStackTemplate resul
             ByteBufCodecs.VAR_INT, CentrifugingRecipe::time,
             CentrifugingRecipe::new);
 
-    /** The fluid one run makes. */
     public FluidResource fluid() {
         return FluidResource.of(result);
     }

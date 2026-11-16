@@ -5,6 +5,8 @@ import java.util.List;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.colony.model.Colony;
+import com.antcolonies.content.item.TweezersItem;
+import com.antcolonies.core.registry.ModBlocks;
 import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModMenus;
 
@@ -51,7 +53,7 @@ public class TerrariumMenu extends BaseMenu {
             return new TerrariumMenu(containerId, inventory, terrarium);
         }
         return new TerrariumMenu(containerId, inventory,
-                new TerrariumBlockEntity(pos, com.antcolonies.core.registry.ModBlocks.TERRARIUM.get().defaultBlockState()));
+                new TerrariumBlockEntity(pos, ModBlocks.TERRARIUM.get().defaultBlockState()));
     }
 
     public TerrariumBlockEntity terrarium() {
@@ -64,10 +66,9 @@ public class TerrariumMenu extends BaseMenu {
 
     @Override
     public boolean clickMenuButton(Player player, int id) {
-        Colony colony = terrarium.colony();
         switch (id) {
             case BUTTON_TAKE_WORKERS -> {
-                return com.antcolonies.content.item.TweezersItem.takeFromColony(player, terrarium);
+                return TweezersItem.takeFromColony(player, terrarium);
             }
             default -> {
                 if (id < BUTTON_ASSIGNMENT) {

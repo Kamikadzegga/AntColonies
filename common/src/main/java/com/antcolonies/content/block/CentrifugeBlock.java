@@ -63,7 +63,6 @@ public class CentrifugeBlock extends BaseEntityBlock {
         return true;
     }
 
-    /** How full its tank is. */
     @Override
     protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
         return level.getBlockEntity(pos) instanceof ComparatorSource source ? source.comparatorSignal() : 0;

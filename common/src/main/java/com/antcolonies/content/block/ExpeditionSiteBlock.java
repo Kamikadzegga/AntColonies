@@ -3,6 +3,7 @@ package com.antcolonies.content.block;
 import com.antcolonies.colony.model.StructureKind;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
@@ -35,7 +36,7 @@ public class ExpeditionSiteBlock extends StructureBlock {
         }
         // Motes drifting out of the little portal.
         boolean nether = structureKind() == StructureKind.NETHER_FORAGING_SITE;
-        net.minecraft.core.Direction front = state.getValue(FACING);
+        Direction front = state.getValue(FACING);
         if (upright(state)) {
             // In a stack the portal is in the chamber behind the glass: its motes drift out before it, or behind it.
             double side = random.nextBoolean() ? 0.56 : -0.56;

@@ -1,6 +1,7 @@
 package com.antcolonies.client.screen;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -12,11 +13,14 @@ import com.antcolonies.colony.genetics.Genome;
 import com.antcolonies.colony.genetics.Mutation;
 import com.antcolonies.colony.genetics.QueenData;
 import com.antcolonies.colony.genetics.Trait;
+import com.antcolonies.colony.liquid.LiquidKind;
+import com.antcolonies.colony.liquid.LiquidKinds;
 import com.antcolonies.colony.model.Colony;
 import com.antcolonies.colony.model.ColonyHistory;
 import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.colony.model.ForagingMode;
 import com.antcolonies.colony.model.Founding;
+import com.antcolonies.colony.model.ProductionLog;
 import com.antcolonies.colony.model.StructureKind;
 import com.antcolonies.colony.simulation.ColonySimulator;
 import com.antcolonies.colony.simulation.ProductionMath;
@@ -24,9 +28,10 @@ import com.antcolonies.colony.species.AntLook;
 import com.antcolonies.colony.species.AntSpecies;
 import com.antcolonies.colony.species.Caste;
 import com.antcolonies.colony.species.SpeciesOutput;
-import com.antcolonies.content.blockentity.StructureBlockEntity;
+import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.content.item.AntSample;
 import com.antcolonies.content.item.Tooltips;
+import com.antcolonies.content.item.TweezersItem;
 import com.antcolonies.content.menu.StructureMenu;
 import com.antcolonies.content.menu.TerrariumMenu;
 import com.antcolonies.core.config.AntConfig;
@@ -35,12 +40,16 @@ import com.antcolonies.core.registry.ModDataComponents;
 import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModRegistries;
 
+import java.util.Map;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.DyeColor;
@@ -138,7 +147,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             case 2 -> jobs(graphics, colony);
             case 3 -> production(graphics, colony);
             case 4 -> genetics(graphics, colony);
-            case 5 -> network(graphics, colony, mouseX, mouseY);
+            case 5 -> network(graphics, colony);
             case 6 -> statistics(graphics, colony, mouseX, mouseY);
             default -> species(graphics, colony);
         }
@@ -224,15 +233,15 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
 
     /** Which Terrarium slot this is (queen, food, feed, output, upgrade), or null for the player's inventory. */
     private static @Nullable String slotKind(Slot slot) {
-        if (slot.container instanceof com.antcolonies.content.blockentity.TerrariumBlockEntity) {
+        if (slot.container instanceof TerrariumBlockEntity) {
             return switch (slot.getContainerSlot()) {
-                case com.antcolonies.content.blockentity.TerrariumBlockEntity.SLOT_QUEEN -> "queen";
-                case com.antcolonies.content.blockentity.TerrariumBlockEntity.SLOT_FOOD -> "food";
-                case com.antcolonies.content.blockentity.TerrariumBlockEntity.SLOT_OUTPUT -> "output";
+                case TerrariumBlockEntity.SLOT_QUEEN -> "queen";
+                case TerrariumBlockEntity.SLOT_FOOD -> "food";
+                case TerrariumBlockEntity.SLOT_OUTPUT -> "output";
                 default -> "feed";
             };
         }
-        return slot.container instanceof net.minecraft.world.entity.player.Inventory ? null : "upgrade";
+        return slot.container instanceof Inventory ? null : "upgrade";
     }
 
     @Override
@@ -267,15 +276,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     private void value(GuiGraphicsExtractor graphics, String text, int x, int y, int color) {
         graphics.text(font, text, leftPos + x, topPos + y, color, true);
         noteDrawn(text, leftPos + x, topPos + y);
-    }
-
-    /** An item drawn at twice its size. */
-    private void bigItem(GuiGraphicsExtractor graphics, ItemStack stack, int x, int y) {
-        graphics.pose().pushMatrix();
-        graphics.pose().translate(leftPos + x, topPos + y);
-        graphics.pose().scale(2, 2);
-        graphics.item(stack, 0, 0);
-        graphics.pose().popMatrix();
     }
 
     /** An ant drawn from the side, from the sprites the Terrarium's tunnels use, in the species' colours, {@code scale} times its size. */
@@ -408,7 +408,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         egg.set(ModDataComponents.SPECIES.get(), colony.species());
         ItemStack larva = new ItemStack(ModItems.ANT_LARVA.get());
         larva.set(ModDataComponents.SPECIES.get(), colony.species());
-        ItemStack workers = com.antcolonies.content.item.TweezersItem.antTube(new AntSample(colony.species(), Caste.WORKER, 1));
+        ItemStack workers = TweezersItem.antTube(new AntSample(colony.species(), Caste.WORKER, 1));
         Object[][] row = {{egg, colony.eggs(), "eggs"}, {larva, colony.larvae(), "larvae"}, {workers, colony.workers(), "workers"}};
         int cx = x;
         for (Object[] r : row) {
@@ -430,7 +430,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             String text = Component.translatable(key).getString();
             if (status == ColonyStatus.UNKNOWN_SPECIES) {
                 // Liquid Ants of a fluid that is gone: say which mod they need back.
-                com.antcolonies.colony.liquid.LiquidKind kind = com.antcolonies.colony.liquid.LiquidKinds.bySpecies(colony.species());
+                LiquidKind kind = LiquidKinds.bySpecies(colony.species());
                 if (kind != null) {
                     text = Component.translatable("gui.antcolonies.liquid.missing",
                             Component.translatable("mod.antcolonies." + kind.mod())).getString();
@@ -750,7 +750,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     private static final int TILE = 23;
     private static final int TILE_STEP = 24;
     /** The site each tile shows this frame, by its index in the list (for drawing the tile). */
-    private final java.util.Map<Integer, Colony.Assignment> tileSites = new java.util.HashMap<>();
+    private final Map<Integer, Colony.Assignment> tileSites = new HashMap<>();
 
     /** Visual mode: every site as a tile in a grid; hovered, all about it; clicked, it opens in the Detailed list. */
     private void siteGrid(List<Colony.Assignment> list, int x, int y) {
@@ -804,7 +804,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     private static ItemStack colonyDroplet(Colony colony) {
         AntSpecies species = ClientSpecies.get(colony.species());
         return species == null ? ItemStack.EMPTY : species.liquid()
-                .map(liquid -> net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(liquid.droplet()).map(ItemStack::new).orElse(ItemStack.EMPTY))
+                .map(liquid -> BuiltInRegistries.ITEM.getOptional(liquid.droplet()).map(ItemStack::new).orElse(ItemStack.EMPTY))
                 .orElse(ItemStack.EMPTY);
     }
 
@@ -835,8 +835,8 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     }
 
     /** Where a site is from the Formicarium, by the compass: "2 W, 1 N", "1 up". */
-    private String sitePlace(net.minecraft.core.BlockPos pos) {
-        net.minecraft.core.BlockPos home = menu.terrarium().getBlockPos();
+    private String sitePlace(BlockPos pos) {
+        BlockPos home = menu.terrarium().getBlockPos();
         int dx = pos.getX() - home.getX();
         int dy = pos.getY() - home.getY();
         int dz = pos.getZ() - home.getZ();
@@ -882,7 +882,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
 
     /** The window as the page names it: whole minutes, and 30 once the log is full (it then covers 29 to 30 minutes). */
     private static long shownMinutes(double window) {
-        return window >= com.antcolonies.colony.model.ProductionLog.MINUTES - 1 ? com.antcolonies.colony.model.ProductionLog.MINUTES
+        return window >= ProductionLog.MINUTES - 1 ? ProductionLog.MINUTES
                 : Math.round(window);
     }
 
@@ -982,7 +982,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         double window = productionWindow(colony);
         if (window > 0) {
             long now = minecraft.level.getGameTime();
-            for (com.antcolonies.colony.model.ProductionLog.Total total : colony.production().totals(now)) {
+            for (ProductionLog.Total total : colony.production().totals(now)) {
                 add(finds, new ItemStack(total.item()), total.count() / window, 0);
             }
             for (Colony.StoredItem stored : colony.stored()) {
@@ -1130,8 +1130,8 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         int cx = x;
         for (Identifier id : genome.mutations()) {
             Mutation mutation = ModRegistries.lookup(ClientSpecies.registries(), ModRegistries.MUTATION)
-                    .flatMap(lookup -> lookup.get(net.minecraft.resources.ResourceKey.create(ModRegistries.MUTATION, id)))
-                    .map(net.minecraft.core.Holder::value).orElse(null);
+                    .flatMap(lookup -> lookup.get(ResourceKey.create(ModRegistries.MUTATION, id)))
+                    .map(Holder::value).orElse(null);
             boolean bad = mutation != null && mutation.negative();
             String name = Component.translatable(Mutation.translationKey(id)).getString();
             int w = font.width(name) + 7;
@@ -1149,7 +1149,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
 
     // --- Network ---
 
-    private void network(GuiGraphicsExtractor graphics, Colony colony, int mouseX, int mouseY) {
+    private void network(GuiGraphicsExtractor graphics, Colony colony) {
         int x = CONTENT_X + 4;
         int y = CONTENT_Y + 5;
         List<Colony.NetworkLink> links = colony.network();
@@ -1468,7 +1468,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     }
 
     private static String oneDecimal(double value) {
-        return String.format(java.util.Locale.ROOT, "%.1f", value);
+        return String.format(Locale.ROOT, "%.1f", value);
     }
 
     private @Nullable List<Component> hoverStat;

@@ -1,14 +1,25 @@
 package com.antcolonies.content.blockentity;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.antcolonies.client.ClientHooks;
+import com.antcolonies.colony.genetics.Trait;
 import com.antcolonies.colony.model.Colony;
 import com.antcolonies.colony.model.ColonyAccess;
-import com.antcolonies.colony.model.ColonyLayout;
 import com.antcolonies.colony.model.ColonyNetwork;
 import com.antcolonies.colony.model.ColonyStatus;
+import com.antcolonies.colony.model.Founding;
+import com.antcolonies.colony.resource.ColonyStorage;
+import com.antcolonies.colony.upgrade.UpgradeEffects;
+import com.antcolonies.content.block.BroodClusterBlock;
+import com.antcolonies.content.block.ColonyPartBlock;
+import com.antcolonies.content.block.ComparatorSource;
+import com.antcolonies.content.item.Tooltips;
+import com.antcolonies.content.item.TweezersItem;
+import com.antcolonies.core.advancement.ModTriggers;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.colony.evolution.EvolutionLogic;
 import com.antcolonies.colony.genetics.QueenData;
@@ -19,25 +30,27 @@ import com.antcolonies.core.registry.ModBlockEntities;
 import com.antcolonies.core.registry.ModDataComponents;
 import com.antcolonies.core.registry.ModDataMaps;
 import com.antcolonies.core.registry.ModItems;
+import com.antcolonies.core.registry.ModRegistries;
 import com.antcolonies.core.registry.ModSounds;
 import com.antcolonies.colony.simulation.ColonySimulator;
 import com.antcolonies.colony.species.Caste;
 import com.antcolonies.colony.species.Climate;
 import com.antcolonies.colony.upgrade.UpgradeType;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponentGetter;
-import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Container;
@@ -46,16 +59,17 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -63,11 +77,11 @@ import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
 /** The heart of a colony: holds its numbers and its Queen, takes what is fed to it, and runs its simulation steps. */
-public class TerrariumBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, com.antcolonies.content.block.ComparatorSource {
+public class TerrariumBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, ComparatorSource {
     /** Comparators read how full the colony's food store is. */
     @Override
     public int comparatorSignal() {
-        return com.antcolonies.content.block.ComparatorSource.fill(colony.food(), colony.stats().foodCapacity());
+        return ComparatorSource.fill(colony.food(), colony.stats().foodCapacity());
     }
 
     public static final int SLOT_QUEEN = 0;
@@ -149,7 +163,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
 
     public static boolean acceptsUpgrade(ItemStack stack) {
         return stack.getItem() instanceof UpgradeItem upgrade
-                && com.antcolonies.colony.upgrade.UpgradeEffects.TerrariumAccepts.types().contains(upgrade.type());
+                && UpgradeEffects.TerrariumAccepts.types().contains(upgrade.type());
     }
 
     public int upgradeTier(UpgradeType type) {
@@ -171,7 +185,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         climateAt = level.getGameTime();
         temperature = level.getBiome(worldPosition).value().getBaseTemperature();
         underground = !level.canSeeSky(worldPosition.above());
-        nether = level.environmentAttributes().getValue(net.minecraft.world.attribute.EnvironmentAttributes.WATER_EVAPORATES, worldPosition);
+        nether = level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, worldPosition);
     }
 
     /** Reads the block under the Terrarium (cheap: once a second). */
@@ -236,7 +250,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
 
     private boolean hasViewer(ServerLevel level) {
         for (var player : level.players()) {
-            if (player.containerMenu instanceof com.antcolonies.content.menu.TerrariumMenu menu && menu.terrarium() == this) {
+            if (player.containerMenu instanceof TerrariumMenu menu && menu.terrarium() == this) {
                 return true;
             }
         }
@@ -244,9 +258,9 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
     }
 
     /** Lets the colony advancements check this colony for one player (near it, or opening it). */
-    private void checkAdvancements(ServerLevel level, net.minecraft.server.level.ServerPlayer player) {
-        com.antcolonies.core.advancement.ModTriggers.COLONY.get().trigger(player, colony,
-                com.antcolonies.core.registry.ModRegistries.species(level.registryAccess(), colony.species()));
+    private void checkAdvancements(ServerLevel level, ServerPlayer player) {
+        ModTriggers.COLONY.get().trigger(player, colony,
+                ModRegistries.species(level.registryAccess(), colony.species()));
     }
 
     /** Runs the simulation: one step per interval, and after loading a bounded catch-up. */
@@ -262,7 +276,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         ColonySimulator.step(this, level, interval / 1200.0);
         // Colony advancements, for the players close enough to watch it (every five seconds).
         if (time % 100 < interval) {
-            for (net.minecraft.server.level.ServerPlayer player : level.players()) {
+            for (ServerPlayer player : level.players()) {
                 if (player.blockPosition().distSqr(worldPosition) < 16 * 16) {
                     checkAdvancements(level, player);
                 }
@@ -315,9 +329,9 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         }
         for (BlockPos part : parts) {
             BlockState state = level.getBlockState(part);
-            if (state.getBlock() instanceof com.antcolonies.content.block.ColonyPartBlock
-                    && state.getValue(com.antcolonies.content.block.ColonyPartBlock.UPRIGHT) != upright) {
-                level.setBlock(part, state.setValue(com.antcolonies.content.block.ColonyPartBlock.UPRIGHT, upright), Block.UPDATE_CLIENTS);
+            if (state.getBlock() instanceof ColonyPartBlock
+                    && state.getValue(ColonyPartBlock.UPRIGHT) != upright) {
+                level.setBlock(part, state.setValue(ColonyPartBlock.UPRIGHT, upright), Block.UPDATE_CLIENTS);
             }
         }
     }
@@ -385,11 +399,11 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
                 return;
             }
             colony.addWorkers(-count);
-            items.set(SLOT_OUTPUT, com.antcolonies.content.item.TweezersItem.antTube(new AntSample(colony.species(), Caste.WORKER, count)));
+            items.set(SLOT_OUTPUT, TweezersItem.antTube(new AntSample(colony.species(), Caste.WORKER, count)));
             feed.shrink(1);
             syncNow();
-        } else if (feed.getItem() instanceof net.minecraft.world.item.BlockItem blockItem
-                && blockItem.getBlock() instanceof com.antcolonies.content.block.BroodClusterBlock cluster) {
+        } else if (feed.getItem() instanceof BlockItem blockItem
+                && blockItem.getBlock() instanceof BroodClusterBlock cluster) {
             // A brood cluster: only a working colony (a Queen and workers, past founding) of its species takes it in.
             if (colony.queen() == null) {
                 feedStatus = ColonyStatus.NO_QUEEN.bit();
@@ -470,7 +484,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         String kind = value.specialKind();
         boolean special = !kind.isEmpty() && kind.equals(speciesDiet(level)) && value.special() > 0;
         // A founding Queen waits for a full bar: the last item may top it up (the bit over is lost), or she would wait for ever.
-        boolean topUp = colony.founding() == com.antcolonies.colony.model.Founding.FEEDING && value.food() > 0;
+        boolean topUp = colony.founding() == Founding.FEEDING && value.food() > 0;
         while (!stack.isEmpty() && (colony.food() + value.food() <= capacity || topUp && colony.food() < capacity
                 || special && colony.specialFood() < specialRoom)) {
             colony.addFood(Math.min(value.food(), Math.max(0, capacity - colony.food())), special ? value.special() : 0);
@@ -485,28 +499,28 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
 
     /** Whether a stack belongs in the feed slot: anything but food, and food that is also this colony's evolution material. */
     public boolean isFeed(ItemStack stack) {
-        return !isFood(stack) || level != null && com.antcolonies.colony.evolution.EvolutionLogic.find(level.registryAccess(), colony, stack) != null;
+        return !isFood(stack) || level != null && EvolutionLogic.find(level.registryAccess(), colony, stack) != null;
     }
 
     private String speciesDiet(Level level) {
-        var data = com.antcolonies.core.registry.ModRegistries.species(level.registryAccess(), colony.species());
+        var data = ModRegistries.species(level.registryAccess(), colony.species());
         return data == null ? "" : data.diet().specialKind();
     }
 
     /** The Queen grew with her colony: effects, and a note to the players nearby saying which traits went up. */
-public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcolonies.colony.genetics.Trait> raised) {
+public void queenGrew(ServerLevel level, int stage, List<Trait> raised) {
     level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_QUEEN_GREW, 0);
     level.playSound(null, worldPosition, ModSounds.QUEEN_ACTIVITY.get(), SoundSource.BLOCKS, 1.0F, 1.2F);
-    net.minecraft.network.chat.MutableComponent traits = Component.empty();
+    MutableComponent traits = Component.empty();
     for (int i = 0; i < raised.size(); i++) {
         if (i > 0) {
             traits.append(", ");
         }
-        traits.append(Component.translatable(raised.get(i).translationKey()).withStyle(net.minecraft.ChatFormatting.GREEN));
+        traits.append(Component.translatable(raised.get(i).translationKey()).withStyle(ChatFormatting.GREEN));
     }
-    Component message = Component.translatable("message.antcolonies.queen_grew", com.antcolonies.content.item.Tooltips.species(colony.species()),
+    Component message = Component.translatable("message.antcolonies.queen_grew", Tooltips.species(colony.species()),
             stage, traits);
-    for (net.minecraft.server.level.ServerPlayer player : level.players()) {
+    for (ServerPlayer player : level.players()) {
         if (player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5) < 48 * 48) {
             player.sendSystemMessage(message);
         }
@@ -527,12 +541,12 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
 
     /** The Queen takes one of the evolution material; what it leaves behind (a bucket) goes to the output slot, or drops. */
     private void absorb(ItemStack feed) {
-        net.minecraft.world.item.ItemStackTemplate remainder = feed.getCraftingRemainder();
+        ItemStackTemplate remainder = feed.getCraftingRemainder();
         feed.shrink(1);
         if (remainder != null && level != null) {
             ItemStack left = remainder.create();
             if (!giveBack(left)) {
-                net.minecraft.world.Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 1,
+                Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 1,
                         worldPosition.getZ() + 0.5, left);
             }
         }
@@ -612,7 +626,7 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
     @Override
     public boolean triggerEvent(int id, int param) {
         if (level != null && level.isClientSide()) {
-            com.antcolonies.client.ClientHooks.terrariumEvent(this, id);
+            ClientHooks.terrariumEvent(this, id);
         }
         return true;
     }
@@ -692,8 +706,8 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
     private boolean feedRole(ItemStack stack) {
         return stack.is(ModItems.TEST_TUBE.get()) || stack.is(ModItems.ANT_TEST_TUBE.get()) || stack.is(ModItems.ANT_EGG.get())
                 || stack.is(ModItems.ANT_LARVA.get()) || stack.is(ModItems.EVOLUTION_CATALYST.get())
-                || stack.getItem() instanceof net.minecraft.world.item.BlockItem block
-                        && block.getBlock() instanceof com.antcolonies.content.block.BroodClusterBlock
+                || stack.getItem() instanceof BlockItem block
+                        && block.getBlock() instanceof BroodClusterBlock
                 || level != null && EvolutionLogic.find(level.registryAccess(), colony, stack) != null;
     }
 
@@ -711,7 +725,7 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
 
     @Override
     public @Nullable AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
-        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer && level instanceof ServerLevel serverLevel) {
+        if (player instanceof ServerPlayer serverPlayer && level instanceof ServerLevel serverLevel) {
             checkAdvancements(serverLevel, serverPlayer);
         }
         return new TerrariumMenu(containerId, inventory, this);
@@ -752,7 +766,7 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
         input.child("colony").ifPresent(colony::load);
         feedStatus = input.getIntOr("feed_status", 0);
         floor = input.getString("floor").flatMap(name ->
-                java.util.Arrays.stream(Climate.values()).filter(c -> c.getSerializedName().equals(name)).findFirst()).orElse(null);
+                Arrays.stream(Climate.values()).filter(c -> c.getSerializedName().equals(name)).findFirst()).orElse(null);
     }
 
     @Override
@@ -790,7 +804,7 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
         colony.save(colonyOutput, true);
         if (level instanceof ServerLevel serverLevel && hasViewer(serverLevel)) {
             // The Terrarium's screen is open: its pages need the history, the Storage's contents and the network too.
-            com.antcolonies.colony.resource.ColonyStorage.summarize(serverLevel, colony);
+            ColonyStorage.summarize(serverLevel, colony);
             colony.saveDetails(colonyOutput);
         }
         output.putInt("feed_status", feedStatus);

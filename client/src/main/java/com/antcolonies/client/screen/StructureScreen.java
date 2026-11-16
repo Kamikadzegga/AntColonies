@@ -3,11 +3,16 @@ package com.antcolonies.client.screen;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.antcolonies.colony.expedition.Expedition;
+import com.antcolonies.colony.model.ForagingMode;
+import com.antcolonies.colony.upgrade.UpgradeType;
+import com.antcolonies.content.blockentity.ConnectorSettings;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.client.ClientSpecies;
 import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.colony.model.StructureKind;
+import com.antcolonies.content.item.Tooltips;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.content.menu.StorageWindow;
 import com.antcolonies.content.menu.StructureMenu;
@@ -16,9 +21,13 @@ import com.antcolonies.colony.species.Cost;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
@@ -70,7 +79,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
     }
 
     @Override
-    public boolean mouseDragged(net.minecraft.client.input.MouseButtonEvent event, double dx, double dy) {
+    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
         if (draggingScrollbar) {
             dragScrollbar(event.y());
             return true;
@@ -79,7 +88,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
     }
 
     @Override
-    public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent event) {
+    public boolean mouseReleased(MouseButtonEvent event) {
         draggingScrollbar = false;
         return super.mouseReleased(event);
     }
@@ -133,7 +142,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         label(graphics, linkLine(linked), x, y, linked ? GOOD : BAD);
         y += 10;
         if (kind == StructureKind.COLONY_CONNECTOR) {
-            connectorPage(graphics, x, y, mouseX, mouseY);
+            connectorPage(graphics, x, y);
             return;
         }
         pendingFluid = null;
@@ -201,7 +210,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
 
     /** The room for adults and larvae this Nest Chamber adds to its colony, with the Population Upgrades in it. */
     private int nestRoom(GuiGraphicsExtractor graphics, int x, int y) {
-        int tier = menu.structure().upgradeTier(com.antcolonies.colony.upgrade.UpgradeType.POPULATION);
+        int tier = menu.structure().upgradeTier(UpgradeType.POPULATION);
         double room = 1 + 0.5 * tier;
         long adults = Math.round(AntConfig.get(AntConfig.NEST_ADULT_CAPACITY) * room);
         long larvae = Math.round(AntConfig.get(AntConfig.NEST_LARVAE_CAPACITY) * room);
@@ -252,8 +261,8 @@ public class StructureScreen extends AntScreen<StructureMenu> {
     private int settingsRow(int x, int y) {
         int bx = x;
         if (kind == StructureKind.FORAGING_SITE) {
-            com.antcolonies.colony.model.ForagingMode mode =
-                    com.antcolonies.colony.model.ForagingMode.byId(menu.data(StructureBlockEntity.DATA_MODE));
+            ForagingMode mode =
+                    ForagingMode.byId(menu.data(StructureBlockEntity.DATA_MODE));
             String text = Component.translatable(mode.translationKey()).getString();
             int w = buttonWidth(text);
             button(bx, y, w, 12, text, StructureMenu.CYCLE_MODE, List.of(Component.translatable("gui.antcolonies.mode"),
@@ -303,7 +312,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
 
     /** The species an expedition site takes, from the synced species tag (names, comma-separated). */
     private String adaptedNames() {
-        var expedition = com.antcolonies.colony.expedition.Expedition.forSite(minecraft.level == null ? null : minecraft.level.registryAccess(),
+        var expedition = Expedition.forSite(minecraft.level == null ? null : minecraft.level.registryAccess(),
                 kind);
         if (expedition == null || minecraft.level == null) {
             return "?";
@@ -313,20 +322,20 @@ public class StructureScreen extends AntScreen<StructureMenu> {
             if (!names.isEmpty()) {
                 names.append(", ");
             }
-            names.append(com.antcolonies.content.item.Tooltips.species(id).getString());
+            names.append(Tooltips.species(id).getString());
         }
         return names.toString();
     }
 
     /** A Colony Connector's page: its channel, what it does with food and with the items its filter names, and what it moved lately. */
-    private void connectorPage(GuiGraphicsExtractor graphics, int x, int y, int mouseX, int mouseY) {
+    private void connectorPage(GuiGraphicsExtractor graphics, int x, int y) {
         int channel = menu.data(StructureBlockEntity.DATA_CHANNEL);
         label(graphics, Component.translatable("gui.antcolonies.connector.channel"), x, y + 2, LABEL);
         int sx = x + 44;
         for (int c = 0; c < 16; c++) {
             int bx = sx + c * 8;
             button(bx, y, 7, 11, "", StructureMenu.CHANNEL + c,
-                    List.of(Component.translatable("color.minecraft." + net.minecraft.world.item.DyeColor.byId(c).getName())), true);
+                    List.of(Component.translatable("color.minecraft." + DyeColor.byId(c).getName())), true);
             channelSwatches.add(new int[] {bx, y, c, c == channel ? 1 : 0});
         }
         y += 14;
@@ -344,7 +353,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         y += 15;
         int reserve = menu.data(StructureBlockEntity.DATA_RESERVE);
         int target = menu.data(StructureBlockEntity.DATA_TARGET);
-        boolean supply = foodMode == com.antcolonies.content.blockentity.ConnectorSettings.SUPPLY;
+        boolean supply = foodMode == ConnectorSettings.SUPPLY;
         String amountKey = supply ? "gui.antcolonies.connector.keep" : "gui.antcolonies.connector.until";
         int amount = supply ? reserve : target;
         label(graphics, Component.translatable(amountKey), x, y + 2, foodMode == 0 ? DIM : LABEL);
@@ -352,7 +361,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         button(ax, y, 12, 12, "-", supply ? StructureMenu.RESERVE_LESS : StructureMenu.TARGET_LESS, null, foodMode != 0);
         label(graphics, amount + "%", ax + 16, y + 2, foodMode == 0 ? DIM : LABEL);
         button(ax + 40, y, 12, 12, "+", supply ? StructureMenu.RESERVE_MORE : StructureMenu.TARGET_MORE, null, foodMode != 0);
-        int rate = com.antcolonies.content.blockentity.ConnectorSettings.RATES[Math.clamp(menu.data(StructureBlockEntity.DATA_RATE_LIMIT), 0, 3)];
+        int rate = ConnectorSettings.RATES[Math.clamp(menu.data(StructureBlockEntity.DATA_RATE_LIMIT), 0, 3)];
         String rateText = rate < 0 ? Component.translatable("gui.antcolonies.connector.rate.max").getString()
                 : Component.translatable("gui.antcolonies.connector.rate", rate).getString();
         int rw = buttonWidth(rateText);
@@ -390,7 +399,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
      */
     private int lines(GuiGraphicsExtractor graphics, String text, int x, int y, int lastY, int color) {
         List<String> wrapped = new ArrayList<>();
-        font.getSplitter().splitLines(text, 170, net.minecraft.network.chat.Style.EMPTY).forEach(part -> wrapped.add(part.getString()));
+        font.getSplitter().splitLines(text, 170, Style.EMPTY).forEach(part -> wrapped.add(part.getString()));
         int room = Math.max(1, (lastY - y) / 9 + 1);
         for (int i = 0; i < wrapped.size() && i < room; i++) {
             String shown = wrapped.get(i);
@@ -412,7 +421,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         super.drawButton(graphics, button, hovered);
         for (int[] swatch : channelSwatches) {
             if (button.x() == leftPos + swatch[0] && button.y() == topPos + swatch[1]) {
-                int color = 0xFF000000 | net.minecraft.world.item.DyeColor.byId(swatch[2]).getTextureDiffuseColor();
+                int color = 0xFF000000 | DyeColor.byId(swatch[2]).getTextureDiffuseColor();
                 graphics.fill(button.x() + 1, button.y() + 1, button.x() + button.w() - 1, button.y() + button.h() - 1, color);
                 if (swatch[3] == 1) {
                     graphics.outline(button.x() - 1, button.y() - 1, button.w() + 2, button.h() + 2, 0xFFFFFFFF);
@@ -422,7 +431,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
     }
 
     /** Queen Chamber slot roles: materials, the tube, the sample, the output; null for any other slot. */
-    private @Nullable String chamberSlot(net.minecraft.world.inventory.Slot slot) {
+    private @Nullable String chamberSlot(Slot slot) {
         if (kind != StructureKind.QUEEN_CHAMBER || slot.container != menu.structure()) {
             return null;
         }
@@ -432,7 +441,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
     }
 
     @Override
-    protected void drawSlotBackground(GuiGraphicsExtractor graphics, net.minecraft.world.inventory.Slot slot, int x, int y) {
+    protected void drawSlotBackground(GuiGraphicsExtractor graphics, Slot slot, int x, int y) {
         super.drawSlotBackground(graphics, slot, x, y);
         if (slot.hasItem()) {
             return;

@@ -2,7 +2,9 @@ package com.antcolonies.core.registry;
 
 import com.antcolonies.AntColonies;
 import com.antcolonies.colony.genetics.Genetics;
+import com.antcolonies.colony.liquid.LiquidKinds;
 import com.antcolonies.content.item.AntSample;
+import com.antcolonies.content.item.GuardData;
 import com.antcolonies.content.item.TweezersItem;
 import com.antcolonies.colony.species.Caste;
 
@@ -11,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -32,10 +35,10 @@ public final class ModCreativeTabs {
                     }
                 });
                 // The droplets of every fluid that exists in this game.
-                com.antcolonies.colony.liquid.LiquidKinds.droplets().forEach(output::accept);
-                net.minecraft.world.item.ItemStack guard = new net.minecraft.world.item.ItemStack(ModItems.GUARD_ANT.get());
+                LiquidKinds.droplets().forEach(output::accept);
+                ItemStack guard = new ItemStack(ModItems.GUARD_ANT.get());
                 guard.set(ModDataComponents.GUARD.get(),
-                        new com.antcolonies.content.item.GuardData(com.antcolonies.core.registry.ModRegistries.COMMON, 5, -1));
+                        new GuardData(ModRegistries.COMMON, 5, -1));
                 output.accept(guard);
                 // A fixed seed, so the tab shows the same Queens every time.
                 RandomSource random = RandomSource.create(42);

@@ -3,6 +3,8 @@ package com.antcolonies.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.client.fluid.FluidTintSource;
@@ -27,7 +29,7 @@ public final class FluidLook {
         if ((tint & 0xFFFFFF) != 0xFFFFFF) {
             return tint;
         }
-        net.minecraft.resources.Identifier id = net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(fluid);
+        Identifier id = BuiltInRegistries.FLUID.getKey(fluid);
         for (var species : ClientSpecies.all()) {
             var liquid = species.value().liquid();
             if (liquid.isPresent() && liquid.get().fluid().equals(id) && species.value().look().crop().isPresent()) {

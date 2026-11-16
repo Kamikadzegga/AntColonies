@@ -1,5 +1,6 @@
 package com.antcolonies.content.menu;
 
+import com.antcolonies.content.blockentity.ConnectorSettings;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.colony.model.StructureKind;
 import com.antcolonies.core.registry.ModBlocks;
@@ -11,6 +12,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -141,7 +143,6 @@ public class StructureMenu extends BaseMenu {
 
     // --- Storage scrolling ---
 
-    /** The rows of open Storage slots. */
     public int storageRows() {
         return (data.get(StructureBlockEntity.DATA_UNLOCKED) + 8) / 9;
     }
@@ -238,7 +239,7 @@ public class StructureMenu extends BaseMenu {
 
     /** A Colony Connector's buttons. */
     private static void connector(StructureBlockEntity site, int action) {
-        com.antcolonies.content.blockentity.ConnectorSettings settings = site.connector();
+        ConnectorSettings settings = site.connector();
         if (settings == null) {
             return;
         }
@@ -254,7 +255,7 @@ public class StructureMenu extends BaseMenu {
                 case RESERVE_MORE -> settings.reserve = Math.min(100, settings.reserve + 5);
                 case TARGET_LESS -> settings.target = Math.max(0, settings.target - 5);
                 case TARGET_MORE -> settings.target = Math.min(100, settings.target + 5);
-                case CYCLE_RATE -> settings.rateLimit = (settings.rateLimit + 1) % com.antcolonies.content.blockentity.ConnectorSettings.RATES.length;
+                case CYCLE_RATE -> settings.rateLimit = (settings.rateLimit + 1) % ConnectorSettings.RATES.length;
                 default -> {
                     return;
                 }
@@ -265,8 +266,8 @@ public class StructureMenu extends BaseMenu {
 
     /** Swapping a hotbar slot with a Storage slot that holds more than a stack would put it all in the hotbar: not allowed. */
     @Override
-    public void clicked(int slotId, int button, net.minecraft.world.inventory.ContainerInput clickType, Player player) {
-        if (clickType == net.minecraft.world.inventory.ContainerInput.SWAP && slotId >= 0 && slotId < slots.size()
+    public void clicked(int slotId, int button, ContainerInput clickType, Player player) {
+        if (clickType == ContainerInput.SWAP && slotId >= 0 && slotId < slots.size()
                 && slots.get(slotId) instanceof StorageSlot storage && storage.overfull()) {
             return;
         }

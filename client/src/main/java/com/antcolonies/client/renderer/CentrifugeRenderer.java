@@ -1,6 +1,7 @@
 package com.antcolonies.client.renderer;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.client.ClientHooks;
 import com.antcolonies.client.FluidLook;
 import com.antcolonies.content.blockentity.CentrifugeBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -58,7 +59,7 @@ public class CentrifugeRenderer implements BlockEntityRenderer<CentrifugeBlockEn
         BlockEntityRenderer.super.extractRenderState(centrifuge, state, partialTicks, camera, breakProgress);
         state.working = centrifuge.working();
         state.time = centrifuge.getLevel() == null ? 0
-                : com.antcolonies.client.ClientHooks.animationTime(centrifuge.getLevel().getGameTime(), partialTicks);
+                : ClientHooks.animationTime(centrifuge.getLevel().getGameTime(), partialTicks);
         state.seed = centrifuge.getBlockPos().asLong();
         FluidStack fluid = centrifuge.fluid();
         if (fluid.isEmpty()) {

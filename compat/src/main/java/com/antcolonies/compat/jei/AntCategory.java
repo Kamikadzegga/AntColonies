@@ -1,5 +1,6 @@
 package com.antcolonies.compat.jei;
 
+import java.util.ArrayList;
 import java.util.List;
 import com.antcolonies.compat.recipes.AntRecipe;
 
@@ -12,8 +13,12 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.category.AbstractRecipeCategory;
 import mezz.jei.api.recipe.types.IRecipeType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import org.jspecify.annotations.Nullable;
 
@@ -53,12 +58,12 @@ public class AntCategory extends AbstractRecipeCategory<AntRecipe> {
         int shown = recipe.outputs().size() > room ? room - 1 : recipe.outputs().size();
         if (shown < recipe.outputs().size()) {
             List<AntRecipe.Output> rest = recipe.outputs().subList(shown, recipe.outputs().size());
-            List<net.minecraft.world.item.ItemStack> stacks = rest.stream().flatMap(o -> o.stacks().stream()).toList();
+            List<ItemStack> stacks = rest.stream().flatMap(o -> o.stacks().stream()).toList();
             builder.addOutputSlot(OUTPUT_X + 1 + shown % OUTPUT_COLUMNS * STEP, 1 + shown / OUTPUT_COLUMNS * STEP)
                     .setStandardSlotBackground()
                     .addItemStacks(stacks)
                     .addRichTooltipCallback((view, tooltip) -> view.getDisplayedItemStack().ifPresent(item -> rest.stream()
-                            .filter(o -> o.stacks().stream().anyMatch(s -> net.minecraft.world.item.ItemStack.isSameItemSameComponents(s, item)))
+                            .filter(o -> o.stacks().stream().anyMatch(s -> ItemStack.isSameItemSameComponents(s, item)))
                             .findFirst().ifPresent(o -> o.tooltip().forEach(tooltip::add))));
         }
         for (int i = 0; i < shown; i++) {
@@ -82,10 +87,10 @@ public class AntCategory extends AbstractRecipeCategory<AntRecipe> {
         builder.addRecipeArrow().setPosition(ARROW_X, 1);
         // Text starts under the category's slot rows, so entries line up. What does not fit is cut; a tooltip has the whole text.
         int y = rows * STEP + 4;
-        var font = net.minecraft.client.Minecraft.getInstance().font;
-        List<net.minecraft.network.chat.FormattedText> wrapped = new java.util.ArrayList<>();
+        var font = Minecraft.getInstance().font;
+        List<FormattedText> wrapped = new ArrayList<>();
         for (Component line : recipe.lines()) {
-            wrapped.addAll(font.getSplitter().splitLines(line, WIDTH, net.minecraft.network.chat.Style.EMPTY));
+            wrapped.addAll(font.getSplitter().splitLines(line, WIDTH, Style.EMPTY));
         }
         for (int i = 0; i < Math.min(textLines, wrapped.size()); i++) {
             var text = builder.addText(wrapped.get(i), WIDTH, 10).setPosition(0, y + i * 10).setColor(TEXT_COLOR);

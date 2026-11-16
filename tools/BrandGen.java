@@ -115,7 +115,7 @@ public class BrandGen {
         }
     }
 
-    // ------------------------------------------------------------------ The ant's head
+    // --- The ant's head ---
 
     /** The head from the front, 32 x 32: head capsule, compound eyes, elbowed antennae and two mandibles that cross below. */
     static Art head() {
@@ -222,7 +222,7 @@ public class BrandGen {
         art.set(right ? 31 - 10 : 10, 27, MANDIBLE_DARK);
     }
 
-    // ------------------------------------------------------------------ The name
+    // --- The name ---
 
     /** The pixel font: 7 rows tall, '#' is ink. */
     static String[] glyph(char c) {
@@ -296,7 +296,7 @@ public class BrandGen {
         return art;
     }
 
-    // ------------------------------------------------------------------ Backgrounds
+    // --- Backgrounds ---
 
     /** A slice of the ground: grass and sky, and below, earth with tunnels, chambers and ants; the middle stays plain for the logo. */
     static Art ground(int w, int h, int grassY, long seed, int keepClear) {

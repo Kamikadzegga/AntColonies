@@ -1,15 +1,18 @@
 package com.antcolonies.colony.upgrade;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 
 import com.antcolonies.colony.model.StructureKind;
+import com.antcolonies.colony.simulation.ColonySimulator;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.core.registry.ModBlocks;
 import com.antcolonies.core.registry.ModItems;
 
+import java.util.Set;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -69,11 +72,11 @@ public final class UpgradeEffects {
                 effects.add(effect("lab", value("genetic.lab", Math.min(50, 10 * tier))));
                 effects.add(effect("queen", value("genetic.queen", 25 * tier)));
             }
-            case HUNTING -> effects.add(effect("hunting", value("hunting", 25 * tier)));
+            case HUNTING -> effects.add(effect("hunting", value("hunting", percent(ColonySimulator.HUNTING_UPGRADE_STRENGTH * tier))));
             case AUTOMATION -> effects.add(effect("storage", value("automation", 16 * tier)));
             case POPULATION -> {
                 effects.add(effect("terrarium", value("population.terrarium", thousands((long) AntConfig.get(AntConfig.TERRARIUM_CAPACITY) * tier))));
-                effects.add(effect("nest", value("population.nest", 50 * tier)));
+                effects.add(effect("nest", value("population.nest", percent(ColonySimulator.NEST_ROOM_PER_UPGRADE * tier))));
                 effects.add(effect("sites", value("population.sites", AntConfig.get(AntConfig.SITE_CAPACITY_PER_UPGRADE) * tier)));
             }
             case EVOLUTION -> effects.add(effect("terrarium", value("evolution", 25 * tier)));
@@ -111,10 +114,10 @@ public final class UpgradeEffects {
 
     /** The upgrade types a Terrarium takes (kept beside TerrariumBlockEntity.acceptsUpgrade). */
     public static final class TerrariumAccepts {
-        private static final java.util.Set<UpgradeType> TYPES = java.util.EnumSet.of(UpgradeType.POPULATION, UpgradeType.SIMULATION,
+        private static final Set<UpgradeType> TYPES = EnumSet.of(UpgradeType.POPULATION, UpgradeType.SIMULATION,
                 UpgradeType.EVOLUTION, UpgradeType.FOOD_EFFICIENCY, UpgradeType.BREEDING);
 
-        public static java.util.Set<UpgradeType> types() {
+        public static Set<UpgradeType> types() {
             return TYPES;
         }
 

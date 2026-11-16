@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.client.ClientHooks;
 import com.antcolonies.client.nest.NestLayout;
 import com.antcolonies.client.nest.NestVisuals;
 import com.antcolonies.colony.species.AntLook;
@@ -82,7 +83,7 @@ public final class NestRenderer {
     public static void extract(State state, BlockPos pos, @Nullable Level level, Direction facing, Vec3 camera, float partialTicks,
                                double visualDistance) {
         state.partialTicks = partialTicks;
-        state.time = level == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(level.getGameTime(), partialTicks);
+        state.time = level == null ? 0 : ClientHooks.animationTime(level.getGameTime(), partialTicks);
         state.turns = switch (facing) {
             case EAST -> 1;
             case SOUTH -> 2;
@@ -136,7 +137,7 @@ public final class NestRenderer {
         poseStack.popPose();
     }
 
-    // ------------------------------------------------------------------ The slab
+    // --- The slab ---
 
     /** A baked quad of the slab: four corners (x, y, z each), the texel rectangle in its strip, the strip, shade and normal. */
     private record SlabQuad(float[][] corners, float u0, float v0, float u1, float v1, int strip, int color, float[] normal) {}
@@ -316,7 +317,7 @@ public final class NestRenderer {
                 gray(shade), normal);
     }
 
-    // ------------------------------------------------------------------ What lies in the chambers
+    // --- What lies in the chambers ---
 
     /** A flat rectangle of one color on the face, at a depth (the atlas's white patch, tinted). */
     private static void flat(Geometry g, float u0, float v0, float u1, float v1, float depth, int color) {
@@ -377,7 +378,7 @@ public final class NestRenderer {
                     if (fill <= 0 || (order + 0.5F) / crumbSpots > fill) {
                         break;
                     }
-                    int color = formicarium ? carry : carry;
+                    int color = carry;
                     flat(g, u + 0.05F, v, u + 0.55F, v + 0.45F, deep - 0.3F, Geometry.shade(color, 0.85F));
                     flat(g, u + 0.45F, v, u + 0.95F, v + 0.4F, deep - 0.25F, color);
                     if ((h & 1) == 0) {
@@ -502,7 +503,7 @@ public final class NestRenderer {
         }
     }
 
-    // ------------------------------------------------------------------ Ants
+    // --- Ants ---
 
     private static void drawQueen(Geometry g, NestLayout layout, NestVisuals visuals, State state) {
         if (!state.queen) {
@@ -578,12 +579,12 @@ public final class NestRenderer {
             spriteLayer(g, baseU, baseV, fu, fv, upU, upV, len, height, frame, SIDE_CROP_ROW + caste.ordinal(), 0xFF000000 | look.crop().get(),
                     depth);
             g.light = light;
-            spriteLayer(g, baseU, baseV, fu, fv, upU, upV, len, height, frame, SIDE_PLATES_ROW + caste.ordinal(), 0xFF000000 | visible(look.gaster()),
+            spriteLayer(g, baseU, baseV, fu, fv, upU, upV, len, height, frame, SIDE_PLATES_ROW + caste.ordinal(), 0xFF000000 | Geometry.visibleOnDark(look.gaster()),
                     depth - 0.005F);
         } else {
-            spriteLayer(g, baseU, baseV, fu, fv, upU, upV, len, height * gasterScale, frame, row + 1, 0xFF000000 | visible(look.gaster()), depth);
+            spriteLayer(g, baseU, baseV, fu, fv, upU, upV, len, height * gasterScale, frame, row + 1, 0xFF000000 | Geometry.visibleOnDark(look.gaster()), depth);
         }
-        spriteLayer(g, baseU, baseV, fu, fv, upU, upV, len, height, frame, row, 0xFF000000 | visible(look.body()), depth - 0.01F);
+        spriteLayer(g, baseU, baseV, fu, fv, upU, upV, len, height, frame, row, 0xFF000000 | Geometry.visibleOnDark(look.body()), depth - 0.01F);
         if (look.crystal().isPresent()) {
             g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
             spriteLayer(g, baseU, baseV, fu, fv, upU, upV, len, height, frame, row + 2, 0xFF000000 | look.crystal().get(), depth - 0.015F);
@@ -617,29 +618,6 @@ public final class NestRenderer {
         float v1 = (row + 1) * SIDE_CELL_H / (float) SIDE_TEX_H;
         float[][] uv = {{u0, v1}, {u1, v1}, {u1, v0}, {u0, v0}};
         g.quadUv(corners, uv, color, FRONT);
-    }
-
-    /** A species color lifted toward white until it reads against the tunnels' dark floor; light colors are left alone. */
-    private static int visible(int rgb) {
-        int r = (rgb >> 16) & 0xFF;
-        int gr = (rgb >> 8) & 0xFF;
-        int b = rgb & 0xFF;
-        float luma = 0.299F * r + 0.587F * gr + 0.114F * b;
-        float min = 105;
-        if (luma >= min) {
-            return rgb & 0xFFFFFF;
-        }
-        // Scale first (keeps the hue: navy becomes a clear blue, not grey), then blend toward white for what is left.
-        float scale = Math.min(2.6F, min / Math.max(luma, 1));
-        r = Math.min(255, (int) (r * scale));
-        gr = Math.min(255, (int) (gr * scale));
-        b = Math.min(255, (int) (b * scale));
-        luma = 0.299F * r + 0.587F * gr + 0.114F * b;
-        float t = Math.max(0, (min - luma) / (255 - luma));
-        r = (int) (r + (255 - r) * t);
-        gr = (int) (gr + (255 - gr) * t);
-        b = (int) (b + (255 - b) * t);
-        return r << 16 | gr << 8 | b;
     }
 
     private NestRenderer() {}

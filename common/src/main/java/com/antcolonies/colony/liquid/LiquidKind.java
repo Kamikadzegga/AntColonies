@@ -30,12 +30,10 @@ public record LiquidKind(String name, String mod, Identifier fluid) {
         return AntColonies.id(name + "_droplet");
     }
 
-    /** The id of the species that makes it. */
     public Identifier speciesId() {
         return AntColonies.id(name);
     }
 
-    /** Whether the fluid's mod is installed. */
     public boolean modLoaded() {
         return mod.equals("minecraft") || ModList.get() != null && ModList.get().isLoaded(mod);
     }

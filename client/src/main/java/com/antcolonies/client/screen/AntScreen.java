@@ -7,14 +7,17 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 import com.antcolonies.AntColonies;
 
+import java.util.Locale;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
@@ -135,7 +138,7 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
 
     /** Text wrapped to {@code width}, one line per {@code lineHeight}; returns the y under the last line. */
     protected int wrapped(GuiGraphicsExtractor graphics, Component text, int x, int y, int width, int lineHeight, int color) {
-        for (net.minecraft.util.FormattedCharSequence line : font.split(text, width)) {
+        for (FormattedCharSequence line : font.split(text, width)) {
             graphics.text(font, line, leftPos + x, topPos + y, color, false);
             y += lineHeight;
         }
@@ -156,7 +159,7 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
             for (Cut cut : cuts) {
                 if (mouseX >= cut.x() && mouseY >= cut.y() && mouseX < cut.x() + cut.w() && mouseY < cut.y() + cut.h()) {
                     List<Component> lines = new ArrayList<>();
-                    font.getSplitter().splitLines(cut.text(), 220, net.minecraft.network.chat.Style.EMPTY)
+                    font.getSplitter().splitLines(cut.text(), 220, Style.EMPTY)
                             .forEach(part -> lines.add(Component.literal(part.getString())));
                     graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
                     return;
@@ -318,26 +321,26 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
 
     protected static String number(double value) {
         if (value >= 1_000_000) {
-            return String.format(java.util.Locale.ROOT, "%.1fM", value / 1_000_000);
+            return String.format(Locale.ROOT, "%.1fM", value / 1_000_000);
         }
         if (value >= 10_000) {
-            return String.format(java.util.Locale.ROOT, "%.1fk", value / 1000);
+            return String.format(Locale.ROOT, "%.1fk", value / 1000);
         }
         return String.valueOf((long) value);
     }
 
     /** An amount of Forge Energy, short: "850 FE", "62.5k FE", "1M FE". */
     public static String fe(long amount) {
-        String text = amount >= 1_000_000 ? String.format(java.util.Locale.ROOT, "%.2fM", amount / 1_000_000.0)
-                : amount >= 10_000 ? String.format(java.util.Locale.ROOT, "%.1fk", amount / 1000.0)
-                : String.format(java.util.Locale.ROOT, "%,d", amount);
+        String text = amount >= 1_000_000 ? String.format(Locale.ROOT, "%.2fM", amount / 1_000_000.0)
+                : amount >= 10_000 ? String.format(Locale.ROOT, "%.1fk", amount / 1000.0)
+                : String.format(Locale.ROOT, "%,d", amount);
         // Drop trailing zeros of the fraction: "100.0k" -> "100k", "1.50M" -> "1.5M".
         text = text.replaceAll("(\\.\\d*?)0+([kM])$", "$1$2").replace(".k", "k").replace(".M", "M");
         return text + " FE";
     }
 
     protected static String rate(double perMinute) {
-        return perMinute >= 100 ? String.format(java.util.Locale.ROOT, "%.0f", perMinute)
-                : String.format(java.util.Locale.ROOT, perMinute >= 10 ? "%.1f" : perMinute >= 0.1 || perMinute == 0 ? "%.2f" : "%.3f", perMinute);
+        return perMinute >= 100 ? String.format(Locale.ROOT, "%.0f", perMinute)
+                : String.format(Locale.ROOT, perMinute >= 10 ? "%.1f" : perMinute >= 0.1 || perMinute == 0 ? "%.2f" : "%.3f", perMinute);
     }
 }

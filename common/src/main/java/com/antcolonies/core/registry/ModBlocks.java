@@ -5,6 +5,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.content.block.CentrifugeBlock;
+import com.antcolonies.content.block.ExpeditionSiteBlock;
+import com.antcolonies.content.block.GeneratorBlock;
 import com.antcolonies.content.block.GeneticLabBlock;
 import com.antcolonies.content.block.StructureBlock;
 import com.antcolonies.content.block.TerrariumBlock;
@@ -32,7 +35,7 @@ public final class ModBlocks {
     static {
         for (StructureKind kind : StructureKind.values()) {
             STRUCTURES.put(kind, BLOCKS.registerBlock(kind.getSerializedName(),
-                    p -> kind.expedition() ? new com.antcolonies.content.block.ExpeditionSiteBlock(kind, p) : new StructureBlock(kind, p),
+                    p -> kind.expedition() ? new ExpeditionSiteBlock(kind, p) : new StructureBlock(kind, p),
                     p -> structureProperties(kind, p)));
         }
     }
@@ -44,11 +47,11 @@ public final class ModBlocks {
             case FORAGING_SITE -> p.mapColor(MapColor.DIRT).strength(0.8F).sound(SoundType.ROOTED_DIRT).noOcclusion();
             // Their little portals glow while ants are out on expeditions.
             case NETHER_FORAGING_SITE -> p.mapColor(MapColor.NETHER).strength(1.5F, 6.0F).sound(SoundType.NETHERRACK).noOcclusion()
-                    .lightLevel(state -> state.hasProperty(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE)
-                            && state.getValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE) ? 9 : 0);
+                    .lightLevel(state -> state.hasProperty(ExpeditionSiteBlock.ACTIVE)
+                            && state.getValue(ExpeditionSiteBlock.ACTIVE) ? 9 : 0);
             case END_FORAGING_SITE -> p.mapColor(MapColor.SAND).strength(1.5F, 6.0F).sound(SoundType.STONE).noOcclusion()
-                    .lightLevel(state -> state.hasProperty(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE)
-                            && state.getValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE) ? 9 : 0);
+                    .lightLevel(state -> state.hasProperty(ExpeditionSiteBlock.ACTIVE)
+                            && state.getValue(ExpeditionSiteBlock.ACTIVE) ? 9 : 0);
             case COLONY_CONNECTOR -> p.mapColor(MapColor.WOOD).strength(1.2F).sound(SoundType.WOOD).noOcclusion();
             case LIQUID_CHAMBER -> p.mapColor(MapColor.TERRACOTTA_ORANGE).strength(1.0F).sound(SoundType.HONEY_BLOCK).noOcclusion();
             default -> p.mapColor(MapColor.DIRT).strength(1.2F).sound(SoundType.PACKED_MUD).noOcclusion();
@@ -58,17 +61,17 @@ public final class ModBlocks {
     public static final DeferredBlock<UpgradeStationBlock> UPGRADE_STATION = BLOCKS.registerBlock("upgrade_station", UpgradeStationBlock::new,
             p -> p.mapColor(MapColor.WOOD).strength(2.0F).sound(SoundType.WOOD).noOcclusion());
 
-    public static final DeferredBlock<com.antcolonies.content.block.GeneratorBlock> GENERATOR = BLOCKS.registerBlock("generator",
-            com.antcolonies.content.block.GeneratorBlock::new,
+    public static final DeferredBlock<GeneratorBlock> GENERATOR = BLOCKS.registerBlock("generator",
+            GeneratorBlock::new,
             // Not a full cube to the renderer: its firebox shows through the glass between its casing and its lid.
             p -> p.mapColor(MapColor.METAL).strength(3.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
-                    .lightLevel(state -> state.getValue(com.antcolonies.content.block.GeneratorBlock.LIT) ? 10 : 0));
+                    .lightLevel(state -> state.getValue(GeneratorBlock.LIT) ? 10 : 0));
 
     /** The Droplet Centrifuge: spins Liquid Ants' droplets into fluid, for FE. */
-    public static final DeferredBlock<com.antcolonies.content.block.CentrifugeBlock> CENTRIFUGE = BLOCKS.registerBlock("centrifuge",
-            com.antcolonies.content.block.CentrifugeBlock::new,
+    public static final DeferredBlock<CentrifugeBlock> CENTRIFUGE = BLOCKS.registerBlock("centrifuge",
+            CentrifugeBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.COPPER).noOcclusion().requiresCorrectToolForDrops()
-                    .lightLevel(state -> state.getValue(com.antcolonies.content.block.CentrifugeBlock.WORKING) ? 7 : 0));
+                    .lightLevel(state -> state.getValue(CentrifugeBlock.WORKING) ? 7 : 0));
 
     public static final DeferredBlock<GeneticLabBlock> GENETIC_LAB = BLOCKS.registerBlock("genetic_laboratory",
             GeneticLabBlock::new, p -> labProperties(p));
