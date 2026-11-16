@@ -15,24 +15,12 @@ group = mod_group_id
 //   common/   colony logic, blocks, items, entities, registries, config, resources
 //   client/   rendering, models and screens (client only)
 //   compat/   JEI, EMI and Jade plugins (loaded only with those mods)
-//   gametest/ game tests and the screenshot showcase: on every dev run's classpath, never in the built jar
 sourceSets {
     main {
         java.srcDirs = ['common/src/main/java', 'client/src/main/java', 'compat/src/main/java']
         // The icon and logo, and everything tools/DataGen.java and tools/TexGen.java write.
         resources.srcDirs = ['common/src/main/resources', 'common/src/generated/resources']
     }
-    gametest {
-        java.srcDirs = ['gametest/src/main/java']
-        resources.srcDirs = ['gametest/src/main/resources']
-        compileClasspath += sourceSets.main.output
-        runtimeClasspath += sourceSets.main.output
-    }
-}
-configurations {
-    gametestImplementation.extendsFrom implementation
-    gametestCompileOnly.extendsFrom compileOnly
-    gametestRuntimeOnly.extendsFrom runtimeOnly
 }
 
 repositories {
@@ -71,46 +59,12 @@ neoForge {
     runs {
         client {
             client()
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-            // Screenshot runs (gradlew runClient -PshowcaseWindow): a 1920x1080 window, so shots match across versions.
-            if (providers.gradleProperty('showcaseWindow').isPresent()) {
-                programArguments.addAll('--width', '1920', '--height', '1080')
-            }
         }
         server {
             server()
             programArgument '--nogui'
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-        gameTestServer {
-            type = "gameTestServer"
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-        // The multiplayer check (MultiplayerCheckServer/Client): a dedicated server and two players, each in its own
-        // folder under runs/ (an mp-check file there turns the check on). Start the server, then both clients.
-        mpServer {
-            server()
-            gameDirectory = project.file('runs/mp-server')
-            programArgument '--nogui'
-        }
-        // The world generation check (WorldgenCheckServer): a dedicated server with normal terrain in runs/worldgen-server.
-        worldgenServer {
-            server()
-            gameDirectory = project.file('runs/worldgen-server')
-            programArgument '--nogui'
-        }
-        mpClientA {
-            client()
-            gameDirectory = project.file('runs/mp-a')
-            programArguments.addAll('--username', 'Ant_A', '--quickPlayMultiplayer', 'localhost')
-        }
-        mpClientB {
-            client()
-            gameDirectory = project.file('runs/mp-b')
-            programArguments.addAll('--username', 'Ant_B', '--quickPlayMultiplayer', 'localhost')
         }
         configureEach {
-            sourceSet = sourceSets.gametest
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             logLevel = org.slf4j.event.Level.INFO
         }
@@ -119,15 +73,12 @@ neoForge {
     mods {
         "${mod_id}" {
             sourceSet(sourceSets.main)
-            sourceSet(sourceSets.gametest)
         }
     }
 }
-neoForge.addModdingDependenciesTo(sourceSets.gametest)
 
 configurations {
     runtimeClasspath.extendsFrom localRuntime
-    gametestRuntimeClasspath.extendsFrom localRuntime
 }
 
 dependencies {
@@ -168,4 +119,9 @@ idea {
         downloadSources = true
         downloadJavadoc = true
     }
+}
+
+// A local test harness, when there is one (it is not in the repository).
+if (file('gametest/gametest.gradle').exists()) {
+    apply from: 'gametest/gametest.gradle'
 }

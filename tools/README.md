@@ -39,4 +39,4 @@ One row in each of three tables, with the same name:
    constructor).
 
 Then run both programs. The droplet item is registered, and the data files load, only when that mod is installed and the
-fluid is in the fluid registry; the `liquid_species_follow_their_fluids` game test checks every row either way.
+fluid is in the fluid registry.

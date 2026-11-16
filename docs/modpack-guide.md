@@ -704,8 +704,8 @@ A new species that evolves from Stone Ants with copper blocks and finds raw copp
 To make it wild too, add `"spawn_biomes": "mypack:spawns/copper"` and the two tag files from section 11.
 
 These files, the food example from section 4, the spawn tags from section 11 and two conditional species (one whose
-condition holds, one that needs Mekanism) are loaded as a separate data pack by the mod's game test
-`guide_examples_load`, which checks that they all load, merge or stay out as described here.
+condition holds, one that needs Mekanism) are tested with each version: loaded as a separate data pack, they must all
+load, merge or stay out as described here.
 
 Then restart the server (or reopen the world). The Copper Ant appears in JEI's *Ant Species*, *Queen Evolution*,
 *Resource Production*, *Queen Rearing*, *Egg Production* and *Species Upgrades* categories, and in the Ant
