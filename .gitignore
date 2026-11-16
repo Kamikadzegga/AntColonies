@@ -7,6 +7,9 @@ out/
 run/
 runs/
 
+# The local test harness
+gametest/
+
 # IDEs
 .idea/
 *.iml

@@ -80,7 +80,7 @@ What is and isn't checked:
 
 - **MachinaOpus** was run with Ant Colonies in the game on the 26.3 version: with it, Oil and Blaze Ants exist and
   their droplets spin into its fluids, and a Centrifuge fills a MachinaOpus Fluid Tank next to it and one behind two
-  fluid pipes; without it, only Water and Lava Ants exist. The game tests check both there. On this 26.1.2 version the
+  fluid pipes; without it, only Water and Lava Ants exist. Both cases are tested there. On this 26.1.2 version the
   same code was run without MachinaOpus only (Water and Lava Ants, and the tests that no other Liquid Ant appears).
 - **The other mods were not run** on either version: when this was made none had a NeoForge build for Minecraft 26.3
   to try, and on 26.1.2 it was not tried. Their mod ids and fluid ids were
@@ -98,8 +98,7 @@ What is and isn't checked:
 
 ### MachinaOpus
 
-Tested together (MachinaOpus 0.0.6): the `machinaopus_materials` game test runs when MachinaOpus is in `run/mods`, and
-passes at once without it. With MachinaOpus installed, eight species bring its materials:
+Tested together (MachinaOpus 0.0.6). With MachinaOpus installed, eight species bring its materials:
 
 - **Tin, Lead and Silver Ants**: its nuggets from the start, raw ore from stage 2, ingots as rare finds at stage 3.
 - **Uranium Ant**: MachinaOpus's raw uranium from the start (it has no uranium nuggets or ingots). Lead Ants evolve into
@@ -115,7 +114,7 @@ passes at once without it. With MachinaOpus installed, eight species bring its m
 Molybdenum, Sulfur and Rubber Ants name MachinaOpus's items directly, so they have species upgrades made from a
 molybdenum ingot, sulfur and a rubber sheet.
 
-MachinaOpus's pipes and cables work with Ant Colonies' blocks (the `machinaopus_pipes` game test): an item pipe set to
+MachinaOpus's pipes and cables work with Ant Colonies' blocks (tested): an item pipe set to
 pull ("output" on the side touching it) empties a Storage; a pipe delivers Ant Food into a Formicarium, which feeds the
 colony; an energy cable carries a Generator's FE into a Genetic Laboratory (the Generator pushes it, so the cable needs
 no setting).
