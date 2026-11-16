@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 
 import net.minecraft.util.StringRepresentable;
 
-/** The ten generic upgrades. Each comes in tiers 1-4 (IV is endgame: Void Chitin and netherite); several in one block add up. */
+/** The ten generic upgrades. Each comes in tiers 1-4; several in one block add up. */
 public enum UpgradeType implements StringRepresentable {
     /** Faster work at working sites, Genetic Laboratory processing, larvae growth in Nest Chambers. */
     SPEED("speed"),

@@ -24,12 +24,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Queen Chambers raise new Queens. With the colony's Queen present, enough adults, food, the species' rearing materials
- * and an empty Test Tube, the chamber works for the species' rearing time and then fills the tube with a daughter who
- * inherits her mother's genetics. A Genetic Sample in its sample slot is crossed in: the daughter takes each trait from
- * either parent, and if the two species form a hybrid she may be born a hybrid Queen.
- */
+/** Queen Chambers raise new Queens: a daughter of the colony's Queen, crossed with a Genetic Sample if one is given. */
 public final class QueenRearing {
     public static void tick(ServerLevel level, Colony colony, AntSpecies species, StructureBlockEntity chamber, double dt, double foodFactor) {
         int status = 0;
@@ -69,7 +64,8 @@ public final class QueenRearing {
             Hybrid hybrid = findHybrid(level, colony.species(), sample.species());
             double chance = hybrid == null ? 0 : hybrid.chance() * queen.genome().multiplier(Trait.MUTATION_PROBABILITY)
                     * AntConfig.get(AntConfig.HYBRID_CHANCE_MULTIPLIER);
-            if (hybrid != null && queen.genome().averageLevel() >= hybrid.minAverageLevel() && sample.genome().averageLevel() >= hybrid.minAverageLevel()
+            if (hybrid != null && queen.genome().averageLevel() >= hybrid.minAverageLevel()
+                    && sample.genome().averageLevel() >= hybrid.minAverageLevel()
                     && level.getRandom().nextDouble() < chance) {
                 AntSpecies result = ModRegistries.species(level.registryAccess(), hybrid.result());
                 if (result != null) {

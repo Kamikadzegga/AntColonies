@@ -11,14 +11,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 
-/**
- * The life drawn in one colony block (the Formicarium or a chamber): its {@link NestLayout} and a handful of ants that
- * show what the colony's real numbers say. They live only on the client, decide nothing, and follow the synced colony.
- *
- * <p>Ants walk the layout's paths and mill about in its chambers. Where a tunnel crosses into the next block of the
- * build, an ant walking out is handed to that block's visuals: workers leave the Formicarium for the sites, and come
- * back with what the sites find, through every block on the way.
- */
+/** The life drawn in one colony block: its {@link NestLayout} and a handful of client-only ants that follow the synced colony. */
 public final class NestVisuals {
     /** What a block's own ants do. */
     public enum Role {
@@ -100,11 +93,9 @@ public final class NestVisuals {
     /**
      * What a block's visuals follow, worked out by the block each tick.
      *
-     * @param gates      per side of the face, where the tunnel crosses it, or -1
-     * @param colony     the colony the block belongs to (a chamber's is its Formicarium's), if any
-     * @param workers    ants assigned to a job site
-     * @param ants       whether ants are drawn here at all
-     * @param carryColor what ants carry out of this block (a job site's finds)
+     * @param gates   per side of the face, where the tunnel crosses it, or -1
+     * @param workers ants assigned to a job site
+     * @param ants    whether ants are drawn here at all
      */
     public record Brief(NestLayout.Kind kind, long seed, int[] gates, @Nullable Colony colony, int workers, boolean ants, boolean hunters,
                         int carryColor, int maxAnts) {}
@@ -129,11 +120,7 @@ public final class NestVisuals {
     public float food;
     public float queenPhase;
     public boolean queenLaying;
-    /**
-     * The Queen, walking about her chamber's floor: where (u of her middle; NaN before the layout has one), how far she
-     * has walked (her legs' cycle follows it), which way she faces, and whether she is walking. She walks a few steps,
-     * rests (laying, when the colony lays), and walks on.
-     */
+    /** The Queen on her chamber's floor: u of her middle (NaN before the layout has one), how far she has walked, her facing. */
     public float queenU = Float.NaN;
     public float prevQueenU = Float.NaN;
     public float queenV;
@@ -205,8 +192,7 @@ public final class NestVisuals {
             count = 0;
         } else {
             count = switch (brief.kind()) {
-                // A block's face is 16 px: past ten ants they only pile on each other (more of the colony walks the
-                // blocks round it).
+                // A block's face is 16 px: past ten ants they only pile on each other.
                 case FORMICARIUM -> (int) Math.min(Math.min(adults, 10), Math.round(2 + 2.5 * Math.log10(1 + adults)));
                 case NEST_CHAMBER -> colony.larvae() + colony.eggs() > 200 ? 3 : 2;
                 case QUEEN_CHAMBER, COLONY_CONNECTOR -> 2;
@@ -652,10 +638,7 @@ public final class NestVisuals {
         }
     }
 
-    /**
-     * Takes an ant walking in through the tunnel on a side of this block's face. False when the block has no tunnel
-     * there, nobody is near enough to see it, or it is full.
-     */
+    /** Takes an ant walking in through a side's tunnel; false when there is no tunnel, nobody is near to see it, or it is full. */
     public boolean accept(Actor actor, int side) {
         NestLayout layout = this.layout;
         if (layout == null || age - awakeAt > 2 || actors.size() >= target + 4) {

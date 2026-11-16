@@ -34,11 +34,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-/**
- * Tweezers catch ants into empty Test Tubes from the player's inventory: a wild ant (right-click it), a few workers
- * from a wild nest (sometimes its Queen), or workers from a Terrarium's colony (sneak for eggs instead), to start or
- * strengthen another colony of the same species.
- */
+/** Tweezers catch ants into empty Test Tubes: a wild ant, workers from a wild nest, or workers or eggs from a Terrarium. */
 public class TweezersItem extends Item {
     public TweezersItem(Properties properties) {
         super(properties);
@@ -156,10 +152,7 @@ public class TweezersItem extends Item {
         return tube;
     }
 
-    /**
-     * The Terrarium's take button: up to a tube's worth ({@link AntSample#MAX}) of the colony's workers, into an empty Test Tube from the player's inventory. Using the tube on another Terrarium
-     * adds them to that colony.
-     */
+    /** The Terrarium's take button: up to a tube's worth ({@link AntSample#MAX}) of the colony's workers, into an empty Test Tube. */
     public static boolean takeFromColony(Player player, TerrariumBlockEntity terrarium) {
         if (!hasEmptyTube(player)) {
             player.sendOverlayMessage(Component.translatable("message.antcolonies.tweezers.no_tube").withStyle(ChatFormatting.RED));

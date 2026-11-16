@@ -29,12 +29,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import org.jspecify.annotations.Nullable;
 
-/**
- * An ant nest. Wild ones are anthills found in the species' home biomes: Tweezers (with an empty Test Tube) pull workers
- * out, sometimes a Queen; disturbing one brings soldiers out to defend it, and a raided nest needs time to recover.
- * Silk Touch picks a nest up; placed by a player it becomes a home nest ({@code home=true}): ants live in it and work the
- * land around it like bees from a beehive, and never turn on you (see {@link HomeNestBlockEntity}).
- */
+/** An ant nest: a wild anthill to raid with Tweezers, or, placed by a player, a home nest (see {@link HomeNestBlockEntity}). */
 public class WildNestBlock extends Block implements EntityBlock {
     public static final BooleanProperty RECOVERING = BooleanProperty.create("recovering");
     /** Placed by a player: ants live in it and forage around it. World generation places nests without it. */
@@ -107,8 +102,8 @@ public class WildNestBlock extends Block implements EntityBlock {
             }
             ant.setSpecies(species);
             ant.setCaste(Caste.SOLDIER);
-            ant.snapTo(pos.getX() + 0.5 + level.getRandom().nextGaussian() * 0.4, pos.getY() + 0.6, pos.getZ() + 0.5 + level.getRandom().nextGaussian() * 0.4,
-                    level.getRandom().nextFloat() * 360, 0);
+            ant.snapTo(pos.getX() + 0.5 + level.getRandom().nextGaussian() * 0.4, pos.getY() + 0.6,
+                    pos.getZ() + 0.5 + level.getRandom().nextGaussian() * 0.4, level.getRandom().nextFloat() * 360, 0);
             if (!WildAnt.ignores(player)) {
                 ant.setTarget(player); // a player in full Chitin smells like the colony
             }

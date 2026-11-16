@@ -6,15 +6,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * One recipe-viewer (JEI or EMI) entry of any of the mod's categories: what goes in (each slot a list of alternatives), what comes out (with
- * a tooltip per output: weight, stage, chance), and lines of text (rates, chances, requirements).
- */
+/** One recipe-viewer (JEI or EMI) entry: inputs (each slot a list of alternatives), outputs with their tooltips, lines of text. */
 public record AntRecipe(Identifier id, List<List<ItemStack>> inputs, List<Output> outputs, List<Component> lines) {
     /**
      * @param fluid an output that is a fluid instead of items (the Droplet Centrifuge's), or null
      */
-    public record Output(List<ItemStack> stacks, List<Component> tooltip, net.neoforged.neoforge.fluids.@org.jspecify.annotations.Nullable FluidStack fluid) {
+    public record Output(List<ItemStack> stacks, List<Component> tooltip,
+                         net.neoforged.neoforge.fluids.@org.jspecify.annotations.Nullable FluidStack fluid) {
         public Output(List<ItemStack> stacks, List<Component> tooltip) {
             this(stacks, tooltip, null);
         }

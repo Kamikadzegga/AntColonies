@@ -13,10 +13,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 
-/**
- * A giant anthill: a mound of earth over a nest dug deep into the ground, with tunnels, a storage chamber, and the
- * Queen's chamber at the bottom guarded by soldiers. Only on dry, fairly flat ground.
- */
+/** A giant anthill: a mound of earth over a nest dug deep into the ground. Only on dry, fairly flat ground. */
 public class GiantAnthill extends Structure {
     public static final MapCodec<GiantAnthill> CODEC = simpleCodec(GiantAnthill::new);
 
@@ -57,7 +54,7 @@ public class GiantAnthill extends Structure {
         // The ground's top block is one below the first free one.
         BlockPos center = new BlockPos(cx, middle - 1, cz);
         // A layout planned from the world seed and the spot: the same anthill whichever chunk asks.
-        // Its look comes from the biome at its center: a termite cathedral in the savanna, a snowy cone in the cold and so on.
+        // Its look comes from the biome at its center.
         AnthillTheme theme = AnthillTheme.of(context.biomeSource().getNoiseBiome(QuartPos.fromBlock(cx), QuartPos.fromBlock(middle),
                 QuartPos.fromBlock(cz), context.randomState().sampler()));
         AnthillPiece piece = AnthillPiece.plan(center, AnthillPiece.Kind.OVERWORLD, context.seed() ^ center.asLong() * 0x9E3779B97F4A7C15L,

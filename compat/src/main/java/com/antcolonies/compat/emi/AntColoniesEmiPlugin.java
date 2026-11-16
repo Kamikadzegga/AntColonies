@@ -26,10 +26,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
-/**
- * EMI integration: the same thirteen categories as JEI, from the same synced data (so modpack species, evolutions and
- * hybrids show up too). Only loaded when EMI is installed.
- */
+/** EMI integration: the same categories as JEI, from the same synced data. Only loaded when EMI is installed. */
 @EmiEntrypoint
 public class AntColoniesEmiPlugin implements EmiPlugin {
     /** A category: its name (also its JEI title key), icon, slot rows and text lines, its entries, its workstations. */
@@ -38,12 +35,15 @@ public class AntColoniesEmiPlugin implements EmiPlugin {
     private static List<Kind> kinds() {
         ItemLike lab = ModItems.GENETIC_LAB.get();
         return List.of(
-                new Kind("species", ModItems.ANT_IDENTIFICATION_BOOK.get(), 2, 5, AntRecipes::species, ModItems.ANT_IDENTIFICATION_BOOK.get(), ModItems.TWEEZERS.get()),
+                new Kind("species", ModItems.ANT_IDENTIFICATION_BOOK.get(), 2, 5, AntRecipes::species, ModItems.ANT_IDENTIFICATION_BOOK.get(),
+                        ModItems.TWEEZERS.get()),
                 new Kind("breeding", structure(StructureKind.QUEEN_CHAMBER), 2, 2, AntRecipes::rearing, structure(StructureKind.QUEEN_CHAMBER)),
-                new Kind("evolution", ModItems.TERRARIUM.get(), 1, 3, AntRecipes::evolution, ModItems.TERRARIUM.get(), ModItems.EVOLUTION_CATALYST.get()),
+                new Kind("evolution", ModItems.TERRARIUM.get(), 1, 3, AntRecipes::evolution, ModItems.TERRARIUM.get(),
+                        ModItems.EVOLUTION_CATALYST.get()),
                 new Kind("mutation", lab, 1, 4, AntRecipes::mutations, lab, structure(StructureKind.QUEEN_CHAMBER)),
                 new Kind("hybrid", ModItems.GENETIC_SAMPLE.get(), 1, 4, AntRecipes::hybrids, structure(StructureKind.QUEEN_CHAMBER)),
-                new Kind("eggs", structure(StructureKind.NEST_CHAMBER), 1, 3, AntRecipes::eggs, ModItems.TERRARIUM.get(), structure(StructureKind.NEST_CHAMBER)),
+                new Kind("eggs", structure(StructureKind.NEST_CHAMBER), 1, 3, AntRecipes::eggs, ModItems.TERRARIUM.get(),
+                        structure(StructureKind.NEST_CHAMBER)),
                 new Kind("larvae", structure(StructureKind.NEST_CHAMBER), 1, 2, AntRecipes::larvae, structure(StructureKind.NEST_CHAMBER)),
                 new Kind("production", structure(StructureKind.FORAGING_SITE), 2, 1, AntRecipes::production, structure(StructureKind.FORAGING_SITE),
                         structure(StructureKind.STORAGE)),
@@ -56,7 +56,8 @@ public class AntColoniesEmiPlugin implements EmiPlugin {
                         structure(StructureKind.STORAGE)),
                 new Kind("centrifuging", ModItems.CENTRIFUGE.get(), 1, 2, AntRecipes::centrifuging, ModItems.CENTRIFUGE.get()),
                 new Kind("lab", ModItems.GENETIC_LAB.get(), 1, 4, AntRecipes::lab, lab),
-                new Kind("trait", ModItems.GENETIC_ANALYZER.get(), 1, 3, AntRecipes::traits, ModItems.GENETIC_LAB.get(), ModItems.GENETIC_ANALYZER.get()),
+                new Kind("trait", ModItems.GENETIC_ANALYZER.get(), 1, 3, AntRecipes::traits, ModItems.GENETIC_LAB.get(),
+                        ModItems.GENETIC_ANALYZER.get()),
                 new Kind("species_upgrade", ModItems.UPGRADE_STATION.get(), 1, 2, AntRecipes::speciesUpgrades, ModItems.UPGRADE_STATION.get()),
                 new Kind("colony_upgrade", ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.SPEED, 1), 2, 9, AntRecipes::colonyUpgrades));
     }
@@ -91,8 +92,7 @@ public class AntColoniesEmiPlugin implements EmiPlugin {
                 registry.addRecipe(new AntEmiRecipe(category, recipe, kind.rows(), kind.textLines()));
             }
         }
-        // Tubes, samples, brood and species upgrades of each species are different stacks (but two Queens of one
-        // species with different genes are the same one, so a recipe's wild Queen matches yours).
+        // Stacks differ by species only: two Queens of one species with different genes match, so a recipe's Queen matches yours.
         registry.setDefaultComparison(ModItems.QUEEN_TEST_TUBE.get(), Comparison.compareData(stack -> queenSpecies(stack.getItemStack())));
         registry.setDefaultComparison(ModItems.GENETIC_SAMPLE.get(), Comparison.compareData(stack -> queenSpecies(stack.getItemStack())));
         registry.setDefaultComparison(ModItems.ANT_TEST_TUBE.get(), Comparison.compareData(stack -> {

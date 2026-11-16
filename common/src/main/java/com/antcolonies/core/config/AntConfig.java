@@ -6,11 +6,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-/**
- * Every number the simulation uses. Server settings (antcolonies/server.toml) are the world's rules and are synced to
- * players, so GUIs and JEI show the same numbers the server uses. Client settings only change what is drawn.
- * Getters fall back to the defaults before the files are loaded (game tests, early world loading).
- */
+/** Every number the simulation uses. Getters fall back to the defaults before the files are loaded (game tests, early world loading). */
 public final class AntConfig {
     public static final String FOLDER = "antcolonies";
     public static final ModConfigSpec SERVER_SPEC;

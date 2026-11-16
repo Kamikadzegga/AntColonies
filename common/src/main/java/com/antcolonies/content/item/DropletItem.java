@@ -13,11 +13,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.material.Fluid;
 
-/**
- * A droplet of one fluid, as Liquid Ants give it: a raw drop that a Droplet Centrifuge spins into the real fluid. One
- * item per fluid ({@code antcolonies:<kind>_droplet}), registered only while the fluid exists. Its tooltip names the
- * fluid by the fluid's own name, so it reads right in every language the fluid's mod is translated into.
- */
+/** A droplet of one fluid, as Liquid Ants give it; one item per fluid, registered only while the fluid exists. */
 public class DropletItem extends Item {
     private final LiquidKind kind;
 

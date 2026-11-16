@@ -45,21 +45,8 @@ import net.neoforged.neoforge.common.Tags;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A whole anthill in one piece, built from its center (the ground's top block under the mound's peak): a mound with
- * a shaft down through it into a nest dug from an {@link AnthillLayout} plan. Every choice comes from the plan's seed
- * and the center, so each chunk builds its part of the same anthill, and the Queen's chamber is always there and joined
- * to the entrance.
- *
- * <p>Every anthill has exactly one Queen, a great Queen twice the size of any other, spawned in her chamber by the
- * chunk she stands in: she can't be hurt and never despawns (see {@link WildAnt#isAnthillQueen}), so she is always
- * there to be caught with Tweezers. Her royal guard stands round her and in the antechamber before her chamber, soldiers
- * fill the barracks and watch tunnels, workers tend the rooms and walk the mound. All of them belong to the anthill
- * (their {@link WildAnt#anthill} is the Queen's spot): a player in a full Chitin set walks among them unharmed until
- * they open one of its chests, step into the Queen's chamber or strike one of its ants (see {@link AnthillAlarm}).
- *
- * <p>Since 0.2.0 anthills are {@link AnthillLayout.Style#GROWN} and dressed in an {@link AnthillTheme} from their biome.
- * Pieces saved before keep what they were planned with: no theme saved means the old look ({@link Soil}), no seed the
- * old fixed layout ({@link AnthillLayout.Style#CLASSIC}), so anthills half-generated in an old world finish the same.
+ * A whole anthill in one piece: a mound over a nest dug from an {@link AnthillLayout} plan. Every choice comes from its
+ * seed, so each chunk builds its part of the same anthill.
  */
 public class AnthillPiece extends StructurePiece {
     public static final ResourceKey<LootTable> LOOT = ResourceKey.create(Registries.LOOT_TABLE, AntColonies.id("chests/giant_anthill"));
@@ -133,12 +120,7 @@ public class AnthillPiece extends StructurePiece {
         this.layout = AnthillLayout.create(style, seed);
     }
 
-    /**
-     * Plans an anthill at {@code center}: a grown nest (one in ten is an abandoned one), planned again from other seeds
-     * (up to four) while it would reach below {@code lowestY} (the world's bottom, the Nether's lava sea, the underside
-     * of an End island). Falls back to the shallow abandoned layout, so an anthill that may generate always has its
-     * Queen's chamber.
-     */
+    /** Plans an anthill at {@code center}, trying other seeds while it would reach below {@code lowestY}, then a shallow abandoned nest. */
     public static AnthillPiece plan(BlockPos center, Kind kind, long seed, int lowestY, AnthillTheme theme) {
         for (int attempt = 0; attempt < 4; attempt++) {
             long tried = seed + attempt * 0x9E3779B97F4A7C15L;
@@ -673,10 +655,7 @@ public class AnthillPiece extends StructurePiece {
         }
     }
 
-    /**
-     * The biome at the anthill's center, from the world's biome source: the center may lie in a chunk too far from the one
-     * being built for the world generation region to reach (asking the level for it there crashes world generation).
-     */
+    /** The biome at the center, from the biome source: asking the level crashes when the center's chunk is out of the region's reach. */
     private Holder<Biome> biome(WorldGenLevel level, ChunkGenerator generator) {
         return generator.getBiomeSource().getNoiseBiome(QuartPos.fromBlock(center.getX()), QuartPos.fromBlock(center.getY()), QuartPos.fromBlock(center.getZ()),
                 level.getLevel().getChunkSource().randomState().sampler());

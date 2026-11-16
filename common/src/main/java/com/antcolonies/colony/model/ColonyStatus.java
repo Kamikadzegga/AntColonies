@@ -5,10 +5,7 @@ import java.util.List;
 
 import net.minecraft.ChatFormatting;
 
-/**
- * Problems and notes a colony or one of its structures can show. Kept as bit flags, so a status is one int in saves
- * and update packets.
- */
+/** Problems and notes a colony or one of its structures can show, kept as bit flags: one int in saves and packets. */
 public enum ColonyStatus {
     NO_QUEEN(true),
     NO_FOOD(true),
@@ -30,17 +27,17 @@ public enum ColonyStatus {
     WORKING(false),
     /** A redstone signal has paused this working chamber: it takes no ants. */
     PAUSED(false),
-    /** The Queen is fed an evolution material, but this evolution happens only in another dimension (the Nether or the End). */
+    /** The Queen is fed an evolution material, but this evolution happens only in another dimension. */
     WRONG_DIMENSION(true),
     /** Queen-only founding: the Queen waits for her food bar, or raises her first brood. */
     FOUNDING(false),
-    /** Food is running low: the colony works, lays and grows more slowly (see lowFoodMinutes). */
+    /** Food is running low: the colony works, lays and grows more slowly. */
     LOW_FOOD(false),
     /** A focused Foraging Site's species has no finds of the kind it looks for: it works as if Balanced. */
     NOTHING_TO_FOCUS(false),
     /** The job site is turned off (its screen or the Terrarium's Jobs page): it takes no ants. */
     DISABLED(false),
-    /** A Liquid Chamber whose ants' fluid or droplet is not in this game (its mod was removed): they make nothing. */
+    /** A Liquid Chamber whose ants' fluid or droplet is not in this game: they make nothing. */
     NO_DROPLET(true);
 
     private final boolean problem;

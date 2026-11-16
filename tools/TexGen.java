@@ -7,9 +7,8 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 
 /**
- * Paints every texture of Ant Colonies at build time: the ant skins (one grey layout per caste, tinted per species in
- * game), their gaster patterns and crystals, the Formicarium's inside, every block and item, and the particles.
- * Run from the project root with JDK 25: {@code java tools/TexGen.java}. Original art, no third-party textures.
+ * Paints every texture of Ant Colonies in code; original art, no third-party textures.
+ * Run from the project root with JDK 25: {@code java tools/TexGen.java}.
  */
 public class TexGen {
     static final Path TEX = Path.of("common/src/generated/resources/assets/antcolonies/textures");
@@ -38,10 +37,7 @@ public class TexGen {
             return x >= 0 && y >= 0 && x < w && y < h ? image.getRGB(x, y) : 0;
         }
 
-        /**
-         * Small chitin scales over an icon's plain chitin (its base and light pixels): rows of scales 4 pixels wide, a
-         * new row every 2, each shifted by half a scale; lit on top, dark where they round off at the bottom.
-         */
+        /** Draws rows of small scales over an icon's plain chitin (its base and light pixels). */
         Img scaled() {
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
@@ -162,7 +158,8 @@ public class TexGen {
         }
         for (int y = 0; y < img.h; y++) {
             for (int x = 0; x < img.w; x++) {
-                if (!solid[x][y] && (x > 0 && solid[x - 1][y] || x + 1 < img.w && solid[x + 1][y] || y > 0 && solid[x][y - 1] || y + 1 < img.h && solid[x][y + 1])) {
+                if (!solid[x][y] && (x > 0 && solid[x - 1][y] || x + 1 < img.w && solid[x + 1][y]
+                        || y > 0 && solid[x][y - 1] || y + 1 < img.h && solid[x][y + 1])) {
                     img.set(x, y, color);
                 }
             }
@@ -451,10 +448,7 @@ public class TexGen {
 
     // ------------------------------------------------------------------ The Generator and the Genetic Laboratory
 
-    // The mod's two machines share a modern build of their own (no other block looks like them). Everything is shaded
-    // symmetrically: a gradient from a lighter top to a darker foot, the same edge all round, details centred; the metal is
-    // brushed (fine horizontal streaks over the gradient). The lab in white enamel with a helix display; the Generator in
-    // brushed steel with a firebox window.
+    // The machines' palettes. Their faces are shaded symmetrically: lighter at the top, the same edge all round.
     static final int[] ENAMEL = ramp(0x9AA3A8, 0xB9C1C5, 0xD3D9DC, 0xE4E9EB, 0xF3F6F7);
     static final int[] GRAPHITE = ramp(0x1C2125, 0x2A3035, 0x3D454B, 0x566067);
     static final int[] STEEL = ramp(0x2E3338, 0x40474D, 0x545C63, 0x69727A, 0x808991, 0x99A2AA, 0xB4BCC3);
@@ -481,9 +475,8 @@ public class TexGen {
     }
 
     /**
-     * Brushed metal: a gradient down the area from tone {@code top} to tone {@code bottom} of the ramp, broken by short
-     * horizontal streaks (runs of 2 to 6 pixels a little lighter or darker), the way brushing leaves a surface.
-     * {@code streak} is how strong the streaks are, in tones.
+     * Brushed metal: a gradient from tone {@code top} to tone {@code bottom} of the ramp, broken by short horizontal
+     * streaks; {@code streak} is their strength, in tones.
      */
     static void brushed(Img img, int x0, int y0, int x1, int y1, int[] ramp, double top, double bottom, double streak, long seed) {
         Random random = new Random(seed);
@@ -500,10 +493,7 @@ public class TexGen {
         }
     }
 
-    /**
-     * A machine face: the panel (brushed, lighter at the top), the same darker edge all round, and a brushed-graphite
-     * kickplate along the foot.
-     */
+    /** A machine face: a brushed panel, the same darker edge all round, and a graphite kickplate along the foot. */
     static Img casing(int[] ramp, double top, double bottom, double streak, long seed) {
         Img img = new Img(16, 16);
         brushed(img, 0, 0, 16, 13, ramp, top, bottom, streak, seed);
@@ -531,23 +521,11 @@ public class TexGen {
         }
     }
 
-    /**
-     * The Generator: a burn-core generator in the Genetic Laboratory's build (the user, 2026-11-14, in turn: "match the
-     * style of the centrifuge", "less glass and more furnace like", "more like the lab machine", "should look more
-     * futuristic"). The lab's white enamel casing, posts and lid, see {@link #labBody}. Between casing and lid, where the
-     * Centrifuge has glass, a containment chamber of dark plating: a framed viewport in front, a narrow slit in each
-     * side, cooling fins and an exhaust port at the back. Inside, held between two electrodes, the burn core: a dark
-     * slug while idle, a block of churning plasma while it burns (an animated strip). The casing carries three power
-     * cells and the lab's status light on the front, and an energy conduit along each side; the lid a
-     * heat exchanger with a glowing centre. Lit parts are teal for power (the lab's colour) and orange for the burn; the
-     * model draws them full-bright while it runs.
-     */
+    /** The Generator, off and on: the lab's enamel body ({@link #labBody}), a dark chamber between casing and lid, the burn core. */
     static void generator() {
         for (boolean on : new boolean[] {false, true}) {
             String suffix = on ? "_on" : "";
-            // --- Front: three power cells set straight into the enamel (not one display, as the lab and the Centrifuge
-            // have: the Generator's own face), each hooded, lit hotter from left to right while it burns; the status
-            // light under the middle one ---
+            // --- Front: three hooded power cells, lit hotter from left to right while it burns, and the status light ---
             Img front = labBody(171);
             for (int cell = 0; cell < 3; cell++) {
                 for (int x = 4 + cell * 3; x < 6 + cell * 3; x++) {
@@ -653,8 +631,7 @@ public class TexGen {
             core.set(seam[0], seam[1], FIRE[0]);
         }
         core.save("block/generator_core");
-        // Burning: plasma, eight frames. Two crossing ripples make hot cells that drift and merge; white-hot where they
-        // peak, deep orange between.
+        // Burning: eight frames of plasma; two crossing ripples make hot cells that drift and merge.
         Img plasma = new Img(16, 16 * 8);
         for (int f = 0; f < 8; f++) {
             double t = f * Math.PI / 4;
@@ -674,10 +651,7 @@ public class TexGen {
         }
     }
 
-    /**
-     * The Generator's chamber plating: brushed graphite in panels, a seam down every fourth column and a lighter edge
-     * along the top of each panel.
-     */
+    /** The Generator's chamber plating: brushed graphite panels, a seam down every fourth column. */
     static Img plating(long seed) {
         Img img = new Img(16, 16);
         brushed(img, 0, 0, 16, 16, GRAPHITE, 2.6, 1.4, 0.5, seed);
@@ -695,12 +669,8 @@ public class TexGen {
     }
 
     /**
-     * One side of the Droplet Centrifuge and the Generator, the whole height of the block, in the Genetic Laboratory's
-     * build: the lab's own white enamel panel ({@link #casing}: brushed, lighter at the top, the same darker edge all
-     * round, a graphite kickplate along the foot), with the band these two machines keep open between casing and lid
-     * (rows 2-7): dark behind, an enamel post either end, and the same darker edge along the lid above it and the casing
-     * below it. The model puts glass (the Centrifuge) or firebox walls (the Generator) between the posts; the machine
-     * paints its own panel over the casing (rows 9-12).
+     * One side of the Droplet Centrifuge or the Generator: the lab's enamel {@link #casing} with a dark open band
+     * (rows 2-7) between two posts. The machine paints its own panel over rows 9-12.
      */
     static Img labBody(long seed) {
         Img img = casing(ENAMEL, 4.2, 2.6, 0.35, seed);
@@ -716,12 +686,7 @@ public class TexGen {
         return img;
     }
 
-    /**
-     * The Genetic Laboratory: a white lab machine. Its front is a centred dark display with an upright double helix in
-     * the floating helix's cyan and magenta (dim idle, bright with teal rungs while it works) and a status light under it;
-     * its sides a centred glass sample cylinder of teal liquid, rounded by its shading, glowing and bubbling while it
-     * works; its top a centred glass sample hatch.
-     */
+    /** The Genetic Laboratory, idle and working: a helix display in front, a sample cylinder on each side, a hatch on top. */
     static void geneticLab() {
         for (boolean lit : new boolean[] {false, true}) {
             String suffix = lit ? "_working" : "";
@@ -807,16 +772,14 @@ public class TexGen {
         line(glass, 2, 12, 6, 8, argb(110, 255, 255, 255));
         line(glass, 3, 13, 8, 8, argb(70, 255, 255, 255));
         glass.save("block/terrarium_glass");
-        // The glass of a stacked part's nest: one short glint near the top left (a long streak would repeat on every
-        // block of a wall).
+        // The glass of a stacked nest: one short glint, as a long streak would repeat on every block of a wall.
         Img pane = new Img(16, 16);
         pane.fill(0, 0, 16, 16, argb(28, 220, 240, 255));
         line(pane, 2, 4, 4, 2, argb(80, 255, 255, 255));
         line(pane, 3, 5, 5, 3, argb(45, 255, 255, 255));
         pane.save("block/formicarium_pane");
 
-        // Chambers: every chamber is the same glass case on the same wooden base; only its floor (and what its model puts
-        // on it) shows what it is. No borders: touching chambers' floors run into each other.
+        // Chamber floors. No borders: touching chambers' floors run into each other.
         // Nest Chamber: soft earth with bits of bedding.
         Img nestTop = block(rgb(150, 104, 76), 12, 31);
         for (int i = 0; i < 14; i++) {
@@ -1238,7 +1201,8 @@ public class TexGen {
 
     /** A small symbol per upgrade type, drawn over the tier's board. */
     static void upgradeIcons() {
-        String[] types = {"speed", "food_efficiency", "simulation", "storage", "breeding", "genetic", "hunting", "automation", "population", "evolution"};
+        String[] types = {"speed", "food_efficiency", "simulation", "storage", "breeding",
+                "genetic", "hunting", "automation", "population", "evolution"};
         for (String type : types) {
             Img img = item();
             switch (type) {
@@ -1344,8 +1308,8 @@ public class TexGen {
     static void nineSlice(String path, int w, int h, int border) {
         try {
             Path file = TEX.resolve(path + ".png.mcmeta");
-            Files.writeString(file, "{\n  \"gui\": {\n    \"scaling\": {\n      \"type\": \"nine_slice\",\n      \"width\": " + w + ",\n      \"height\": " + h
-                    + ",\n      \"border\": " + border + "\n    }\n  }\n}\n");
+            Files.writeString(file, "{\n  \"gui\": {\n    \"scaling\": {\n      \"type\": \"nine_slice\",\n      \"width\": " + w
+                    + ",\n      \"height\": " + h + ",\n      \"border\": " + border + "\n    }\n  }\n}\n");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -1455,10 +1419,8 @@ public class TexGen {
     static final int SIDE_CELL_H = 12;
 
     /**
-     * entity/ant_side.png: ants seen from the side, head to the right, standing on the cell's bottom row. Columns are
-     * four walking frames; per caste three rows: body (head, thorax, legs, antennae), gaster, crystals. Grey, tinted in
-     * game with the species' colors. A white 4x4 block at (88, 108) is the carried crumb. Below that (rows 10 to 15) the
-     * Liquid Ants' full crops and the plates on them, see {@link #sideCrops}.
+     * entity/ant_side.png: side-view ants, four walking frames across; per caste a row each for body, gaster and
+     * crystals. The white block at (88, 108) is the carried crumb; rows 10 to 15, see {@link #sideCrops}.
      */
     static void sideSprites() {
         Img img = new Img(96, 192);
@@ -1624,10 +1586,7 @@ public class TexGen {
         return copy;
     }
 
-    /**
-     * A sprite from rows of letters: O outline, D dark, C chitin, L light, W shine, S/s stick, E/e compound eye and its
-     * glint; anything else is clear.
-     */
+    /** A sprite from rows of letters, each a colour of the chitin palette; anything else is clear. */
     static Img sprite(String... rows) {
         Img img = item();
         for (int y = 0; y < rows.length; y++) {
@@ -1719,8 +1678,7 @@ public class TexGen {
                "................",
                "................").scaled().save("item/chitin_boots");
 
-        // Tools, drawn like vanilla's: a straight three-pixel stick from the bottom left and a chitin head with grooves
-        // between its plates.
+        // Tools, drawn like vanilla's: a straight stick from the bottom left and a grooved chitin head.
         sprite(".............OOO",
                "............OWLO",
                "...........OWLCO",
@@ -1830,9 +1788,8 @@ public class TexGen {
     }
 
     /**
-     * The worn armor, all in chitin scales. Layer "humanoid" (64x32) holds the helmet, chestplate (body and arms) and
-     * boots (the bottom of the legs); "humanoid_leggings" the leggings (the hips and the legs); "humanoid_baby" (64x64)
-     * everything for baby mobs.
+     * The worn armor: layer "humanoid" holds the helmet, chestplate and boots, "humanoid_leggings" the leggings,
+     * "humanoid_baby" everything for baby mobs.
      */
     static void chitinArmorLayers() {
         Img outer = new Img(64, 32);
@@ -1902,9 +1859,8 @@ public class TexGen {
     }
 
     /**
-     * The Chitin Shield's 64x64 skin, one pixel per model pixel (DataGen's shield model maps its faces onto it): the
-     * front (2,2 to 14,24) in scales with a dark rim, a ridge down the middle and a lit boss like an ant's head; the
-     * back (16,2) dark chitin with a strap; the rim's edges (30,2 / 32,2 and 2,26 / 16,26); the handle (40,2).
+     * The Chitin Shield's skin, one pixel per model pixel: the front at (2,2), the back at (16,2), the rim's edges at
+     * (30,2), (32,2), (2,26) and (16,26), the handle at (40,2).
      */
     static void chitinShield() {
         Img img = new Img(64, 64);
@@ -1915,7 +1871,8 @@ public class TexGen {
                 boolean corner = (x == 0 || x == 11) && (y == 0 || y == 21);
                 int front = rim ? CH_OUT : x == 5 || x == 6 ? (x == 5 ? CH_DARK : shade(CH_DARK, 0.85)) : scaleColor(x - 1, y + 1, random);
                 img.set(2 + x, 2 + y, corner ? 0 : front);
-                int back = rim ? CH_OUT : y >= 9 && y <= 12 ? (y == 9 || y == 12 ? STICK_DARK : STICK) : shade(CH_DARK, 0.85 + random.nextDouble() * 0.15);
+                int back = rim ? CH_OUT : y >= 9 && y <= 12 ? (y == 9 || y == 12 ? STICK_DARK : STICK)
+                        : shade(CH_DARK, 0.85 + random.nextDouble() * 0.15);
                 img.set(16 + x, 2 + y, corner ? 0 : back);
             }
         }
@@ -1942,10 +1899,7 @@ public class TexGen {
         img.save("item/chitin_shield");
     }
 
-    /**
-     * The helmet's face as an ant's head, on the front face at (fx, fy), {@code w} wide: compound eyes wrapping round the
-     * front corners onto the sides, a ridge down the middle, and jaws with a gap between them at the bottom.
-     */
+    /** The helmet's face as an ant's head, on the front face at (fx, fy), {@code w} wide: compound eyes, a ridge, jaws. */
     static void antFace(Img img, int fx, int fy, int w) {
         for (int y = fy + 2; y <= fy + 4; y++) {
             for (int x = 0; x < 2; x++) {
@@ -1974,10 +1928,7 @@ public class TexGen {
         }
     }
 
-    /**
-     * The antennae's skins, which take the place of the hat layer (32,0 to 64,16; the helmet model has no hat): see
-     * {@code ChitinHelmetModel} for the boxes. Dark segments, a lit club at the tip.
-     */
+    /** The antennae's skins, in the place of the hat layer (the helmet has no hat); see {@code ChitinHelmetModel} for the boxes. */
     static void antennaSkins(Img img) {
         for (int y = 0; y < 7; y++) {
             for (int x = 32; x < 50; x++) {
@@ -1989,8 +1940,7 @@ public class TexGen {
                 img.set(x, y, y == 0 ? CH_LIGHT : CH_BASE);
             }
         }
-        // The jaws (a 1x1x4 box at 32,8): darker than the face so they stand out against it, a lit ridge on top
-        // brightening to the tip, black underneath; a pale tooth (a 1x1x1 box at 54,8).
+        // The jaws (a 1x1x4 box at 32,8), darker than the face so they stand out, and a pale tooth (a 1x1x1 box at 54,8).
         int[] ridge = {CH_DARK, CH_BASE, CH_LIGHT, CH_LIGHT};
         for (int z = 0; z < 4; z++) {
             img.set(36, 8 + z, ridge[z]);
@@ -2015,8 +1965,7 @@ public class TexGen {
         }
         img.set(48, 12, CH_OUT);
         img.set(53, 12, CH_SHINE);
-        // The wings (4 x 13 planes at 56,16, front and back side by side): a pale membrane, a dark leading edge on the
-        // outside, veins from the root (one along, two across, one fork), the tip rounded off.
+        // The wings (4 x 13 planes at 56,16, front and back side by side): a pale membrane, a dark leading edge, veins.
         for (int face = 0; face < 2; face++) {
             int u = 56 + face * 4;
             for (int y = 0; y < 13; y++) {
@@ -2044,9 +1993,8 @@ public class TexGen {
     }
 
     /**
-     * Paints the faces of one model box (texture corner u, v; size w, h, d) with chitin scales between side rows
-     * {@code from} and {@code to}; the top face when the rows start at 0, the bottom face when they reach h. The four
-     * side faces lie side by side in the texture, so the scales run on round the box.
+     * Paints chitin scales on a model box (corner u, v; size w, h, d), side rows {@code from} to {@code to}; its top
+     * too if they start at 0, its bottom if they reach h.
      */
     static void plates(Img img, int u, int v, int w, int h, int d, int from, int to, Random random) {
         int sideY = v + d;
@@ -2080,11 +2028,7 @@ public class TexGen {
     static final int SCALE_WIDTH = 6;
     static final int SCALE_STEP = 3;
 
-    /**
-     * Chitin scales, like a pangolin's: rows of rounded scales 6 pixels wide, a new row every 3 pixels, each row shifted
-     * by half a scale. Every scale lies over the top of the ones below it, so what shows of each is its rounded lower
-     * part: lit at the top, a dark rim, a darker tip.
-     */
+    /** One pixel of chitin scales: rows of rounded scales, each row shifted by half a scale and lying over the next. */
     static int scaleColor(int x, int y, Random random) {
         int row = Math.floorDiv(y, SCALE_STEP);
         int color = CH_DARK;
@@ -2132,11 +2076,7 @@ public class TexGen {
 
     // ------------------------------------------------------------------ The nest-building palette and the new chambers
     //
-    // Painted on a tone map: each pixel is an index into the material's ramp (dark to light), so shading is +-1 tone and
-    // the clusters stay on the ramp. Clusters come from tileable value noise on the 16 px torus (two octaves, quantized),
-    // which gives vanilla's 2-4 px blotches without single-pixel noise. Every material has a signature of its own:
-    // soil pellets (what ants carry out of their tunnels), adobe bricks with rounded corners, overlapping chitin scales,
-    // an ant caught in amber, fungus gardens with gongylidia knobs, royal plum chitin set in gold.
+    // Painted on a tone map: each pixel is an index into the material's ramp (dark to light), so shading is +-1 tone.
 
     static int[] ramp(int... rgb) {
         int[] out = new int[rgb.length];
@@ -2209,10 +2149,7 @@ public class TexGen {
         t[wy][wx] = Math.clamp(t[wy][wx] + delta, 0, max);
     }
 
-    /**
-     * Soil pellets: the balls of earth ants carry out of their tunnels. A 2x2 crumb lit at its top left, with a contact
-     * shadow under its right; wraps across the edges so the block tiles.
-     */
+    /** Soil pellets: 2x2 crumbs lit at the top left, with a shadow; they wrap across the edges so the block tiles. */
     static void pellets(int[][] t, int max, long seed, int count) {
         Random random = new Random(seed);
         for (int i = 0; i < count; i++) {
@@ -2228,11 +2165,7 @@ public class TexGen {
         }
     }
 
-    /**
-     * Brick courses: each brick is its own cluster field (a little lighter or darker than its neighbours), lit along its
-     * top, shaded along its bottom; the mortar is the last row and column of each brick. {@code rounded} knocks the
-     * corners off (hand-pressed adobe).
-     */
+    /** Brick courses as a tone map; sets {@code mortar} to 1 on the seams and 2 on the corners that {@code rounded} knocks off. */
     static int[][] bricks(long seed, int tones, int[] rows, int[] widths, int[] offsets, boolean rounded, int[][] mortar) {
         int[][] t = new int[16][16];
         Random random = new Random(seed);
@@ -2276,13 +2209,7 @@ public class TexGen {
         return t;
     }
 
-    /**
-     * Overlapping scales, like the chitin of the armour: 8 px wide, a new row every 4, each row shifted half a scale.
-     * Each scale is an arch: its top edge curves down at the sides, where the scale above overlaps it (a shadow pocket);
-     * a lit crest runs along the arch, and the scale darkens towards its lower rim.
-     *
-     * @param base  tone of a scale's body in {@code body} (it varies by one with the clusters and darkens downwards)
-     */
+    /** A block of overlapping arched scales; {@code base} is the tone of a scale's body in {@code body}. */
     static Img scales(long seed, int[] body, int base, int crest, int crestEdge, int glint, int pocket, int seam) {
         Img img = new Img(16, 16);
         int[][] t = clusters(seed, 3, 0.2, 0);
@@ -2294,8 +2221,7 @@ public class TexGen {
             for (int x = 0; x < 16; x++) {
                 int dx = Math.floorMod(x + row * 4, 8);
                 double edge = Math.abs(dx - 3.5) / 3.5;
-                // Each scale's lower rim is a U: low in the middle, rising at the sides, and it overlaps the scales of the
-                // next row (shifted half a scale), which lie in its shadow there.
+                // Each scale's lower rim is a U: low in the middle, rising at the sides.
                 int rim = 7 - (int) Math.round(edge * edge * 3.2);
                 int c;
                 if (dy > rim) {
@@ -2477,11 +2403,7 @@ public class TexGen {
             img.save("block/polished_chitin");
         }
         {
-            // Chitin bricks: plates of dark, glossy carapace (darker than the other chitin blocks: an ant's cuticle, not
-            // wood), laid in courses of uneven height (5, 5 and 6 rows), staggered, each course overlapping the one below
-            // like the segments of an ant's abdomen: its lower lip catches the light and throws a shadow onto the plate
-            // under it. Narrow sutures between the plates, a lit edge after each; a short curved highlight in each plate's
-            // upper part where the gloss catches the light, and a hair pit or two in the cuticle. No mortar.
+            // Chitin bricks: dark, glossy carapace plates in staggered courses, each overlapping the one below. No mortar.
             int[] carapace = {hex(0x150C07), CHITIN[0], CHITIN[1], CHITIN[2], CHITIN[3], CHITIN[4], CHITIN[5], CHITIN[7], CHITIN[8]};
             Img img = new Img(16, 16);
             int[][] t = clusters(221, 2, 0.2, 0);
@@ -2514,8 +2436,7 @@ public class TexGen {
                             img.set(x, y, carapace[Math.clamp(v, 0, 8)]);
                         }
                     }
-                    // The highlight: a short arc over the dome, its brightest pixel off-centre to the left; shifted per
-                    // plate so the highlights never line up.
+                    // The highlight: a short arc over the dome, shifted per plate so the highlights never line up.
                     int hx = start + 1 + (ci + b) % 2;
                     int hy = course[0] + 2;
                     img.set(Math.floorMod(hx, 16), hy, carapace[7]);
@@ -2611,8 +2532,7 @@ public class TexGen {
             img.save("block/amber_bricks");
         }
         {
-            // Amber glass: clear amber you can see through (semi-transparent, so it renders translucent), a deeper rim and
-            // a few streaks. 26.x picks the render type from the alpha.
+            // Amber glass: semi-transparent, with a deeper rim and a few streaks. 26.x picks the render type from the alpha.
             Img img = new Img(16, 16);
             int[][] t = clusters(321, 3, 0.1, 0);
             for (int y = 0; y < 16; y++) {
@@ -3076,10 +2996,7 @@ public class TexGen {
         trailPheromone("item/end_trail_pheromone", ramp(0x1E0F38, 0x3A1E66, 0x5B3896, 0x3FA79A, 0x8FE8D2), hex(0xF4F0FF));
     }
 
-    /**
-     * A trail pheromone: a sealed glass ampoule (pointed tip, no cork) holding the scent, a dotted trail curling through
-     * it. Not a tube or a bottle, so it reads apart from the Rally and Nuptial Pheromones.
-     */
+    /** A trail pheromone: a sealed glass ampoule with a dotted trail in it, unlike the Rally and Nuptial Pheromones. */
     static void trailPheromone(String path, int[] liquid, int trail) {
         Img img = item();
         int glass = 0xFFDCEAF0;
@@ -3121,11 +3038,7 @@ public class TexGen {
     /** One tier of chitin gear: its colour ramp (outline to shine), its handle, its eye glint and its surface detail. */
     record GearTier(String name, int[] ramp, int handle, int handleDark, int eyeShine, char detail) {}
 
-    /**
-     * Hardened (smoky umber, fine dark cracks), Infernal (lava-red, ember seams glowing in its dark joints, a blaze-rod
-     * handle) and Void (night violet, pale star flecks, an end-rod handle). Same shapes as the chitin gear, the way
-     * vanilla's tiers share theirs; each tier's own surface detail on top.
-     */
+    /** Hardened, Infernal and Void: the chitin gear's shapes in each tier's colours, with its own surface detail on top. */
     static final GearTier[] GEAR_TIERS = {
             new GearTier("hardened", new int[] {rgb(42, 30, 24), rgb(74, 58, 48), rgb(110, 90, 74), rgb(149, 128, 112), rgb(200, 180, 158)},
                     STICK, STICK_DARK, rgb(176, 168, 150), 'c'),
@@ -3263,14 +3176,13 @@ public class TexGen {
                 tiered("entity/equipment/" + layer + "/chitin", tier, t * 31 + 17).save("entity/equipment/" + layer + "/" + tier.name + "_chitin");
             }
         }
-        reinforcement("infernal_reinforcement", "item/infernal_chitin", GEAR_TIERS[1].handle, GEAR_TIERS[1].handleDark, rgb(255, 236, 160), rgb(255, 140, 40));
-        reinforcement("void_reinforcement", "item/void_chitin", GEAR_TIERS[2].handle, GEAR_TIERS[2].handleDark, rgb(190, 255, 220), rgb(40, 150, 110));
+        reinforcement("infernal_reinforcement", "item/infernal_chitin", GEAR_TIERS[1].handle, GEAR_TIERS[1].handleDark,
+                rgb(255, 236, 160), rgb(255, 140, 40));
+        reinforcement("void_reinforcement", "item/void_chitin", GEAR_TIERS[2].handle, GEAR_TIERS[2].handleDark,
+                rgb(190, 255, 220), rgb(40, 150, 110));
     }
 
-    /**
-     * A Reinforcement: the tier's chitin plate, bound by a rod (a blaze rod or an end rod) rising across it,
-     * tied on with a glowing knot in the middle, the way a smithing template carries what it adds.
-     */
+    /** A Reinforcement: the tier's chitin plate with a rod tied across it by a glowing knot. */
     static void reinforcement(String name, String plate, int rod, int rodDark, int knot, int knotDark) {
         Img img = load(plate);
         int outline = shade(img.get(8, 8) | 0xFF000000, 0.35);
@@ -3305,12 +3217,7 @@ public class TexGen {
         return m;
     }
 
-    /**
-     * gui/sprites/lab/site_<kind>: the Formicarium screen's icon for each kind of site (the user, 2026-11-14: icons "should be
-     * unique for them"; a honey bottle for the Liquid Chamber read as "producing honey"). Each shows the chamber, not
-     * what comes out of it: a carried leaf, a fungus garden, mandibles, a droplet (the colony's own when it has Liquid Ants), eggs, a
-     * crown, a crate, two little portals and a scent trail. Item style: dark outline, lit from the top left.
-     */
+    /** gui/sprites/lab/site_<kind>: the Formicarium screen's icon for each kind of site, showing the chamber, not what it makes. */
     static void siteIcons() {
         SiteIcon[] icons = {
             // Foraging Site: a cut leaf, carried home (leaf, midrib, a bite out of its edge).
@@ -3371,8 +3278,7 @@ public class TexGen {
                 ".......oooo.....",
                 "................"},
                 iconPalette('o', 0xFF241008, 'h', 0xFFE8A07A, 'l', 0xFFC0603A, 'm', 0xFF96402A, 'd', 0xFF6A2818, 't', 0xFFEDE2CC)),
-            // Liquid Chamber: a droplet (the user's choice), the shape of the mod's droplets, in a neutral silver so it names
-            // no fluid. A colony of Liquid Ants shows its own droplet instead (TerrariumScreen).
+            // Liquid Chamber: the mod's droplet shape in a neutral silver, so it names no fluid.
             new SiteIcon("liquid_chamber", DROPLET, iconPalette('o', 0xFF2E343C, 'h', 0xFFFFFFFF, 'l', 0xFFDCE3EA, 'm', 0xFFB4BEC9, 'd', 0xFF8792A0)),
             // Nest Chamber: a heap of eggs, the brood.
             new SiteIcon("nest_chamber", new String[] {
@@ -3510,20 +3416,8 @@ public class TexGen {
     // ------------------------------------------------------------------ Liquid Ants, droplets and the Droplet Centrifuge
 
     /**
-     * One fluid's droplet: its colour and how it is finished. The same rows are in tools/DataGen.java (LIQUIDS) and the
-     * mod's code (LiquidKinds and compat/liquid). Colours are the fluid's own tint where its mod gives it one, else the
-     * colour of its texture.
-     *
-     * <p>Checked against each mod's real fluid on 2026-11-14 (the user: "droplets should have the same texture shape but the
-     * color should be different to match the fluid"): the average of the mod's still texture times its tint, from the mods'
-     * public sources. Very dark fluids are lifted a little so the drop still reads in a slot. Pairs that are close in
-     * colour are told apart by their finish: lava is red-orange with a yellow core, liquid blaze gold with a white-hot
-     * core; honey is a soft gloss with no glow; crude oil black with a cool sheen, creosote dark brown with warm lights;
-     * hootch is clear and colourless (Ender IO draws it white and see-through), brine pale yellow.
-     *
-     * @param style clear (thin, see-through liquids: a spark of light let through at the far side), glass (clear and colourless: the body itself is see-through), thick (oils and syrups:
-     *              a long gloss and a heavy underside), oil (thick, with a cool rainbow-less sheen), slime (bubbles),
-     *              molten (a bright core under a dark crust)
+     * One fluid's droplet: its colour and its finish (clear, glass, thick, oil, slime or molten). The same rows are in
+     * tools/DataGen.java (LIQUIDS) and the mod's code (LiquidKinds and compat/liquid).
      */
     record LiquidArt(String id, int color, String style) {}
 
@@ -3675,12 +3569,8 @@ public class TexGen {
     static final double CROP_CHAMFER = 1.5;
 
     /**
-     * entity/ant/crop_<caste> and crop_skin_<caste>: a Liquid Ant's crop, both tinted in game with the liquid's colour.
-     * The first is the liquid: solid, pale at the top where the light comes through and deep at the bottom where it lies
-     * thickest, shaded by how far down the whole crop a pixel is (so the four boxes it is built from read as one round
-     * body), with a gloss high on the sides and a few small bubbles. The second is the crop's skin around it: almost
-     * clear, a little denser along every edge, with a bright gloss on top. Laid out for the four boxes of
-     * AntModel.cropBoxes, each in its own quarter of the texture.
+     * entity/ant/crop_<caste> (the liquid) and crop_skin_<caste> (the skin round it): a Liquid Ant's crop, tinted in game.
+     * Laid out for the four boxes of AntModel.cropBoxes, each in its own quarter of the texture.
      */
     static void cropSkins() {
         double c = CROP_CHAMFER;
@@ -3739,11 +3629,7 @@ public class TexGen {
         }
     }
 
-    /**
-     * The Liquid Ants' rows of entity/ant_side.png (rows 10 to 12: the full crop per caste; rows 13 to 15: the gaster's
-     * plates over it). The crop is a big round bag where other ants have their slim gaster, the same in all four
-     * walking frames: it never changes.
-     */
+    /** The Liquid Ants' rows of entity/ant_side.png: rows 10 to 12 the full crop per caste, rows 13 to 15 the gaster's plates. */
     static void sideCrops(Img img) {
         String[] castes = {"worker", "soldier", "queen"};
         for (int c = 0; c < 3; c++) {
@@ -3790,10 +3676,7 @@ public class TexGen {
         }
     }
 
-    /**
-     * The Liquid Chamber: a floor of damp clay with the dark rings drips leave; the wax pots hanging from its rack (a waxy
-     * amber, lighter on top); and the pale pool in its bowl.
-     */
+    /** The Liquid Chamber: its floor of damp clay, the wax pots on its rack and the pale pool in its bowl. */
     static void liquidChamber() {
         int[] clay = ramp(0x51473E, 0x65594D, 0x7A6D5F, 0x8F8171, 0xA39584);
         Img top = new Img(16, 16);
@@ -3825,12 +3708,8 @@ public class TexGen {
     }
 
     /**
-     * The Droplet Centrifuge, in the Genetic Laboratory's build (the user, 2026-11-14: "make the generator and centrifuge
-     * more like the lab machine"): the lab's white enamel panels, graphite kickplate and teal lights, see {@link #labBody}.
-     * Each side texture is the block's whole side: the lid's edge (rows 0-1), the glass section with an enamel post either
-     * end (rows 2-7; the model puts glass between the posts) and the casing (rows 8-15). The front's casing carries a dark
-     * display like the lab's and a status light under it; the sides a small tube of teal liquid like the lab's sample
-     * cylinder. The deck is what shows through the glass under the rotor: steel, with the rotor's bearing ring.
+     * The Droplet Centrifuge, built on {@link #labBody}. Each side texture is the block's whole side: the lid's edge
+     * (rows 0-1), the glass section (rows 2-7) and the casing (rows 8-15).
      */
     static void centrifuge() {
         for (int variant = 0; variant < 3; variant++) {
@@ -3838,9 +3717,7 @@ public class TexGen {
             boolean on = variant == 2;
             Img img = labBody(91 + variant);
             if (front) {
-                // The panel, as on the lab: a centred dark display in a graphite frame, and the status light under it. The
-                // display shows the tank as a teal bar and the drum's two speed marks in the lab helix's cyan and magenta
-                // (all dim while idle).
+                // The panel: a dark display with the tank as a teal bar and two speed marks, the status light under it.
                 img.fill(3, 9, 13, 12, GRAPHITE[0]);
                 frame(img, 3, 9, 13, 12, GRAPHITE[2]);
                 for (int x = 4; x < 9; x++) {
@@ -3859,8 +3736,7 @@ public class TexGen {
             }
             img.save("block/centrifuge_" + (front ? "front" + (on ? "_working" : "") : "side"));
         }
-        // The top: the white enamel lid like the lab's, with a steel hub cap over the rotor's shaft in a graphite frame where
-        // the lab has its sample hatch.
+        // The top: the lab's enamel lid, with a steel hub cap in a graphite frame over the rotor's shaft.
         Img top = new Img(16, 16);
         brushed(top, 0, 0, 16, 16, ENAMEL, 4.0, 3.0, 0.35, 97);
         frame(top, 0, 0, 16, 16, ENAMEL[1]);
@@ -3905,10 +3781,7 @@ public class TexGen {
 
     // ------------------------------------------------------------------ The nest behind the glass
     //
-    // Every colony block (the Formicarium and the chambers) is a slab of nest material behind a front glass, with its
-    // chamber and tunnels carved into it (client NestLayout, drawn by NestRenderer). The slab comes in the five climates
-    // of the species, each with a face and a darker floor for what is carved; each material has its own signature:
-    // loam with soil pellets, frozen earth with frost, sand in thin strata, cracked stone, pitted netherrack.
+    // Every colony block is a slab of nest material behind glass: per climate, a face and a darker floor for what is carved.
 
     /** The slab's face by climate, in NestRenderer's row order: temperate, cold, hot, underground, nether. */
     static final int[][] NEST_FACE = {
@@ -3997,8 +3870,7 @@ public class TexGen {
         atlas.fill(112, 112, 128, 128, 0xFFFFFFFF);
         atlas.save("entity/nest");
 
-        // The case: plaster panels in the oak frame. Calm clusters, a few pores (a dark pit, its lower right rim lit) and
-        // two faint trowel strokes.
+        // The case: plaster panels in the oak frame, with a few pores and two faint trowel strokes.
         int[][] t = clusters(761, 3, 0.1, 0);
         for (int[] row : t) {
             for (int x = 0; x < 16; x++) {
@@ -4027,13 +3899,12 @@ public class TexGen {
     }
 
     /** The colony blocks, in the order of the client's NestLayout.Kind. */
-    static final String[] NEST_BLOCKS = {"terrarium", "nest_chamber", "foraging_site", "hunting_ground", "harvesting_site", "storage", "queen_chamber",
-            "nether_foraging_site", "end_foraging_site", "colony_connector", "liquid_chamber"};
+    static final String[] NEST_BLOCKS = {"terrarium", "nest_chamber", "foraging_site", "hunting_ground", "harvesting_site", "storage",
+            "queen_chamber", "nether_foraging_site", "end_foraging_site", "colony_connector", "liquid_chamber"};
 
     /**
-     * A picture of each colony block's front, for its item and for blocks too far away for their renderer: the block's
-     * own chamber and burrow as the game digs them. So the two never differ, this compiles the client's NestLayout (plain
-     * Java) and asks it for a layout of each kind, standing alone.
+     * A picture of each colony block's front, for its item and for far-away blocks. Compiles the client's NestLayout and
+     * asks it for each kind's layout, so the two never differ.
      */
     static void nestFronts(int[][] face, int[][] floor) {
         try {

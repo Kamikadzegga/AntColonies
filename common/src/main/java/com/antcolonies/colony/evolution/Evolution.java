@@ -12,15 +12,12 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 
 /**
- * A Queen evolution, loaded from {@code data/<namespace>/antcolonies/evolution/<name>.json}: a Queen of {@code from}
- * fed {@code item} absorbs one per attempt, and each attempt evolves her into {@code to} with {@code chance} (raised by
- * Mutation Probability and Evolution Upgrades). After {@code guaranteed_after} failed attempts the next one always
- * succeeds, so bad luck never blocks progress.
+ * A Queen evolution: a Queen of {@code from} fed {@code item} may evolve into {@code to}.
  *
- * @param minStage      the colony stage needed (1-4)
- * @param minPopulation the adults needed
- * @param dimension     if set, the Terrarium must be in this dimension (the Nether line evolves only in the Nether, the
- *                      End line only in the End); the evolved colony can live anywhere afterwards
+ * @param guaranteedAfter the attempt that always succeeds, whatever the chance
+ * @param minStage        the colony stage needed (1-4)
+ * @param minPopulation   the adults needed
+ * @param dimension       if set, the Terrarium must be in this dimension
  */
 public record Evolution(Identifier from, Identifier to, Ingredient item, double chance, int guaranteedAfter, int minStage, long minPopulation,
                         Optional<ResourceKey<Level>> dimension) {

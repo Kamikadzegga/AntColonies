@@ -17,10 +17,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 
-/**
- * Wild ants and Guard Ants: the shared ant model in their species' colors, walking with a tripod gait, turning red when hurt and
- * rolling over when they die. Soldiers rear up and open their mandibles while they have a target.
- */
+/** Draws wild ants and Guard Ants with the shared ant model, in their species' colors. */
 public class WildAntRenderer<T extends net.minecraft.world.entity.Mob & AntLike> extends EntityRenderer<T, WildAntRenderer.State> {
     private final AntDrawer drawer;
     private final AntPose pose = new AntPose();

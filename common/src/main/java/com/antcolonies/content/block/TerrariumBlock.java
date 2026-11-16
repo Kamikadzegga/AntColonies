@@ -24,10 +24,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 
-/**
- * The Terrarium: a glass formicarium with a living colony inside. Right-click with a Queen Test Tube to put a Queen in,
- * with food, evolution materials, caught ants, eggs or larvae to feed them; empty-handed to open the colony's overview.
- */
+/** The Terrarium: a glass formicarium with a living colony inside. */
 public class TerrariumBlock extends ColonyPartBlock {
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 16, 16);
 
@@ -109,10 +106,7 @@ public class TerrariumBlock extends ColonyPartBlock {
         return InteractionResult.SUCCESS;
     }
 
-    /**
-     * A Rally Pheromone used on a Terrarium: a hunter colony gives up {@link com.antcolonies.core.config.AntConfig#GUARD_COST}
-     * ants for one Guard Ant, as strong as its Queen's Hunting Strength.
-     */
+    /** A Rally Pheromone used on a Terrarium: a hunter colony gives up ants for one Guard Ant of its Queen's Hunting Strength. */
     public static boolean recruitGuard(TerrariumBlockEntity terrarium, Player player, ItemStack pheromone) {
         com.antcolonies.colony.model.Colony colony = terrarium.colony();
         int cost = com.antcolonies.core.config.AntConfig.get(com.antcolonies.core.config.AntConfig.GUARD_COST);

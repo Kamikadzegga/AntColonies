@@ -17,10 +17,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.ItemLike;
 import org.jspecify.annotations.Nullable;
 
-/**
- * All of the mod's JEI categories share this layout: inputs on the left, an arrow, outputs on the right, and the
- * entry's lines of text underneath.
- */
+/** The layout all of the mod's JEI categories share: inputs on the left, an arrow, outputs on the right, text underneath. */
 public class AntCategory extends AbstractRecipeCategory<AntRecipe> {
     public static final int WIDTH = 172;
     private static final int INPUT_COLUMNS = 3;
@@ -34,7 +31,8 @@ public class AntCategory extends AbstractRecipeCategory<AntRecipe> {
     private final int rows;
 
     public AntCategory(IRecipeType<AntRecipe> type, String key, ItemLike icon, IGuiHelper guiHelper, int rows, int textLines) {
-        super(type, Component.translatable("jei.antcolonies." + key), guiHelper.createDrawableItemLike(icon), WIDTH, rows * STEP + 4 + textLines * 10);
+        super(type, Component.translatable("jei.antcolonies." + key), guiHelper.createDrawableItemLike(icon), WIDTH,
+                rows * STEP + 4 + textLines * 10);
         this.textLines = textLines;
         this.rows = rows;
     }
@@ -50,8 +48,7 @@ public class AntCategory extends AbstractRecipeCategory<AntRecipe> {
                     .setStandardSlotBackground()
                     .addItemStacks(recipe.inputs().get(i));
         }
-        // The category is as tall as its rows: when there are more outputs than slots (a species with 18 finds), the last
-        // slot shows the rest in turn, each with its own tooltip, instead of slots spilling over the text below.
+        // More outputs than slots: the last slot shows the rest in turn, each with its own tooltip, so none spill over the text.
         int room = rows * OUTPUT_COLUMNS;
         int shown = recipe.outputs().size() > room ? room - 1 : recipe.outputs().size();
         if (shown < recipe.outputs().size()) {
@@ -83,8 +80,7 @@ public class AntCategory extends AbstractRecipeCategory<AntRecipe> {
     @Override
     public void createRecipeExtras(IRecipeExtrasBuilder builder, AntRecipe recipe, IFocusGroup focuses) {
         builder.addRecipeArrow().setPosition(ARROW_X, 1);
-        // Text always starts under the category's slot rows, so entries line up. Long lines wrap; what still does not fit
-        // in the category's text budget is cut, with the whole text in the last line's tooltip.
+        // Text starts under the category's slot rows, so entries line up. What does not fit is cut; a tooltip has the whole text.
         int y = rows * STEP + 4;
         var font = net.minecraft.client.Minecraft.getInstance().font;
         List<net.minecraft.network.chat.FormattedText> wrapped = new java.util.ArrayList<>();

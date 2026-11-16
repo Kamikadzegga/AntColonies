@@ -3,10 +3,7 @@ package com.antcolonies.compat.liquid;
 import com.antcolonies.colony.liquid.LiquidKind;
 import com.antcolonies.colony.liquid.LiquidKinds;
 
-/**
- * MachinaOpus (mod id {@code machinaopus}): crude oil, which otherwise comes from a Pumpjack, and liquid blaze, the Blaze
- * Crucible's fuel. Ids from its {@code ModFluids}.
- */
+/** MachinaOpus (mod id {@code machinaopus}): crude oil and liquid blaze. Ids from its {@code ModFluids}. */
 public final class MachinaOpusLiquids {
     public static final String MOD = "machinaopus";
 

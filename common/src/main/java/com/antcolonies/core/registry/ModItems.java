@@ -67,13 +67,12 @@ public final class ModItems {
     public static final DeferredItem<DescribedItem> CHITIN_PLATE = ITEMS.registerItem("chitin_plate", DescribedItem::new);
     // The Chitin ladder: hardened (Blast Furnace), infernal (the Nether), void (the End).
     public static final DeferredItem<DescribedItem> HARDENED_CHITIN = ITEMS.registerItem("hardened_chitin", DescribedItem::new);
-    public static final DeferredItem<DescribedItem> INFERNAL_CHITIN = ITEMS.registerItem("infernal_chitin", DescribedItem::new, p -> p.fireResistant());
-    public static final DeferredItem<DescribedItem> VOID_CHITIN = ITEMS.registerItem("void_chitin", DescribedItem::new, p -> p.rarity(net.minecraft.world.item.Rarity.UNCOMMON));
+    public static final DeferredItem<DescribedItem> INFERNAL_CHITIN = ITEMS.registerItem("infernal_chitin", DescribedItem::new,
+            p -> p.fireResistant());
+    public static final DeferredItem<DescribedItem> VOID_CHITIN = ITEMS.registerItem("void_chitin", DescribedItem::new,
+            p -> p.rarity(net.minecraft.world.item.Rarity.UNCOMMON));
     public static final DeferredItem<DescribedItem> UPGRADE_BASE = ITEMS.registerItem("upgrade_base", DescribedItem::new);
-    /**
-     * Trail pheromones: the scent of a route into another dimension. Only a colony living there finds them (its ordinary
-     * Foraging Sites, now and then); they are what the Nether and End Foraging Sites are made from.
-     */
+    /** Trail pheromones, found only by a colony living in that dimension: the Nether and End Foraging Sites are made from them. */
     public static final DeferredItem<DescribedItem> NETHER_TRAIL_PHEROMONE = ITEMS.registerItem("nether_trail_pheromone", DescribedItem::new,
             p -> p.fireResistant().rarity(Rarity.UNCOMMON));
     public static final DeferredItem<DescribedItem> END_TRAIL_PHEROMONE = ITEMS.registerItem("end_trail_pheromone", DescribedItem::new,
@@ -168,10 +167,7 @@ public final class ModItems {
 
     public static final String[] GEAR_PIECES = {"helmet", "chestplate", "leggings", "boots", "sword", "pickaxe", "axe", "shovel", "hoe"};
 
-    /**
-     * The higher chitin tiers (Hardened, Infernal, Void): armor and the five tools each, by tier and piece name
-     * ({@code helmet} ... {@code hoe}). Infernal and Void don't burn; Void is uncommon.
-     */
+    /** The higher chitin tiers (Hardened, Infernal, Void): armor and the five tools each, by tier and piece name. */
     public static final java.util.Map<ChitinGear.Tier, java.util.Map<String, DeferredItem<ChitinGear.Piece>>> CHITIN_TIERS = tiers();
     /** Smithing templates: Hardened chitin gear to Infernal (with Infernal Chitin), Infernal to Void (with a netherite ingot). */
     public static final DeferredItem<DescribedItem> INFERNAL_REINFORCEMENT = ITEMS.registerItem("infernal_reinforcement", DescribedItem::new,
@@ -239,7 +235,8 @@ public final class ModItems {
         String key = "tooltip.antcolonies." + block.getId().getPath();
         return ITEMS.registerItem(block.getId().getPath(), p -> new BlockItem(block.get(), p) {
             @Override
-            public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+            public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip,
+                                        TooltipFlag flag) {
                 tooltip.accept(Component.translatable(key).withStyle(net.minecraft.ChatFormatting.GRAY));
             }
         }, p -> p.useBlockDescriptionPrefix());

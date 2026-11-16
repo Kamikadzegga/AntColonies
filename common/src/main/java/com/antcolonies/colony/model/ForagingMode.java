@@ -11,17 +11,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * What an ordinary Foraging Site's workers look for. The species decides what can be found at all (its outputs); the
- * mode only changes how often each kind is picked, never the biome or anything outside the colony:
- * <ul>
- *     <li>{@link #BALANCED}: every output at its own weight, as always.</li>
- *     <li>{@link #MINERAL}: finds in the item tag {@code antcolonies:foraging/mineral} (ores, raw metal, gems, dusts,
- *     stone...) are picked {@code focusedForagingBoost} times as often, the rest {@code focusedForagingPenalty} as often.</li>
- *     <li>{@link #ORGANIC}: the other way round (seeds, plants, mushrooms, bones, shells...).</li>
- * </ul>
- * A species with no finds of the kind looked for gathers as if Balanced (and the site says so).
- */
+/** What an ordinary Foraging Site's workers look for: how often each of the species' outputs is picked, never what can be found. */
 public enum ForagingMode {
     BALANCED,
     MINERAL,

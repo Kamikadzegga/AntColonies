@@ -26,11 +26,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import org.jspecify.annotations.Nullable;
 
-/**
- * A scrolling page of text and item icons, for the Terrarium's Species page and the Identification Book: everything about
- * a species (climate and how to fix it, finds, hunts, evolutions), or one of the book's how-to-play pages. Rows that don't
- * fit are scrolled to with the mouse wheel; icons explain themselves when pointed at.
- */
+/** A scrolling page of text and item icons: a species in full, or one of the Identification Book's how-to-play pages. */
 public final class InfoPanel {
     static final int TITLE = 0xFF4FE3FF;
     static final int TEXT = 0xFFD8F2FF;
@@ -66,10 +62,7 @@ public final class InfoPanel {
         }
     }
 
-    /**
-     * A row of item icons, each with its own tooltip. An icon can stand for several items (a family of blocks, all
-     * accepted): it then cycles through them, one a second.
-     */
+    /** A row of item icons, each with its own tooltip. An icon that stands for several items cycles through them, one a second. */
     private record Icons(List<List<ItemStack>> stacks, List<List<Component>> tips) implements Row {
         @Override
         public int height() {
@@ -136,11 +129,7 @@ public final class InfoPanel {
         }
     }
 
-    /**
-     * A climate's floor blocks in families, one per kind of block: every terracotta (colours and glazed), every
-     * sandstone, every ice, every dirt... A family is the last word of the blocks' names, after dropping "block"
-     * ("red_sandstone" and "cut_sandstone" are sandstone, "snow_block" and "powder_snow" are snow).
-     */
+    /** A climate's floor blocks in families: a family is the last word of the blocks' names, after dropping "block". */
     static java.util.Map<String, List<ItemStack>> floorFamilies(Climate climate) {
         java.util.Map<String, List<ItemStack>> families = new java.util.LinkedHashMap<>();
         for (Holder<Block> block : BuiltInRegistries.BLOCK.getTagOrEmpty(climate.floorTag())) {
@@ -157,10 +146,8 @@ public final class InfoPanel {
     // --- What a species is ---
 
     /**
-     * Everything about a species.
-     *
-     * @param here     in a Terrarium: whether its climate is right there (null in the book)
-     * @param floor    in a Terrarium: the climate the block under it gives (null if none, or in the book)
+     * Everything about a species. In a Terrarium, {@code here} is whether its climate is right there and {@code floor} the
+     * climate the block under it gives; both are null in the book.
      */
     public void species(Font font, Identifier id, @Nullable AntSpecies data, @Nullable Boolean here, @Nullable Climate floor, int width) {
         begin(id, width);
@@ -168,8 +155,9 @@ public final class InfoPanel {
         if (data == null) {
             return;
         }
-        text(font, Component.translatable("book.antcolonies.kind", Component.translatable("category.antcolonies." + data.category().getSerializedName()),
-                data.tier(), Component.translatable("climate.antcolonies." + data.climate().getSerializedName())), DIM);
+        text(font, Component.translatable("book.antcolonies.kind",
+                Component.translatable("category.antcolonies." + data.category().getSerializedName()), data.tier(),
+                Component.translatable("climate.antcolonies." + data.climate().getSerializedName())), DIM);
         // Climate, and what fixes it.
         rows.add(new Gap(3));
         if (data.climate() == Climate.ANY) {
@@ -220,10 +208,11 @@ public final class InfoPanel {
                         Component.translatable("info.antcolonies.liquid.fluid", fluid).withStyle(ChatFormatting.GRAY)));
                 var recipe = com.antcolonies.content.recipe.CentrifugingRecipe.find(net.minecraft.client.Minecraft.getInstance().level, droplet);
                 if (recipe != null) {
-                    tip.add(Component.translatable("info.antcolonies.liquid.centrifuge", recipe.amount(), recipe.fluid().getFluidType().getDescription(),
-                            recipe.energyCost()).withStyle(ChatFormatting.AQUA));
+                    tip.add(Component.translatable("info.antcolonies.liquid.centrifuge", recipe.amount(),
+                            recipe.fluid().getFluidType().getDescription(), recipe.energyCost()).withStyle(ChatFormatting.AQUA));
                 }
-                tip.add(Component.translatable("info.antcolonies.liquid.rate", String.format(Locale.ROOT, "%.2f", liquid.rate())).withStyle(ChatFormatting.DARK_GRAY));
+                tip.add(Component.translatable("info.antcolonies.liquid.rate",
+                        String.format(Locale.ROOT, "%.2f", liquid.rate())).withStyle(ChatFormatting.DARK_GRAY));
                 rows.add(new ItemLine(droplet, font.split(line, width - 20).getFirst(), ACCENT, tip));
             } else {
                 text(font, Component.translatable("status.antcolonies.no_droplet"), BAD);

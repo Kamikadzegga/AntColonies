@@ -25,10 +25,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 
-/**
- * Ant Colonies: wild ants, Terrariums, Queens with real genetics, and colonies whose population is plain numbers on
- * the server. The ants drawn in a Terrarium are only a picture of those numbers, never their source.
- */
+/** The mod's entry point: registers everything Ant Colonies adds. */
 @Mod(AntColonies.MODID)
 public class AntColonies {
     public static final String MODID = "antcolonies";
@@ -51,8 +48,7 @@ public class AntColonies {
         com.antcolonies.core.registry.ModRecipes.RECIPE_TYPES.register(modEventBus);
         com.antcolonies.core.registry.ModRecipes.RECIPE_SERIALIZERS.register(modEventBus);
         com.antcolonies.core.registry.ModRecipes.RECIPE_BOOK_CATEGORIES.register(modEventBus);
-        // Liquid Ants: other mods' fluids are offered now, and a droplet item is registered for each fluid that really exists
-        // (items are registered after every mod's fluids).
+        // Liquid Ants: fluids are offered now; droplet items wait until every mod's fluids are registered.
         com.antcolonies.compat.liquid.LiquidIntegrations.offerAll();
         modEventBus.addListener(com.antcolonies.colony.liquid.LiquidKinds::registerItems);
         // Species, evolutions, hybrids and mutations are datapack registries, synced to clients (JEI, rendering).
@@ -61,7 +57,6 @@ public class AntColonies {
         modEventBus.addListener(ModEntities::registerAttributes);
         modEventBus.addListener(WildAnt::registerSpawnPlacement);
         modEventBus.addListener(ModCapabilities::register);
-        // Any colony block placed or broken makes nearby Terrariums look at their network again.
         NeoForge.EVENT_BUS.addListener(ColonyNetwork::onLevelUnload);
         NeoForge.EVENT_BUS.addListener(com.antcolonies.colony.resource.MobLoot::onLevelUnload);
         NeoForge.EVENT_BUS.addListener(com.antcolonies.content.item.ChitinGear::onPlayerTick);

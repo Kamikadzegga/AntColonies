@@ -16,16 +16,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * A colony's food: kept within its room, and topped up from its own stores. Food reaches a colony through the
- * Terrarium's feed slot (by hand, or a hopper or pipe into the Terrarium), and the colony also feeds itself from what
- * its Storage chambers and Foraging Sites hold: feeding comes first, so whenever an item's worth fits in the food room
- * it is eaten. What an item is worth comes from the {@code antcolonies:ant_food} data map, the same as in the feed
- * slot; special foods (mineral, crystal, nether) also count as the special food of a species that needs that kind.
- * Items in the tag {@code antcolonies:kept_in_storage} (Royal Jelly, for raising Queens) are never eaten, and the
- * {@code storageFeeding} option turns this off. The room shrinks when a Storage leaves the colony, and what no longer
- * fits is lost.
- */
+/** A colony's food: kept within its room, and topped up from its own stores. */
 final class FoodIntake {
     /** Food the colony ate from its stores this step, and of it the special food. */
     record Result(double food, double special) {}
@@ -36,8 +27,7 @@ final class FoodIntake {
     static Result take(ColonySimulator.Step step, double capacity) {
         Colony colony = step.colony;
         double specialRoom = capacity / 4;
-        // Food over the room (a Storage in an unloaded chunk shrank it for now) is kept, not thrown away: nothing more is eaten
-        // until it is back under.
+        // Food over the room (a Storage in an unloaded chunk shrank it) is kept: nothing more is eaten until it is back under.
         double food = ColonyAccess.food(colony);
         double special = ColonyAccess.specialFood(colony);
         double eaten = 0;

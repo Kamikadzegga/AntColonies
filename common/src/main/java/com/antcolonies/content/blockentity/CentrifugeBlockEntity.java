@@ -46,17 +46,7 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jspecify.annotations.Nullable;
 
-/**
- * The Droplet Centrifuge: one slot of droplets, an FE store, and a tank. It spins one droplet at a time into the fluid of
- * the droplet's recipe ({@link CentrifugingRecipe}), paying the recipe's FE evenly over the run.
- *
- * <p>Nothing is ever lost or made twice: the droplet stays in the slot for the whole run and is taken only in the tick
- * the fluid goes into the tank, and a run only goes on while the tank can take all of its result. Without FE the run
- * waits where it is; taking the droplet out ends it (the FE spent so far is gone, the droplet is not).
- *
- * <p>The tank is an ordinary fluid handler, given out on every side as extract-only: pipes pull from it, and it also
- * hands fluid to tanks and pipes touching it ({@code centrifugePushRate}). FE comes in on every side.
- */
+/** The Droplet Centrifuge: spins one droplet at a time into its recipe's fluid, paying the FE evenly over the run. */
 public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, ComparatorSource {
     /** What the Centrifuge is doing, for its screen. */
     public enum Status {

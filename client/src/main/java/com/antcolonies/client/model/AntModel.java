@@ -13,15 +13,7 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 
-/**
- * An ant, built like a real one: head with elbowed antennae and mandibles, the thorax with six two-segment legs, the
- * petiole, and the gaster. Workers, soldiers (big head, long mandibles) and Queens (long thorax, huge gaster) each have
- * their own proportions. Every part is drawn grey and tinted per species, so a new species needs no new model.
- *
- * <p>Units: the worker is 24 units long, its legs stand it 5 units off the ground (y = 0, up is -y as in entity models),
- * and it faces -z. Renderers scale it to size. The body and the gaster are separate roots, drawn in their own colors;
- * the pattern and crystal parts follow them.
- */
+/** The ant model: one grey mesh per caste, tinted per species. It stands on y = 0 (up is -y) and faces -z. */
 public final class AntModel {
     public static final ModelLayerLocation WORKER = new ModelLayerLocation(AntColonies.id("ant"), "worker");
     public static final ModelLayerLocation SOLDIER = new ModelLayerLocation(AntColonies.id("ant"), "soldier");
@@ -173,10 +165,7 @@ public final class AntModel {
                 PartPose.offsetAndRotation(-1.4F, -s.gasterH() / 2 + 0.6F, s.gasterL() * 0.62F, -0.5F, 0.3F, -0.4F));
         crystalsGaster.addOrReplaceChild("c2", CubeListBuilder.create().texOffs(0, 48).addBox(-0.8F, -2.8F, -0.8F, 1.6F, 2.8F, 1.6F),
                 PartPose.offsetAndRotation(1.5F, -s.gasterH() / 2 + 0.7F, s.gasterL() * 0.7F, -0.6F, -0.4F, 0.45F));
-        // Liquid Ants (a look with a crop colour): a replete's abdomen. One size, always full: it is part of the species' shape
-        // like a soldier's big head, not a gauge. The liquid is a rounded body (four boxes crossed, so it has no square
-        // corner anywhere); around it, a little bigger, the thin skin of the crop, drawn see-through; and over the top the
-        // gaster's plates, pulled apart into four narrow bands as the crop swelled under them.
+        // A Liquid Ant's crop, one size and always full: the rounded liquid, its thin skin a little bigger, the plates on top.
         float cw = cropWidth(caste);
         float ch = cropHeight(caste);
         float cl = cropLength(caste);
@@ -202,11 +191,7 @@ public final class AntModel {
     /** How far the crop's skin stands off the liquid inside it. */
     public static final float CROP_SKIN = 0.45F;
 
-    /**
-     * The crop's rounded body, {@code w} wide, {@code h} tall and {@code l} long: one box each at full width, full height
-     * and full length (the other two sizes cut back by the chamfer), and one between them that fills their corners. Each
-     * has its own quarter of the crop texture (the texture generator lays the same four boxes out).
-     */
+    /** The crop's rounded body: four crossed boxes, each with its own quarter of the crop texture. */
     private static CubeListBuilder cropBoxes(float w, float h, float l, CubeDeformation grow) {
         float c = CROP_CHAMFER;
         return CubeListBuilder.create()
@@ -216,10 +201,7 @@ public final class AntModel {
                 .texOffs(64, 32).addBox(-w / 2 + c / 2, -h / 2 + c / 2, c / 2, w - c, h - c, l - c, grow);
     }
 
-    /**
-     * A Liquid Ant's crop, in units: much fatter and taller than the caste's gaster and a good deal longer (a Queen's is
-     * already big, so hers swells less). The texture generator lays the crop's skin out from the same numbers.
-     */
+    /** A Liquid Ant's crop size in units (a Queen's swells less); the texture generator uses the same numbers. */
     public static float cropWidth(Caste caste) {
         return Shape.of(caste).gasterW() * (caste == Caste.QUEEN ? 1.2F : 1.5F);
     }

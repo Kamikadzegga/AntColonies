@@ -7,11 +7,7 @@ import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.colony.genetics.Trait;
 import com.antcolonies.colony.upgrade.UpgradeType;
 
-/**
- * Eggs, larvae and adults. The Queen lays eggs (faster with Nest Chambers; genetics, food and room permitting); eggs hatch
- * into larvae after a while; larvae eat and grow into adults. Adults die of
- * age, and of hunger once a colony has starved past the grace period.
- */
+/** Eggs, larvae and adults: laying, hatching, growing and dying. */
 final class Breeding {
     record Result(double eggs, double raised, boolean full, boolean specialShort) {}
 

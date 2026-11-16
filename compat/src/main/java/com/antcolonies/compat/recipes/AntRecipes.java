@@ -315,10 +315,7 @@ public final class AntRecipes {
         return list;
     }
 
-    /**
-     * The Nether and End expeditions: for each species that may go, its ants and the site in, the finds it can bring back
-     * out (the expedition table, filtered to that species).
-     */
+    /** The Nether and End expeditions: per species that may go, its ants and the site in, the finds it can bring back out. */
     public List<AntRecipe> expeditions() {
         List<AntRecipe> list = new ArrayList<>();
         double base = AntConfig.get(AntConfig.EXPEDITION_ROLLS);
@@ -432,10 +429,7 @@ public final class AntRecipes {
         return list;
     }
 
-    /**
-     * Colony upgrades: one entry per type and tier. The upgrade on the left, every block it goes in on the right, and what
-     * it does there in numbers underneath (the same lines as its tooltip).
-     */
+    /** Colony upgrades, one entry per type and tier: the upgrade, every block it goes in, and its tooltip's lines underneath. */
     public List<AntRecipe> colonyUpgrades() {
         List<AntRecipe> list = new ArrayList<>();
         for (var type : com.antcolonies.colony.upgrade.UpgradeType.values()) {

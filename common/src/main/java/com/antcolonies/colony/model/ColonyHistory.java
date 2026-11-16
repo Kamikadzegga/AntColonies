@@ -6,14 +6,7 @@ import java.util.Locale;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-/**
- * What a colony looked like over the last while, for the Terrarium's Statistics page: one sample of each {@link Series}
- * every {@link #INTERVAL} ticks of game time, the last {@link #SIZE} of them (half an hour). The samples are the
- * colony's own numbers after a simulation step (population, food, and the step's per-minute rates), never estimates.
- *
- * <p>Saved with the colony, so the charts survive a restart. Clients get it only while someone has the Terrarium's
- * screen open (see {@code TerrariumBlockEntity}): it is the biggest part of a colony.
- */
+/** What a colony looked like over the last while, for the Terrarium's Statistics page: a ring of samples per {@link Series}. */
 public final class ColonyHistory {
     /** Ticks between samples (30 seconds). */
     public static final int INTERVAL = 600;

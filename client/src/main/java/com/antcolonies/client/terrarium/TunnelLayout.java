@@ -6,23 +6,13 @@ import java.util.List;
 import net.minecraft.util.RandomSource;
 
 /**
- * The tunnels and chambers seen through one glass side of a Terrarium, in that side's own 2D coordinates: u across
- * (1 to 15 px), v up (1 px at the bottom to {@link #SURFACE} at the soil's surface). Made from the Terrarium's position
- * (so every Terrarium digs its own way) and the colony's stage: more and bigger chambers as the colony grows.
- *
- * <p>The front side holds the Queen's chamber; the other sides hold the brood, the food stores and the waste chamber.
+ * The tunnels and chambers behind one glass side of a Formicarium: u across (1 to 15 px), v up (1 px to {@link #SURFACE}).
+ * Seeded by the block's position, grown with the colony's stage.
  */
 public final class TunnelLayout {
-    /**
-     * The soil's surface, px: the one ground height of every block of a colony built flat (the user, 2026-11-14: the
-     * Formicarium and its chambers "be on the same height level inside"), so also {@code StructureRenderer.FLOOR} and
-     * DataGen's FLOOR.
-     */
+    /** The soil's surface, px: the one ground height of every block of a colony built flat (also DataGen's FLOOR). */
     public static final float SURFACE = 8;
-    /**
-     * The heights below were laid out for soil 11 px deep; they are pressed into the shallower soil by this much (only
-     * up and down: chambers stay as wide).
-     */
+    /** The heights below were laid out for soil 11 px deep; they are pressed into the shallower soil by this much. */
     private static final float SQUEEZE = (SURFACE - 1) / 10F;
     public static final float MIN_U = 1.6F;
     public static final float MAX_U = 14.4F;
@@ -69,7 +59,8 @@ public final class TunnelLayout {
                 layout.edge(second, queen, random, jitter);
             }
         } else {
-            int food = layout.node(3 + random.nextFloat() * 3, 4 + random.nextFloat() * 2, 1.8F + stage * 0.2F, 1.1F + stage * 0.08F, ChamberType.FOOD);
+            int food = layout.node(3 + random.nextFloat() * 3, 4 + random.nextFloat() * 2, 1.8F + stage * 0.2F, 1.1F + stage * 0.08F,
+                    ChamberType.FOOD);
             int brood = layout.node(10 + random.nextFloat() * 3, 3 + random.nextFloat() * 2, 1.6F + stage * 0.15F, 1.0F, ChamberType.BROOD);
             layout.edge(hub, food, random, jitter);
             layout.edge(hub, brood, random, jitter);
@@ -97,7 +88,8 @@ public final class TunnelLayout {
     private int node(float u, float v, float radiusU, float radiusV, ChamberType type) {
         float rv = radiusV * (0.5F + SQUEEZE * 0.5F);
         float sv = 1 + (v - 1) * SQUEEZE;
-        nodes.add(new Node(Math.clamp(u, MIN_U + radiusU * 0.5F, MAX_U - radiusU * 0.5F), Math.clamp(sv, 1.2F + rv * 0.65F, SURFACE - 0.3F), radiusU, rv, type));
+        nodes.add(new Node(Math.clamp(u, MIN_U + radiusU * 0.5F, MAX_U - radiusU * 0.5F), Math.clamp(sv, 1.2F + rv * 0.65F, SURFACE - 0.3F), radiusU,
+                rv, type));
         return nodes.size() - 1;
     }
 

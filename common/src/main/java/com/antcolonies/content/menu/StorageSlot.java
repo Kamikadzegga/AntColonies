@@ -6,11 +6,7 @@ import com.antcolonies.content.blockentity.StructureBlockEntity;
 
 import net.minecraft.world.item.ItemStack;
 
-/**
- * A Storage slot, on the screen's scrolling window. It holds as much as the Storage's compacting allows (Storage
- * Upgrades add a stack per slot per tier), but hands out at most a normal stack at a time, so the cursor never carries
- * more than the item stacks to.
- */
+/** A Storage slot: holds as much as the Storage's compacting allows, but hands out at most a normal stack at a time. */
 public class StorageSlot extends FilteredSlot {
     private final StructureBlockEntity storage;
 

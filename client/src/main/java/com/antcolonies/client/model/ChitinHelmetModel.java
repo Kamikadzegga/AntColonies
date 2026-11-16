@@ -20,19 +20,7 @@ import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 import org.jspecify.annotations.Nullable;
 
-/**
- * The worn chitin armor's extra parts, all skinned from the armor texture's spare corners (the hat layer is left empty;
- * see TexGen's {@code antennaSkins}):
- * <ul>
- * <li>Every Chitin Helmet: vanilla's helmet box painted as an ant's head, two elbowed antennae on top (each rises from
- * the front of the head, leans out, bends forward at the elbow and ends in a club) and a pair of jaws under the face,
- * curving in towards each other, a tooth at each tip.</li>
- * <li>Hardened and Infernal chestplates: two thorn-like spines on the upper back, pointing back and up and a little
- * apart, like a spiny ant's.</li>
- * <li>The Void chestplate: a Queen's two wings, folded down the back past the waist.</li>
- * </ul>
- * Babies keep the plain shapes.
- */
+/** The worn chitin armor's extra parts (antennae, jaws, spines, wings), skinned from the armor texture's spare corners. */
 public final class ChitinHelmetModel {
     public static final ModelLayerLocation LAYER = new ModelLayerLocation(AntColonies.id("chitin_helmet"), "main");
     public static final ModelLayerLocation SPINES = new ModelLayerLocation(AntColonies.id("chitin_chestplate_spines"), "main");
@@ -45,7 +33,8 @@ public final class ChitinHelmetModel {
     private ChitinHelmetModel() {}
 
     public static LayerDefinition create() {
-        MeshDefinition mesh = HumanoidModel.createArmorMeshSet(LayerDefinitions.INNER_ARMOR_DEFORMATION, LayerDefinitions.OUTER_ARMOR_DEFORMATION).head();
+        MeshDefinition mesh = HumanoidModel.createArmorMeshSet(LayerDefinitions.INNER_ARMOR_DEFORMATION,
+                LayerDefinitions.OUTER_ARMOR_DEFORMATION).head();
         PartDefinition head = mesh.getRoot().getChild("head");
         head.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
         for (int side : new int[] {-1, 1}) {
@@ -54,8 +43,7 @@ public final class ChitinHelmetModel {
             PartDefinition scape = head.addOrReplaceChild(name + "_antenna",
                     CubeListBuilder.create().texOffs(32, 0).addBox(-0.5F, -6.0F, -0.5F, 1.0F, 6.0F, 1.0F),
                     PartPose.offsetAndRotation(side * 2.0F, -9.0F, -3.5F, 0.35F, 0.0F, side * 0.35F));
-            // The rest of the antenna, from the elbow forward and a little up and out, with the club at its tip (a 2-pixel
-            // box drawn 0.3 smaller on every side, so it is a little thicker than the antenna, not a block).
+            // The rest of the antenna, from the elbow forward, with the club at its tip (a 2-pixel box shrunk by 0.3).
             scape.addOrReplaceChild(name + "_antenna_tip",
                     CubeListBuilder.create().texOffs(36, 0).addBox(-0.5F, -0.5F, -6.0F, 1.0F, 1.0F, 6.0F)
                             .texOffs(50, 0).addBox(-1.0F, -1.0F, -7.2F, 2.0F, 2.0F, 2.0F, new CubeDeformation(-0.3F)),
@@ -71,7 +59,8 @@ public final class ChitinHelmetModel {
 
     /** The chestplate with two spines on the upper back. */
     public static LayerDefinition createSpines() {
-        MeshDefinition mesh = HumanoidModel.createArmorMeshSet(LayerDefinitions.INNER_ARMOR_DEFORMATION, LayerDefinitions.OUTER_ARMOR_DEFORMATION).chest();
+        MeshDefinition mesh = HumanoidModel.createArmorMeshSet(LayerDefinitions.INNER_ARMOR_DEFORMATION,
+                LayerDefinitions.OUTER_ARMOR_DEFORMATION).chest();
         PartDefinition body = mesh.getRoot().getChild("body");
         for (int side : new int[] {-1, 1}) {
             body.addOrReplaceChild((side < 0 ? "right" : "left") + "_spine",
@@ -83,7 +72,8 @@ public final class ChitinHelmetModel {
 
     /** The chestplate with a Queen's folded wings down the back. */
     public static LayerDefinition createWings() {
-        MeshDefinition mesh = HumanoidModel.createArmorMeshSet(LayerDefinitions.INNER_ARMOR_DEFORMATION, LayerDefinitions.OUTER_ARMOR_DEFORMATION).chest();
+        MeshDefinition mesh = HumanoidModel.createArmorMeshSet(LayerDefinitions.INNER_ARMOR_DEFORMATION,
+                LayerDefinitions.OUTER_ARMOR_DEFORMATION).chest();
         PartDefinition body = mesh.getRoot().getChild("body");
         for (int side : new int[] {-1, 1}) {
             // A flat wing 4 wide and 13 long, from the shoulders down past the waist, its tip a little out and back.

@@ -17,10 +17,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import org.jspecify.annotations.Nullable;
 
-/**
- * A block of a colony build: the Terrarium and the chambers. Each knows which of its six sides touch another part of a
- * colony; the models draw their wooden frame only on the outer edges, so touching parts look like one big build.
- */
+/** A block of a colony build (the Terrarium and the chambers): it knows which sides touch another part, so their frames join. */
 public abstract class ColonyPartBlock extends ColonyEntityBlock {
     public static final Map<Direction, BooleanProperty> CONNECTED = PipeBlock.PROPERTY_BY_DIRECTION;
 
@@ -40,11 +37,7 @@ public abstract class ColonyPartBlock extends ColonyEntityBlock {
         builder.add(UPRIGHT);
     }
 
-    /**
-     * Whether the part's colony is built upright. A colony's Formicarium decides it for the whole build (see
-     * TerrariumBlockEntity#updateStance): the parts of a colony built flat on the ground are glass cases; those of one
-     * built upward are an upright nest, seen through a glass at the front and at the back.
-     */
+    /** Whether the part's colony is built upright; its Formicarium decides it for the whole build. */
     public static final BooleanProperty UPRIGHT = BooleanProperty.create("upright");
 
     public static boolean upright(BlockState state) {

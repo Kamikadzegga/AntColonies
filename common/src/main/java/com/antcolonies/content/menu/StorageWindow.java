@@ -8,11 +8,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * The six rows of a Storage that its screen shows: a view of the Storage's slots starting at the row it is scrolled
- * to. The menu's slots sit on this view, so scrolling changes which Storage slots they are, and the server sends the
- * new contents like any other change.
- */
+/** The six rows of a Storage that its screen shows: a view of the Storage's slots starting at the row it is scrolled to. */
 public class StorageWindow implements Container {
     public static final int ROWS = 6;
     public static final int SIZE = ROWS * 9;

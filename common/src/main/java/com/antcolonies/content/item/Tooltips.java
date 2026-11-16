@@ -88,10 +88,7 @@ public final class Tooltips {
         }
     }
 
-    /**
-     * What a species is like, for tube tooltips: its climate (and the blocks that make a Terrarium right for it), what it
-     * finds or grows, and with {@code detailed} what it evolves into. Nothing if the species' data isn't loaded.
-     */
+    /** What a species is like, for tube tooltips: its climate, what it finds or grows, and with {@code detailed} its evolutions. */
     public static void speciesFacts(HolderLookup.@Nullable Provider registries, Identifier id, Consumer<Component> tooltip, boolean detailed) {
         AntSpecies data = ModRegistries.species(registries, id);
         if (data == null) {

@@ -13,11 +13,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
-/**
- * An Ant Egg Cluster's or Larva Cluster's species, and for one an anthill was built with, that anthill (its Queen's
- * spot): the ants it hatches into belong there. The species goes with the item when the cluster is picked up with Silk
- * Touch (and back into the block when it is placed), so the item can join a colony of that species.
- */
+/** An Egg or Larva Cluster's species and the anthill its ants will belong to; the species travels with the item. */
 public class BroodClusterBlockEntity extends BlockEntity {
     private @Nullable Identifier species;
     private @Nullable BlockPos anthill;

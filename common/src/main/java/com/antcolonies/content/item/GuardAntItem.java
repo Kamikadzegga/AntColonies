@@ -23,10 +23,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 
-/**
- * A Guard Ant in its tube. Use it on a block to let it out: it is yours, follows you and fights for you. Got by using
- * a Rally Pheromone on a Terrarium (the colony gives up {@link AntConfig#GUARD_SOLDIER_COST} soldiers).
- */
+/** A Guard Ant in its tube, got for {@link AntConfig#GUARD_COST} of a colony's ants; using it on a block lets it out. */
 public class GuardAntItem extends Item {
     public GuardAntItem(Properties properties) {
         super(properties);

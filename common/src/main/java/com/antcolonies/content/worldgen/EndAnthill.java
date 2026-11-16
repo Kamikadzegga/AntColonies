@@ -12,11 +12,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 
-/**
- * An End anthill: a nest of Chorus Ants dug into an outer island (see {@link AnthillPiece} with {@link AnthillPiece.Kind#END}):
- * a mound of end stone over tunnels walled in end stone bricks and purpur. Only where the island is solid and flat
- * enough, and its plan never reaches past the island's underside by more than its walls can close.
- */
+/** An End anthill: a nest of Chorus Ants dug into an outer island, only where the island is solid and flat enough. */
 public class EndAnthill extends Structure {
     public static final MapCodec<EndAnthill> CODEC = simpleCodec(EndAnthill::new);
     private static final int MAX_SLOPE = 3;

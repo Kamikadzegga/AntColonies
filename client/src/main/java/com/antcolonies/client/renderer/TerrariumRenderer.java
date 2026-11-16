@@ -39,13 +39,8 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The living Terrarium: soil in its climate's colors behind the glass, with the colony's tunnels and chambers dug
- * into every side, eggs, larvae and food in the chambers, the Queen in her chamber on the front, the colony's
- * representative ants at work, and on the surface whatever the colony grows (fungus gardens, crystals at stage 4).
- * Everything follows the synced colony; nothing here feeds back into it.
- *
- * <p>That is the Formicarium standing on the ground. With another part of a colony over or under it, it is an upright
- * nest instead, drawn by {@link NestRenderer}.
+ * Draws the Formicarium on the ground: soil behind the glass with the colony's tunnels and chambers, its ants, and what
+ * grows on top. In a stack, {@link NestRenderer} draws it instead.
  */
 public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEntity, TerrariumRenderer.State> {
     private static final Identifier TEXTURE = AntColonies.id("textures/entity/terrarium_inside.png");
@@ -138,8 +133,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         state.detailed = AntConfig.client(AntConfig.ANT_3D_MODELS) && Vec3.atCenterOf(terrarium.getBlockPos()).distanceToSqr(camera) < detail * detail;
         state.species = ClientSpecies.get(terrarium.colony().species());
         state.former = ClientSpecies.get(terrarium.colony().formerSpecies());
-        // Only the sides facing the camera can be seen (two at most): the others are left out, a good share of the work
-        // when many Terrariums are in view.
+        // Only the sides facing the camera can be seen (two at most): the others are left out.
         double cx = (camera.x - terrarium.getBlockPos().getX()) * 16;
         double cz = (camera.z - terrarium.getBlockPos().getZ()) * 16;
         FlatGround.facing(state.facing, cx, cz);
@@ -370,8 +364,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
             return;
         }
         TunnelLayout.Node node = layout.nodes.get(chamber);
-        // She walks her chamber's floor (TerrariumVisuals): her legs step with the distance she covers, and stand still
-        // while she rests.
+        // She walks her chamber's floor (TerrariumVisuals).
         float shuffle = Mth.lerp(state.partialTicks, visuals.prevQueenOffset, visuals.queenOffset);
         boolean positive = visuals.queenRight;
         boolean walking = visuals.queenMoving;
@@ -397,10 +390,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
                 actor.carry, g.light, 1);
     }
 
-    /**
-     * One side-view ant in a glass side's plane: feet at (u, v), walking along +u or -u, tilted up a slope by
-     * {@code pitch}. Gaster, body and crystals are layers of the sprite sheet, each in the species' color.
-     */
+    /** One side-view ant in a glass side's plane: feet at (u, v), walking along +u or -u, tilted up a slope by {@code pitch}. */
     static void drawSprite(Geometry g, int face, float u, float v, boolean positive, float pitch, Caste caste, AntLook look, float length,
                                    int frame, int carry, int light, float gasterScale) {
         float d = positive ? 1 : -1;
@@ -444,10 +434,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         g.light = saved;
     }
 
-    /**
-     * A species color lifted toward white until it reads against the dark soil of the tunnels (a navy or black ant would
-     * otherwise vanish there); light colors are left alone.
-     */
+    /** A species color lifted toward white until it reads against the tunnels' dark soil; light colors are left alone. */
     private static int visible(int rgb) {
         int r = (rgb >> 16) & 0xFF;
         int gr = (rgb >> 8) & 0xFF;
@@ -486,11 +473,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         g.quadUv(corners, uv, color, NORMALS[face]);
     }
 
-    /**
-     * A surface ant as a 2D side-view sprite, the same as the ants in the tunnels: it stands on the soil in the vertical
-     * plane of its walk, head first, drawn from both sides so it shows through every glass wall. Used beyond the detail
-     * distance, past the 3D model cap, and always when 3D ants are turned off; far cheaper than the 3D model.
-     */
+    /** A surface ant as a side-view sprite standing on the soil, drawn from both sides: the cheap stand-in for the 3D model. */
     private static void drawSurfaceSprite(Geometry g, TerrariumVisuals.Actor actor, State state, AntLook look) {
         float pt = state.partialTicks;
         float x = Mth.lerp(pt, actor.prevX, actor.x);

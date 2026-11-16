@@ -36,11 +36,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Life on the colony chambers: ants at work on the working sites (as many as the site's real assignment calls for, up to
- * six), soldiers sparring at Foraging Sites, and the Storage's heap, made of the items it really holds (the most
- * plentiful ones, piled higher the more there are).
- */
+/** Draws a colony chamber: its soil or upright nest, the ants at work on it, and the Storage's heap of the items it holds. */
 public class StructureRenderer implements BlockEntityRenderer<StructureBlockEntity, StructureRenderer.State> {
     private static final float LENGTH = 3.2F / 16;
     /** Height of every chamber's floor inside its glass, in pixels: the colony's one ground height (DataGen.FLOOR). */
@@ -115,8 +111,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         state.top = FlatGround.topColor(climate);
         state.wallAnts = state.near && colony != null && colony.adults() > 0 && AntConfig.client(AntConfig.STRUCTURE_ANTS);
         state.wallLook = colonySpecies == null ? AntLook.UNKNOWN : colonySpecies.look();
-        // The working ants are 3D models, so (like the Terrarium's surface ants) only up close and with 3D ants on: further
-        // away they would be a pixel or two, and a ring of busy chambers costs a lot of models.
+        // The working ants are 3D models, so only up close and with 3D ants on: many busy chambers cost a lot of models.
         double detail = AntConfig.client(AntConfig.ANT_DETAIL_DISTANCE);
         boolean detailed = AntConfig.client(AntConfig.ANT_3D_MODELS)
                 && Vec3.atCenterOf(structure.getBlockPos()).distanceToSqr(camera) < detail * detail;
@@ -230,10 +225,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         }
     }
 
-    /**
-     * The chamber's soil, at the colony's one ground height: its walls behind the outer glass with tunnels running on
-     * into the next blocks', its surface with the trails to its neighbours, and (up close) ants walking the tunnels.
-     */
+    /** The chamber's soil: its walls with their tunnels, its surface with the trails, and (up close) ants walking the tunnels. */
     private static void drawGround(State state, PoseStack poseStack, SubmitNodeCollector collector) {
         FlatGround.Shape shape = state.shape;
         @SuppressWarnings("unchecked")
@@ -318,7 +310,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
                 poseStack.translate(spots[i][0] / 16, (FLOOR + 1.1F + layer * 0.5F + (i == 0 ? 0.4F : 0)) / 16, spots[i][1] / 16);
                 poseStack.mulPose(Axis.YP.rotationDegrees((i * 67 + layer * 41) % 360));
                 poseStack.mulPose(Axis.XP.rotationDegrees(90));
-                // About 4 px across: a load the ants could carry in, not a block-sized item (the user, 2026-11-14: "too big").
+                // About 4 px across: a load the ants could carry in, not a block-sized item.
                 poseStack.scale(0.24F, 0.24F, 0.24F);
                 item.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
                 poseStack.popPose();

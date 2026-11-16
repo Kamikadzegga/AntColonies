@@ -20,11 +20,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import org.jspecify.annotations.Nullable;
 
-/**
- * The mod's GUIs share this look: a riveted gunmetal console with dark glass panels and lit slots (the sprites in
- * textures/gui/sprites/lab, painted by TexGen), light text, and console buttons that send menu button clicks (the
- * server applies them and syncs back). A selected or primary button glows.
- */
+/** The look the mod's GUIs share: a gunmetal console with glass panels, lit slots and buttons that send menu button clicks. */
 public abstract class AntScreen<T extends AbstractContainerMenu> extends AbstractContainerScreen<T> {
     protected static final int LABEL = 0xFFD8F2FF;
     protected static final int DIM = 0xFF7896A8;
@@ -83,7 +79,7 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
         drawSlot(graphics, x, y);
     }
 
-    /** A faint glyph in an empty slot for what goes in: queen (a tube), feed (a crumb), output (an arrow out), upgrade (a chevron). */
+    /** A faint glyph in an empty slot for what goes in. */
     protected static void drawGlyph(GuiGraphicsExtractor graphics, String kind, int x, int y) {
         int c = 0xFF2B4A5A;
         int cx = x + 9;
@@ -175,10 +171,7 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
         cuts.add(new Cut(leftPos + x, topPos + y, w, h, text));
     }
 
-    /**
-     * Call after drawing {@code drawn} at screen coordinates: if it is the text {@link #fit} cut last, hovering it shows it
-     * whole. {@link #label} and the screens' own text helpers call this, so any {@code label(fit(...))} gets its hover.
-     */
+    /** Call after drawing {@code drawn} at screen coordinates: if it is the text {@link #fit} cut last, hovering it shows it whole. */
     protected void noteDrawn(String drawn, int screenX, int screenY) {
         if (lastCutShown != null && lastCutShown.equals(drawn)) {
             cuts.add(new Cut(screenX, screenY - 1, font.width(drawn), 10, lastCutFull));
@@ -253,7 +246,7 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
         sprite(graphics, name, button.x(), button.y(), button.w(), button.h());
         int color = !button.enabled() ? 0xFF5E7484 : lit || hovered ? 0xFFFFFFFF : LABEL;
         // Flat text (a shadow smears on the lit buttons), centered on its glyphs: font widths count a trailing gap
-        // column and capitals are 7 pixels tall. A label too wide for its button is cut rather than spilling over.
+        // column and capitals are 7 pixels tall.
         String label = button.label();
         int room = button.w() - 4;
         if (font.width(label) - 1 > room) {

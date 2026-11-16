@@ -9,8 +9,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.util.StringRepresentable;
 
 /**
- * The colony chambers. A Terrarium works on its own; chambers are additions that join it when they touch it or another
- * chamber of its colony, in any shape. Each kind is one block; what it does is worked out by the colony's simulation.
+ * The colony chambers: additions that join a Terrarium when they touch it or another chamber of its colony.
  *
  * @param job       which ants it puts to work, if any
  * @param slots     its own item slots
@@ -31,23 +30,14 @@ public enum StructureKind implements StringRepresentable {
     STORAGE("storage", Job.NONE, 162, 2, EnumSet.of(UpgradeType.STORAGE, UpgradeType.AUTOMATION)),
     /** Raises new Queens, and hybrids when a Genetic Sample is crossed in. */
     QUEEN_CHAMBER("queen_chamber", Job.NONE, 7, 2, EnumSet.of(UpgradeType.BREEDING, UpgradeType.GENETIC, UpgradeType.SPEED)),
-    /**
-     * Nether-adapted ants (species tag antcolonies:nether_adapted) go on simulated expeditions through its little portal:
-     * finds from the Nether expedition's table (data/.../antcolonies/expedition/nether.json). Other ants leave it alone.
-     */
-    NETHER_FORAGING_SITE("nether_foraging_site", Job.FORAGING, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
-    /** The same for End-adapted ants (antcolonies:end_adapted) and the End expedition's table. */
+    /** Nether-adapted ants go on simulated expeditions from here; other ants leave it alone. */
+    NETHER_FORAGING_SITE("nether_foraging_site", Job.FORAGING, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY,
+            UpgradeType.POPULATION)),
+    /** The same for End-adapted ants. */
     END_FORAGING_SITE("end_foraging_site", Job.FORAGING, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
-    /**
-     * Links its colony to the other colonies on the same channel in this dimension: food moves from colonies with spare
-     * food to colonies that ask for it, and items its filter names move between their Storage (see ConnectorNetwork).
-     * Its slots are the item filter.
-     */
+    /** Links its colony to the others on its channel, to share food and the items its filter (its slots) names. */
     COLONY_CONNECTOR("colony_connector", Job.NONE, 9, 0, EnumSet.noneOf(UpgradeType.class)),
-    /**
-     * Liquid Ants (species of category liquid) hang here with full crops and give droplets of their fluid: nothing else,
-     * and no other ants work here. A small store for when the Storage is full, like a Foraging Site's.
-     */
+    /** Liquid Ants give droplets of their fluid here; a small store for when the Storage is full. */
     LIQUID_CHAMBER("liquid_chamber", Job.LIQUID, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION));
 
     public static final Codec<StructureKind> CODEC = StringRepresentable.fromEnum(StructureKind::values);
@@ -130,7 +120,8 @@ public enum StructureKind implements StringRepresentable {
     public static final java.util.List<StructureKind> FORAGING_KINDS = java.util.List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE);
 
     /** Every job site with a store of its own ({@link #siteStore}), in the order finds overflow into them. */
-    public static final java.util.List<StructureKind> SITE_STORES = java.util.List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER);
+    public static final java.util.List<StructureKind> SITE_STORES =
+            java.util.List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER);
 
     public String translationKey() {
         return "block.antcolonies." + name;

@@ -21,17 +21,11 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A simulated expedition into another dimension, run from a Nether or End Foraging Site, loaded from
- * {@code data/<namespace>/antcolonies/expedition/<name>.json}. No ant ever leaves: the site's workers are numbers in the
- * colony's simulation, the target dimension is never loaded, and what they bring back comes from this table.
+ * A simulated expedition into another dimension, run from a Nether or End Foraging Site; that dimension is never loaded.
  *
- * @param site      the Foraging Site that runs it
- * @param adapted   the species (a species tag) that can go; a colony of any other species leaves the site alone
- * @param rate      finds compared to an ordinary Foraging Site's
- * @param home      the dimension the expedition goes to: an ordinary Foraging Site of a colony living there finds the
- *                  {@code trail} now and then (the material the site is crafted from)
- * @param trail     the trail pheromone found there, and its chance per find
- * @param outputs   what the expedition brings back; an output naming species is found only by those
+ * @param adapted the species (a species tag) that can go
+ * @param rate    finds compared to an ordinary Foraging Site's
+ * @param home    the dimension the expedition goes to
  */
 public record Expedition(StructureKind site, TagKey<AntSpecies> adapted, double rate, ResourceKey<Level> home, Optional<Trail> trail,
                          List<Find> outputs) {

@@ -30,15 +30,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Calls from common code that only ever run on the client (block entity client ticks, block events, animateTick,
- * item use). Only this class touches client classes, and nothing on a dedicated server calls it.
- */
+/** The client-only calls common code makes. Only this class touches client classes; a dedicated server never calls it. */
 public final class ClientHooks {
     /**
-     * A clock for animations: game time plus the partial tick, wrapped every 2^18 ticks (about 3.6 hours). A float of the
-     * whole game time loses the partial tick after 58 hours of world age and steps by 2 ticks after 233, so animations
-     * would stutter on old worlds; the wrap is one small jump every few hours instead.
+     * A clock for animations: game time plus the partial tick, wrapped every 2^18 ticks. A float of the whole game time
+     * loses the partial tick on old worlds, and animations would stutter.
      */
     public static float animationTime(long gameTime, float partialTicks) {
         return (gameTime & ((1 << 18) - 1)) + partialTicks;
@@ -69,8 +65,7 @@ public final class ClientHooks {
             case WEST -> 3;
             default -> 0;
         };
-        // The Queen's chamber goes on the side the Formicarium faces, unless a chamber stands there (no glass, the soil runs
-        // on): then on the next open side, so she can still be seen.
+        // The Queen's chamber goes on the side the Formicarium faces, or on the next open side if a chamber stands there.
         Direction[] sides = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
         if (state.getBlock() instanceof ColonyPartBlock && state.getValue(ColonyPartBlock.CONNECTED.get(sides[front]))) {
             for (int k = 1; k < 4; k++) {
@@ -182,11 +177,7 @@ public final class ClientHooks {
         return ColonyPartBlock.upright(state) && facing(state).getAxis() == facing.getAxis();
     }
 
-    /**
-     * Where a stacked block's tunnels cross each side of its face: on every side where another upright nest stands the
-     * same way round (but not a part of a different colony), at a spot worked out from the two blocks' positions, so
-     * both dig to the same one.
-     */
+    /** Where a stacked block's tunnels cross each side of its face (-1: none), worked out so both neighbours dig to the same spot. */
     private static int[] gates(Level level, BlockPos pos, Direction facing, @Nullable BlockPos home) {
         int[] gates = {-1, -1, -1, -1};
         for (int side = 0; side < 4; side++) {
@@ -202,8 +193,7 @@ public final class ClientHooks {
             BlockPos lower = direction.getAxisDirection() == Direction.AxisDirection.POSITIVE ? pos : other;
             boolean vertical = direction.getAxis().isVertical();
             int at = NestLayout.GATE_MIN + NestLayout.crossing(lower.asLong(), direction.getAxis().ordinal() + (vertical ? 3 + facing.getAxis().ordinal() : 0));
-            // Across a side wall the spot is a height, the same for both blocks. Across the top or bottom it is a place
-            // along the world axis the face runs along, which u runs with (facing south or west) or against.
+            // Across the top or bottom the spot lies along a world axis, which u runs with (facing south or west) or against.
             gates[side] = !vertical || facing == Direction.SOUTH || facing == Direction.WEST ? at : 15 - at;
         }
         return gates;

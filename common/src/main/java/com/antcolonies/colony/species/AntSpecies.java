@@ -16,14 +16,10 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
- * One ant species, loaded from {@code data/<namespace>/antcolonies/species/<name>.json}. A species decides what a colony
- * produces; the Queen's genetics decide how well. Everything here is plain data, so modpacks add species, outputs and
- * foods without code. See the README for the format.
+ * One ant species, as its data file gives it: it decides what a colony produces.
  *
  * @param tier     0 for the five base species and Farmer Ants, 1-3 for mineral species, 4 for the end game
- * @param look     how its ants are drawn (colors, pattern, crystals)
- * @param climate  where it thrives; elsewhere colony health suffers unless its genetics resist
- * @param spawn    where it lives in the wild (for JEI and natural spawning), if anywhere
+ * @param spawn    where it lives in the wild, if anywhere
  * @param liquid   Liquid Ants only: the fluid they make droplets of
  */
 public record AntSpecies(int tier, Category category, AntLook look, Climate climate, Optional<TagKey<Biome>> spawn, Diet diet,
@@ -61,7 +57,7 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
         return category == Category.LIQUID;
     }
 
-    /** What its eggs need besides plain food: "" for nothing, else a special food kind (see the ant_food data map). */
+    /** Whether its eggs need a special food besides plain food. */
     public boolean needsSpecialFood() {
         return !diet.specialKind().isEmpty() && diet.specialPerEgg() > 0;
     }
@@ -84,7 +80,7 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
         ).apply(i, Diet::new));
     }
 
-    /** What its workers find at Foraging Chambers, and how fast compared to Common Ants. */
+    /** What its workers find at Foraging Sites, and how fast compared to Common Ants. */
     public record Production(double rate, List<SpeciesOutput> outputs) {
         public static final Production NONE = new Production(1.0, List.of());
         public static final Codec<Production> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -93,10 +89,7 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
         ).apply(i, Production::new));
     }
 
-    /**
-     * What its workers grow in a Fungus Garden: food per minute compared to Farmer Ants (0: they can't farm), and
-     * the harvest (mushrooms, seeds, berries) that goes to the Storage chambers.
-     */
+    /** What its workers grow at a Harvesting Site: food per minute compared to Farmer Ants (0: they can't farm), and the harvest. */
     public record Farming(double foodPerMinute, List<SpeciesOutput> harvest) {
         public static final Farming NONE = new Farming(0, List.of());
         public static final Codec<Farming> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -105,7 +98,7 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
         ).apply(i, Farming::new));
     }
 
-    /** How hard its soldiers hit, and what they hunt at Hunting Chambers (each mob's own loot table is used). */
+    /** How hard its soldiers hit, and what they hunt at Hunting Grounds (each mob's own loot table is used). */
     public record Combat(double strength, List<Target> targets) {
         public static final Combat DEFAULT = new Combat(1.0, List.of());
         public static final Codec<Combat> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -131,14 +124,10 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
     }
 
     /**
-     * What a Liquid Ant species makes: droplets of one fluid, and nothing else. Both are named by id and looked up when
-     * needed, so a species whose fluid or droplet is gone (its mod was removed) still loads: it just makes nothing, and
-     * its Liquid Chamber says why. The built-in species of other mods' fluids don't load at all without their fluid (their
-     * files carry "neoforge:conditions").
+     * What a Liquid Ant species makes. The fluid and the droplet are ids looked up when needed, so a species whose mod
+     * was removed still loads and just makes nothing.
      *
-     * @param fluid   the registered fluid the droplets are of (the Centrifuge's recipes decide what a droplet becomes)
-     * @param droplet the droplet item its workers give
-     * @param rate    droplets per minute compared to Water Ants
+     * @param rate droplets per minute compared to Water Ants
      */
     public record Liquid(Identifier fluid, Identifier droplet, double rate) {
         public static final Codec<Liquid> CODEC = RecordCodecBuilder.create(i -> i.group(

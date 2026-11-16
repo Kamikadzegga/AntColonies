@@ -17,14 +17,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
-/**
- * One colony: its Queen, its real population, its food, and what its last simulation step worked out. The numbers are
- * doubles so small steps add up exactly; GUIs show them rounded down. This is the only source of a colony's population:
- * nothing is counted from entities or from the ants drawn in the Terrarium.
- *
- * <p>Saved with its Terrarium. The client copy gets the same data plus the last step's results (rates, status,
- * assignments), so the GUI and the Terrarium's animation show exactly what the server works with.
- */
+/** One colony: its Queen, population and food, and what its last simulation step worked out. Doubles, so small steps add up. */
 public final class Colony {
     /** One working chamber's ants, as the GUI lists them. */
     public record Assignment(BlockPos pos, StructureKind kind, int assigned, int requested, int capacity, int status, double rate, int mode,
@@ -61,9 +54,8 @@ public final class Colony {
     }
 
     /**
-     * One colony on a Colony Connector channel, as this colony's Network page shows it: where its Terrarium is, its
-     * species and food, the connector's settings and what moved over the last minute. {@code self} marks this colony's
-     * own connector; {@code online} is false while the other colony's chunk is unloaded (it then takes no part).
+     * One colony on a Colony Connector channel, as this colony's Network page shows it. {@code self} marks this colony's
+     * own connector; {@code online} is false while the other colony's chunk is unloaded.
      */
     public record NetworkLink(BlockPos terrarium, Identifier species, int channel, float food, float capacity, int mode, int itemMode,
                               float reserve, float target, float inPerMinute, float outPerMinute, boolean online, boolean self, boolean paused) {
@@ -350,10 +342,7 @@ public final class Colony {
         }
     }
 
-    /**
-     * A Queen alone was put into an empty Terrarium: Queen-only founding starts (she waits for her food, then lays her first
-     * brood). Only the Terrarium's Queen slot calls this, and only for a colony with no ants at all.
-     */
+    /** A Queen alone was put into an empty Terrarium: Queen-only founding starts. */
     public void startFounding() {
         if (queen != null && isEmptyOfAnts()) {
             founding = Founding.FEEDING;
@@ -415,7 +404,6 @@ public final class Colony {
         return false;
     }
 
-    /** For tests and commands: sets the population outright. */
     /** Takes workers away (a Guard Ant leaving); false, and nothing taken, when the colony has fewer. */
     public boolean takeWorkers(double count) {
         if (workers < count) {
@@ -425,6 +413,7 @@ public final class Colony {
         return true;
     }
 
+    /** For tests and commands: sets the population outright. */
     public void setPopulation(double eggs, double larvae, double workers) {
         this.eggs = eggs;
         this.larvae = larvae;

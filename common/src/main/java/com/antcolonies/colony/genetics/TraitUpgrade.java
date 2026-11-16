@@ -6,11 +6,7 @@ import com.antcolonies.colony.species.Cost;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-/**
- * What the Genetic Laboratory needs to raise one trait, loaded from
- * {@code data/<namespace>/antcolonies/trait_upgrade/<trait>.json}: one step per level, the first raising level 1 to 2.
- * Higher levels ask for rarer materials. A missing step falls back to the last one given.
- */
+/** What the Genetic Laboratory needs to raise one trait: one step per level, a missing step falling back to the last given. */
 public record TraitUpgrade(Trait trait, List<Step> steps) {
     public static final Codec<TraitUpgrade> CODEC = RecordCodecBuilder.create(i -> i.group(
             Trait.CODEC.fieldOf("trait").forGetter(TraitUpgrade::trait),

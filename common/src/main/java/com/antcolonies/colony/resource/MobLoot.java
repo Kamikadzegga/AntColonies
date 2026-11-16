@@ -21,9 +21,8 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Simulated hunts: one roll of a mob's own loot table, as if it died near the Hunting Chamber. The mob is never spawned:
- * one instance per type is made once and kept off-world, only so its loot table (vanilla's or any mod's) gets the entity
- * it expects. No player killed it, so player-only drops (like Wither Skeleton skulls from Looting) don't come.
+ * Simulated hunts: one roll of a mob's own loot table, for a stand-in kept off-world and never spawned. No player
+ * killed it, so player-only drops don't come.
  */
 public final class MobLoot {
     private static final Map<ServerLevel, Map<EntityType<?>, Optional<LivingEntity>>> STAND_INS = new java.util.concurrent.ConcurrentHashMap<>();
@@ -60,7 +59,7 @@ public final class MobLoot {
         }
     }
 
-    /** Forgets a level's stand-ins when it unloads: they hold the level, so the weak map alone would keep it alive. */
+    /** Forgets a level's stand-ins when it unloads: they hold the level, so the map would keep it alive. */
     public static void onLevelUnload(net.neoforged.neoforge.event.level.LevelEvent.Unload event) {
         if (event.getLevel() instanceof ServerLevel level) {
             STAND_INS.remove(level);

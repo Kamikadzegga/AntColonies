@@ -20,10 +20,7 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
-/**
- * Reads a Queen's full genetic profile and lineage: right-click a Terrarium, or use it with a Queen Test Tube or Genetic
- * Sample in the other hand.
- */
+/** Reads a Queen's full genetic profile and lineage, from a Terrarium or from a tube in the other hand. */
 public class GeneticAnalyzerItem extends Item {
     public GeneticAnalyzerItem(Properties properties) {
         super(properties);

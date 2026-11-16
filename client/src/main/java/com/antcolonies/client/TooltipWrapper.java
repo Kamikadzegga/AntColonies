@@ -18,10 +18,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
-/**
- * Wraps the long description lines of this mod's item tooltips, keeping their colors, so a tooltip stays a readable
- * column instead of a line across the whole screen. The item's name (the first line) is left alone.
- */
+/** Wraps the long description lines of this mod's item tooltips, keeping their colors. The item's name is left alone. */
 @EventBusSubscriber(modid = AntColonies.MODID, value = Dist.CLIENT)
 public final class TooltipWrapper {
     /** The widest a description line may be, in GUI pixels. */
@@ -35,8 +32,8 @@ public final class TooltipWrapper {
         if (!AntColonies.MODID.equals(BuiltInRegistries.ITEM.getKey(event.getItemStack().getItem()).getNamespace())) {
             return;
         }
-        // Measuring text may bake font glyphs, which only the render thread may do. Recipe viewers build their search
-        // index from tooltips on a worker thread (EMI does): leave those lines unwrapped, the words are the same.
+        // Measuring text may bake font glyphs, which only the render thread may do. Recipe viewers read tooltips on a
+        // worker thread (EMI does): leave those unwrapped.
         if (!Minecraft.getInstance().isSameThread()) {
             return;
         }

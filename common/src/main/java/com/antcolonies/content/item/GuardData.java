@@ -8,10 +8,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 
-/**
- * A Guard Ant in its tube: the colony's species, the Soldier Strength level of the Queen it came from (1 to 10), and
- * its health when it was picked up ({@code -1}: full).
- */
+/** A Guard Ant in its tube: its species, Soldier Strength (1 to 10) and health when picked up ({@code -1}: full). */
 public record GuardData(Identifier species, int strength, float health) {
     public static final Codec<GuardData> CODEC = RecordCodecBuilder.create(i -> i.group(
             Identifier.CODEC.fieldOf("species").forGetter(GuardData::species),

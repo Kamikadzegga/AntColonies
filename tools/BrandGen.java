@@ -7,9 +7,8 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 
 /**
- * Paints the mod's branding as pixel art: an ant's head (front view) and the name in a pixel font below it. Writes
- * the mod-list icon and banner into the jar's resources, and the logo, banner and social preview for the repository
- * into docs/images. Run from the project root with JDK 25: {@code java tools/BrandGen.java}.
+ * Paints the mod's branding as pixel art: the mod-list icon and banner, and the repository's images in docs/images.
+ * Run from the project root with JDK 25: {@code java tools/BrandGen.java}.
  */
 public class BrandGen {
     static final Path RES = Path.of("common/src/main/resources");
@@ -118,10 +117,7 @@ public class BrandGen {
 
     // ------------------------------------------------------------------ The ant's head
 
-    /**
-     * The head from the front, 32 x 32: a heart-shaped head capsule lit from the upper left, big compound eyes on its
-     * sides, elbowed antennae with clubbed tips, and two curved mandibles that cross below.
-     */
+    /** The head from the front, 32 x 32: head capsule, compound eyes, elbowed antennae and two mandibles that cross below. */
     static Art head() {
         Art art = new Art(32, 33);
         // Antennae first, so the head is drawn over their bases.
@@ -211,13 +207,11 @@ public class BrandGen {
         art.set(right ? 31 - 8 : 8, 4, CHITIN[3]);
     }
 
-    /**
-     * A mandible: a thick hook from the lower corner of the face that bulges outward and curls in, so the two are a pair
-     * of open pincers below the face. Lit along its outer edge, dark along its inner edge, with a tooth.
-     */
+    /** A mandible: a thick hook from the lower corner of the face, lit along its outer edge, with a tooth. */
     static void mandible(Art art, boolean right) {
         // Rows of the left blade: y, first x, last x.
-        int[][] rows = {{22, 9, 11}, {23, 8, 10}, {24, 7, 9}, {25, 7, 9}, {26, 7, 9}, {27, 8, 10}, {28, 9, 11}, {29, 10, 12}, {30, 12, 13}, {31, 13, 13}};
+        int[][] rows = {{22, 9, 11}, {23, 8, 10}, {24, 7, 9}, {25, 7, 9}, {26, 7, 9},
+                {27, 8, 10}, {28, 9, 11}, {29, 10, 12}, {30, 12, 13}, {31, 13, 13}};
         for (int[] row : rows) {
             for (int x = row[1]; x <= row[2]; x++) {
                 int color = x == row[1] ? MANDIBLE_LIGHT : x == row[2] ? MANDIBLE_DARK : MANDIBLE;
@@ -247,10 +241,7 @@ public class BrandGen {
         };
     }
 
-    /**
-     * The name in pixel letters on the same grid as the head, lit from above in amber, with a dark outline and a drop
-     * shadow.
-     */
+    /** The name in pixel letters, lit from above in amber, with a dark outline and a drop shadow. */
     static Art title(String text) {
         int gap = 1;
         int width = 0;
@@ -307,10 +298,7 @@ public class BrandGen {
 
     // ------------------------------------------------------------------ Backgrounds
 
-    /**
-     * A slice of the ground: a strip of grass and the sky above it, and below, earth with tunnels and chambers that
-     * little ants walk through. The logo goes in the middle, over a plain area of earth.
-     */
+    /** A slice of the ground: grass and sky, and below, earth with tunnels, chambers and ants; the middle stays plain for the logo. */
     static Art ground(int w, int h, int grassY, long seed, int keepClear) {
         Random random = new Random(seed);
         Art art = new Art(w, h);

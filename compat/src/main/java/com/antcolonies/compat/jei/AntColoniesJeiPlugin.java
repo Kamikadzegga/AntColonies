@@ -28,10 +28,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.ItemLike;
 
-/**
- * JEI integration: the whole progression is discoverable from JEI. Thirteen categories, every entry made from the
- * synced data (so modpack species, evolutions and hybrids show up too). Only loaded when JEI is installed.
- */
+/** JEI integration: every category's entries are made from the synced data. Only loaded when JEI is installed. */
 @JeiPlugin
 public class AntColoniesJeiPlugin implements IModPlugin {
     public static final IRecipeType<AntRecipe> SPECIES = AntCategory.type("species");

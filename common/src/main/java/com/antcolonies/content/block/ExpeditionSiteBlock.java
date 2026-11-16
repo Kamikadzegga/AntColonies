@@ -12,12 +12,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
-/**
- * The Nether and End Foraging Sites: a colony chamber with a little portal standing on its floor, against the front
- * glass. The portal glows and swirls ({@link #ACTIVE}) while the colony has ants out on expeditions through it, and
- * stands dark otherwise (no compatible ants, paused, or not joined to a colony). It is only a picture: nothing goes
- * through it, and the other dimension is never loaded.
- */
+/** The Nether and End Foraging Sites: a chamber with a little portal that glows ({@link #ACTIVE}) while ants are out through it. */
 public class ExpeditionSiteBlock extends StructureBlock {
     public static final BooleanProperty ACTIVE = BlockStateProperties.LIT;
 

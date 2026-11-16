@@ -10,10 +10,7 @@ import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
-/**
- * The mod's particles, all tinted by their option's color: soil and crumbs fall, sparkles twinkle and glow, genetic
- * glints spiral up, and an evolution's light swells and fades.
- */
+/** The mod's particles, all tinted by their option's color; the {@link Kind} sets how each moves and fades. */
 public class AntParticle extends SingleQuadParticle {
     public enum Kind {
         SOIL, CRUMB, SPARKLE, GENE, EVOLUTION

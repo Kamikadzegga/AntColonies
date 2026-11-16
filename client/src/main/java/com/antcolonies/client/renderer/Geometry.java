@@ -9,9 +9,7 @@ import org.joml.Vector3f;
 
 /**
  * Quads and boxes for custom geometry, in pixels (1/16 block), with texture coordinates in texels of a square texture.
- * <p>
- * Thousands of quads a frame go through here when many Terrariums are in view, so it writes each vertex in one call (the
- * buffer's fast path), works out a quad's normal once rather than per corner, and makes no objects per vertex or box.
+ * A hot path (thousands of quads a frame): it makes no objects per vertex or box.
  */
 public final class Geometry {
     private final PoseStack.Pose pose;
@@ -59,10 +57,7 @@ public final class Geometry {
         vertex(dx, dy, dz, color, u0 / s, v0 / s);
     }
 
-    /**
-     * A quad with its own normalized texture coordinate per corner, wound to face along {@code n}: the corners and
-     * their coordinates stay paired, so a sprite is never mirrored by the winding.
-     */
+    /** A quad with a normalized texture coordinate per corner, wound to face along {@code n} without mirroring the sprite. */
     public void quadUv(float[][] p, float[][] uv, int color, float[] n) {
         float abx = p[1][0] - p[0][0];
         float aby = p[1][1] - p[0][1];

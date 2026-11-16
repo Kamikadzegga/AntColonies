@@ -15,10 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-/**
- * The colony overview. Its slots are the Terrarium's (Queen, food, feed, output) and its upgrades; everything shown about
- * the colony comes from the client's copy of the Terrarium, which the server keeps in sync.
- */
+/** The colony overview: the Terrarium's slots and upgrades. What it shows comes from the client's synced copy of the Terrarium. */
 public class TerrariumMenu extends BaseMenu {
     public static final int BUTTON_TAKE_WORKERS = 3;
     /** Assignment buttons: base + site index * 20 + action (see {@link StructureMenu#adjust}). */
@@ -42,10 +39,7 @@ public class TerrariumMenu extends BaseMenu {
         addPlayerInventory(inventory, INVENTORY_X, INVENTORY_Y);
     }
 
-    /**
-     * An empty Test Tube in the Queen slot takes the Queen out: only ever on purpose, by hand. Shift-clicked tubes go to
-     * the feed slot.
-     */
+    /** An empty Test Tube in the Queen slot takes the Queen out, so shift-clicked tubes go to the feed slot instead. */
     @Override
     protected boolean quickMovesInto(int slot, ItemStack stack) {
         return !(slot == 0 && stack.is(ModItems.TEST_TUBE.get()));
@@ -56,7 +50,8 @@ public class TerrariumMenu extends BaseMenu {
         if (inventory.player.level().getBlockEntity(pos) instanceof TerrariumBlockEntity terrarium) {
             return new TerrariumMenu(containerId, inventory, terrarium);
         }
-        return new TerrariumMenu(containerId, inventory, new TerrariumBlockEntity(pos, com.antcolonies.core.registry.ModBlocks.TERRARIUM.get().defaultBlockState()));
+        return new TerrariumMenu(containerId, inventory,
+                new TerrariumBlockEntity(pos, com.antcolonies.core.registry.ModBlocks.TERRARIUM.get().defaultBlockState()));
     }
 
     public TerrariumBlockEntity terrarium() {

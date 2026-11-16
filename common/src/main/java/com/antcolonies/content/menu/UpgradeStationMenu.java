@@ -47,10 +47,7 @@ public class UpgradeStationMenu extends BaseMenu {
                 return false;
             }
 
-            /**
-             * Only what the inputs make right now: the slot can be out of date (another player or a hopper took an input
-             * while this screen was open), and an out-of-date result would come for free.
-             */
+            /** Only what the inputs make right now: a result left over after an input was taken would come for free. */
             @Override
             public boolean mayPickup(Player taker) {
                 return resultIsCurrent();

@@ -20,10 +20,7 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
-/**
- * The Colony Scanner reports on a Terrarium's colony (population, food, structures and every problem) or on one
- * structure (its colony link, its ants and its problems), in chat. It reads the server's numbers.
- */
+/** The Colony Scanner reports on a Terrarium's colony or on one structure, in chat. */
 public class ColonyScannerItem extends Item {
     public ColonyScannerItem(Properties properties) {
         super(properties);
@@ -58,7 +55,8 @@ public class ColonyScannerItem extends Item {
         player.sendSystemMessage(Component.translatable("scanner.antcolonies.population", colony.workers(), colony.larvae(),
                 colony.eggs()).withStyle(ChatFormatting.GRAY));
         player.sendSystemMessage(Component.translatable("scanner.antcolonies.food", (long) colony.food(), (long) colony.stats().foodCapacity(),
-                String.format(java.util.Locale.ROOT, "%.1f", colony.stats().foodIn()), String.format(java.util.Locale.ROOT, "%.1f", colony.stats().foodOut()))
+                String.format(java.util.Locale.ROOT, "%.1f", colony.stats().foodIn()),
+                String.format(java.util.Locale.ROOT, "%.1f", colony.stats().foodOut()))
                 .withStyle(ChatFormatting.GRAY));
         player.sendSystemMessage(Component.translatable("scanner.antcolonies.health", Math.round(colony.health() * 100), colony.stats().structures())
                 .withStyle(ChatFormatting.GRAY));
