@@ -17,10 +17,7 @@ import net.minecraft.resources.ResourceKey;
 import net.neoforged.neoforge.registries.NewDatapackRegistryEvent;
 import org.jspecify.annotations.Nullable;
 
-/**
- * The mod's datapack registries. They load from {@code data/<namespace>/antcolonies/<registry>/} and are synced to
- * clients, so the GUIs, the renderers and JEI all read the same data as the server.
- */
+/** The mod's datapack registries, loaded from {@code data/<namespace>/antcolonies/<registry>/} and synced to clients. */
 public final class ModRegistries {
     public static final ResourceKey<Registry<AntSpecies>> SPECIES = ResourceKey.createRegistryKey(AntColonies.id("species"));
     public static final ResourceKey<Registry<Evolution>> EVOLUTION = ResourceKey.createRegistryKey(AntColonies.id("evolution"));

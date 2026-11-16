@@ -18,10 +18,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.LightCoordsUtil;
 
-/**
- * Draws ants for every renderer (wild ants, Terrariums, working chambers): the grey model tinted with the species'
- * colors, its gaster pattern over it, its crystals (glowing for species that glow) and whatever it carries.
- */
+/** Draws ants for every renderer: the grey model tinted per species, with its pattern, crystals and load. */
 public final class AntDrawer {
     private static final Map<Caste, Identifier> BASE = new EnumMap<>(Caste.class);
     private static final Map<Caste, Map<Pattern, Identifier>> PATTERNS = new EnumMap<>(Caste.class);
@@ -41,12 +38,14 @@ public final class AntDrawer {
             Map<Pattern, Identifier> patterns = new EnumMap<>(Pattern.class);
             for (Pattern pattern : Pattern.values()) {
                 if (pattern != Pattern.PLAIN) {
-                    patterns.put(pattern, AntColonies.id("textures/entity/ant/" + caste.getSerializedName() + "_" + pattern.getSerializedName() + ".png"));
+                    patterns.put(pattern,
+                            AntColonies.id("textures/entity/ant/" + caste.getSerializedName() + "_" + pattern.getSerializedName() + ".png"));
                 }
             }
             PATTERNS.put(caste, patterns);
             CROPS.put(caste, RenderTypes.entityCutout(AntColonies.id("textures/entity/ant/crop_" + caste.getSerializedName() + ".png")));
-            CROP_SKINS.put(caste, RenderTypes.entityTranslucent(AntColonies.id("textures/entity/ant/crop_skin_" + caste.getSerializedName() + ".png")));
+            CROP_SKINS.put(caste,
+                    RenderTypes.entityTranslucent(AntColonies.id("textures/entity/ant/crop_skin_" + caste.getSerializedName() + ".png")));
         }
     }
 
@@ -72,8 +71,7 @@ public final class AntDrawer {
     public void draw(SubmitNodeCollector collector, PoseStack poseStack, Caste caste, AntLook look, AntPose pose, float length, int light,
                      int overlay, int carry, int outline) {
         AntModel model = models.get(caste);
-        // Parts are drawn later, after every renderer has sent its ants in, and a part's joints are read only then: each
-        // part goes in as a model that puts this ant's own pose on the shared parts right before it is drawn (Posed).
+        // Parts are drawn later and their joints read only then: each goes in as a model that re-poses this ant (Posed).
         // Posing here as well gives the mouth's place for what it carries.
         AntPose frozen = pose.copy();
         model.pose(frozen);
@@ -86,12 +84,10 @@ public final class AntDrawer {
         submit(collector, frozen, model, model.body, poseStack, base, light, overlay, null, ARGB.opaque(look.body()), outline);
         boolean replete = look.crop().isPresent();
         if (replete) {
-            // A Liquid Ant: the full crop in place of the gaster. The liquid (glowing if the species glows), the gaster's
-            // plates riding on top, and the crop's clear skin over the liquid. The same every frame: nothing here follows
-            // the colony's work.
+            // A Liquid Ant: the full crop in place of the gaster (the liquid, the gaster's plates on top, the clear skin).
             int liquid = ARGB.opaque(look.crop().get());
-            submit(collector, frozen, model, model.crop, poseStack, CROPS.get(caste), look.glow() ? LightCoordsUtil.FULL_BRIGHT : light, overlay, null,
-                    liquid, outline);
+            submit(collector, frozen, model, model.crop, poseStack, CROPS.get(caste), look.glow() ? LightCoordsUtil.FULL_BRIGHT : light, overlay,
+                    null, liquid, outline);
             submit(collector, frozen, model, model.cropPlates, poseStack, base, light, overlay, null, ARGB.opaque(look.gaster()), outline);
             // The skin takes a paler shade of the liquid's colour.
             submit(collector, frozen, model, model.cropSkin, poseStack, CROP_SKINS.get(caste), light, overlay, null,
@@ -101,7 +97,8 @@ public final class AntDrawer {
         }
         Identifier pattern = replete ? null : PATTERNS.get(caste).get(look.pattern());
         if (pattern != null) {
-            submit(collector, frozen, model, model.pattern, poseStack, RenderTypes.entityTranslucent(pattern), light, overlay, null, ARGB.opaque(look.accent()));
+            submit(collector, frozen, model, model.pattern, poseStack, RenderTypes.entityTranslucent(pattern), light, overlay, null,
+                    ARGB.opaque(look.accent()));
         }
         if (look.crystal().isPresent()) {
             int crystal = ARGB.color(220, look.crystal().get());
@@ -111,11 +108,11 @@ public final class AntDrawer {
                 submit(collector, frozen, model, model.crystalsGaster, poseStack, CRYSTAL_TYPE, crystalLight, overlay, null, crystal);
             }
             if (look.glow()) {
-                submit(collector, frozen, model, model.crystalsBody, poseStack, CRYSTAL_GLOW, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, null,
-                        ARGB.color(160, look.crystal().get()));
+                submit(collector, frozen, model, model.crystalsBody, poseStack, CRYSTAL_GLOW, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
+                        null, ARGB.color(160, look.crystal().get()));
                 if (!replete) {
-                    submit(collector, frozen, model, model.crystalsGaster, poseStack, CRYSTAL_GLOW, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, null,
-                            ARGB.color(160, look.crystal().get()));
+                    submit(collector, frozen, model, model.crystalsGaster, poseStack, CRYSTAL_GLOW, LightCoordsUtil.FULL_BRIGHT,
+                            OverlayTexture.NO_OVERLAY, null, ARGB.color(160, look.crystal().get()));
                 }
             }
         }
@@ -130,18 +127,18 @@ public final class AntDrawer {
     }
 
     /** One part of an ant model, posed as this ant when it is drawn. Same arguments as submitModelPart. */
-    private void submit(SubmitNodeCollector collector, AntPose pose, AntModel model, net.minecraft.client.model.geom.ModelPart part, PoseStack poseStack,
-                        RenderType type, int light, int overlay, Object uv, int tint) {
+    private void submit(SubmitNodeCollector collector, AntPose pose, AntModel model, net.minecraft.client.model.geom.ModelPart part,
+                        PoseStack poseStack, RenderType type, int light, int overlay, Object uv, int tint) {
         submit(collector, pose, model, part, poseStack, type, light, overlay, uv, tint, 0);
     }
 
-    private void submit(SubmitNodeCollector collector, AntPose pose, AntModel model, net.minecraft.client.model.geom.ModelPart part, PoseStack poseStack,
-                        RenderType type, int light, int overlay, Object uv, int tint, int outline) {
+    private void submit(SubmitNodeCollector collector, AntPose pose, AntModel model, net.minecraft.client.model.geom.ModelPart part,
+                        PoseStack poseStack, RenderType type, int light, int overlay, Object uv, int tint, int outline) {
         Posed posed = posedParts.computeIfAbsent(part, p -> new Posed(model, p));
         collector.submitModel(posed, pose, poseStack, type, light, overlay, tint, null, outline);
     }
 
-    /** Each part of the three ant models as a model of its own, which poses the ant model when it is set up to be drawn. */
+    /** Each ant model part wrapped as a model of its own, which poses the ant right before it is drawn. */
     private final Map<net.minecraft.client.model.geom.ModelPart, Posed> posedParts = new java.util.IdentityHashMap<>();
 
     private static final class Posed extends net.minecraft.client.model.Model<AntPose> {

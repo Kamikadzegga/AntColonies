@@ -14,7 +14,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 
-/** The Genetic Laboratory: Queen, materials, fuel and catalyst slots; a button per trait and per operation. */
+/** The Genetic Laboratory: Queen, materials and catalyst slots; a button per trait and per operation. */
 public class GeneticLabMenu extends BaseMenu {
     /** Buttons 0-9 select a trait. */
     public static final int BUTTON_UPGRADE = 10;

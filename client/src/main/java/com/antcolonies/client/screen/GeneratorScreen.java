@@ -10,10 +10,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
-/**
- * The Generator: the fuel slot under a flame that burns down, and on the right the FE buffer as a glass gauge with what
- * the generator is doing right now.
- */
+/** The Generator's screen: the fuel slot under a flame that burns down, and the FE buffer as a glass gauge. */
 public class GeneratorScreen extends AntScreen<GeneratorMenu> {
     private static final int GAUGE_X = 76;
     private static final int GAUGE_Y = 22;

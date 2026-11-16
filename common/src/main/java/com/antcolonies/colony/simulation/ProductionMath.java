@@ -2,10 +2,7 @@ package com.antcolonies.colony.simulation;
 
 import com.antcolonies.core.config.AntConfig;
 
-/**
- * The shared formulas. Production Rate = Base Rate x Effective Population x Genetic Efficiency x Species Bonus x
- * Upgrade Bonus x Colony Health Modifier, where Effective Population = assigned^exponent (diminishing returns).
- */
+/** The shared formulas. */
 public final class ProductionMath {
     /** n ants work like n^exponent ants: twice the ants never quite doubles the output. */
     public static double effective(double assigned) {
@@ -15,19 +12,12 @@ public final class ProductionMath {
         return Math.pow(assigned, AntConfig.get(AntConfig.POPULATION_EXPONENT));
     }
 
-    /**
-     * Stacked bonuses, softened: a total multiplier above 1 counts as multiplier^bonusExponent, so genetics, mutations
-     * and upgrades still all help but can't multiply without end (with 0.6: x2 -> x1.5, x7 -> x3.2, x20 -> x6). Below 1
-     * (penalties) it is used as it is.
-     */
+    /** Stacked bonuses, softened: a multiplier above 1 counts as multiplier^bonusExponent; a penalty below 1 is used as it is. */
     public static double bonus(double multiplier) {
         return multiplier <= 1 ? multiplier : Math.pow(multiplier, AntConfig.get(AntConfig.BONUS_EXPONENT));
     }
 
-    /**
-     * Diminishing returns over a whole colony: {@code total} ants on one kind of job work like total^exponent ants, shared
-     * between the sites by how many each has. The share per ant, so splitting the work over more sites gains nothing.
-     */
+    /** The work of each of {@code total} ants on one kind of job, diminishing over the whole colony: more sites gain nothing. */
     public static double perAnt(double total) {
         return total <= 0 ? 0 : effective(total) / total;
     }

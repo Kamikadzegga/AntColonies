@@ -2,12 +2,7 @@ package com.antcolonies.content.menu;
 
 import net.minecraft.world.inventory.ContainerData;
 
-/**
- * Vanilla sends menu data slots as 16-bit shorts, which cuts off status flags above bit 15 and any value over 32767
- * (energy in FE, for example). This sends each int of a {@link ContainerData} as two data slots, its low and high half.
- * Pass the int data to {@link #slots} for {@code addDataSlots}: on the server the slots read the ints, on the client
- * they write the halves back into them.
- */
+/** Sends each int of a {@link ContainerData} as two data slots: vanilla sends 16-bit shorts and would cut off the high half. */
 public final class WideData {
     private WideData() {
     }

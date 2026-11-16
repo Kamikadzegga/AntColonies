@@ -4,9 +4,8 @@ import com.antcolonies.colony.liquid.LiquidKind;
 import com.antcolonies.colony.liquid.LiquidKinds;
 
 /**
- * Mekanism (mod id {@code mekanism}): brine and heavy water. Both are entries of the ordinary fluid registry, held by any
- * tank or pipe. Mekanism's gases and other chemicals live in its own chemical registry and are left alone: nothing that
- * only exists there gets an ant. Ids from its {@code MekanismFluids} (branch 26.3).
+ * Mekanism (mod id {@code mekanism}): brine and heavy water. Its gases and other chemicals are not in the fluid registry
+ * and are left alone. Ids from its {@code MekanismFluids}.
  */
 public final class MekanismLiquids {
     public static final String MOD = "mekanism";

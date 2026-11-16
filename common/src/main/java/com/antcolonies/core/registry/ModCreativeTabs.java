@@ -16,7 +16,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 /** The mod's tab: every item, then a wild Queen and a tube of workers of each species (made from the loaded data). */
 public final class ModCreativeTabs {
-    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, AntColonies.MODID);
+    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
+            DeferredRegister.create(Registries.CREATIVE_MODE_TAB, AntColonies.MODID);
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN = CREATIVE_MODE_TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.antcolonies"))
@@ -25,14 +26,16 @@ public final class ModCreativeTabs {
             .displayItems((parameters, output) -> {
                 ModItems.ITEMS.getEntries().forEach(item -> {
                     if (item.get() != ModItems.ANT_TEST_TUBE.get() && item.get() != ModItems.QUEEN_TEST_TUBE.get()
-                            && item.get() != ModItems.GENETIC_SAMPLE.get() && item.get() != ModItems.GUARD_ANT.get() && item.get() != ModItems.ANT_HEAD.get()) {
+                            && item.get() != ModItems.GENETIC_SAMPLE.get() && item.get() != ModItems.GUARD_ANT.get()
+                            && item.get() != ModItems.ANT_HEAD.get()) {
                         output.accept(item.get());
                     }
                 });
                 // The droplets of every fluid that exists in this game.
                 com.antcolonies.colony.liquid.LiquidKinds.droplets().forEach(output::accept);
                 net.minecraft.world.item.ItemStack guard = new net.minecraft.world.item.ItemStack(ModItems.GUARD_ANT.get());
-                guard.set(ModDataComponents.GUARD.get(), new com.antcolonies.content.item.GuardData(com.antcolonies.core.registry.ModRegistries.COMMON, 5, -1));
+                guard.set(ModDataComponents.GUARD.get(),
+                        new com.antcolonies.content.item.GuardData(com.antcolonies.core.registry.ModRegistries.COMMON, 5, -1));
                 output.accept(guard);
                 // A fixed seed, so the tab shows the same Queens every time.
                 RandomSource random = RandomSource.create(42);

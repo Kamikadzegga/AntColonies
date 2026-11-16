@@ -7,16 +7,8 @@ import java.util.PriorityQueue;
 import java.util.Random;
 
 /**
- * What is carved into the front of one colony block (the Formicarium or a chamber): a 16 x 16 grid of cells, one per
- * pixel of the block's face, each solid nest material or carved out. Cells are (u, v): u across, left to right as seen
- * from the front; v up.
- *
- * <p>Every kind of block has its own chamber, drawn by hand ({@link #TEMPLATES}); the tunnels are dug by rule, from the
- * chamber to every side on which the block touches another part of a colony. The spot where a tunnel crosses a side is
- * worked out from the two blocks' positions alone, so both dig to the same spot and the tunnels of a whole build join.
- *
- * <p>Besides the cells, a layout holds the paths ants walk (nodes joined by edges) and the features of the chamber
- * (where the brood lies, where the Queen stands, the portal, the shelves...). Plain Java: nothing here needs the game.
+ * What is carved into the front of one colony block: a 16 x 16 grid of cells (u across, v up), the paths ants walk and
+ * the chamber's features. Plain Java: nothing here needs the game.
  */
 public final class NestLayout {
     public static final int N = 16;
@@ -25,7 +17,7 @@ public final class NestLayout {
     public static final int RIGHT = 1;
     public static final int UP = 2;
     public static final int DOWN = 3;
-    /** Tunnels are a cell wide. A side's crossing is a cell along it, 2 to 13: the two cells at either end lie under the frame. */
+    /** A side's crossing is a cell along it, 2 to 13: the two cells at either end lie under the frame. */
     public static final int GATE_MIN = 2;
     public static final int GATE_SPAN = 12;
 
@@ -278,8 +270,7 @@ public final class NestLayout {
         if (kind == Kind.FORMICARIUM) {
             String[] queen = stage >= 3 ? QUEEN_LARGE : QUEEN_SMALL;
             main = stamp(queen, (N - queen[0].length()) / 2, 2, mirror, Spot.MAIN);
-            // The nest grows with the colony: a brood chamber over her from the start, a food store on the other side from
-            // stage 2, and from stage 3 a bigger chamber for her and a midden between the two.
+            // The nest grows with the colony's stage: a brood chamber first, then a food store, then a midden.
             int brood = stamp(BROOD_POCKET, mirror ? 10 : 2, 10 + random.nextInt(2), false, Spot.BROOD);
             tunnel(brood, main);
             if (stage >= 2) {
@@ -332,8 +323,7 @@ public final class NestLayout {
                 }
             }
         }
-        // Its hub: where the paths meet, on the chamber's floor (ants walk on it, they don't hang in the air), under its
-        // middle.
+        // Its hub, where the paths meet: on the chamber's floor, under its middle.
         float hubU = sumU / cells.size();
         int[] nearest = cells.getFirst();
         float best = Float.MAX_VALUE;
@@ -353,10 +343,7 @@ public final class NestLayout {
         return index;
     }
 
-    /**
-     * Where the block's ants come from and go to. The portal of an expedition site and the Connector's shaft are in
-     * their chambers; every other block gets a burrow at the end of a short tunnel of its own.
-     */
+    /** Where the block's ants come from and go to: its portal or shaft, or else a burrow at the end of a short tunnel. */
     private void source(int main) {
         float sumU = 0;
         float sumV = 0;
@@ -462,11 +449,8 @@ public final class NestLayout {
     // ------------------------------------------------------------------ Digging a tunnel
 
     /**
-     * Digs a tunnel, a cell wide, from the start cells to a chamber: {@code to}, or the nearest chamber when it is -1.
-     * The way costs least through soft nest and what is already dug, and keeps a cell of wall between it and chambers it
-     * is not going to; when no such way exists, it may cut through them.
-     *
-     * @param first the path's first point (the node's own)
+     * Digs a tunnel from the start cells to chamber {@code to} (the nearest when -1), by the cheapest way. It keeps a cell
+     * of wall from other chambers unless there is no other way.
      */
     private void route(int from, List<int[]> starts, float[] first, int to) {
         for (int pass = 0; pass < 2; pass++) {
@@ -566,7 +550,8 @@ public final class NestLayout {
                     int nv = v + dv;
                     if (nu >= 0 && nv >= 0 && nu < N && nv < N) {
                         int near = owner[nv * N + nu];
-                        if (near == -3 && from >= 0 && nodes.get(from).spot != Spot.SOURCE || near >= 0 && near != from && to >= 0 && near != to) {
+                        if (near == -3 && from >= 0 && nodes.get(from).spot != Spot.SOURCE
+                                || near >= 0 && near != from && to >= 0 && near != to) {
                             return -1;
                         }
                     }
@@ -688,11 +673,8 @@ public final class NestLayout {
     // ------------------------------------------------------------------ Where the tunnels cross the sides
 
     /**
-     * Where the tunnel between two touching blocks crosses their shared side, from their positions alone: 0 to
-     * {@link #GATE_SPAN} - 1, the same whichever of the two asks.
-     *
-     * @param lower the packed position of the block with the smaller coordinate along the side's axis
-     * @param axis  the axis the two blocks are next to each other along (0 x, 1 y, 2 z)
+     * Where the tunnel between two touching blocks crosses their shared side, the same for both. {@code lower}: the
+     * packed position of the one with the smaller coordinate along {@code axis} (0 x, 1 y, 2 z).
      */
     public static int crossing(long lower, int axis) {
         return (int) Math.floorMod(mix(lower * 3 + axis), GATE_SPAN);

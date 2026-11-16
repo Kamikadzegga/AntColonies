@@ -13,7 +13,8 @@ import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModDataComponents {
-    public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, AntColonies.MODID);
+    public static final DeferredRegister.DataComponents DATA_COMPONENTS =
+            DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, AntColonies.MODID);
 
     /** The Queen in a Queen Test Tube, or the genes in a Genetic Sample. Synced for tooltips and the tube's color. */
     public static final Supplier<DataComponentType<QueenData>> QUEEN = DATA_COMPONENTS.registerComponentType("queen",

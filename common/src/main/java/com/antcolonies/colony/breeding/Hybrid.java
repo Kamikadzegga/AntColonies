@@ -6,11 +6,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.Identifier;
 
 /**
- * A hybrid species, loaded from {@code data/<namespace>/antcolonies/hybrid/<name>.json}. A Queen Chamber whose colony
- * Queen is one parent species and whose Genetic Sample slot holds a sample of the other may raise a Queen of
- * {@code result} instead, with {@code chance} (raised by Mutation Probability). Only the pairs listed here can cross.
+ * A hybrid species: a Queen Chamber crossing the two parent species may raise a Queen of {@code result} instead.
  *
- * @param minAverageLevel the average trait level both parents need, so rare hybrids take good stock
+ * @param minAverageLevel the average trait level both parents need
  */
 public record Hybrid(Identifier first, Identifier second, Identifier result, double chance, double minAverageLevel) {
     public static final Codec<Hybrid> CODEC = RecordCodecBuilder.create(i -> i.group(

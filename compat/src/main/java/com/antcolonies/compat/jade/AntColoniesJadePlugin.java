@@ -14,11 +14,7 @@ import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
 import snownee.jade.api.WailaPlugin;
 
-/**
- * Jade look-at tooltips: a Terrarium's colony, a working site's ants and output, a machine's energy and work, and what
- * a wild ant or nest is. Only loaded
- * when Jade is installed. The numbers come from the server (Jade asks for them while you look at the block).
- */
+/** Jade look-at tooltips for the mod's blocks and wild ants; the numbers come from the server. Only loaded when Jade is installed. */
 @WailaPlugin
 public class AntColoniesJadePlugin implements IWailaPlugin {
     @Override

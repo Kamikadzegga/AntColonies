@@ -20,10 +20,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * One entry, laid out like the JEI categories: inputs on the left (three columns), an arrow, outputs on the right
- * (four columns, each with its weight and stage in the tooltip), and the entry's lines of text underneath.
- */
+/** One entry, laid out like the JEI categories: inputs on the left, an arrow, outputs on the right, text underneath. */
 class AntEmiRecipe extends BasicEmiRecipe {
     static final int WIDTH = 172;
     private static final int INPUT_COLUMNS = 3;
@@ -76,15 +73,15 @@ class AntEmiRecipe extends BasicEmiRecipe {
         widgets.addTexture(EmiTexture.EMPTY_ARROW, ARROW_X, 1);
         for (int i = 0; i < recipe.outputs().size(); i++) {
             AntRecipe.Output output = recipe.outputs().get(i);
-            EmiIngredient shown = output.fluid() != null ? EmiStack.of(output.fluid().getFluid(), output.fluid().getAmount()) : ingredient(output.stacks());
+            EmiIngredient shown = output.fluid() != null ? EmiStack.of(output.fluid().getFluid(), output.fluid().getAmount())
+                    : ingredient(output.stacks());
             SlotWidget slot = widgets.addSlot(shown, OUTPUT_X + i % OUTPUT_COLUMNS * STEP, i / OUTPUT_COLUMNS * STEP)
                     .recipeContext(this);
             for (Component line : output.tooltip()) {
                 slot.appendTooltip(line);
             }
         }
-        // Text starts under the category's slot rows, so entries line up. Long lines wrap; what still doesn't fit in
-        // the category's text budget is cut, with the whole text in the last line's tooltip.
+        // Text starts under the category's slot rows, so entries line up. What does not fit is cut; a tooltip has the whole text.
         int y = rows * STEP + 4;
         var font = Minecraft.getInstance().font;
         List<FormattedText> wrapped = new ArrayList<>();

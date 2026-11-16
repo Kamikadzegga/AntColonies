@@ -30,12 +30,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-/**
- * The Genetic Laboratory console. Left: the specimen capsule with the Queen, her name and the lab's Genetic Energy.
- * Middle: her genome, one row per trait (click to select). Right: the selected trait in full, what raising it costs
- * (the items it needs, green when the material slots below hold enough), and the Upgrade button. Underneath: upgrades,
- * the catalyst slot with the lab's other tools, and a strip that shows the work in progress or what is wrong.
- */
+/** The Genetic Laboratory console: the Queen under glass, her genome by trait, the selected trait's cost, and the lab's tools. */
 public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
     // Layout (relative to the panel).
     private static final int LEFT_X = 6;
@@ -72,7 +67,8 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
     }
 
     private float time() {
-        return minecraft.level == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(minecraft.level.getGameTime(), minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false));
+        return minecraft.level == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(minecraft.level.getGameTime(),
+                minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false));
     }
 
     private @Nullable QueenData queen() {
@@ -150,7 +146,8 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
             Genome genome = queen.genome();
             centered(graphics, fit(genome.lineage().name(), LEFT_W - 6), center, 66, TEXT);
             AntLook look = ClientSpecies.look(queen.species());
-            centered(graphics, fit(Tooltips.species(queen.species()).getString(), LEFT_W - 6), center, 76, bright(look.crystal().orElse(look.gaster())));
+            centered(graphics, fit(Tooltips.species(queen.species()).getString(), LEFT_W - 6), center, 76,
+                    bright(look.crystal().orElse(look.gaster())));
             Component rarity = Tooltips.rarity(genome.rarity());
             centered(graphics, rarity.getString() + " " + String.format(Locale.ROOT, "%.1f", genome.averageLevel()), center, 86,
                     0xFF000000 | Tooltips.levelRgb((int) Math.round(genome.averageLevel())));
@@ -290,7 +287,8 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
     }
 
     private GeneticLabBlockEntity.@Nullable Requirement requirement(QueenData queen) {
-        return minecraft.level == null ? null : menu.lab().requirement(GeneticLabBlockEntity.Operation.UPGRADE, selected(), queen, minecraft.level.registryAccess());
+        return minecraft.level == null ? null
+                : menu.lab().requirement(GeneticLabBlockEntity.Operation.UPGRADE, selected(), queen, minecraft.level.registryAccess());
     }
 
 
@@ -314,8 +312,8 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
                     tooltip.add(Component.translatable("gui.antcolonies.lab.catalyst_gives", gives).withStyle(ChatFormatting.LIGHT_PURPLE));
                 }
             }
-            button(TOOL_BUTTON_X + i * (TOOL_BUTTON_W + 4), y, TOOL_BUTTON_W, 14, Component.translatable("gui.antcolonies.lab." + tools[i][0]).getString(),
-                    Integer.parseInt(tools[i][1]), tooltip, ready);
+            button(TOOL_BUTTON_X + i * (TOOL_BUTTON_W + 4), y, TOOL_BUTTON_W, 14,
+                    Component.translatable("gui.antcolonies.lab." + tools[i][0]).getString(), Integer.parseInt(tools[i][1]), tooltip, ready);
         }
     }
 
@@ -499,7 +497,8 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
         }
         if (over(mouseX, mouseY, LEFT_X + 3, 106, LEFT_W - 6, 9)) {
             graphics.setComponentTooltipForNextFrame(font, List.of(
-                    Component.translatable("gui.antcolonies.lab.energy_stored", String.format(Locale.ROOT, "%,d", menu.data(GeneticLabBlockEntity.DATA_ENERGY)),
+                    Component.translatable("gui.antcolonies.lab.energy_stored",
+                            String.format(Locale.ROOT, "%,d", menu.data(GeneticLabBlockEntity.DATA_ENERGY)),
                             String.format(Locale.ROOT, "%,d", GeneticLabBlockEntity.energyCapacity())),
                     Component.translatable("gui.antcolonies.lab.power_hint").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
             return;

@@ -20,16 +20,8 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Every fluid Liquid Ants can make droplets of. The two of the base game (water and lava) are always there; every other
- * one is offered by an integration ({@code com.antcolonies.compat.liquid}) and only exists while its mod is installed
- * and its fluid registered (see {@link LiquidKind#available()}).
- *
- * <p>Adding a fluid is one {@link #offer} call (an integration's, or another mod's from its constructor) plus the data
- * and art for it: nothing in the colony simulation, the items or the Centrifuge has to change.
- *
- * <p>Order of events: integrations offer their kinds while mods are constructed; the fluid registry is filled (it comes
- * before items in the registration order); then {@link #registerItems} registers a droplet item for each kind that is
- * available, and the list is closed.
+ * Every fluid Liquid Ants can make droplets of. Kinds are offered while mods are constructed; {@link #registerItems}
+ * then registers a droplet for each available one and closes the list.
  */
 public final class LiquidKinds {
     private static final Map<String, LiquidKind> OFFERED = new LinkedHashMap<>();
@@ -47,10 +39,7 @@ public final class LiquidKinds {
         offer(LAVA);
     }
 
-    /**
-     * Offers a kind. Must happen before items are registered (in a mod's constructor); the kind becomes real only if its
-     * mod and fluid are there.
-     */
+    /** Offers a kind. Must happen before items are registered (in a mod's constructor). */
     public static synchronized void offer(LiquidKind kind) {
         if (closed) {
             throw new IllegalStateException("Liquid kinds are offered while mods are constructed: too late for " + kind.name());
@@ -105,10 +94,7 @@ public final class LiquidKinds {
         return items;
     }
 
-    /**
-     * Registers the droplet items: one per offered kind whose mod is installed and whose fluid is registered. Runs when
-     * items are registered, after every mod's fluids.
-     */
+    /** Registers a droplet item per available kind. Runs when items are registered, after every mod's fluids. */
     public static void registerItems(RegisterEvent event) {
         if (!event.getRegistryKey().equals(Registries.ITEM)) {
             return;

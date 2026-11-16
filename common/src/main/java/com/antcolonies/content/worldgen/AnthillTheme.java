@@ -18,15 +18,7 @@ import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.Tags;
 
-/**
- * What an anthill looks like where it stands: its mound's shape and earth, its tunnels' walls and floors, and what grows
- * on and around it. Overworld anthills take theirs from the biome at their center ({@link #of}); the Nether's and the
- * End's have their own. Pieces planned before themes existed keep the old look ({@code AnthillPiece.Soil}).
- *
- * <p>Shapes: a cone (plains, forests, mushroom fields, cherry groves), the wood ants' tall rounded thatch dome (taiga),
- * a snow-capped cone (snowy biomes), the harvester ants' crater ringed with pebbles (desert), termite cathedrals of
- * spires (savanna, banded terracotta in the badlands), a low mossy mound (jungle) and a squat mud mound (swamps).
- */
+/** What an anthill looks like where it stands: its mound's shape and earth, its tunnels' walls, and what grows on and around it. */
 public enum AnthillTheme {
     TEMPERATE(Shape.CONE),
     TAIGA(Shape.DOME),
@@ -43,7 +35,8 @@ public enum AnthillTheme {
 
     /** The badlands' terracotta bands, by height. */
     private static final Block[] BANDS = {Blocks.TERRACOTTA, Blocks.DYED_TERRACOTTA.orange(), Blocks.DYED_TERRACOTTA.yellow(), Blocks.TERRACOTTA,
-            Blocks.DYED_TERRACOTTA.red(), Blocks.DYED_TERRACOTTA.white(), Blocks.DYED_TERRACOTTA.brown(), Blocks.DYED_TERRACOTTA.orange(), Blocks.DYED_TERRACOTTA.lightGray()};
+            Blocks.DYED_TERRACOTTA.red(), Blocks.DYED_TERRACOTTA.white(), Blocks.DYED_TERRACOTTA.brown(), Blocks.DYED_TERRACOTTA.orange(),
+            Blocks.DYED_TERRACOTTA.lightGray()};
 
     /** A mound's outline: radius and height of its body (spires rise above the body). */
     public enum Shape {
@@ -141,10 +134,7 @@ public enum AnthillTheme {
         return Math.min(height, maxHeight());
     }
 
-    /**
-     * The termite spires over a column: three to five narrow towers round the entrance (never over it), each tapering to
-     * a point, 7 to 13 blocks high.
-     */
+    /** The termite spires over a column: a few narrow towers round the entrance (never over it), each tapering to a point. */
     private static int spires(long seed, int x, int z) {
         int count = 3 + (int) (hash(seed, 7, 7, 7) * 3);
         int best = 0;
@@ -163,17 +153,15 @@ public enum AnthillTheme {
         return best;
     }
 
-    /**
-     * A block of the mound. {@code depth} is how far under the mound's surface it lies (0: the top block of its column);
-     * {@code y} is its height in the world (the badlands' bands follow it).
-     */
+    /** A block of the mound, {@code depth} blocks under its surface (0: the top), at world height {@code y}. */
     public BlockState mound(double roll, int depth, int y) {
         boolean top = depth == 0;
         Block block = switch (this) {
             case TEMPERATE -> top && roll < 0.2 ? Blocks.PODZOL : roll < 0.45 ? ModDecor.ANTHILL_SOIL.get() : roll < 0.7 ? Blocks.COARSE_DIRT
                     : roll < 0.9 ? Blocks.ROOTED_DIRT : Blocks.GRAVEL;
             // Wood ants thatch their domes with needles and twigs.
-            case TAIGA -> top ? roll < 0.45 ? Blocks.SPRUCE_LEAVES : roll < 0.75 ? Blocks.PODZOL : roll < 0.9 ? Blocks.COARSE_DIRT : Blocks.SPRUCE_WOOD
+            case TAIGA -> top
+                    ? roll < 0.45 ? Blocks.SPRUCE_LEAVES : roll < 0.75 ? Blocks.PODZOL : roll < 0.9 ? Blocks.COARSE_DIRT : Blocks.SPRUCE_WOOD
                     : roll < 0.35 ? Blocks.PODZOL : roll < 0.6 ? ModDecor.ANTHILL_SOIL.get() : roll < 0.8 ? Blocks.ROOTED_DIRT : Blocks.COARSE_DIRT;
             case SNOWY -> top ? roll < 0.8 ? Blocks.SNOW_BLOCK : Blocks.PACKED_ICE
                     : roll < 0.4 ? ModDecor.ANTHILL_SOIL.get() : roll < 0.65 ? Blocks.COARSE_DIRT : roll < 0.85 ? Blocks.GRAVEL : Blocks.SNOW_BLOCK;
@@ -184,7 +172,8 @@ public enum AnthillTheme {
             // Termite clay: mud and dirt cemented hard.
             case SAVANNA -> roll < 0.3 ? Blocks.PACKED_MUD : roll < 0.5 ? Blocks.COARSE_DIRT : roll < 0.7 ? Blocks.DYED_TERRACOTTA.brown()
                     : roll < 0.85 ? Blocks.TERRACOTTA : Blocks.MUD_BRICKS;
-            case JUNGLE -> top ? roll < 0.5 ? Blocks.MOSS_BLOCK : roll < 0.7 ? Blocks.JUNGLE_LEAVES : roll < 0.85 ? Blocks.ROOTED_DIRT : Blocks.MOSSY_COBBLESTONE
+            case JUNGLE -> top
+                    ? roll < 0.5 ? Blocks.MOSS_BLOCK : roll < 0.7 ? Blocks.JUNGLE_LEAVES : roll < 0.85 ? Blocks.ROOTED_DIRT : Blocks.MOSSY_COBBLESTONE
                     : roll < 0.35 ? Blocks.MUD : roll < 0.6 ? Blocks.ROOTED_DIRT : roll < 0.8 ? ModDecor.ANTHILL_SOIL.get() : Blocks.MOSS_BLOCK;
             case SWAMP -> roll < 0.35 ? Blocks.MUD : roll < 0.6 ? Blocks.PACKED_MUD : roll < 0.75 ? Blocks.MUD_BRICKS : roll < 0.9 ? Blocks.CLAY
                     : Blocks.MUDDY_MANGROVE_ROOTS;
@@ -204,11 +193,14 @@ public enum AnthillTheme {
     public BlockState topping(double roll, boolean onMound) {
         return switch (this) {
             case SNOWY -> onMound || roll < 0.5 ? Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS, 1 + (int) (roll * 10) % 3) : null;
-            case CHERRY -> roll < (onMound ? 0.35 : 0.3) ? Blocks.PINK_PETALS.defaultBlockState().setValue(FlowerBedBlock.AMOUNT, 1 + (int) (roll * 40) % 4)
-                    .setValue(FlowerBedBlock.FACING, Direction.from2DDataValue((int) (roll * 97) % 4)) : null;
+            case CHERRY -> roll < (onMound ? 0.35 : 0.3)
+                    ? Blocks.PINK_PETALS.defaultBlockState().setValue(FlowerBedBlock.AMOUNT, 1 + (int) (roll * 40) % 4)
+                            .setValue(FlowerBedBlock.FACING, Direction.from2DDataValue((int) (roll * 97) % 4))
+                    : null;
             case MUSHROOM -> roll < (onMound ? 0.1 : 0.04) ? (roll < 0.05 ? Blocks.RED_MUSHROOM : Blocks.BROWN_MUSHROOM).defaultBlockState() : null;
             case TAIGA -> !onMound && roll < 0.12 ? Blocks.FERN.defaultBlockState() : null;
-            case JUNGLE -> !onMound && roll < 0.1 ? Blocks.FERN.defaultBlockState() : onMound && roll < 0.05 ? Blocks.MOSS_CARPET.defaultBlockState() : null;
+            case JUNGLE -> !onMound && roll < 0.1 ? Blocks.FERN.defaultBlockState()
+                    : onMound && roll < 0.05 ? Blocks.MOSS_CARPET.defaultBlockState() : null;
             case DESERT, BADLANDS -> !onMound && roll < 0.035 ? Blocks.DEAD_BUSH.defaultBlockState() : null;
             case SAVANNA -> !onMound && roll < 0.05 ? Blocks.DEAD_BUSH.defaultBlockState() : null;
             case NETHER -> onMound && roll < 0.06 ? Blocks.CRIMSON_ROOTS.defaultBlockState() : null;
@@ -236,7 +228,8 @@ public enum AnthillTheme {
             return (this == END ? Blocks.PURPUR_BLOCK : ModDecor.CHITIN_BLOCK.get()).defaultBlockState();
         }
         if (floor && (room == AnthillLayout.RoomType.FUNGAL_GARDEN || room == AnthillLayout.RoomType.APHID_FARM) && this != END && roll < 0.5) {
-            return (this == NETHER ? Blocks.CRIMSON_NYLIUM : room == AnthillLayout.RoomType.APHID_FARM ? Blocks.MOSS_BLOCK : Blocks.MYCELIUM).defaultBlockState();
+            return (this == NETHER ? Blocks.CRIMSON_NYLIUM
+                    : room == AnthillLayout.RoomType.APHID_FARM ? Blocks.MOSS_BLOCK : Blocks.MYCELIUM).defaultBlockState();
         }
         if (floor && (room == AnthillLayout.RoomType.ABANDONED || room == AnthillLayout.RoomType.MIDDEN) && roll < 0.35) {
             return (room == AnthillLayout.RoomType.MIDDEN && roll < 0.12 ? Blocks.BONE_BLOCK : Blocks.GRAVEL).defaultBlockState();
@@ -257,7 +250,8 @@ public enum AnthillTheme {
             case BADLANDS -> floor ? roll < 0.5 ? Blocks.RED_SAND : Blocks.RED_SANDSTONE
                     : roll < 0.65 ? BANDS[Math.floorMod(y, BANDS.length)] : roll < 0.85 ? Blocks.RED_SANDSTONE : ModDecor.PACKED_ANTHILL_SOIL.get();
             case SAVANNA -> floor ? roll < 0.06 ? Blocks.BONE_BLOCK : roll < 0.55 ? Blocks.COARSE_DIRT : Blocks.ROOTED_DIRT
-                    : roll < 0.35 ? Blocks.PACKED_MUD : roll < 0.6 ? Blocks.MUD_BRICKS : roll < 0.8 ? Blocks.DYED_TERRACOTTA.brown() : Blocks.TERRACOTTA;
+                    : roll < 0.35 ? Blocks.PACKED_MUD : roll < 0.6 ? Blocks.MUD_BRICKS : roll < 0.8 ? Blocks.DYED_TERRACOTTA.brown()
+                    : Blocks.TERRACOTTA;
             case JUNGLE -> floor ? roll < 0.45 ? Blocks.MOSS_BLOCK : roll < 0.75 ? Blocks.ROOTED_DIRT : Blocks.MUD
                     : roll < 0.25 ? Blocks.MOSSY_COBBLESTONE : roll < 0.5 ? Blocks.MOSS_BLOCK : roll < 0.7 ? Blocks.PACKED_MUD
                     : roll < 0.85 ? ModDecor.PACKED_ANTHILL_SOIL.get() : Blocks.MUD;

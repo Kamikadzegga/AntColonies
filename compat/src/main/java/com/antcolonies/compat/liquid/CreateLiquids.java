@@ -4,8 +4,8 @@ import com.antcolonies.colony.liquid.LiquidKind;
 import com.antcolonies.colony.liquid.LiquidKinds;
 
 /**
- * Create (mod id {@code create}): honey, chocolate and Builder's Tea. Tea has no bucket and no block, but it is a
- * registered fluid that tanks and pipes hold, which is all a droplet needs. Ids from its {@code AllFluids}.
+ * Create (mod id {@code create}): honey, chocolate and Builder's Tea (a registered fluid with no bucket or block).
+ * Ids from its {@code AllFluids}.
  */
 public final class CreateLiquids {
     public static final String MOD = "create";

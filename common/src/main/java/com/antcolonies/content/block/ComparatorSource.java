@@ -1,10 +1,6 @@
 package com.antcolonies.content.block;
 
-/**
- * A block entity that gives comparators its own reading (0 to 15) instead of how full its slots are. Comparators are
- * told to look again whenever the block entity calls setChanged(), which these do whenever the values behind the
- * reading change.
- */
+/** A block entity that gives comparators its own reading (0 to 15) instead of how full its slots are. */
 public interface ComparatorSource {
     int comparatorSignal();
 

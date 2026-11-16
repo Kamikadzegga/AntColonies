@@ -72,11 +72,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import org.jspecify.annotations.Nullable;
 
-/**
- * A wild ant: workers wander and flee, soldiers defend themselves and each other, Queens are rare. Its species comes
- * from the biome it spawned in (the species' {@code spawn_biomes}). Caught with Tweezers into Test Tubes. These are the
- * only ant entities in the mod: colonies are numbers, never entities.
- */
+/** A wild ant, caught with Tweezers; its species comes from the biome it spawned in. */
 public class WildAnt extends PathfinderMob implements AntLike {
     private static final EntityDataAccessor<String> DATA_SPECIES = SynchedEntityData.defineId(WildAnt.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Byte> DATA_CASTE = SynchedEntityData.defineId(WildAnt.class, EntityDataSerializers.BYTE);
@@ -183,12 +179,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
 
     // --- Royal Guard Ants: the great Queen's guard ---
 
-    /**
-     * A Royal Guard Ant: one of the great Queen's guard (an anthill soldier of royal rank). Its job is her, not the anthill:
-     * it stands at its post in her chamber or the antechamber instead of roaming, takes on only those who come up to its
-     * post (or whom the anthill is alarmed at, or who hurt it) and never follows anyone farther than the config's royalGuardLeash
-     * from it, then goes back.
-     */
+    /** Whether it is a Royal Guard Ant: an anthill soldier of royal rank that keeps a post by the great Queen. */
     public boolean royalGuard() {
         return rank() == Rank.ROYAL && caste() == Caste.SOLDIER;
     }
@@ -345,7 +336,8 @@ public class WildAnt extends PathfinderMob implements AntLike {
             setSpecies(speciesFor(level, blockPosition(), getRandom()));
             double roll = getRandom().nextDouble();
             setCaste(roll < AntConfig.get(AntConfig.WILD_QUEEN_CHANCE) ? Caste.QUEEN
-                    : roll < AntConfig.get(AntConfig.WILD_QUEEN_CHANCE) + AntConfig.get(AntConfig.WILD_SOLDIER_CHANCE) ? Caste.SOLDIER : Caste.WORKER);
+                    : roll < AntConfig.get(AntConfig.WILD_QUEEN_CHANCE) + AntConfig.get(AntConfig.WILD_SOLDIER_CHANCE) ? Caste.SOLDIER
+                    : Caste.WORKER);
         }
         return data;
     }
@@ -403,7 +395,8 @@ public class WildAnt extends PathfinderMob implements AntLike {
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
-        setSpecies(Identifier.tryParse(input.getStringOr("species", ModRegistries.COMMON.toString())) instanceof Identifier id ? id : ModRegistries.COMMON);
+        setSpecies(Identifier.tryParse(input.getStringOr("species", ModRegistries.COMMON.toString())) instanceof Identifier id
+                ? id : ModRegistries.COMMON);
         guardian = input.getBooleanOr("guardian", false);
         anthill = input.getLong("anthill").map(BlockPos::of).orElse(null);
         chamber = input.getIntArray("chamber").filter(box -> box.length == 6)
@@ -453,10 +446,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
         set(Attributes.FOLLOW_RANGE, guardian ? 24 : 12);
     }
 
-    /**
-     * A player in a full Chitin set smells like the colony: no wild ant attacks them, until they raise an anthill's
-     * alarm (its ants attack them then, Chitin or not).
-     */
+    /** A player in a full Chitin set is left alone, until they raise an anthill's alarm. */
     @Override
     public boolean canAttack(net.minecraft.world.entity.LivingEntity target) {
         return hostileTo(target) && super.canAttack(target);
@@ -536,11 +526,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
         return caste() != Caste.QUEEN && !guardian && nest == null;
     }
 
-    /**
-     * Whether this is an anthill's Queen: every generated anthill has exactly one, and she is its guaranteed prize. She
-     * can't be hurt (lava, falls, mobs and players alike; only the void and /kill end her) and never despawns, so the
-     * only way she leaves is in a Test Tube, caught with Tweezers.
-     */
+    /** Whether this is an anthill's Queen: she can't be hurt and never despawns, so she only leaves in a Test Tube. */
     public boolean isAnthillQueen() {
         return guardian && caste() == Caste.QUEEN;
     }
@@ -573,7 +559,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
         return nest;
     }
 
-    /** Ends its trip: it heads back into its nest. */
+    /** Whether it is heading back into its nest. */
     public boolean returning() {
         return returning;
     }
@@ -601,7 +587,8 @@ public class WildAnt extends PathfinderMob implements AntLike {
         Item item = stack.getItem();
         int rgb = item == Items.WHEAT || item == Items.WHEAT_SEEDS ? 0xE3C95A : item == Items.CARROT ? 0xE8862A : item == Items.POTATO ? 0xC9A35A
                 : item == Items.BEETROOT || item == Items.BEETROOT_SEEDS ? 0x9E2A2B : item == Items.SWEET_BERRIES ? 0xB8202A
-                : item == Items.NETHER_WART ? 0x8A1A1A : item == Items.PUMPKIN ? 0xE3902D : item == Items.MELON_SLICE || item == Items.MELON ? 0x6EA33A
+                : item == Items.NETHER_WART ? 0x8A1A1A : item == Items.PUMPKIN ? 0xE3902D
+                : item == Items.MELON_SLICE || item == Items.MELON ? 0x6EA33A
                 : 0xD8C49A;
         return 0xFF000000 | rgb;
     }
@@ -625,8 +612,10 @@ public class WildAnt extends PathfinderMob implements AntLike {
             }
             // The great Queen watches her chamber: whoever steps in raises the alarm.
             if (tickCount % 10 == 0 && rank() == Rank.GREAT_QUEEN && anthill != null && chamber() != null) {
-                for (Player player : server.getEntitiesOfClass(Player.class, chamber(), player -> !com.antcolonies.content.worldgen.AnthillAlarm.exempt(player))) {
-                    com.antcolonies.content.worldgen.AnthillAlarm.raise(server, anthill, player, com.antcolonies.content.worldgen.AnthillAlarm.Reason.QUEEN);
+                for (Player player : server.getEntitiesOfClass(Player.class, chamber(),
+                        player -> !com.antcolonies.content.worldgen.AnthillAlarm.exempt(player))) {
+                    com.antcolonies.content.worldgen.AnthillAlarm.raise(server, anthill, player,
+                            com.antcolonies.content.worldgen.AnthillAlarm.Reason.QUEEN);
                 }
             }
         }
@@ -644,10 +633,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
         super.die(source);
     }
 
-    /**
-     * Caught in Tweezers: it leaves the world without dying, so its home nest (if any) must still hear it is gone and raise
-     * another, and what it carried falls where it was.
-     */
+    /** Caught in Tweezers: it leaves the world without dying, so its home nest must still be told. */
     public void caught() {
         leaveHomeNest();
         discard();
@@ -715,10 +701,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
                 && !(state.getBlock() instanceof CropBlock crop && crop.isMaxAge(state));
     }
 
-    /**
-     * Harvests the ripe crop at {@code pos} and replants it: its drops, less the one seed it keeps back to replant (as a
-     * farmer would), go into its mandibles. Berries are picked and the bush left; pumpkins and melons are cut off the stem.
-     */
+    /** Harvests the ripe crop at {@code pos} and replants it; the drops, less one seed, go into its mandibles. */
     public boolean harvest(ServerLevel level, BlockPos pos) {
         if (!ripe(level, pos)) {
             return false;
@@ -776,10 +759,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
         return true;
     }
 
-    /**
-     * Targets the nearest player its anthill is alarmed at (within 40 blocks, not in creative or spectator mode, never
-     * in Peaceful), and keeps after them while the alarm lasts. Queens don't fight.
-     */
+    /** Targets the nearest player its anthill is alarmed at and keeps after them while the alarm lasts. */
     private class AlarmTargetGoal extends Goal {
         private static final double RANGE = 40;
         private @Nullable Player intruder;
@@ -869,10 +849,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
         }
     }
 
-    /**
-     * Works the land around the nest: walks to a ripe crop and harvests it (then heads home with it), or to a growing one
-     * or a sapling and tends it for a while, growing it now and then.
-     */
+    /** Works the land around the nest: harvests a ripe crop and heads home, or tends a growing one. */
     private class WorkLandGoal extends Goal {
         private @Nullable BlockPos target;
         private boolean harvesting;
@@ -917,8 +894,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
             }
             stay--;
             Vec3 spot = Vec3.atBottomCenterOf(target);
-            // Within reach from the crop's own block or any block around it, diagonals too: a path can end beside the
-            // target, and an ant that waited to stand exactly on it could wait for ever.
+            // Beside the target is close enough: a path can end there, and an ant waiting to stand on it could wait for ever.
             if (distanceToSqr(spot) > 2.8) {
                 if (--retry <= 0) {
                     retry = 20;

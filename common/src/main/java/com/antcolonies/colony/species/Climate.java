@@ -10,12 +10,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Where a species thrives. A colony kept somewhere else (a Snow Ant Terrarium in a desert) loses health, less so the
- * better its Queen's Environmental Resistance, and not at all with a matching resistance mutation. A block of the
- * climate under the Terrarium (block tag {@code antcolonies:climate/<name>}: snow or ice for cold, sand for hot...) makes
- * any place right for species of that climate.
- */
+/** Where a species thrives: a colony kept elsewhere loses health, unless a block of its climate is under the Terrarium. */
 public enum Climate implements StringRepresentable {
     TEMPERATE("temperate"),
     COLD("cold"),

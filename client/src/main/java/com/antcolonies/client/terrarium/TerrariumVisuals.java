@@ -17,13 +17,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 /**
- * The ants drawn inside one Terrarium: a handful of representative actors that show what the colony's real numbers
- * say (how many ants, which jobs, soldiers, hunger, a Queen laying, an evolution under way). They live only on the
- * client, decide nothing, and are rebuilt from the synced colony whenever it changes.
- *
- * <p>Actors walk the tunnel graph of their glass side (face 0-3: north, east, south, west) or wander the soil's surface
- * (face {@link #SURFACE}). Carriers bring food from the entrances to the stores, nurses carry eggs from the Queen to
- * the brood chambers, cleaners take soil out, soldiers patrol the surface, and ants that meet stop to feed each other.
+ * The ants drawn in one Formicarium on the ground: client-only actors that follow the synced colony. Each is on a glass
+ * side (face 0 to 3: north, east, south, west) or on the surface ({@link #SURFACE}).
  */
 public final class TerrariumVisuals {
     public static final int SURFACE = 4;
@@ -88,11 +83,7 @@ public final class TerrariumVisuals {
     public int carryColor = 0xFFD9B26A;
     public float queenPhase;
     public boolean queenLaying;
-    /**
-     * The Queen, walking about her chamber's floor on the front glass: her offset from the chamber's middle (u, px), how
-     * far she has walked (her legs' cycle follows it), which way she faces, and whether she is walking. She walks a few
-     * steps, rests (laying, when the colony lays), and walks on.
-     */
+    /** The Queen on her chamber's floor: her offset from the chamber's middle (u, px), how far she has walked, her facing. */
     public float queenOffset;
     public float prevQueenOffset;
     public float queenWalked;
@@ -184,7 +175,8 @@ public final class TerrariumVisuals {
         Colony.Activity activity = colony.activity();
         float conversion = (float) colony.conversion();
         int hash = count * 31 + soldiers;
-        hash = hash * 31 + Math.round(activity.scavenging() * 10) + Math.round(activity.farming() * 10) * 7 + Math.round(activity.maintenance() * 10) * 13;
+        hash = hash * 31 + Math.round(activity.scavenging() * 10) + Math.round(activity.farming() * 10) * 7
+                + Math.round(activity.maintenance() * 10) * 13;
         hash = hash * 31 + Math.round(conversion * 10) + colony.species().hashCode();
         if (hash == compositionHash) {
             return;
@@ -298,7 +290,8 @@ public final class TerrariumVisuals {
             TunnelLayout.Node node = faces[chamber[0]].nodes.get(chamber[1]);
             float u = node.u() + (placement.nextFloat() - 0.5F) * node.radiusU() * 1.6F;
             // On the chamber's floor, piled a little.
-            float v = com.antcolonies.client.renderer.FlatGround.chamberFloor(node.v(), node.radiusV()) + size * 0.5F + placement.nextFloat() * node.radiusV() * 0.6F;
+            float v = com.antcolonies.client.renderer.FlatGround.chamberFloor(node.v(), node.radiusV()) + size * 0.5F
+                    + placement.nextFloat() * node.radiusV() * 0.6F;
             items.add(new Item(chamber[0], u, v, size * (0.85F + placement.nextFloat() * 0.3F), kind));
         }
     }

@@ -59,8 +59,7 @@ public final class Genetics {
     }
 
     /**
-     * A daughter Queen: each trait comes from her mother (or, with a mate's Genetic Sample, from either parent), sometimes
-     * one level off; she may carry a new random mutation; her mother's mutations pass on.
+     * A daughter Queen: each trait from her mother or her mate, sometimes one level off, perhaps with a new mutation.
      *
      * @param mate a Genetic Sample's genes crossed in, or null
      */
@@ -78,7 +77,8 @@ public final class Genetics {
         List<Identifier> mutations = new ArrayList<>(mother.mutations());
         if (mate != null) {
             for (Identifier inherited : mate.mutations()) {
-                if (!mutations.contains(inherited) && random.nextBoolean() && (isFlaw(inherited, registries) || roomForBeneficial(mutations, registries))) {
+                if (!mutations.contains(inherited) && random.nextBoolean()
+                        && (isFlaw(inherited, registries) || roomForBeneficial(mutations, registries))) {
                     mutations.add(inherited);
                 }
             }
@@ -103,7 +103,6 @@ public final class Genetics {
         return new Genome(levels, mutations, lineage);
     }
 
-    /** A random mutation that suits the category; rare ones only for Queens with Mutation Probability 5 or more. */
     /** Whether a mutation is a flaw. Unknown ids (from a removed data pack) count as beneficial. */
     public static boolean isFlaw(Identifier id, net.minecraft.core.HolderLookup.Provider registries) {
         return registries.lookup(ModRegistries.MUTATION).flatMap(lookup -> lookup.get(net.minecraft.resources.ResourceKey.create(ModRegistries.MUTATION, id)))
@@ -126,6 +125,7 @@ public final class Genetics {
         return beneficial(mutations, registries) < AntConfig.get(AntConfig.MAX_BENEFICIAL_MUTATIONS);
     }
 
+    /** A random mutation that suits the category; rare ones only for Queens with Mutation Probability 5 or more. */
     public static @Nullable Identifier randomMutation(RegistryAccess registries, Category category, int mutationLevel, RandomSource random) {
         Optional<Registry<Mutation>> registry = registries.lookup(ModRegistries.MUTATION);
         if (registry.isEmpty()) {

@@ -14,10 +14,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.Block;
 
-/**
- * An Ant Egg Cluster or Larva Cluster taken from an anthill with Silk Touch: it carries the anthill's species, goes
- * into the Terrarium of a working colony of that species, or is placed as a decoration that never hatches.
- */
+/** An Ant Egg Cluster or Larva Cluster taken from an anthill with Silk Touch: it carries the anthill's species. */
 public class BroodClusterItem extends BlockItem {
     private final boolean eggs;
 
@@ -32,7 +29,8 @@ public class BroodClusterItem extends BlockItem {
         if (species != null) {
             tooltip.accept(Tooltips.species(species).withStyle(ChatFormatting.AQUA));
         }
-        tooltip.accept(Component.translatable("tooltip.antcolonies.brood_cluster.use." + (eggs ? "eggs" : "larvae"), TerrariumBlockEntity.clusterBrood())
+        tooltip.accept(Component.translatable("tooltip.antcolonies.brood_cluster.use." + (eggs ? "eggs" : "larvae"),
+                        TerrariumBlockEntity.clusterBrood())
                 .withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable("tooltip.antcolonies.brood_cluster.placed").withStyle(ChatFormatting.DARK_GRAY));
     }

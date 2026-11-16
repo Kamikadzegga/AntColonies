@@ -11,16 +11,9 @@ import net.neoforged.neoforge.registries.datamaps.DataMapType;
 import net.neoforged.neoforge.registries.datamaps.RegisterDataMapTypesEvent;
 import org.jspecify.annotations.Nullable;
 
-/**
- * {@code data/<namespace>/data_maps/item/ant_food.json}: what each item is worth as ant food. Any mod's food can be
- * given a value there (nothing is guessed from item names). Synced, so tooltips and JEI show the server's values.
- */
+/** {@code data/<namespace>/data_maps/item/ant_food.json}: what each item is worth as ant food, synced to clients. */
 public final class ModDataMaps {
-    /**
-     * @param food        plain colony food
-     * @param specialKind the special food it also gives ("mineral", "crystal", "nether"; "" for none)
-     * @param special     special food units
-     */
+    /** An item's plain colony food, plus units of a special food ("mineral", "crystal", "nether"; "" for none). */
     public record AntFood(double food, String specialKind, double special) {
         public static final Codec<AntFood> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.doubleRange(0, 1e9).fieldOf("food").forGetter(AntFood::food),

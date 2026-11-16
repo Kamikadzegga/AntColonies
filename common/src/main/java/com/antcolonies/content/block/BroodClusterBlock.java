@@ -32,12 +32,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-/**
- * A pile of ant eggs (Ant Egg Cluster) or larvae (Larva Cluster) on the floor. The ones an anthill was built with are
- * alive ({@link #NATURAL}): in time an egg cluster becomes a larva cluster, and a larva cluster 1 to 3 ants of that
- * anthill. Not craftable: broken, a live cluster is lost unless taken with Silk Touch; its item (with the species) goes
- * into a working colony's Terrarium, or is placed again, but then only as a decoration that never hatches.
- */
+/** An Ant Egg Cluster or Larva Cluster: a pile on the floor. One an anthill was built with ({@link #NATURAL}) hatches in time. */
 public class BroodClusterBlock extends Block implements EntityBlock {
     /** Whether an anthill was built with it (and it hatches). A placed cluster never is. */
     public static final BooleanProperty NATURAL = BooleanProperty.create("natural");
@@ -85,10 +80,7 @@ public class BroodClusterBlock extends Block implements EntityBlock {
         return state.getValue(NATURAL);
     }
 
-    /**
-     * The chance a random tick moves a live cluster on: a block gets one about every 68 seconds (at the default random
-     * tick speed), so this makes a stage last {@code broodClusterMinutes} on average.
-     */
+    /** The chance a random tick moves a live cluster on: one comes about every 68 seconds, so a stage lasts the configured minutes. */
     public static double stageChance() {
         return Math.min(1, 68.27 / (AntConfig.get(AntConfig.BROOD_CLUSTER_MINUTES) * 60));
     }
@@ -100,10 +92,7 @@ public class BroodClusterBlock extends Block implements EntityBlock {
         }
     }
 
-    /**
-     * Moves a live cluster on a stage: eggs become larvae; larvae become 1 to 3 workers of the anthill (waiting while
-     * {@code anthillMaxAnts} wild ants are already about). Returns whether it did.
-     */
+    /** Moves a live cluster on a stage: eggs become larvae, larvae become workers of the anthill. Returns whether it did. */
     public boolean grow(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (!state.getValue(NATURAL)) {
             return false;
@@ -119,7 +108,8 @@ public class BroodClusterBlock extends Block implements EntityBlock {
             level.playSound(null, pos, SoundEvents.FROGSPAWN_HATCH, SoundSource.BLOCKS, 0.6F, 1.4F);
             return true;
         }
-        if (level.getEntitiesOfClass(WildAnt.class, new AABB(pos).inflate(AntConfig.get(AntConfig.ANTHILL_CROWD_RANGE))).size() >= AntConfig.get(AntConfig.ANTHILL_MAX_ANTS)) {
+        if (level.getEntitiesOfClass(WildAnt.class, new AABB(pos).inflate(AntConfig.get(AntConfig.ANTHILL_CROWD_RANGE))).size()
+                >= AntConfig.get(AntConfig.ANTHILL_MAX_ANTS)) {
             return false;
         }
         int count = 1 + random.nextInt(3);

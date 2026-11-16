@@ -36,11 +36,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Life on the colony chambers: ants at work on the working sites (as many as the site's real assignment calls for, up to
- * six), soldiers sparring at Foraging Sites, and the Storage's heap, made of the items it really holds (the most
- * plentiful ones, piled higher the more there are).
- */
+/** Draws a colony chamber: its soil or upright nest, the ants at work on it, and the Storage's heap of the items it holds. */
 public class StructureRenderer implements BlockEntityRenderer<StructureBlockEntity, StructureRenderer.State> {
     private static final float LENGTH = 3.2F / 16;
     /** Height of every chamber's floor inside its glass, in pixels: the colony's one ground height (DataGen.FLOOR). */
@@ -97,7 +93,8 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             return;
         }
         state.kind = structure.kind();
-        state.time = structure.getLevel() == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(structure.getLevel().getGameTime(), partialTicks);
+        state.time = structure.getLevel() == null ? 0
+                : com.antcolonies.client.ClientHooks.animationTime(structure.getLevel().getGameTime(), partialTicks);
         state.seed = structure.getBlockPos().asLong();
         double distance = AntConfig.client(AntConfig.VISUAL_DISTANCE);
         state.near = Vec3.atCenterOf(structure.getBlockPos()).distanceToSqr(camera) < distance * distance;
@@ -110,13 +107,13 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         FlatGround.facing(state.facing, (camera.x - structure.getBlockPos().getX()) * 16, (camera.z - structure.getBlockPos().getZ()) * 16);
         var colony = structure.clientLinked() ? com.antcolonies.client.ClientHooks.colonyOf(structure) : null;
         AntSpecies colonySpecies = colony == null ? null : ClientSpecies.get(colony.species());
-        com.antcolonies.colony.species.Climate climate = colonySpecies == null ? com.antcolonies.colony.species.Climate.TEMPERATE : colonySpecies.climate();
+        com.antcolonies.colony.species.Climate climate = colonySpecies == null ? com.antcolonies.colony.species.Climate.TEMPERATE
+                : colonySpecies.climate();
         state.soil = FlatGround.soilColor(climate);
         state.top = FlatGround.topColor(climate);
         state.wallAnts = state.near && colony != null && colony.adults() > 0 && AntConfig.client(AntConfig.STRUCTURE_ANTS);
         state.wallLook = colonySpecies == null ? AntLook.UNKNOWN : colonySpecies.look();
-        // The working ants are 3D models, so (like the Terrarium's surface ants) only up close and with 3D ants on: further
-        // away they would be a pixel or two, and a ring of busy chambers costs a lot of models.
+        // The working ants are 3D models, so only up close and with 3D ants on: many busy chambers cost a lot of models.
         double detail = AntConfig.client(AntConfig.ANT_DETAIL_DISTANCE);
         boolean detailed = AntConfig.client(AntConfig.ANT_3D_MODELS)
                 && Vec3.atCenterOf(structure.getBlockPos()).distanceToSqr(camera) < detail * detail;
@@ -230,10 +227,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         }
     }
 
-    /**
-     * The chamber's soil, at the colony's one ground height: its walls behind the outer glass with tunnels running on
-     * into the next blocks', its surface with the trails to its neighbours, and (up close) ants walking the tunnels.
-     */
+    /** The chamber's soil: its walls with their tunnels, its surface with the trails, and (up close) ants walking the tunnels. */
     private static void drawGround(State state, PoseStack poseStack, SubmitNodeCollector collector) {
         FlatGround.Shape shape = state.shape;
         @SuppressWarnings("unchecked")
@@ -269,8 +263,9 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
     /** A chamber in a stack: its own chamber in the upright nest, the ants at work there, the Storage's items on its shelves. */
     private void extractNest(StructureBlockEntity structure, NestRenderer.State nest, float partialTicks, Vec3 camera) {
         var block = structure.getBlockState();
-        NestRenderer.extract(nest, structure.getBlockPos(), structure.getLevel(), block.getValue(com.antcolonies.content.block.ColonyEntityBlock.FACING), camera,
-                partialTicks, AntConfig.client(AntConfig.VISUAL_DISTANCE));
+        NestRenderer.extract(nest, structure.getBlockPos(), structure.getLevel(),
+                block.getValue(com.antcolonies.content.block.ColonyEntityBlock.FACING), camera, partialTicks,
+                AntConfig.client(AntConfig.VISUAL_DISTANCE));
         nest.visuals = structure.clientVisuals instanceof com.antcolonies.client.nest.NestVisuals visuals ? visuals : null;
         nest.layout = nest.visuals == null ? null : nest.visuals.layout;
         var colony = com.antcolonies.client.ClientHooks.colonyOf(structure);
@@ -282,7 +277,8 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         nest.queen = false;
         nest.stage = 1;
         nest.linked = structure.clientLinked();
-        nest.lit = block.hasProperty(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE) && block.getValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE);
+        nest.lit = block.hasProperty(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE)
+                && block.getValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE);
         nest.shown = nest.linked && structure.kind().job().any() && structure.assigned() > 0
                 ? (int) Math.min(6, 1 + Math.floor(Math.log(structure.assigned()) / Math.log(2.5))) : 0;
         nest.items.clear();
@@ -318,7 +314,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
                 poseStack.translate(spots[i][0] / 16, (FLOOR + 1.1F + layer * 0.5F + (i == 0 ? 0.4F : 0)) / 16, spots[i][1] / 16);
                 poseStack.rotate(Axis.YP.rotationDegrees((i * 67 + layer * 41) % 360));
                 poseStack.rotate(Axis.XP.rotationDegrees(90));
-                // About 4 px across: a load the ants could carry in, not a block-sized item (the user, 2026-11-14: "too big").
+                // About 4 px across: a load the ants could carry in, not a block-sized item.
                 poseStack.scale(0.24F, 0.24F, 0.24F);
                 item.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
                 poseStack.popPose();

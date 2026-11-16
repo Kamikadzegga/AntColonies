@@ -18,14 +18,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import org.jspecify.annotations.Nullable;
 
-/**
- * An anthill's alarm. A player in a full Chitin set smells like the colony and walks among an anthill's ants unharmed,
- * until they open (or break) one of its chests or barrels still holding its loot, step into its Queen's chamber, or
- * strike one of its ants. Then every ant of that anthill (named by its Queen's spot, {@link WildAnt#anthill}) is
- * alarmed at that player for {@code anthillAlarmSeconds}: soldiers and royal guards attack them, workers swarm them,
- * and all of them chase them through the tunnels, Chitin or not. Players without Chitin raise it the same way (its
- * soldiers already attack them on sight, but now the whole nest comes).
- */
+/** An anthill's alarm: all its ants turn on a player who robs its chests, enters its Queen's chamber or strikes one of them. */
 public final class AnthillAlarm {
     /** How far from the Queen's spot an anthill's ants are looked for (the largest nests reach 28 blocks out, 46 down). */
     private static final double REACH = 64;
@@ -48,10 +41,7 @@ public final class AnthillAlarm {
         return player.isCreative() || player.isSpectator();
     }
 
-    /**
-     * Alarms every ant of the anthill at the player (and extends an alarm already on); the player is told the first
-     * time. Returns how many ants were alarmed.
-     */
+    /** Alarms every ant of the anthill at the player (and extends an alarm already on); returns how many were alarmed. */
     public static int raise(ServerLevel level, BlockPos anthill, Player player, Reason reason) {
         long until = level.getGameTime() + AntConfig.get(AntConfig.ANTHILL_ALARM_SECONDS) * 20L;
         List<WildAnt> ants = level.getEntitiesOfClass(WildAnt.class, new AABB(anthill).inflate(REACH), ant -> anthill.equals(ant.anthill()));

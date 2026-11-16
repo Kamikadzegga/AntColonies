@@ -29,12 +29,7 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import org.jspecify.annotations.Nullable;
 
 /**
- * One Droplet Centrifuge recipe: an item spun into a fluid for FE. An ordinary recipe file, so datapacks and KubeJS add,
- * change and remove them like any other ({@code data/<namespace>/recipe/<name>.json}):
- * <pre>{@code
- * { "type": "antcolonies:centrifuging", "ingredient": "antcolonies:lava_droplet",
- *   "result": { "id": "minecraft:lava", "amount": 50 }, "energy": 2000, "time": 100 }
- * }</pre>
+ * One Droplet Centrifuge recipe: an item spun into a fluid for FE.
  *
  * @param ingredient what goes in, one per run (a droplet, but any item works)
  * @param result     the fluid and how many millibuckets one item gives

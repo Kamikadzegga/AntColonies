@@ -16,10 +16,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Any colony chamber's GUI: its status and link, for working sites the ants it has and wants (+/- buttons), its own slots (Storage, a Foraging Site's store, Queen
- * Chamber) and its upgrade slots on the right.
- */
+/** Any colony chamber's GUI: its status and link, a job site's ants and their buttons, its own slots and its upgrade slots. */
 public class StructureMenu extends BaseMenu {
     public static final int LESS = 0;
     public static final int MORE = 1;
@@ -164,10 +161,7 @@ public class StructureMenu extends BaseMenu {
         scroll = Math.clamp(row, 0, maxScroll());
     }
 
-    /**
-     * Shift-clicking into a Storage fills the whole Storage, not only the rows on screen: first the slots already
-     * holding the item, then empty ones.
-     */
+    /** Shift-clicking into a Storage fills the whole Storage, not only the rows on screen: slots holding the item first. */
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         if (window == null || index < blockSlots || isUpgrade(slots.get(index).getItem()) || !slots.get(index).hasItem()) {

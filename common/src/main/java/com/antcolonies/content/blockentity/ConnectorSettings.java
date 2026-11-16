@@ -6,18 +6,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-/**
- * A Colony Connector's settings, saved with it, and what it moved lately (for its screen and the Network page).
- *
- * <ul>
- *     <li>{@code channel}: a dye colour; connectors on the same channel in one dimension form a network.</li>
- *     <li>{@code foodMode}: {@link #OFF}, {@link #SUPPLY} (gives the food it has above {@code reserve}% of its room) or
- *     {@link #REQUEST} (takes food while below {@code target}% of its room).</li>
- *     <li>{@code rateLimit}: an index into {@link #RATES}, the most food per minute it moves.</li>
- *     <li>{@code itemMode}: {@link #OFF}, {@link #SEND} (the items its filter names leave its colony's Storage) or
- *     {@link #RECEIVE} (items sent on the channel arrive in its colony's Storage).</li>
- * </ul>
- */
+/** A Colony Connector's saved settings, and what it moved lately (for its screen and the Network page). */
 public final class ConnectorSettings {
     public static final int OFF = 0;
     public static final int SUPPLY = 1;
@@ -27,11 +16,16 @@ public final class ConnectorSettings {
     /** Food per minute a connector may move; the last is the config's maximum. */
     public static final int[] RATES = {250, 1000, 3000, -1};
 
+    /** A dye colour's id: connectors on one channel in a dimension form a network. */
     public int channel = DyeColor.WHITE.getId();
+    /** {@link #OFF}, {@link #SUPPLY} or {@link #REQUEST}. */
     public int foodMode = OFF;
+    /** Percent of its food room: it supplies what is above {@code reserve} and requests while below {@code target}. */
     public int reserve = 50;
     public int target = 75;
+    /** An index into {@link #RATES}. */
     public int rateLimit = 2;
+    /** {@link #OFF}, {@link #SEND} or {@link #RECEIVE}. */
     public int itemMode = OFF;
 
     // --- What it moved (not saved): per minute, smoothed over the last passes ---

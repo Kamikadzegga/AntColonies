@@ -31,10 +31,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Makes species upgrades: an Upgrade Base and four of a species' signature material give its tier 1 upgrade of the
- * chosen kind; a tier 1 or 2 species upgrade and 8 or 16 more of the material raise it a tier.
- */
+/** Makes a species upgrade from an Upgrade Base and the species' signature material, or raises one a tier. */
 public class UpgradeStationBlockEntity extends BlockEntity implements Container, MenuProvider {
     public static final int SLOT_BASE = 0;
     public static final int SLOT_MATERIAL = 1;

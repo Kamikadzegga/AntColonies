@@ -62,14 +62,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
-/**
- * The heart of a colony: it holds the colony's numbers, its Queen, and runs the colony's simulation steps. Its slots
- * take a Queen Test Tube (the Queen moves in, the empty tube stays), things to feed (food, evolution materials, caught
- * ants, eggs, larvae, Evolution Catalysts) and give back empty tubes.
- *
- * <p>While the Terrarium is unloaded its colony stands still. When it loads again it catches up on at most the
- * configured offline minutes (more with Simulation Upgrades), never on the whole time it was away.
- */
+/** The heart of a colony: holds its numbers and its Queen, takes what is fed to it, and runs its simulation steps. */
 public class TerrariumBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, com.antcolonies.content.block.ComparatorSource {
     /** Comparators read how full the colony's food store is. */
     @Override
@@ -117,8 +110,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         }
     };
     private long scannedVersion = -1;
-    // Timers start long ago, never at Long.MIN_VALUE: "now - then" would overflow to a negative number, and the network
-    // scan, the climate check and evolution attempts would never come due.
+    // "Long ago", not Long.MIN_VALUE: "now - then" would overflow and the timers would never come due.
     private long scannedAt = Long.MIN_VALUE / 2;
     private int feedStatus;
     private long lastEvolutionAttempt = Long.MIN_VALUE / 2;
@@ -232,9 +224,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         if ((time + Math.floorMod(pos.asLong(), interval)) % interval == 0) {
             be.simulate(serverLevel, time, interval);
         }
-        // Every second while someone has this Terrarium's screen open (with the details its pages show: the history, the
-        // Storage and the network); otherwise every five seconds is plenty for the animated ants (each update carries the
-        // whole colony, about 3 KB).
+        // Sync every second while a screen is open, every five otherwise.
         if (time % 20 == 0) {
             if (be.hasViewer(serverLevel)) {
                 be.syncNow();
@@ -253,12 +243,13 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         return false;
     }
 
-    /** Runs the simulation: one step per interval, and after loading a bounded catch-up. */
     /** Lets the colony advancements check this colony for one player (near it, or opening it). */
     private void checkAdvancements(ServerLevel level, net.minecraft.server.level.ServerPlayer player) {
-        com.antcolonies.core.advancement.ModTriggers.COLONY.get().trigger(player, colony, com.antcolonies.core.registry.ModRegistries.species(level.registryAccess(), colony.species()));
+        com.antcolonies.core.advancement.ModTriggers.COLONY.get().trigger(player, colony,
+                com.antcolonies.core.registry.ModRegistries.species(level.registryAccess(), colony.species()));
     }
 
+    /** Runs the simulation: one step per interval, and after loading a bounded catch-up. */
     private void simulate(ServerLevel level, long time, int interval) {
         long last = ColonyAccess.lastSimTime(colony);
         if (!caughtUp) {
@@ -281,10 +272,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         setChanged();
     }
 
-    /**
-     * Runs part of the catch-up: steps of at most two minutes (so the result matches running all along), at most
-     * {@link #CATCH_UP_STEPS_PER_TICK} a tick. Hours of catch-up for a big colony in one tick would freeze the server.
-     */
+    /** Runs part of the catch-up, a few short steps a tick: hours of it in one tick would freeze the server. */
     private void catchUp(ServerLevel level) {
         for (int n = 0; n < CATCH_UP_STEPS_PER_TICK && catchUpLeft > 0; n++) {
             double dt = Math.min(2.0, catchUpLeft);
@@ -294,10 +282,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         setChanged();
     }
 
-    /**
-     * How many minutes a colony catches up on after {@code awayTicks} unloaded: the time away, but never more than the
-     * configured offline minutes plus what its Simulation Upgrades allow.
-     */
+    /** Minutes a colony catches up on after {@code awayTicks} unloaded: at most what the config and its Simulation Upgrades allow. */
     public static double catchUpMinutes(long awayTicks, int simulationTiers) {
         double allowance = AntConfig.get(AntConfig.OFFLINE_CATCH_UP_MINUTES)
                 + AntConfig.simulationUpgradeMinutes(Math.min(UpgradeType.MAX_TIER, simulationTiers));
@@ -312,12 +297,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         updateStance(level);
     }
 
-    /**
-     * Whether the colony is built upright, decided here for all of its blocks. A block counts as stacked when another
-     * block of the colony is right over or under it, as flat otherwise. More stacked than flat: the colony is upright
-     * (every block of it an upright nest, those on the ground too). More flat than stacked: it is not (every block a
-     * glass case). As many of each: it stays as it was.
-     */
+    /** Sets the whole colony upright when more of its blocks are stacked than not, flat when fewer; a tie keeps what it was. */
     private void updateStance(ServerLevel level) {
         Set<BlockPos> parts = new HashSet<>(colony.layout().all());
         parts.add(worldPosition);
@@ -346,7 +326,6 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         return upright;
     }
 
-    /** The Queen slot and the feed slot. */
     /** Handles the Queen and feed slots (every few ticks; game tests call it directly). */
     public void processSlots(ServerLevel level) {
         ItemStack queenSlot = items.get(SLOT_QUEEN);
@@ -357,8 +336,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
             boolean alone = colony.isEmptyOfAnts();
             colony.setQueen(queen);
             if (alone) {
-                // A single Queen in a completely empty Terrarium: Queen-only founding. Ants, eggs or larvae put in later
-                // (in this same pass too, from the feed slot) end it, so a colony moved with its ants never needs it.
+                // A lone Queen in an empty Terrarium starts founding; ants or brood put in later (in this same pass too) end it.
                 colony.startFounding();
             }
             items.set(SLOT_QUEEN, ItemStack.EMPTY);
@@ -396,8 +374,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
             colony.addWorkers(ants.count());
             feed.shrink(1);
         } else if (feed.is(ModItems.TEST_TUBE.get())) {
-            // Empty Test Tubes fill with the colony's workers, a tube at a time into the output. This is how a colony moves: a
-            // broken Terrarium keeps none of its ants.
+            // Empty Test Tubes fill with the colony's workers, a tube at a time into the output: this is how a colony moves.
             if (!items.get(SLOT_OUTPUT).isEmpty()) {
                 feedStatus = ColonyStatus.STORAGE_FULL.bit();
                 return;
@@ -413,8 +390,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
             syncNow();
         } else if (feed.getItem() instanceof net.minecraft.world.item.BlockItem blockItem
                 && blockItem.getBlock() instanceof com.antcolonies.content.block.BroodClusterBlock cluster) {
-            // A cluster taken from an anthill with Silk Touch: only a working colony (a Queen and workers, past founding)
-            // of its species takes it in. It waits in the slot meanwhile.
+            // A brood cluster: only a working colony (a Queen and workers, past founding) of its species takes it in.
             if (colony.queen() == null) {
                 feedStatus = ColonyStatus.NO_QUEEN.bit();
                 return;
@@ -453,8 +429,8 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
                 return;
             }
             lastEvolutionAttempt = level.getGameTime();
-            EvolutionLogic.Result result = EvolutionLogic.attempt(level.registryAccess(), colony, feed, upgradeTier(UpgradeType.EVOLUTION), level.dimension(),
-                    level.getRandom());
+            EvolutionLogic.Result result = EvolutionLogic.attempt(level.registryAccess(), colony, feed, upgradeTier(UpgradeType.EVOLUTION),
+                    level.dimension(), level.getRandom());
             switch (result.outcome()) {
                 case NOT_READY -> feedStatus = ColonyStatus.INSUFFICIENT_MATERIALS.bit();
                 case WRONG_DIMENSION -> feedStatus = ColonyStatus.WRONG_DIMENSION.bit();
@@ -483,10 +459,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         setChanged();
     }
 
-    /**
-     * Eats from a stack of food while the food bar has room, or, for a special food the species needs, while its special
-     * food store (a quarter of the food room, as in {@code FoodIntake}) is not full. The rest waits in the slot.
-     */
+    /** Eats from a stack while the food bar (or, for the species' special food, its special store) has room; the rest waits. */
     private void eat(ServerLevel level, ItemStack stack) {
         ModDataMaps.AntFood value = ModDataMaps.food(stack);
         if (value == null) {
@@ -496,8 +469,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         double specialRoom = capacity / 4;
         String kind = value.specialKind();
         boolean special = !kind.isEmpty() && kind.equals(speciesDiet(level)) && value.special() > 0;
-        // A founding Queen waits for a full bar: the last item may top it up (the bit over is lost), or food that comes in
-        // whole items she can't fit (30 at a time against 2000) would stop short of full and she would wait for ever.
+        // A founding Queen waits for a full bar: the last item may top it up (the bit over is lost), or she would wait for ever.
         boolean topUp = colony.founding() == com.antcolonies.colony.model.Founding.FEEDING && value.food() > 0;
         while (!stack.isEmpty() && (colony.food() + value.food() <= capacity || topUp && colony.food() < capacity
                 || special && colony.specialFood() < specialRoom)) {
@@ -511,10 +483,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         return ModDataMaps.food(stack) != null;
     }
 
-    /**
-     * Whether a stack belongs in the feed slot: anything but plain food (ants in tubes, empty tubes, eggs, larvae,
-     * catalysts, evolution materials; food only when it is also this colony's evolution material).
-     */
+    /** Whether a stack belongs in the feed slot: anything but food, and food that is also this colony's evolution material. */
     public boolean isFeed(ItemStack stack) {
         return !isFood(stack) || level != null && com.antcolonies.colony.evolution.EvolutionLogic.find(level.registryAccess(), colony, stack) != null;
     }
@@ -524,10 +493,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         return data == null ? "" : data.diet().specialKind();
     }
 
-    /**
- * The Queen grew with her colony: a shimmer of genes, her sound, and a note to the players nearby saying which traits
- * went up.
- */
+    /** The Queen grew with her colony: effects, and a note to the players nearby saying which traits went up. */
 public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcolonies.colony.genetics.Trait> raised) {
     level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_QUEEN_GREW, 0);
     level.playSound(null, worldPosition, ModSounds.QUEEN_ACTIVITY.get(), SoundSource.BLOCKS, 1.0F, 1.2F);
@@ -538,7 +504,8 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
         }
         traits.append(Component.translatable(raised.get(i).translationKey()).withStyle(net.minecraft.ChatFormatting.GREEN));
     }
-    Component message = Component.translatable("message.antcolonies.queen_grew", com.antcolonies.content.item.Tooltips.species(colony.species()), stage, traits);
+    Component message = Component.translatable("message.antcolonies.queen_grew", com.antcolonies.content.item.Tooltips.species(colony.species()),
+            stage, traits);
     for (net.minecraft.server.level.ServerPlayer player : level.players()) {
         if (player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5) < 48 * 48) {
             player.sendSystemMessage(message);
@@ -548,10 +515,7 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
     setChanged();
 }
 
-/**
-     * Caught ants join a colony of their own species, or an empty colony without a Queen (which becomes theirs). Eggs or
-     * larvae still in it count: another species' ants wait, or they would wipe that brood.
-     */
+    /** Whether caught ants may join: their own species, or an empty colony. Brood counts: another species' ants would wipe it. */
     private boolean accepts(Identifier species) {
         return species.equals(colony.species()) || colony.queen() == null && colony.isEmptyOfAnts();
     }
@@ -561,17 +525,15 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
         colony.adoptSpecies(species);
     }
 
-    /**
-     * The Queen takes one of the evolution material. What the item leaves behind (the bucket of a bucket of water, lava
-     * or another fluid fed to a Liquid Ant line) goes to the output slot, or drops by the Terrarium if that is taken.
-     */
+    /** The Queen takes one of the evolution material; what it leaves behind (a bucket) goes to the output slot, or drops. */
     private void absorb(ItemStack feed) {
         net.minecraft.world.item.ItemStackTemplate remainder = feed.getCraftingRemainder();
         feed.shrink(1);
         if (remainder != null && level != null) {
             ItemStack left = remainder.create();
             if (!giveBack(left)) {
-                net.minecraft.world.Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 1, worldPosition.getZ() + 0.5, left);
+                net.minecraft.world.Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 1,
+                        worldPosition.getZ() + 0.5, left);
             }
         }
     }
@@ -590,10 +552,7 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
         return false;
     }
 
-    /**
-     * The Queen leaves into an empty Test Tube in the Queen slot, and her tube goes to the output (the colony keeps its
-     * ants, but lays no more eggs). Waits while the output is taken.
-     */
+    /** The Queen leaves into an empty Test Tube in the Queen slot; her tube goes to the output. Waits while the output is taken. */
     public boolean removeQueen() {
         QueenData queen = colony.queen();
         ItemStack slot = items.get(SLOT_QUEEN);
@@ -729,11 +688,7 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
         return (slot == SLOT_FOOD || slot == SLOT_FEED && feedRole(stack)) && canPlaceItem(slot, stack);
     }
 
-    /**
-     * Whether hoppers and pipes may put a stack into the feed slot: only things the feed slot does something with (Test
-     * Tubes, eggs, larvae, brood clusters, catalysts, this colony's evolution materials). Anything else would sit there
-     * and block it, and automation can't take it back out.
-     */
+    /** Whether automation may put a stack into the feed slot: only what the slot uses up, as anything else would block it. */
     private boolean feedRole(ItemStack stack) {
         return stack.is(ModItems.TEST_TUBE.get()) || stack.is(ModItems.ANT_TEST_TUBE.get()) || stack.is(ModItems.ANT_EGG.get())
                 || stack.is(ModItems.ANT_LARVA.get()) || stack.is(ModItems.EVOLUTION_CATALYST.get())
@@ -766,7 +721,7 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
         return new AABB(worldPosition).inflate(0.25);
     }
 
-    // --- Breaking: the colony goes with the item ---
+    // --- Breaking ---
 
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
@@ -796,7 +751,8 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
         }
         input.child("colony").ifPresent(colony::load);
         feedStatus = input.getIntOr("feed_status", 0);
-        floor = input.getString("floor").flatMap(name -> java.util.Arrays.stream(Climate.values()).filter(c -> c.getSerializedName().equals(name)).findFirst()).orElse(null);
+        floor = input.getString("floor").flatMap(name ->
+                java.util.Arrays.stream(Climate.values()).filter(c -> c.getSerializedName().equals(name)).findFirst()).orElse(null);
     }
 
     @Override
@@ -815,11 +771,7 @@ public void queenGrew(ServerLevel level, int stage, java.util.List<com.antcoloni
         }
     }
 
-    /**
-     * The job sites as last sent to clients, in the order their screens list them. The Jobs page's buttons name a row by
-     * its place in that list, and the colony's own list is re-sorted by priority at every step, so the server reads
-     * a button against this copy: a click lands on the site the player saw even if the order changed meanwhile.
-     */
+    /** The job sites in the order last sent to clients: Jobs page buttons name a row, and the colony's own list gets re-sorted. */
     private List<Colony.Assignment> sentAssignments = List.of();
 
     public List<Colony.Assignment> sentAssignments() {

@@ -10,13 +10,11 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/**
- * The giant anthill's structure type and piece. Where and how often it generates is data: worldgen/structure,
- * worldgen/structure_set and the has_structure/giant_anthill biome tag.
- */
+/** The anthills' structure types and their piece. Where and how often they generate is data (worldgen files and biome tags). */
 public final class ModStructures {
     public static final DeferredRegister<StructureType<?>> STRUCTURE_TYPES = DeferredRegister.create(Registries.STRUCTURE_TYPE, AntColonies.MODID);
-    public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECES = DeferredRegister.create(Registries.STRUCTURE_PIECE, AntColonies.MODID);
+    public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECES =
+            DeferredRegister.create(Registries.STRUCTURE_PIECE, AntColonies.MODID);
 
     public static final DeferredHolder<StructureType<?>, StructureType<GiantAnthill>> GIANT_ANTHILL =
             STRUCTURE_TYPES.register("giant_anthill", () -> () -> GiantAnthill.CODEC);

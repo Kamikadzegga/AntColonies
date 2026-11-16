@@ -20,14 +20,8 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * The ground of a colony built flat on the ground, shared by the Formicarium and every chamber (the user, 2026-11-14: they
- * "should connect better an be on the same height level inside"). Every block's soil comes up to {@link #GROUND}; where
- * two blocks join, their soil runs on to the edge, so the build is one bed of soil with no step or trench. Behind each
- * outer glass the soil shows tunnels that run on into the next block's (or round the corner into the next side), with a
- * few ants walking them, and on top worn trails lead from block to block.
- *
- * <p>Sides are numbered as in {@link TerrariumRenderer}: 0 north, 1 east, 2 south, 3 west; positions on a side are its
- * layout's (u across, 1 to 15 between the soil's corners; v up, px).
+ * The soil of a colony built flat, one bed shared by every block, with its tunnels and trails.
+ * Sides: 0 north, 1 east, 2 south, 3 west; on a side, u runs 1 to 15 and v up (px).
  */
 public final class FlatGround {
     /** The soil's surface, px: the same in every block of a flat colony. */
@@ -91,7 +85,7 @@ public final class FlatGround {
         }
     }
 
-    /** Whether the block at {@code pos} is a part of a colony built flat. */
+    /** Whether this block is a part of a colony built flat. */
     private static boolean flatPart(BlockState state) {
         return state.getBlock() instanceof ColonyPartBlock && !ColonyPartBlock.upright(state);
     }
@@ -130,8 +124,7 @@ public final class FlatGround {
                 }
             }
         }
-        // Inner corners: two joined sides whose neighbour has the other side outer leave a little of this block's soil in
-        // view, behind that neighbour's glass.
+        // Inner corners: a little of this block's soil shows behind a neighbour's glass.
         shape.notches.clear();
         for (int a = 0; a < 4; a++) {
             for (int b = 0; b < 4; b++) {
@@ -241,10 +234,7 @@ public final class FlatGround {
         return new float[][] {{u0 / TEX, v1 / TEX}, {u1 / TEX, v1 / TEX}, {u1 / TEX, v0 / TEX}, {u0 / TEX, v0 / TEX}};
     }
 
-    /**
-     * The soil: its walls behind the outer glasses that face the camera, the little walls at inner corners, and its
-     * surface over the whole block where it joins others.
-     */
+    /** The soil: its walls behind the outer glasses that face the camera, the little walls at inner corners, and its surface. */
     static void soil(Geometry g, Shape shape, int soil, int top, boolean[] facing) {
         float x0 = shape.x0();
         float x1 = shape.x1();
@@ -280,7 +270,8 @@ public final class FlatGround {
                     {n[2] + normal[0] * out, y1, n[3] + normal[2] * out}, {n[0] + normal[0] * out, y1, n[1] + normal[2] * out}};
             g.quadUv(corners, uvRect(4, tv0, 6, tv1), Geometry.shade(soil, side % 2 == 0 ? 0.85F : 0.7F), normal);
         }
-        g.quadUv(new float[][] {{x0, y1, z0}, {x0, y1, z1}, {x1, y1, z1}, {x1, y1, z0}}, uvRect(32 + x0, z0, 32 + x1, z1), top, new float[] {0, 1, 0});
+        g.quadUv(new float[][] {{x0, y1, z0}, {x0, y1, z1}, {x1, y1, z1}, {x1, y1, z0}}, uvRect(32 + x0, z0, 32 + x1, z1), top,
+                new float[] {0, 1, 0});
     }
 
     /** Grid cells on a side: none, tunnel, chamber, crystal chamber. */
@@ -305,9 +296,8 @@ public final class FlatGround {
     }
 
     /**
-     * A side's tunnels and chambers, cut on Minecraft's pixel grid (the user: "a little more rectangular to fit better in
-     * minecraft"): a tunnel is 1 px high, stepping up and down a pixel at a time; a chamber is a low rectangle, 2 px high. {@code hollows} are {u, v, radiusU, radiusV} or with a fifth value 1 for a crystal chamber. Only the
-     * part of the side between its wall's ends is drawn.
+     * A side's tunnels (1 px high) and chambers (2 px high), cut on the pixel grid between its wall's ends.
+     * {@code hollows} are {u, v, radiusU, radiusV}, with a fifth value 1 for a crystal chamber.
      */
     static void tunnels(Geometry g, int side, Shape shape, List<float[][]> paths, List<float[]> hollows, int dark) {
         int rows = (int) GROUND;
@@ -323,8 +313,7 @@ public final class FlatGround {
                 int lastJ = Integer.MIN_VALUE;
                 for (int s = 0; s <= steps; s++) {
                     float t = s / (float) steps;
-                    // One pixel high (the user: "too big"), stepping a pixel at a time; where it steps both across and up,
-                    // the corner pixel is filled too, so the tunnel never breaks into diagonal dots.
+                    // Where it steps both across and up, the corner pixel is filled too: no diagonal dots.
                     int ci = Mth.floor(Mth.lerp(t, w0, w1));
                     int cj = Mth.floor(Mth.lerp(t, v0, v1));
                     if (lastI != Integer.MIN_VALUE && ci != lastI && cj != lastJ) {
@@ -373,11 +362,14 @@ public final class FlatGround {
                 while (i < Math.min(16, to) && grid[i][j] == kind) {
                     i++;
                 }
-                float[][] uv = kind == TUNNEL ? uvRect(18 + start % 4, 2, 18 + start % 4 + (i - start), 4) : uvRect(18 + start % 4, 6 + j, 18 + start % 4 + (i - start), 7 + j);
+                float[][] uv = kind == TUNNEL ? uvRect(18 + start % 4, 2, 18 + start % 4 + (i - start), 4)
+                        : uvRect(18 + start % 4, 6 + j, 18 + start % 4 + (i - start), 7 + j);
                 float u0 = uOf(start);
                 float u1 = uOf(i);
-                float[][] corners = {TerrariumRenderer.onFace(side, u0, j, out, new float[3]), TerrariumRenderer.onFace(side, u1, j, out, new float[3]),
-                        TerrariumRenderer.onFace(side, u1, j + 1, out, new float[3]), TerrariumRenderer.onFace(side, u0, j + 1, out, new float[3])};
+                float[][] corners = {TerrariumRenderer.onFace(side, u0, j, out, new float[3]),
+                        TerrariumRenderer.onFace(side, u1, j, out, new float[3]),
+                        TerrariumRenderer.onFace(side, u1, j + 1, out, new float[3]),
+                        TerrariumRenderer.onFace(side, u0, j + 1, out, new float[3])};
                 g.quadUv(corners, uv, kind == CRYSTAL ? crystal : dark, n);
             }
         }
@@ -390,8 +382,8 @@ public final class FlatGround {
     }
 
     /**
-     * A tunnel from a point to the place it crosses into the next wall: a gentle bend, then level for the last 2 px, so it
-     * meets the next block's tunnel, which comes in level too. {@code highEnd}: the crossing is at the side's high-u end.
+     * A tunnel from a point to where it crosses into the next wall, level at the end so both blocks' tunnels meet.
+     * {@code highEnd}: the crossing is at the side's high-u end.
      */
     static float[][] toCrossing(float[] from, float[] crossing, boolean highEnd, float bow) {
         float[] level = {crossing[0] + (highEnd ? -2.4F : 2.4F), crossing[1]};
@@ -471,10 +463,7 @@ public final class FlatGround {
         return paths;
     }
 
-    /**
-     * Ants walking a side's tunnels, back and forth, each at its own pace (worked out from the time: nothing to keep).
-     * Drawn into the side-view sprite buffer.
-     */
+    /** Ants walking a side's tunnels back and forth, placed from the time alone; drawn into the side-view sprite buffer. */
     static void walkers(Geometry g, int side, List<float[][]> paths, AntLook look, float time, long seed, int carry) {
         for (int p = 0; p < paths.size(); p++) {
             float[][] path = paths.get(p);
@@ -510,8 +499,8 @@ public final class FlatGround {
                         }
                         boolean positive = du >= 0;
                         int frame = Math.floorMod((int) (travel * 1.1F), 4);
-                        TerrariumRenderer.drawSprite(g, side, u, tunnelFloor(v), positive, 0, Caste.WORKER, look, TerrariumRenderer.SPRITE_LENGTH, frame,
-                                back ? carry : 0, g.light, 1);
+                        TerrariumRenderer.drawSprite(g, side, u, tunnelFloor(v), positive, 0, Caste.WORKER, look, TerrariumRenderer.SPRITE_LENGTH,
+                                frame, back ? carry : 0, g.light, 1);
                         break;
                     }
                     walked += d;
@@ -524,10 +513,7 @@ public final class FlatGround {
         return Mth.sqrt((b[0] - a[0]) * (b[0] - a[0]) + (b[1] - a[1]) * (b[1] - a[1]));
     }
 
-    /**
-     * Worn trails on the surface from the block's middle to each joined side, meeting the neighbour's trail at the edge.
-     * Props stand over them where they lie.
-     */
+    /** Worn trails on the surface from the block's middle to each joined side, meeting the neighbour's trail at the edge. */
     static void trails(Geometry g, Shape shape, int color) {
         java.util.Random random = new java.util.Random(shape.seed * 53);
         float[] centre = {8 + (random.nextFloat() - 0.5F) * 2.5F, 8 + (random.nextFloat() - 0.5F) * 2.5F};

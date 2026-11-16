@@ -11,13 +11,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.Identifier;
 
 /**
- * A mutation, loaded from {@code data/<namespace>/antcolonies/mutation/<name>.json}. A Queen gets one at random when she
- * is reared (weighted by {@code random_weight}, more often with a high Mutation Probability), or on purpose in the
- * Genetic Laboratory's Mutation Chamber by feeding its {@code catalyst}.
+ * A mutation a Queen can carry: got at random when she is reared, or on purpose from its {@code catalyst}.
  *
  * @param categories the species categories it can appear in (empty: all)
- * @param negative   a harmful mutation; the Mutation Chamber's catalysts can't give these, and the lab can remove them
- * @param rare       shown as rare in JEI; rare mutations are never rolled at random below Mutation Probability 5
+ * @param negative   a harmful mutation
+ * @param rare       never rolled at random below Mutation Probability 5
  */
 public record Mutation(MutationEffects effects, int randomWeight, boolean negative, boolean rare, Optional<Cost> catalyst,
                        List<Category> categories) {

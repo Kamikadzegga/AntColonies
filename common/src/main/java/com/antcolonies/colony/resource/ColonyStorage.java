@@ -12,11 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-/**
- * A colony's stores as one: finds go to the first Storage with room; with every Storage full (or none), into the
- * small store of the Foraging Site that found them, then the colony's other Foraging Sites. What waits in a site's store
- * moves on to Storage as soon as there is room ({@link #moveToStorage}).
- */
+/** A colony's stores as one: finds go to Storage first, then into the small stores of its job sites. */
 public final class ColonyStorage {
     /** The stores in the order finds go into them: Storage, then {@code from} (the site that found it, or null), then the other sites. */
     public static List<StructureBlockEntity> piles(ServerLevel level, Colony colony, @Nullable StructureBlockEntity from) {
@@ -73,10 +69,7 @@ public final class ColonyStorage {
         return piles(level, colony, null);
     }
 
-    /**
-     * Counts what the colony's Storage chambers hold, by item (most first), and how many of their open slots are taken,
-     * for the Terrarium's Production page. Only run while someone has the Terrarium's screen open.
-     */
+    /** Counts what the colony's Storage chambers hold, by item (most first), and how many of their open slots are taken. */
     public static void summarize(ServerLevel level, Colony colony) {
         List<Colony.StoredItem> items = new ArrayList<>();
         int used = 0;
@@ -129,8 +122,8 @@ public final class ColonyStorage {
         if (piles.isEmpty()) {
             return false;
         }
-        // Counted without copying anything (this runs for every find): what each kind of item still needs after topping up
-        // the partial stacks of its kind, against the empty slots. insert() fills partial stacks first too, so this is exact.
+        // Counted without copying (this runs for every find): what is left after topping up partial stacks, against the
+        // empty slots. insert() fills partial stacks first too, so this is exact.
         List<ItemStack> wanted = new ArrayList<>();
         List<Integer> left = new ArrayList<>();
         for (ItemStack stack : stacks) {
@@ -181,8 +174,8 @@ public final class ColonyStorage {
     }
 
     /**
-     * Puts what the colony's ants brought in into the stores; returns what didn't fit. First it tops up partial stacks of the same item in every
-     * store, then it uses empty slots, the same order canFit counts in, so a stack canFit allowed always goes in whole.
+     * Puts what the colony's ants brought in into the stores; returns what didn't fit. Partial stacks first, then empty
+     * slots, as canFit counts, so a stack canFit allowed always goes in whole.
      */
     public static ItemStack insert(ServerLevel level, Colony colony, ItemStack stack, @Nullable StructureBlockEntity from) {
         ItemStack left = insertInto(piles(level, colony, from), stack);

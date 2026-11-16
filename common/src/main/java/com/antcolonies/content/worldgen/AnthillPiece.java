@@ -45,21 +45,8 @@ import net.neoforged.neoforge.common.Tags;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A whole anthill in one piece, built from its center (the ground's top block under the mound's peak): a mound with
- * a shaft down through it into a nest dug from an {@link AnthillLayout} plan. Every choice comes from the plan's seed
- * and the center, so each chunk builds its part of the same anthill, and the Queen's chamber is always there and joined
- * to the entrance.
- *
- * <p>Every anthill has exactly one Queen, a great Queen twice the size of any other, spawned in her chamber by the
- * chunk she stands in: she can't be hurt and never despawns (see {@link WildAnt#isAnthillQueen}), so she is always
- * there to be caught with Tweezers. Her royal guard stands round her and in the antechamber before her chamber, soldiers
- * fill the barracks and watch tunnels, workers tend the rooms and walk the mound. All of them belong to the anthill
- * (their {@link WildAnt#anthill} is the Queen's spot): a player in a full Chitin set walks among them unharmed until
- * they open one of its chests, step into the Queen's chamber or strike one of its ants (see {@link AnthillAlarm}).
- *
- * <p>Since 0.2.0 anthills are {@link AnthillLayout.Style#GROWN} and dressed in an {@link AnthillTheme} from their biome.
- * Pieces saved before keep what they were planned with: no theme saved means the old look ({@link Soil}), no seed the
- * old fixed layout ({@link AnthillLayout.Style#CLASSIC}), so anthills half-generated in an old world finish the same.
+ * A whole anthill in one piece: a mound over a nest dug from an {@link AnthillLayout} plan. Every choice comes from its
+ * seed, so each chunk builds its part of the same anthill.
  */
 public class AnthillPiece extends StructurePiece {
     public static final ResourceKey<LootTable> LOOT = ResourceKey.create(Registries.LOOT_TABLE, AntColonies.id("chests/giant_anthill"));
@@ -133,12 +120,7 @@ public class AnthillPiece extends StructurePiece {
         this.layout = AnthillLayout.create(style, seed);
     }
 
-    /**
-     * Plans an anthill at {@code center}: a grown nest (one in ten is an abandoned one), planned again from other seeds
-     * (up to four) while it would reach below {@code lowestY} (the world's bottom, the Nether's lava sea, the underside
-     * of an End island). Falls back to the shallow abandoned layout, so an anthill that may generate always has its
-     * Queen's chamber.
-     */
+    /** Plans an anthill at {@code center}, trying other seeds while it would reach below {@code lowestY}, then a shallow abandoned nest. */
     public static AnthillPiece plan(BlockPos center, Kind kind, long seed, int lowestY, AnthillTheme theme) {
         for (int attempt = 0; attempt < 4; attempt++) {
             long tried = seed + attempt * 0x9E3779B97F4A7C15L;
@@ -449,7 +431,8 @@ public class AnthillPiece extends StructurePiece {
                         place(level, chunkBB, floor(room, 3, -3), lamp);
                         place(level, chunkBB, floor(room, -1, 4), lamp);
                         for (int i = 0; i < 4; i++) {
-                            cluster(level, chunkBB, floor(room, roomRandom.nextInt(7) - 3, roomRandom.nextInt(2) == 0 ? -4 : 4), i % 2 == 0, species, anthill);
+                            cluster(level, chunkBB, floor(room, roomRandom.nextInt(7) - 3, roomRandom.nextInt(2) == 0 ? -4 : 4),
+                                    i % 2 == 0, species, anthill);
                         }
                     }
                     WildAnt great = spawn(level, chunkBB, anthill, species, Caste.QUEEN, WildAnt.Rank.GREAT_QUEEN, anthill, 2);
@@ -461,8 +444,8 @@ public class AnthillPiece extends StructurePiece {
                         double radius = grand ? 3.5 : 2.5;
                         for (int i = 0; i < guards; i++) {
                             double a = i * Math.PI * 2 / guards + 0.4;
-                            spawn(level, chunkBB, floor(room, (int) Math.round(Math.cos(a) * radius), (int) Math.round(Math.sin(a) * radius)), species,
-                                    Caste.SOLDIER, WildAnt.Rank.ROYAL, anthill, 6);
+                            spawn(level, chunkBB, floor(room, (int) Math.round(Math.cos(a) * radius), (int) Math.round(Math.sin(a) * radius)),
+                                    species, Caste.SOLDIER, WildAnt.Rank.ROYAL, anthill, 6);
                         }
                     }
                 }
@@ -481,7 +464,8 @@ public class AnthillPiece extends StructurePiece {
                     // Eggs and larvae in piles on the floor; nurses among them.
                     int piles = room.type() == AnthillLayout.RoomType.NURSERY ? 4 : 5;
                     for (int i = 0; i < piles; i++) {
-                        boolean eggs = room.type() == AnthillLayout.RoomType.EGG_STORAGE || room.type() == AnthillLayout.RoomType.NURSERY && i % 2 == 0;
+                        boolean eggs = room.type() == AnthillLayout.RoomType.EGG_STORAGE
+                                || room.type() == AnthillLayout.RoomType.NURSERY && i % 2 == 0;
                         cluster(level, chunkBB, floor(room, roomRandom.nextInt(5) - 2, roomRandom.nextInt(5) - 2), eggs, species, anthill);
                     }
                     workers(level, chunkBB, room, species, anthill, 1 + roomRandom.nextInt(2));
@@ -495,7 +479,8 @@ public class AnthillPiece extends StructurePiece {
                     for (int i = 0; i < 6; i++) {
                         BlockPos bed = floor(room, roomRandom.nextInt(5) - 2, roomRandom.nextInt(5) - 2).below();
                         if (chunkBB.isInside(bed) && !level.getBlockState(bed).isAir()) {
-                            level.setBlock(bed, (i == 0 ? ModDecor.GLOWING_FUNGAL_BLOCK : ModDecor.FUNGAL_BLOCK).get().defaultBlockState(), Block.UPDATE_CLIENTS);
+                            level.setBlock(bed, (i == 0 ? ModDecor.GLOWING_FUNGAL_BLOCK : ModDecor.FUNGAL_BLOCK).get().defaultBlockState(),
+                                    Block.UPDATE_CLIENTS);
                             BlockState plant = kind == Kind.NETHER ? (i % 2 == 0 ? Blocks.CRIMSON_FUNGUS : Blocks.WARPED_FUNGUS).defaultBlockState()
                                     : (i % 2 == 0 ? Blocks.BROWN_MUSHROOM : Blocks.RED_MUSHROOM).defaultBlockState();
                             if (kind != Kind.END) {
@@ -538,7 +523,8 @@ public class AnthillPiece extends StructurePiece {
                     if (!abandoned) {
                         int soldiers = layout.grand() ? 4 : 3;
                         for (int i = 0; i < soldiers; i++) {
-                            spawn(level, chunkBB, floor(room, i - 1, roomRandom.nextInt(3) - 1), species, Caste.SOLDIER, WildAnt.Rank.NORMAL, anthill, 8);
+                            spawn(level, chunkBB, floor(room, i - 1, roomRandom.nextInt(3) - 1), species, Caste.SOLDIER, WildAnt.Rank.NORMAL,
+                                    anthill, 8);
                         }
                     }
                     place(level, chunkBB, floor(room, 2, 1), Blocks.BONE_BLOCK.defaultBlockState());
@@ -646,7 +632,8 @@ public class AnthillPiece extends StructurePiece {
     }
 
     private static boolean free(BlockState state) {
-        return state.isAir() || state.is(Blocks.MOSS_CARPET) || state.is(Blocks.SNOW) || state.is(Blocks.HANGING_ROOTS) || state.is(Blocks.GLOW_LICHEN);
+        return state.isAir() || state.is(Blocks.MOSS_CARPET) || state.is(Blocks.SNOW) || state.is(Blocks.HANGING_ROOTS)
+                || state.is(Blocks.GLOW_LICHEN);
     }
 
     private static void place(WorldGenLevel level, BoundingBox chunkBB, BlockPos pos, BlockState state) {
@@ -666,17 +653,15 @@ public class AnthillPiece extends StructurePiece {
         }
     }
 
-    private static void container(WorldGenLevel level, BoundingBox chunkBB, BlockPos pos, BlockState state, ResourceKey<LootTable> loot, RandomSource random) {
+    private static void container(WorldGenLevel level, BoundingBox chunkBB, BlockPos pos, BlockState state, ResourceKey<LootTable> loot,
+                                  RandomSource random) {
         if (chunkBB.isInside(pos) && free(level.getBlockState(pos))) {
             level.setBlock(pos, state, Block.UPDATE_CLIENTS);
             RandomizableContainer.setBlockEntityLootTable(level, random, pos, loot);
         }
     }
 
-    /**
-     * The biome at the anthill's center, from the world's biome source: the center may lie in a chunk too far from the one
-     * being built for the world generation region to reach (asking the level for it there crashes world generation).
-     */
+    /** The biome at the center, from the biome source: asking the level crashes when the center's chunk is out of the region's reach. */
     private Holder<Biome> biome(WorldGenLevel level, ChunkGenerator generator) {
         return generator.getBiomeSource().createUncachedResolver(level.getLevel().getChunkSource().randomState())
                 .getNoiseBiome(QuartPos.fromBlock(center.getX()), QuartPos.fromBlock(center.getY()), QuartPos.fromBlock(center.getZ()));
@@ -684,7 +669,8 @@ public class AnthillPiece extends StructurePiece {
 
     /** A Nether anthill's ants: Warped Ants in the fungus forests, Fire Ants elsewhere. */
     private static Identifier netherSpecies(Holder<Biome> biome) {
-        boolean forest = biome.is(net.minecraft.world.level.biome.Biomes.WARPED_FOREST) || biome.is(net.minecraft.world.level.biome.Biomes.CRIMSON_FOREST);
+        boolean forest = biome.is(net.minecraft.world.level.biome.Biomes.WARPED_FOREST)
+                || biome.is(net.minecraft.world.level.biome.Biomes.CRIMSON_FOREST);
         return AntColonies.id(forest ? "warped" : "fire");
     }
 

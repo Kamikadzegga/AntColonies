@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 
-/** A species-specific upgrade ("Diamond Extraction II"): only works in Foraging Chambers of its species' colonies. */
+/** A species-specific upgrade ("Diamond Extraction II"): only works in Foraging Sites of its species' colonies. */
 public class SpeciesUpgradeItem extends Item {
     private static final String[] NUMERALS = {"I", "II", "III"};
 
@@ -38,7 +38,8 @@ public class SpeciesUpgradeItem extends Item {
             return;
         }
         int percent = (int) Math.round(AntConfig.get(AntConfig.SPECIES_UPGRADE_BONUS) * upgrade.tier() * 100);
-        tooltip.accept(Component.translatable("tooltip.antcolonies.species_upgrade.for", Tooltips.species(upgrade.species())).withStyle(ChatFormatting.GOLD));
+        tooltip.accept(Component.translatable("tooltip.antcolonies.species_upgrade.for",
+                Tooltips.species(upgrade.species())).withStyle(ChatFormatting.GOLD));
         tooltip.accept(Component.translatable("tooltip.antcolonies.species_upgrade." + upgrade.kind().getSerializedName(), percent)
                 .withStyle(ChatFormatting.GRAY));
     }

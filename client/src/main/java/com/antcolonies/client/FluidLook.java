@@ -8,10 +8,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.client.fluid.FluidTintSource;
 import net.neoforged.neoforge.fluids.FluidStack;
 
-/**
- * How a fluid looks, taken from the game's own fluid models: its still texture and its tint. Whatever fluid a Droplet
- * Centrifuge holds (another mod's too) is drawn the way that fluid is drawn everywhere else.
- */
+/** How a fluid looks, taken from the game's own fluid models: its still texture and its tint. */
 public final class FluidLook {
     /** The fluid's still texture (on the block atlas). */
     public static TextureAtlasSprite sprite(Fluid fluid) {
@@ -24,11 +21,7 @@ public final class FluidLook {
         return ARGB.opaque(tint == null ? -1 : tint.colorAsStack(new FluidStack(fluid, 1)));
     }
 
-    /**
-     * One colour that stands for the fluid where its texture can't be shown (small marks in a GUI, a blur of liquid on
-     * a spinning drum): its tint if it has one; else the crop colour of the Liquid Ants that make it; else a pale, glassy
-     * tone.
-     */
+    /** One colour for the fluid where its texture can't be shown: its tint, else its Liquid Ants' crop colour, else a pale tone. */
     public static int accent(Fluid fluid) {
         int tint = color(fluid);
         if ((tint & 0xFFFFFF) != 0xFFFFFF) {

@@ -15,12 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.jspecify.annotations.Nullable;
 
-/**
- * {@code antcolonies:colony}: a player is near (or opens) a Terrarium whose colony matches. Every condition is optional:
- * {@code has_queen}, {@code stage} (bounds), {@code adults} (bounds), {@code species} (an id), {@code category}
- * ("base", "mineral", "hybrid"...), {@code best_trait} (bounds on the Queen's highest trait level), {@code queen_founded} (grown
- * from a single Queen through founding), {@code linked} (another colony online on one of its Colony Connector channels).
- */
+/** {@code antcolonies:colony}: a player is near (or opens) a Terrarium whose colony matches. Every condition is optional. */
 public class ColonyTrigger extends SimpleCriterionTrigger<ColonyTrigger.TriggerInstance> {
     @Override
     public Codec<TriggerInstance> codec() {

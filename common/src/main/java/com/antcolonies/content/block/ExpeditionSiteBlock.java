@@ -12,12 +12,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
-/**
- * The Nether and End Foraging Sites: a colony chamber with a little portal standing on its floor, against the front
- * glass. The portal glows and swirls ({@link #ACTIVE}) while the colony has ants out on expeditions through it, and
- * stands dark otherwise (no compatible ants, paused, or not joined to a colony). It is only a picture: nothing goes
- * through it, and the other dimension is never loaded.
- */
+/** The Nether and End Foraging Sites: a chamber with a little portal that glows ({@link #ACTIVE}) while ants are out through it. */
 public class ExpeditionSiteBlock extends StructureBlock {
     public static final BooleanProperty ACTIVE = BlockStateProperties.LIT;
 
@@ -47,7 +42,8 @@ public class ExpeditionSiteBlock extends StructureBlock {
             double along = random.nextDouble() * 0.4 - 0.2;
             level.addParticle(nether ? ParticleTypes.PORTAL : ParticleTypes.REVERSE_PORTAL,
                     pos.getX() + 0.5 + front.getStepX() * side + front.getStepZ() * along, pos.getY() + 0.3 + random.nextDouble() * 0.4,
-                    pos.getZ() + 0.5 + front.getStepZ() * side + front.getStepX() * along, front.getStepX() * side * 0.2, 0.02, front.getStepZ() * side * 0.2);
+                    pos.getZ() + 0.5 + front.getStepZ() * side + front.getStepX() * along,
+                    front.getStepX() * side * 0.2, 0.02, front.getStepZ() * side * 0.2);
             return;
         }
         // The portal stands a quarter block in from the front glass, across the chamber.

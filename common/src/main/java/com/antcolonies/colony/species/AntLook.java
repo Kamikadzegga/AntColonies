@@ -11,17 +11,14 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.ExtraCodecs;
 
 /**
- * How a species' ants are drawn: one shared model per caste, tinted. Mineral species add crystal growths in their
- * crystal color and may glow; size scales the whole ant. Colors are written "#RRGGBB" (a number or [r, g, b] works too).
+ * How a species' ants are drawn: one shared model per caste, tinted.
  *
  * @param body    head, thorax and legs
  * @param gaster  the abdomen
  * @param accent  the pattern over the gaster
  * @param crystal crystal growths on the back, if the species has them
  * @param glow    whether the crystals (or the crop) glow in the dark
- * @param crop    Liquid Ants: the colour of the liquid in their swollen crop. With it the gaster is drawn as a replete's:
- *                always full, the plates of the gaster pulled apart over a see-through bag of the liquid. It is a fixed part
- *                of the look, never a gauge: nothing about it changes while the colony works.
+ * @param crop    Liquid Ants: the colour of the liquid in their swollen crop
  */
 public record AntLook(int body, int gaster, int accent, Pattern pattern, Optional<Integer> crystal, boolean glow, float size,
                       Optional<Integer> crop) {

@@ -86,8 +86,8 @@ public class GeneticLabRenderer implements BlockEntityRenderer<GeneticLabBlockEn
                         float t = k / 5.0F;
                         float rx = Mth.lerp(t, ax, -ax);
                         float rz = Mth.lerp(t, az, -az);
-                        g.box(rx - 0.2F, y + 0.2F, rz - 0.2F, rx + 0.2F, y + 0.5F, rz + 0.2F, k < 3 ? Geometry.shade(a, 0.7F) : Geometry.shade(b, 0.7F),
-                                49, 1, 55, 7);
+                        g.box(rx - 0.2F, y + 0.2F, rz - 0.2F, rx + 0.2F, y + 0.5F, rz + 0.2F,
+                                k < 3 ? Geometry.shade(a, 0.7F) : Geometry.shade(b, 0.7F), 49, 1, 55, 7);
                     }
                 }
             }

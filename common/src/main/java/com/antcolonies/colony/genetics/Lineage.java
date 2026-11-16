@@ -15,8 +15,11 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 
 /**
- * Where a Queen comes from: her own id and name, her mother's id, how many generations of rearing lie behind her, and
- * every species her line has been (wild origin, hybrid crosses and evolutions, oldest first).
+ * Where a Queen comes from.
+ *
+ * @param parent     her mother's id
+ * @param generation how many generations of rearing lie behind her
+ * @param history    every species her line has been, oldest first
  */
 public record Lineage(UUID id, String name, Optional<UUID> parent, int generation, List<Identifier> history) {
     public static final Codec<Lineage> CODEC = RecordCodecBuilder.create(i -> i.group(

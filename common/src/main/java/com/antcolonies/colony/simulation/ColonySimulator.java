@@ -39,13 +39,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-/**
- * One simulation step of a colony, {@code dt} minutes long. Everything is worked out from the colony's numbers and
- * its connected structures; nothing here looks at entities or at what the client draws.
- *
- * <p>Order of a step: structures and modifiers, ants to jobs, food in and out, eggs, larvae and adults, deaths,
- * production in the working chambers, Queen rearing, then stage and status.
- */
+/** One simulation step of a colony, {@code dt} minutes long, worked out from the colony's numbers and its connected structures. */
 public final class ColonySimulator {
     /** At most this many finds per site and step, so a long catch-up can't stall the server. */
     private static final int MAX_ROLLS = 256;
@@ -211,8 +205,7 @@ public final class ColonySimulator {
             step.status |= ColonyStatus.LOW_HEALTH.bit();
         }
         step.healthFactor = ProductionMath.healthFactor(health);
-        // Food holds up work, laying and growth: fully while there is enough for a while, less as it runs low, little
-        // when it is out. What the colony ate per minute in its last step tells how long the food lasts.
+        // Food holds up work, laying and growth. What the colony ate per minute in its last step tells how long the food lasts.
         double lowFood = lowFoodFactor(ColonyAccess.food(colony), colony.stats().foodOut());
         step.foodFactor = starving ? AntConfig.get(AntConfig.STARVED_FACTOR) : lowFood;
         if (!starving && lowFood < 0.999) {
@@ -251,8 +244,7 @@ public final class ColonySimulator {
             food = 0;
             starvedMinutes += step.dt * (1 - fedShare);
         }
-        // Farming can't fill past the food room, but food already over it (the room shrank while a Storage's chunk is
-        // unloaded) is kept and eaten down, not deleted.
+        // Farming can't fill past the food room, but food already over it (an unloaded Storage shrank the room) is kept.
         food = Math.min(food, Math.max(foodCapacity, ColonyAccess.food(colony)));
         if (starvedMinutes > 0) {
             step.status |= ColonyStatus.STARVING.bit() | ColonyStatus.NO_FOOD.bit();
@@ -315,8 +307,7 @@ public final class ColonySimulator {
 
         // --- Stage and status ---
         int stage = stage(step, colony.exactAdults());
-        // The Queen grows with her colony, in her own time: after a while at a bigger stage she grows into it, and two of her
-        // traits go up (see QueenData.growTo).
+        // The Queen grows with her colony, in her own time (see QueenData.growTo).
         if (colony.queen() != null) {
             List<Trait> raised = new ArrayList<>();
             com.antcolonies.colony.genetics.QueenData grown = colony.queen().growTo(stage, step.dt, step.random, raised);
@@ -362,8 +353,8 @@ public final class ColonySimulator {
                 (float) Math.max(0, 1 - (allocation.assignedWorkers() + maintenance) / adultsNow),
                 intake.food() > 0 || farmed > 0 || hunted > 0, starving, bred.eggs() > 0);
         int structureCount = step.sites.values().stream().mapToInt(List::size).sum();
-        Colony.Stats stats = new Colony.Stats(bred.eggs() / step.dt, bred.raised() / step.dt, farmed + (intake.food() + hunted) / step.dt, consumption,
-                finds, hunts, deaths / step.dt, (long) adultCapacity, (long) larvaeCapacity,
+        Colony.Stats stats = new Colony.Stats(bred.eggs() / step.dt, bred.raised() / step.dt, farmed + (intake.food() + hunted) / step.dt,
+                consumption, finds, hunts, deaths / step.dt, (long) adultCapacity, (long) larvaeCapacity,
                 foodCapacity, structureCount, intake.food() / step.dt);
         ColonyAccess.finish(colony, stage, step.status, stats, activity, allocation.assignments(), maintenance);
         ColonyAccess.setFoodFactor(colony, step.foodFactor);
@@ -381,7 +372,8 @@ public final class ColonySimulator {
         for (Map.Entry<StructureKind, List<BlockPos>> entry : layout.structures().entrySet()) {
             List<StructureBlockEntity> found = new ArrayList<>();
             for (BlockPos pos : entry.getValue()) {
-                if (step.level.isLoaded(pos) && step.level.getBlockEntity(pos) instanceof StructureBlockEntity site && site.kind() == entry.getKey()) {
+                if (step.level.isLoaded(pos) && step.level.getBlockEntity(pos) instanceof StructureBlockEntity site
+                        && site.kind() == entry.getKey()) {
                     found.add(site);
                 }
             }
@@ -396,10 +388,7 @@ public final class ColonySimulator {
         return AntConfig.get(AntConfig.FOUNDING_FOOD_SHARE) * AntConfig.get(AntConfig.TERRARIUM_FOOD_CAPACITY);
     }
 
-    /**
-     * How a colony's food holds up its work: 1 with at least lowFoodMinutes of food left at what it eats per minute,
-     * falling evenly to lowFoodFactor as the food runs out (starving is worse: starvedFactor).
-     */
+    /** How a colony's food holds up its work: 1 with enough left for a while, falling evenly as the food runs out. */
     public static double lowFoodFactor(double food, double perMinute) {
         double minutes = AntConfig.get(AntConfig.LOW_FOOD_MINUTES);
         if (minutes <= 0 || perMinute <= 0) {
@@ -493,11 +482,7 @@ public final class ColonySimulator {
             return rolls;
         }
 
-        /**
-         * Chitin comes only from ants: now and then a find comes back with chitin (shed skins and the remains of dead
-         * ants), one chance per find ({@code chitinFindChance}). Mostly Chitin Plates; Hardened Chitin from colony stage
-         * 2, more at stage 3 and up; in the Nether Infernal Chitin and in the End Void Chitin instead of some of the plates.
-         */
+        /** Now and then a find comes back with chitin: one chance per find, the kind by colony stage and dimension. */
         static void chitin(Step step, StructureBlockEntity entity, int rolls) {
             double chance = AntConfig.get(AntConfig.CHITIN_FIND_CHANCE);
             if (rolls <= 0 || chance <= 0) {
@@ -537,10 +522,7 @@ public final class ColonySimulator {
             }
         }
 
-        /**
-         * A colony living in another dimension sometimes finds that dimension's trail pheromone while it forages there (the
-         * material its expedition site is crafted from): one chance per find.
-         */
+        /** A colony living in another dimension sometimes finds that dimension's trail pheromone: one chance per find. */
         private static void trail(Step step, StructureBlockEntity entity, int rolls) {
             if (rolls <= 0) {
                 return;
@@ -592,11 +574,7 @@ public final class ColonySimulator {
         }
     }
 
-    /**
-     * Liquid Ants at a Liquid Chamber: droplets of the species' one fluid, worked out from the number of ants there like
-     * every other job (no ant has a crop that fills: the full crops they are drawn with are only how the species looks).
-     * Nothing else comes of it, except now and then one Ant Food ({@code liquidFoodChance} per droplet).
-     */
+    /** Liquid Ants at a Liquid Chamber: droplets of the species' one fluid, and now and then one Ant Food. */
     static final class Liquids {
         static double run(Step step, Allocation.Site site) {
             if (site.assigned() <= 0 || !step.species.makesLiquid()) {
@@ -703,8 +681,8 @@ public final class ColonySimulator {
 
 
     /**
-     * Finds from a species' output list (or its harvest) at {@code rate} per minute, into the site's own store first, then
-     * the colony's Storage. While the colony is still partly its former species, some finds come from the former species' list.
+     * Finds from a species' output list (or its harvest) at {@code rate} per minute. While the colony is still partly its
+     * former species, some finds come from that species' list.
      */
     private static double rollOutputs(Step step, StructureBlockEntity entity, double rate, Allocation.Site site,
                                       java.util.function.Function<AntSpecies, List<SpeciesOutput>> source, boolean harvest,

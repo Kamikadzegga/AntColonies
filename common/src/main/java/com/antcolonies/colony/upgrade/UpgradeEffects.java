@@ -14,11 +14,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * What a colony upgrade does at a tier and where it goes, in numbers, for its tooltip and the JEI/EMI page. The numbers
- * follow the same formulas and config values as the simulation (several upgrades in one block add up their tiers).
- * They read like vanilla's attribute lines: a heading per place ("In Nest Chambers:"), then its values, one a line.
- */
+/** What a colony upgrade does at a tier and where it goes, in numbers, for its tooltip and the JEI/EMI page. */
 public final class UpgradeEffects {
     private UpgradeEffects() {}
 
@@ -62,7 +58,8 @@ public final class UpgradeEffects {
             case STORAGE -> {
                 int slots = StructureBlockEntity.storageSlots(tier);
                 effects.add(effect("storage", value("storage.slots", slots, slots - StructureBlockEntity.storageSlots(0)),
-                        value("storage.stacks", 1 + tier), value("storage.food", thousands((long) AntConfig.get(AntConfig.STORAGE_FOOD_CAPACITY) * tier))));
+                        value("storage.stacks", 1 + tier),
+                        value("storage.food", thousands((long) AntConfig.get(AntConfig.STORAGE_FOOD_CAPACITY) * tier))));
             }
             case BREEDING -> {
                 effects.add(effect("terrarium_and_nest", value("breeding.eggs", 25 * tier)));

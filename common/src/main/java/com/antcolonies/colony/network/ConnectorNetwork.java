@@ -28,23 +28,8 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 /**
- * Colony Connectors: biological logistics between colonies. A connector is a chamber of its colony; connectors on the
- * same channel (a dye colour) in one dimension form a network. Every {@code connectors.transferInterval} ticks:
- *
- * <ol>
- *     <li><b>Food.</b> Supplying connectors offer what their colony has above its reserve; requesting connectors ask for
- *     what their colony lacks below its target. The hungriest colony (least food for its room) is served first, from the
- *     colony with the most to spare. Each connector moves at most its rate limit. Food is a number in each colony, so a
- *     transfer takes from one and adds to the other: it never makes or loses any. A colony never sends to itself, and a
- *     colony below its target is never a supplier in the same pass, so food can't loop.</li>
- *     <li><b>Items.</b> A sending connector moves the items its filter names out of its colony's Storage into the Storage
- *     of colonies with a receiving connector on the channel, only what fits (checked before anything is taken).</li>
- * </ol>
- *
- * Two connectors link only within {@code connectorRange} blocks of each other on x and on z (30 by default). Only
- * colonies whose Terrarium and connector are loaded take part: nothing is force-loaded, and a colony in an
- * unloaded chunk is shown as offline. Connectors use no power. The network remembers its connectors (position and
- * channel) in the level's saved data, so the Network page also lists the ones that are unloaded.
+ * Colony Connectors: connectors on the same channel in one dimension move food and items between their colonies.
+ * Only loaded colonies take part; nothing is force-loaded.
  */
 public final class ConnectorNetwork {
     /** Each connector's last known channel, by position (per level, saved). */
@@ -97,7 +82,8 @@ public final class ConnectorNetwork {
             this.settings = connector.connector();
             this.terrarium = terrarium;
             this.colony = terrarium.colony();
-            this.capacity = Math.max(1, colony.stats().foodCapacity() > 0 ? colony.stats().foodCapacity() : AntConfig.get(AntConfig.TERRARIUM_FOOD_CAPACITY));
+            this.capacity = Math.max(1,
+                    colony.stats().foodCapacity() > 0 ? colony.stats().foodCapacity() : AntConfig.get(AntConfig.TERRARIUM_FOOD_CAPACITY));
             this.budget = settings.foodPerMinute() * minutes;
         }
 
@@ -179,7 +165,8 @@ public final class ConnectorNetwork {
                 continue;
             }
             BlockPos terrariumPos = connector.terrarium();
-            if (terrariumPos == null || !level.isLoaded(terrariumPos) || !(level.getBlockEntity(terrariumPos) instanceof TerrariumBlockEntity terrarium)) {
+            if (terrariumPos == null || !level.isLoaded(terrariumPos)
+                    || !(level.getBlockEntity(terrariumPos) instanceof TerrariumBlockEntity terrarium)) {
                 // A connector not joined to a colony (or whose Terrarium is unloaded) takes no part.
                 connector.connector().members = 0;
                 connector.connector().foodIn *= 0.5;
@@ -304,7 +291,8 @@ public final class ConnectorNetwork {
             List<Colony.NetworkLink> merged = new ArrayList<>();
             // Keep what the colony knows of its other channels (they pass on their own).
             Map<Integer, Long> seen = NETWORK_SEEN.computeIfAbsent(entry.getKey(), t -> new HashMap<>());
-            colony.network().stream().filter(link -> link.channel() != channel && seen.getOrDefault(link.channel(), Long.MIN_VALUE / 2) >= now - quietTicks())
+            colony.network().stream().filter(link -> link.channel() != channel
+                            && seen.getOrDefault(link.channel(), Long.MIN_VALUE / 2) >= now - quietTicks())
                     .forEach(merged::add);
             merged.addAll(entry.getValue());
             ColonyAccess.setNetwork(colony, merged);
@@ -312,10 +300,7 @@ public final class ConnectorNetwork {
         }
     }
 
-    /**
-     * Whether two connectors are close enough to link: at most {@code connectorRange} blocks apart on x and on z (height
-     * doesn't count).
-     */
+    /** Whether two connectors are close enough to link, on x and on z (height doesn't count). */
     public static boolean inRange(BlockPos a, BlockPos b) {
         int range = AntConfig.get(AntConfig.CONNECTOR_RANGE);
         return Math.abs(a.getX() - b.getX()) <= range && Math.abs(a.getZ() - b.getZ()) <= range;
@@ -329,10 +314,7 @@ public final class ConnectorNetwork {
         return Math.max(200, 2L * AntConfig.get(AntConfig.CONNECTOR_INTERVAL));
     }
 
-    /**
-     * Drops the channels a colony no longer hears from (its connector was switched to another channel, or broken) from its
-     * Network page. Without this a colony whose last connector is gone would show its old network for ever.
-     */
+    /** Drops the channels a colony no longer hears from; else one whose last connector is gone would show its old network for ever. */
     private static void forgetQuietChannels(ServerLevel level) {
         long now = level.getGameTime();
         var it = NETWORK_SEEN.entrySet().iterator();
@@ -359,10 +341,7 @@ public final class ConnectorNetwork {
         ColonyAccess.setFood(to, ColonyAccess.food(to) + amount, ColonyAccess.starvedMinutes(to));
     }
 
-    /**
-     * Moves up to {@code budget} items named by the source connector's filter out of its colony's Storage into the sinks'
-     * Storage. Each stack is checked to fit before it is taken, so nothing is lost or made.
-     */
+    /** Moves up to {@code budget} filtered items from the source's Storage into the sinks'; each stack is checked to fit first. */
     private static int sendItems(ServerLevel level, Member source, List<Member> sinks, int budget) {
         List<ItemStack> filter = new ArrayList<>();
         for (int slot = 0; slot < source.connector.getContainerSize(); slot++) {

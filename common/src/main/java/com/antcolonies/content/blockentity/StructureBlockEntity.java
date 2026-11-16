@@ -50,11 +50,7 @@ import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Every colony chamber: its own slots (Storage and a Foraging Site's store for finds, Queen Chamber materials), its
- * upgrade slots, how many ants the player wants at it, and what the colony's last step gave it. Chambers don't simulate
- * anything themselves: their Terrarium's colony does, and tells them the results.
- */
+/** Any colony chamber: its slots, upgrades and settings. Its Terrarium's colony does the simulating and tells it the results. */
 public class StructureBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, com.antcolonies.content.block.ComparatorSource {
     /** Job sites: how full their workforce is. Other structures: how full their slots are. */
     @Override
@@ -62,10 +58,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         return kind.job().any() ? com.antcolonies.content.block.ComparatorSource.fill(assigned, capacityShown) : slotFill();
     }
 
-    /**
-     * How full the slots that are open are (vanilla's container reading, but over the unlocked slots only: a Storage has
-     * room for 162 and opens 18 to 90 of them, so counting all 162 would never reach a full signal).
-     */
+    /** How full the open slots are: vanilla's reading counts locked Storage slots too and would never reach a full signal. */
     private int slotFill() {
         int open = Math.min(unlockedSlots(), getContainerSize());
         if (open <= 0) {
@@ -324,7 +317,8 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         if (kind.expedition() && level != null && getBlockState().hasProperty(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE)) {
             boolean active = assigned > 0;
             if (getBlockState().getValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE) != active) {
-                level.setBlock(worldPosition, getBlockState().setValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE, active), Block.UPDATE_CLIENTS);
+                level.setBlock(worldPosition, getBlockState().setValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE, active),
+                        Block.UPDATE_CLIENTS);
             }
         }
     }
@@ -344,7 +338,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         contentsChanged();
     }
 
-    /** Whether this job site is turned on (the Jobs page and its own screen turn it off; it then takes no ants). */
+    /** Whether this job site is turned on; one turned off takes no ants. */
     public boolean enabled() {
         return enabled;
     }
@@ -387,8 +381,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
 
     public boolean isLinked() {
         if (level != null && level.isClientSide()) {
-            // A client knows only what the last sync said (the server sends one when the link is made or lost), so it must
-            // not time the link out itself: its screens and the ants drawn on it would forget their colony after a while.
+            // A client knows only the last sync, so it must not time the link out itself: its screens would forget the colony.
             return clientLinked();
         }
         return terrarium != null && level != null && level.getGameTime() - linkedAt < LINK_TIMEOUT;
@@ -452,15 +445,12 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         return kind != StructureKind.STORAGE ? kind.slots() : storageSlots(upgradeTier(UpgradeType.STORAGE));
     }
 
-    /** A Storage's slots with Storage Upgrades of these summed tiers: 18, and 18 more per tier (Storage IV: 90). */
+    /** A Storage's slots with Storage Upgrades of these summed tiers. */
     public static int storageSlots(int tier) {
         return Math.min(StructureKind.STORAGE.slots(), STORAGE_BASE_SLOTS + AntConfig.get(AntConfig.STORAGE_SLOTS_PER_UPGRADE) * tier);
     }
 
-    /**
-     * How many of an item one slot holds. Storage Upgrades compact: each tier adds a whole stack per slot (Storage Upgrade
-     * II: three stacks, so 192 cobblestone or 48 ender pearls). Other chambers hold normal stacks.
-     */
+    /** How many of an item one slot holds: a Storage's slots hold a stack more per Storage Upgrade tier. */
     public int slotLimit(ItemStack stack) {
         if (kind == StructureKind.COLONY_CONNECTOR) {
             return 1; // a filter names an item; one is enough
@@ -472,11 +462,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         return Math.max(1, stack.getMaxStackSize()) * (1 + storageTier);
     }
 
-    /**
-     * Whether the upgrade in this upgrade slot can come out. A Storage Upgrade can't while the Storage holds more than it
-     * would hold without it: stacks bigger than a slot would then take, or items in slots that would close. Taking it out
-     * would leave them stuck, so the extra items have to come out first.
-     */
+    /** Whether this upgrade can come out: a Storage Upgrade can't while the Storage holds more than it would without it. */
     public boolean canRemoveUpgrade(int upgradeSlot) {
         if (kind != StructureKind.STORAGE || !(upgrades.getItem(upgradeSlot).getItem() instanceof UpgradeItem upgrade)
                 || upgrade.type() != UpgradeType.STORAGE) {
@@ -544,7 +530,8 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
             be.contentsChanged();
             // No colony any more: a glass case again, whatever its colony was.
             if (com.antcolonies.content.block.ColonyPartBlock.upright(state)) {
-                level.setBlock(pos, state.setValue(com.antcolonies.content.block.ColonyPartBlock.UPRIGHT, false), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                level.setBlock(pos, state.setValue(com.antcolonies.content.block.ColonyPartBlock.UPRIGHT, false),
+                        net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
             }
         }
         if ((time + pos.asLong()) % 20 == 0 && level instanceof ServerLevel serverLevel) {
@@ -775,8 +762,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
-        // A compacting Storage slot can hold more than an item stack may save (99): each slot is saved as one item and
-        // its count.
+        // A compacting Storage slot can hold more than an item stack may save (99): each is saved as one item and its count.
         ValueOutput.TypedOutputList<StoredSlot> stored = output.list("stored", StoredSlot.CODEC);
         for (int slot = 0; slot < items.size(); slot++) {
             ItemStack stack = items.get(slot);

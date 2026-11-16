@@ -19,10 +19,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Item model tint {@code antcolonies:species}: the color of the species an item holds (tubes, samples, eggs, larvae,
- * species upgrades), so every species gets its own look without its own textures.
- */
+/** Item model tint {@code antcolonies:species}: the color of the species an item holds. */
 public record SpeciesTint(Part part, int fallback) implements ItemTintSource {
     public static final Identifier ID = AntColonies.id("species");
 

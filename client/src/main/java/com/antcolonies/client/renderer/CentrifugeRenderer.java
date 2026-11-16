@@ -22,11 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jspecify.annotations.Nullable;
 
-/**
- * What shows behind a Droplet Centrifuge's glass: the rotor (a hub, four arms and a tube hanging from each), turning
- * fast while a droplet is spun and standing still otherwise, and under it the fluid in the tank, drawn with the fluid's
- * own texture and tint and as deep as the tank is full.
- */
+/** Draws what shows behind a Droplet Centrifuge's glass: the rotor, turning while it works, and the fluid in the tank. */
 public class CentrifugeRenderer implements BlockEntityRenderer<CentrifugeBlockEntity, CentrifugeRenderer.State> {
     /** A plain pale patch of this texture, tinted: the rotor's metal and glass. */
     private static final Identifier TEXTURE = AntColonies.id("textures/entity/terrarium_inside.png");
@@ -61,7 +57,8 @@ public class CentrifugeRenderer implements BlockEntityRenderer<CentrifugeBlockEn
                                    ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(centrifuge, state, partialTicks, camera, breakProgress);
         state.working = centrifuge.working();
-        state.time = centrifuge.getLevel() == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(centrifuge.getLevel().getGameTime(), partialTicks);
+        state.time = centrifuge.getLevel() == null ? 0
+                : com.antcolonies.client.ClientHooks.animationTime(centrifuge.getLevel().getGameTime(), partialTicks);
         state.seed = centrifuge.getBlockPos().asLong();
         FluidStack fluid = centrifuge.fluid();
         if (fluid.isEmpty()) {

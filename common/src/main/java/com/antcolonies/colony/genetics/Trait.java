@@ -6,10 +6,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 
-/**
- * A Queen's ten genetic attributes. Each is a level from 1 to 10; the level turns into a multiplier between the
- * configured level 1 and maximum level effects, and every multiplier is used by the simulation.
- */
+/** A Queen's ten genetic attributes, each a level from 1 to 10 that turns into a multiplier. */
 public enum Trait implements StringRepresentable {
     /** Scavenging finds per worker. */
     WORKER_PRODUCTIVITY("worker_productivity"),
@@ -21,7 +18,7 @@ public enum Trait implements StringRepresentable {
     EGG_PRODUCTION("egg_production"),
     /** How fast larvae become adults. */
     LARVAE_GROWTH("larvae_growth"),
-    /** Hunts per soldier at Hunting Chambers, and fewer casualties. */
+    /** Hunts per soldier at Hunting Grounds, and fewer casualties. */
     SOLDIER_STRENGTH("soldier_strength"),
     /** Food grown per farmer. */
     FARMER_PRODUCTIVITY("farmer_productivity"),

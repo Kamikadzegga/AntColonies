@@ -14,13 +14,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 
 /**
- * A Queen as Queen Test Tubes, Genetic Samples and Terrariums carry her: her species, her genome, the highest colony
- * stage she has grown into ({@link #grown}) and how far she is on the way to the next ({@link #growth}). A Genetic
- * Sample holds a copy of a Queen's genes (the same data), which a Queen Chamber can cross into a daughter.
+ * A Queen as Queen Test Tubes, Genetic Samples and Terrariums carry her.
  *
- * @param grown  the highest colony stage she has grown into (1 for a new Queen; 0 for one saved before Queens grew, who
- *               takes her colony's stage the first time it is worked out, without growing for it)
- * @param growth minutes her colony has spent at a bigger stage than {@code grown}, towards growing into the next one
+ * @param grown  the highest colony stage she has grown into (0 in old saves: she takes her colony's stage)
+ * @param growth minutes her colony has spent at a bigger stage than {@code grown}
  */
 public record QueenData(Identifier species, Genome genome, int grown, float growth) {
     /** The highest level a Queen's trait reaches by growing with her colony (config queenGrowthCap): higher takes the Genetic Laboratory. */
@@ -61,7 +58,7 @@ public record QueenData(Identifier species, Genome genome, int grown, float grow
         return new QueenData(next, genome.withLineage(genome.lineage().withSpecies(next)), grown, growth);
     }
 
-    /** Minutes at a bigger colony stage a Queen needs to grow into {@code stage}: one step for stage 2, two for 3, three for 4. */
+    /** Minutes at a bigger colony stage a Queen needs to grow into {@code stage}. */
     public static double minutesFor(int stage) {
         return AntConfig.get(AntConfig.QUEEN_GROWTH_MINUTES) * Math.max(1, stage - 1);
     }
@@ -72,12 +69,8 @@ public record QueenData(Identifier species, Genome genome, int grown, float grow
     }
 
     /**
-     * The Queen grows with her colony, in her own time: while her colony is at a bigger stage than she has grown into,
-     * {@code minutes} count towards the next stage ({@link #minutesFor}); once enough have passed she grows into it, and
-     * queenGrowthTraits traits picked at random (among those below {@link #growthCap} and the maximum level) go up by one. One
-     * stage at a time, so a new Queen in a big colony takes a while to catch up. Time already counted is kept if the
-     * colony shrinks. A Queen saved before Queens grew only takes the stage. Returns this Queen unchanged when nothing
-     * changes; the traits raised are added to {@code raised}.
+     * Counts {@code minutes} towards her next stage; once enough have passed she grows into it and random traits (added
+     * to {@code raised}) go up by one. Returns this Queen when nothing changes.
      */
     public QueenData growTo(int stage, double minutes, RandomSource random, List<Trait> raised) {
         if (grown == 0) {

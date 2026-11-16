@@ -27,11 +27,7 @@ import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import org.jspecify.annotations.Nullable;
 
-/**
- * The Droplet Centrifuge: spins the droplets Liquid Ants give into real fluid, for FE. One block with its slot, its FE
- * store and its tank. A bucket (or any fluid container) used on it is filled from the tank; pipes and tanks take the
- * fluid on every side.
- */
+/** The Droplet Centrifuge: spins the droplets Liquid Ants give into real fluid, for FE. */
 public class CentrifugeBlock extends BaseEntityBlock {
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
     /** Spinning a droplet right now: its drum turns and its window is lit. */

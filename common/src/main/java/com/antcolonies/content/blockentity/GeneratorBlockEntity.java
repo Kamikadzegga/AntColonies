@@ -34,11 +34,7 @@ import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.jspecify.annotations.Nullable;
 
-/**
- * The Generator: burns anything a furnace burns, for as long as a furnace would, making FE while it burns, and gives
- * that FE to every neighbour that takes energy (the Genetic Laboratory, or any mod's cable or machine). It only starts
- * a new item when its buffer has room, and pauses with a full buffer, so no fuel is wasted.
- */
+/** The Generator: burns furnace fuel into FE and gives it to every neighbour that takes energy. */
 public class GeneratorBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, com.antcolonies.content.block.ComparatorSource {
     /** Comparators read how full the FE buffer is. */
     @Override

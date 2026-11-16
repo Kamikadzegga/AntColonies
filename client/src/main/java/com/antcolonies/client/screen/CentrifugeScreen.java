@@ -19,12 +19,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
-/**
- * The Droplet Centrifuge: the droplet slot on the left, the drum between (it turns, and a bar under it fills, while a
- * droplet is spun), the tank as a glass gauge filled with the fluid itself, and beside it the fluid's name, how much there
- * is and what one droplet gives and costs. The first line says what the machine is doing or why it waits; the FE store is
- * the bar along the bottom.
- */
+/** The Droplet Centrifuge's screen: the droplet slot, the turning drum, the tank and the FE store. */
 public class CentrifugeScreen extends AntScreen<CentrifugeMenu> {
     private static final int STATUS_Y = 18;
     private static final int DRUM_X = 44;
@@ -115,11 +110,11 @@ public class CentrifugeScreen extends AntScreen<CentrifugeMenu> {
             // What one droplet gives and takes.
             label(graphics, fit(Component.translatable("gui.antcolonies.centrifuge.each").getString(), INFO_W), INFO_X, y, DIM);
             y += 9;
-            label(graphics, fit(Component.translatable("gui.antcolonies.centrifuge.gives", amount(menu.data(CentrifugeBlockEntity.DATA_RUN_AMOUNT))).getString(),
-                    INFO_W), INFO_X, y, INFO);
+            label(graphics, fit(Component.translatable("gui.antcolonies.centrifuge.gives",
+                    amount(menu.data(CentrifugeBlockEntity.DATA_RUN_AMOUNT))).getString(), INFO_W), INFO_X, y, INFO);
             y += 9;
-            label(graphics, fit(Component.translatable("gui.antcolonies.centrifuge.takes", fe(menu.data(CentrifugeBlockEntity.DATA_RUN_ENERGY))).getString(),
-                    INFO_W), INFO_X, y, INFO);
+            label(graphics, fit(Component.translatable("gui.antcolonies.centrifuge.takes",
+                    fe(menu.data(CentrifugeBlockEntity.DATA_RUN_ENERGY))).getString(), INFO_W), INFO_X, y, INFO);
         }
 
         // The FE store.
@@ -129,15 +124,12 @@ public class CentrifugeScreen extends AntScreen<CentrifugeMenu> {
         drawBar(graphics, leftPos + ENERGY_X, topPos + ENERGY_Y, ENERGY_W, ENERGY_H, energy / (double) energyRoom, 0xFFE0A030);
     }
 
-    /**
-     * The drum seen from above: a ring, a hub and three arms with a tube at each end, in the colour of the fluid being
-     * made. The arms turn while the Centrifuge works and stand still otherwise.
-     */
+    /** The drum seen from above, its tubes in the colour of the fluid being made; the arms turn while it works. */
     private static void drawDrum(GuiGraphicsExtractor graphics, int x, int y, boolean spinning, Fluid making) {
         int cx = x + DRUM_SIZE / 2;
         int cy = y + DRUM_SIZE / 2;
         int rim = spinning ? RIM : 0xFF22323C;
-        // The ring: an octagon of short strokes.
+        // The ring: dots on a circle.
         for (int i = 0; i < 48; i++) {
             double a = i * Math.PI * 2 / 48;
             int px = cx + (int) Math.round(Math.cos(a) * 12);
@@ -215,7 +207,8 @@ public class CentrifugeScreen extends AntScreen<CentrifugeMenu> {
             int held = menu.data(CentrifugeBlockEntity.DATA_AMOUNT);
             Fluid tank = tankFluid();
             List<Component> lines = new ArrayList<>();
-            lines.add(held > 0 && tank != Fluids.EMPTY ? tank.getFluidType().getDescription() : Component.translatable("gui.antcolonies.centrifuge.empty"));
+            lines.add(held > 0 && tank != Fluids.EMPTY ? tank.getFluidType().getDescription()
+                    : Component.translatable("gui.antcolonies.centrifuge.empty"));
             lines.add(Component.literal(String.format(java.util.Locale.ROOT, "%,d / %,d mB", held, menu.data(CentrifugeBlockEntity.DATA_CAPACITY)))
                     .withStyle(ChatFormatting.GRAY));
             lines.add(Component.translatable("gui.antcolonies.centrifuge.tank.hint").withStyle(ChatFormatting.DARK_AQUA));

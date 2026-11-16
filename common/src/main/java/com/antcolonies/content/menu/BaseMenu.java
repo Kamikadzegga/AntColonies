@@ -14,10 +14,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Shared menu plumbing: the block's own slots come first, then the player's inventory; shift-clicking moves between the
- * two (into the first block slot that takes the item). Upgrades only ever go into upgrade slots, and nothing else does.
- */
+/** Shared menu plumbing: the block's slots first, then the player's inventory, and shift-clicking between the two. */
 public abstract class BaseMenu extends AbstractContainerMenu {
     protected int blockSlots;
     private final Set<Integer> upgradeSlots = new HashSet<>();

@@ -12,10 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 
-/**
- * The filled tubes: caught ants (workers or soldiers, up to 16 of a species), a Queen (with her whole genome and
- * lineage), or a Genetic Sample (a copy of a Queen's genes). Their names and colors follow the species inside.
- */
+/** The filled tubes: caught ants, a Queen, or a Genetic Sample; named and colored after the species inside. */
 public class AntTestTubeItem extends Item {
     public enum Contents {
         ANTS, QUEEN, SAMPLE

@@ -15,11 +15,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
-/**
- * A Queen's genetic profile: one level per {@link Trait} (in the enum's order), her mutations (ids in the mutation
- * registry), and her lineage. Immutable; every change makes a new genome. The Genetic Laboratory only ever raises the
- * one trait it works on, so an upgrade never harms another.
- */
+/** A Queen's genetic profile: one level per {@link Trait} (in the enum's order), her mutations and her lineage. Immutable. */
 public record Genome(List<Integer> levels, List<Identifier> mutations, Lineage lineage) {
     private static final Codec<List<Integer>> LEVELS_CODEC = Codec.intRange(Trait.MIN_LEVEL, Trait.ABSOLUTE_MAX_LEVEL).listOf()
             .comapFlatMap(list -> list.size() == Trait.values().length ? DataResult.success(List.copyOf(list))

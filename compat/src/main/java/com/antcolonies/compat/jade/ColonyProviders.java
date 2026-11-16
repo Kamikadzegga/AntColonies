@@ -132,12 +132,15 @@ final class ColonyProviders {
                 String[] foodModes = {"off", "supply", "request"};
                 String[] itemModes = {"off", "send", "receive"};
                 tooltip.add(Component.translatable("gui.antcolonies.connector.food").append(": ")
-                        .append(Component.translatable("gui.antcolonies.connector.food." + foodModes[Math.clamp(data.getIntOr("food_mode", 0), 0, 2)]))
+                        .append(Component.translatable("gui.antcolonies.connector.food."
+                                + foodModes[Math.clamp(data.getIntOr("food_mode", 0), 0, 2)]))
                         .append(", ").append(Component.translatable("gui.antcolonies.connector.items")).append(": ")
-                        .append(Component.translatable("gui.antcolonies.connector.items." + itemModes[Math.clamp(data.getIntOr("item_mode", 0), 0, 2)]))
+                        .append(Component.translatable("gui.antcolonies.connector.items."
+                                + itemModes[Math.clamp(data.getIntOr("item_mode", 0), 0, 2)]))
                         .withStyle(ChatFormatting.AQUA));
-                tooltip.add(Component.translatable("gui.antcolonies.connector.flow", data.getIntOr("members", 0), rate(data.getDoubleOr("food_in", 0)),
-                        rate(data.getDoubleOr("food_out", 0)), rate(data.getDoubleOr("items", 0))).withStyle(ChatFormatting.GRAY));
+                tooltip.add(Component.translatable("gui.antcolonies.connector.flow", data.getIntOr("members", 0),
+                        rate(data.getDoubleOr("food_in", 0)), rate(data.getDoubleOr("food_out", 0)),
+                        rate(data.getDoubleOr("items", 0))).withStyle(ChatFormatting.GRAY));
             }
             if (data.contains("mode")) {
                 tooltip.add(Component.translatable(com.antcolonies.colony.model.ForagingMode.byId(data.getIntOr("mode", 0)).translationKey())
@@ -153,8 +156,8 @@ final class ColonyProviders {
                         .withStyle(ChatFormatting.GRAY));
                 double rate = data.getDoubleOr("rate", 0);
                 if (rate > 0) {
-                    tooltip.add(Component.translatable(data.getBooleanOr("liquid", false) ? "gui.antcolonies.site.droplet_rate" : "gui.antcolonies.site.rate",
-                            rate(rate)).withStyle(ChatFormatting.GRAY));
+                    tooltip.add(Component.translatable(data.getBooleanOr("liquid", false) ? "gui.antcolonies.site.droplet_rate"
+                            : "gui.antcolonies.site.rate", rate(rate)).withStyle(ChatFormatting.GRAY));
                 }
             }
             statuses(tooltip, data.getIntOr("status", 0), false);
@@ -177,7 +180,8 @@ final class ColonyProviders {
                     data.putString("operation", operation.name().toLowerCase(Locale.ROOT));
                     data.putInt("trait", labData.get(GeneticLabBlockEntity.DATA_TRAIT));
                     int time = Math.max(1, labData.get(GeneticLabBlockEntity.DATA_TIME));
-                    data.putInt("progress", (int) Math.round(Math.clamp(labData.get(GeneticLabBlockEntity.DATA_PROGRESS) / (double) time, 0, 1) * 100));
+                    data.putInt("progress",
+                            (int) Math.round(Math.clamp(labData.get(GeneticLabBlockEntity.DATA_PROGRESS) / (double) time, 0, 1) * 100));
                 }
             } else if (accessor.getBlockEntity() instanceof com.antcolonies.content.blockentity.CentrifugeBlockEntity centrifuge) {
                 // What it is doing, and what its tank holds (Jade draws the FE bar itself).
@@ -210,8 +214,10 @@ final class ColonyProviders {
                     case BLOCKED -> Component.translatable(status.translationKey(), held.getFluidType().getDescription());
                     default -> Component.translatable(status.translationKey());
                 };
-                tooltip.add(line.copy().withStyle(status == com.antcolonies.content.blockentity.CentrifugeBlockEntity.Status.WORKING ? ChatFormatting.GREEN
-                        : status == com.antcolonies.content.blockentity.CentrifugeBlockEntity.Status.IDLE ? ChatFormatting.GRAY : ChatFormatting.GOLD));
+                tooltip.add(line.copy().withStyle(status == com.antcolonies.content.blockentity.CentrifugeBlockEntity.Status.WORKING
+                        ? ChatFormatting.GREEN
+                        : status == com.antcolonies.content.blockentity.CentrifugeBlockEntity.Status.IDLE ? ChatFormatting.GRAY
+                        : ChatFormatting.GOLD));
                 // (Jade draws the tank and the FE store itself, from the block's fluid and energy handlers.)
                 return;
             }
@@ -240,7 +246,8 @@ final class ColonyProviders {
             tooltip.add(Tooltips.species(ant.species()).append(" · ")
                     .append(Component.translatable("caste.antcolonies." + ant.caste().getSerializedName())));
             if (ant.rank() != WildAnt.Rank.NORMAL) {
-                tooltip.add(Component.translatable("jade.antcolonies.rank." + ant.rank().name().toLowerCase(java.util.Locale.ROOT)).withStyle(ChatFormatting.GOLD));
+                tooltip.add(Component.translatable("jade.antcolonies.rank."
+                        + ant.rank().name().toLowerCase(java.util.Locale.ROOT)).withStyle(ChatFormatting.GOLD));
             }
             Tooltips.speciesFacts(accessor.getLevel().registryAccess(), ant.species(), tooltip::add, false);
             tooltip.add(Component.translatable("jade.antcolonies.catch").withStyle(ChatFormatting.DARK_GRAY));
@@ -268,7 +275,7 @@ final class ColonyProviders {
         }
     };
 
-    /** A nest: whose it is; for a wild one how to take ants from it, for a home nest its ants and what they brought in. */
+    /** A nest: whose it is; for a wild one how to take ants from it, for a home nest its ants and store. */
     static final Client WILD_NEST = new Client("wild_nest") {
         @Override
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {

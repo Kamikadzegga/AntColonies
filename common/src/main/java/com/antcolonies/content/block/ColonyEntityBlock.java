@@ -21,10 +21,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Base of the colony blocks with a block entity (the Terrarium, the chambers, the machines): they face the player when
- * placed, open their block entity's GUI, and tell Terrariums to look at their rings again when placed or broken.
- */
+/** Base of the colony blocks with a block entity: they face the player, open their GUI, and tell Terrariums to scan again. */
 public abstract class ColonyEntityBlock extends BaseEntityBlock {
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
 

@@ -62,18 +62,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
-/**
- * The Genetic Laboratory, one block. Powered with FE (a Generator next to it, or any mod's cable), it works on the Queen
- * in its Queen slot:
- * <ul>
- * <li><b>Upgrade</b>: raises one trait by one level, for the materials of the trait's data file and Genetic Energy.
- * Permanent, and no other trait changes.</li>
- * <li><b>Reroll</b> (Genetic Reroll Serum): rerolls one trait, never below its current level.</li>
- * <li><b>Mutate</b>: feeds the catalyst in the catalyst slot to add the matching beneficial mutation.</li>
- * <li><b>Purge</b> (Genetic Reroll Serum): removes the Queen's first harmful mutation.</li>
- * <li><b>Sample</b> (an empty Test Tube): copies her genes into a Genetic Sample for crossing in a Queen Chamber.</li>
- * </ul>
- */
+/** The Genetic Laboratory: spends FE and materials to change the genes of the Queen in its Queen slot. */
 public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, com.antcolonies.content.block.ComparatorSource {
     /** Comparators read how full the lab's FE store is. */
     @Override
@@ -87,13 +76,23 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
     public static final int SLOT_CATALYST = 4;
     public static final int SLOTS = 5;
     public static final int UPGRADE_SLOTS = 2;
-    /** FE the lab stores (config labEnergy; it takes in at most labEnergyInput per tick, from a Generator or any mod's cable). */
+    /** FE the lab stores (config labEnergy). */
     public static int energyCapacity() {
         return AntConfig.get(AntConfig.LAB_ENERGY);
     }
 
     public enum Operation {
-        NONE, UPGRADE, REROLL, MUTATE, PURGE, SAMPLE;
+        NONE,
+        /** Raises one trait by one level. */
+        UPGRADE,
+        /** Rerolls one trait, never below its current level. */
+        REROLL,
+        /** Adds the beneficial mutation of the item in the catalyst slot. */
+        MUTATE,
+        /** Removes the Queen's first harmful mutation. */
+        PURGE,
+        /** Copies her genes into a Genetic Sample. */
+        SAMPLE;
 
         public static Operation byId(int id) {
             return id >= 0 && id < values().length ? values()[id] : NONE;
@@ -226,7 +225,8 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         }
         // The block lights up while the lab works.
         boolean working = lab.operation != Operation.NONE;
-        if (state.hasProperty(com.antcolonies.content.block.GeneticLabBlock.WORKING) && state.getValue(com.antcolonies.content.block.GeneticLabBlock.WORKING) != working) {
+        if (state.hasProperty(com.antcolonies.content.block.GeneticLabBlock.WORKING)
+                && state.getValue(com.antcolonies.content.block.GeneticLabBlock.WORKING) != working) {
             level.setBlock(pos, state.setValue(com.antcolonies.content.block.GeneticLabBlock.WORKING, working), Block.UPDATE_ALL);
         }
         if (!working) {
@@ -251,10 +251,7 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         return stack.is(ModItems.QUEEN_TEST_TUBE.get()) ? stack.get(ModDataComponents.QUEEN.get()) : null;
     }
 
-    /**
-     * Starts an operation if everything it needs is there; nothing is used until it finishes, so cancelling (or taking
-     * the Queen out) costs nothing.
-     */
+    /** Starts an operation if everything it needs is there; nothing is used until it finishes, so cancelling is free. */
     public void start(Operation next, RegistryAccess registries) {
         if (operation != Operation.NONE) {
             return;
@@ -313,10 +310,7 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         return requirement(op, selectedTrait(), queen, registries);
     }
 
-    /**
-     * What an operation on this trait takes. The screen passes the trait the menu says is selected: the client's copy of
-     * the lab isn't told when the selection changes, so its own selectedTrait() would show the first trait's costs.
-     */
+    /** What an operation on this trait takes. The screen passes the menu's trait: the client's lab isn't told the selection. */
     public @Nullable Requirement requirement(Operation op, Trait trait, QueenData queen, HolderLookup.Provider registries) {
         int level = queen.genome().level(trait);
         double costs = costMultiplier();
@@ -342,10 +336,7 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         };
     }
 
-    /**
-     * The highest level a Reroll can reach. A Reroll never lowers a trait and costs one serum, so it stops four levels
-     * short of the top: the expensive last steps (crystal cores, netherite, a nether star) can only be upgraded.
-     */
+    /** The highest level a Reroll can reach: four short of the top, so the expensive last steps can only be upgraded. */
     public static int rerollCap() {
         return Math.max(1, Trait.maxLevel() - 4);
     }
@@ -524,7 +515,7 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
 
     private static final int[] AUTOMATED = {SLOT_MATERIAL, SLOT_MATERIAL + 1, SLOT_MATERIAL + 2};
 
-    /** Hoppers may bring materials and fuel; Queens are only handled by hand. */
+    /** Hoppers may bring materials; Queens are only handled by hand. */
     @Override
     public int[] getSlotsForFace(Direction side) {
         return AUTOMATED;

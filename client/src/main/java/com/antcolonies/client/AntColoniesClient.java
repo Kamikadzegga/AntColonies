@@ -60,7 +60,8 @@ public final class AntColoniesClient {
         ModItems.CHITIN_TIERS.values().forEach(tier -> event.registerItem(ChitinHelmetModel.EXTENSIONS, tier.get("helmet").get()));
         // Spines on the Hardened and Infernal chestplates, a Queen's wings on the Void one.
         var tiers = ModItems.CHITIN_TIERS;
-        event.registerItem(ChitinHelmetModel.SPINE_EXTENSIONS, tiers.get(com.antcolonies.content.item.ChitinGear.Tier.HARDENED).get("chestplate").get(),
+        event.registerItem(ChitinHelmetModel.SPINE_EXTENSIONS,
+                tiers.get(com.antcolonies.content.item.ChitinGear.Tier.HARDENED).get("chestplate").get(),
                 tiers.get(com.antcolonies.content.item.ChitinGear.Tier.INFERNAL).get("chestplate").get());
         event.registerItem(ChitinHelmetModel.WING_EXTENSIONS, tiers.get(com.antcolonies.content.item.ChitinGear.Tier.VOID).get("chestplate").get());
     }
@@ -99,20 +100,16 @@ public final class AntColoniesClient {
         event.register(SpeciesTint.ID, SpeciesTint.MAP_CODEC);
     }
 
-    /**
-     * Gives the mod a Config button in the Mods list: NeoForge's configuration screen, with every client option (how the
-     * ants are drawn, particles, sounds) and, in single-player, the server options.
-     */
+    /** Gives the mod a Config button in the Mods list (NeoForge's configuration screen). */
     public AntColoniesClient(ModContainer container) {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
-        // The Droplet Centrifuge's recipes, as the server sends them: kept for its screen's slot and for JEI and EMI, and
-        // dropped on leaving the world.
+        // The Droplet Centrifuge's recipes, as the server sends them; dropped on leaving the world.
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.RecipesReceivedEvent event) -> {
             java.util.List<com.antcolonies.content.recipe.CentrifugingRecipe> recipes = new java.util.ArrayList<>();
             event.getRecipeMap().byType(com.antcolonies.core.registry.ModRecipes.CENTRIFUGING.get()).forEach(holder -> recipes.add(holder.value()));
             com.antcolonies.content.recipe.CentrifugingRecipe.setClientRecipes(recipes);
         });
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) ->
-                com.antcolonies.content.recipe.CentrifugingRecipe.setClientRecipes(java.util.List.of()));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event)
+                -> com.antcolonies.content.recipe.CentrifugingRecipe.setClientRecipes(java.util.List.of()));
     }
 }

@@ -14,15 +14,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-/**
- * What a colony really brought in over the last half hour, item by item: every item its ants put into its stores
- * (finds, harvests, hunting loot, chitin, droplets), counted per minute of game time, the last {@link #MINUTES} minutes
- * kept. The Terrarium's Production page shows it as items per minute, so the numbers stay there when the Storage is
- * emptied (by hand, hoppers or pipes) and are what came in, not an estimate.
- *
- * <p>Saved with the colony. Clients get it only while someone has the Terrarium's screen open, with the rest of the
- * colony's details.
- */
+/** What a colony's ants put into its stores, item by item, per minute of game time over the last {@link #MINUTES} minutes. */
 public final class ProductionLog {
     /** Minutes kept. */
     public static final int MINUTES = 30;
@@ -126,10 +118,7 @@ public final class ProductionLog {
         return totals(time).isEmpty();
     }
 
-    /**
-     * How many minutes the totals at {@code time} cover: the log's own age while it is younger than {@link #MINUTES}
-     * minutes (so a colony that began ten minutes ago is averaged over ten), never less than one.
-     */
+    /** How many minutes the totals at {@code time} cover: the log's own age while it is young, never less than one. */
     public double minutes(long time) {
         if (start < 0) {
             return 1;

@@ -15,12 +15,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * One thing a species can find. Either a fixed item or an item tag: for a tag the first item in it is used, and the
- * entry is skipped while the tag is empty, so modded materials only appear when some mod provides them.
+ * One thing a species can find: a fixed item, or the first item of a tag (skipped while the tag is empty).
  *
  * @param weight    how often it is picked compared to the species' other outputs
  * @param minStage  the colony stage (1-4) it needs
- * @param special   a rare, signature output: Specialization genetics make it more likely
+ * @param special   a rare, signature output
  * @param processed what Processing species upgrades turn {@code ratio} of it into
  */
 public record SpeciesOutput(Optional<Holder<Item>> item, Optional<TagKey<Item>> tag, int count, double weight, int minStage, boolean special,

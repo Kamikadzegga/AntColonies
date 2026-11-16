@@ -13,11 +13,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 
-/**
- * A Nether anthill: the giant anthill's nest dug into the Nether's floor (see {@link AnthillPiece} with {@code nether}).
- * The Nether has a roof, so the surface heightmap is no use: each column is scanned down for a floor with open air above
- * it, high enough over the lava sea that the nest dug under it stays dry.
- */
+/** A Nether anthill. The Nether has a roof, so each column is scanned down for a dry floor with open air above it. */
 public class NetherAnthill extends Structure {
     public static final MapCodec<NetherAnthill> CODEC = simpleCodec(NetherAnthill::new);
 
@@ -56,10 +52,7 @@ public class NetherAnthill extends Structure {
         return Optional.of(new GenerationStub(center, builder -> builder.addPiece(piece)));
     }
 
-    /**
-     * The highest solid, dry block of a column between {@code from} and {@code to} (downwards) with {@link #HEADROOM}
-     * blocks of air over it; -1 if there is none.
-     */
+    /** The highest solid, dry block of a column from {@code from} down to {@code to} with {@link #HEADROOM} air over it, or -1. */
     private static int floor(ChunkGenerator generator, GenerationContext context, int x, int z, int from, int to) {
         NoiseColumn column = generator.getBaseColumn(x, z, context.heightAccessor(), context.randomState());
         int air = 0;

@@ -27,14 +27,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 import org.jspecify.annotations.Nullable;
 
-/**
- * A nest a player placed (a {@link WildNestBlock} with {@code home=true}): a few worker ants of its species live in it,
- * like bees in a beehive. In daylight and dry weather they come out a few at a time and work the land within
- * {@link WildAnt#NEST_RANGE} blocks: they tend crops and saplings (growing them on, as bees do) and harvest ripe crops,
- * replanting them and carrying the harvest home into this nest's store. Hoppers and pipes take from the store (nothing
- * can be put in); breaking the nest drops it. At night and in rain the ants stay in. An ant that dies is replaced, one
- * every few minutes. Wild nests from world generation have no block entity and no residents.
- */
+/** A nest a player placed ({@code home=true}): its worker ants go out to farm and carry the harvest into its store. */
 public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer {
     public static final int SLOTS = 9;
     private static final int[] ALL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -86,10 +79,7 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
         }
     }
 
-    /**
-     * Sends one ant out to forage; returns it, or null if none is home or there is no way out. It crawls out of a side
-     * of the nest onto open ground, not out of the top: a mob standing on the low nest block finds no path anywhere.
-     */
+    /** Sends one ant out to forage, or returns null. It leaves by a side: a mob on top of the low nest finds no path. */
     public @Nullable WildAnt release(ServerLevel level) {
         BlockPos exit = exit(level);
         if (inside <= 0 || exit == null || !(getBlockState().getBlock() instanceof WildNestBlock block)) {
@@ -110,7 +100,7 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
         return ant;
     }
 
-    /** A free spot beside the nest (a random side first; one with ground under it if there is one), or null if walled in. */
+    /** A free spot beside the nest, one with ground under it if there is one, or null if walled in. */
     private @Nullable BlockPos exit(ServerLevel level) {
         List<Direction> sides = new java.util.ArrayList<>(Direction.Plane.HORIZONTAL.stream().toList());
         java.util.Collections.shuffle(sides, new java.util.Random(level.getRandom().nextLong()));

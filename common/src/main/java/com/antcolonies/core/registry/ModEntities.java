@@ -17,8 +17,9 @@ public final class ModEntities {
             WildAnt::new, MobCategory.CREATURE, b -> b.sized(0.45F, 0.25F).eyeHeight(0.15F).clientTrackingRange(8));
 
     /** A colony soldier that follows and defends its owner. */
-    public static final DeferredHolder<EntityType<?>, EntityType<com.antcolonies.content.entity.GuardAnt>> GUARD_ANT = ENTITY_TYPES.registerEntityType("guard_ant",
-            com.antcolonies.content.entity.GuardAnt::new, MobCategory.CREATURE, b -> b.sized(0.45F, 0.25F).eyeHeight(0.15F).clientTrackingRange(10));
+    public static final DeferredHolder<EntityType<?>, EntityType<com.antcolonies.content.entity.GuardAnt>> GUARD_ANT =
+            ENTITY_TYPES.registerEntityType("guard_ant", com.antcolonies.content.entity.GuardAnt::new, MobCategory.CREATURE,
+                    b -> b.sized(0.45F, 0.25F).eyeHeight(0.15F).clientTrackingRange(10));
 
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(WILD_ANT.get(), WildAnt.createAttributes().build());

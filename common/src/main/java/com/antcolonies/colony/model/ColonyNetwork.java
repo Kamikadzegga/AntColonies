@@ -20,15 +20,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.level.LevelEvent;
 
 /**
- * Which chambers belong to a Terrarium. A chamber joins when it touches the Terrarium or another chamber of the colony
- * (any of its six sides), so a colony is one build of any shape. Chambers are additions: a Terrarium works without any.
- *
- * <p>When chambers touch two colonies, each chamber goes to the Terrarium it is fewer steps from; a chamber exactly as
- * far from both joins neither, and says so. A colony takes at most {@link AntConfig#MAX_CHAMBERS} chambers, the nearest
- * first.
- *
- * <p>Placing or breaking a Terrarium or a chamber bumps its level's version, and Terrariums look at their builds again
- * when it changed.
+ * Which chambers belong to a Terrarium: those touching it or another chamber of its colony. Placing or breaking one
+ * bumps its level's version, and Terrariums scan again when it changed.
  */
 public final class ColonyNetwork {
     private static final Map<ResourceKey<Level>, Long> VERSIONS = new HashMap<>();
@@ -140,7 +133,8 @@ public final class ColonyNetwork {
                 structures.computeIfAbsent(block.structureKind(), k -> new ArrayList<>()).add(pos);
             }
         }
-        Comparator<BlockPos> sort = Comparator.<BlockPos>comparingInt(BlockPos::getY).thenComparingInt(BlockPos::getX).thenComparingInt(BlockPos::getZ);
+        Comparator<BlockPos> sort =
+                Comparator.<BlockPos>comparingInt(BlockPos::getY).thenComparingInt(BlockPos::getX).thenComparingInt(BlockPos::getZ);
         structures.values().forEach(list -> list.sort(sort));
         return new ColonyLayout(structures, List.copyOf(contested), Math.max(0, owned.size() - limit));
     }

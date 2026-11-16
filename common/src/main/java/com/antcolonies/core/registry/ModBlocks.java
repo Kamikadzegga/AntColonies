@@ -58,7 +58,8 @@ public final class ModBlocks {
     public static final DeferredBlock<UpgradeStationBlock> UPGRADE_STATION = BLOCKS.registerBlock("upgrade_station", UpgradeStationBlock::new,
             p -> p.mapColor(MapColor.WOOD).strength(2.0F).sound(SoundType.WOOD).noOcclusion());
 
-    public static final DeferredBlock<com.antcolonies.content.block.GeneratorBlock> GENERATOR = BLOCKS.registerBlock("generator", com.antcolonies.content.block.GeneratorBlock::new,
+    public static final DeferredBlock<com.antcolonies.content.block.GeneratorBlock> GENERATOR = BLOCKS.registerBlock("generator",
+            com.antcolonies.content.block.GeneratorBlock::new,
             // Not a full cube to the renderer: its firebox shows through the glass between its casing and its lid.
             p -> p.mapColor(MapColor.METAL).strength(3.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
                     .lightLevel(state -> state.getValue(com.antcolonies.content.block.GeneratorBlock.LIT) ? 10 : 0));

@@ -54,12 +54,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
-/**
- * A Guard Ant: a soldier a colony gave up to follow and defend its owner. It fights whatever hurts its owner or what
- * its owner attacks, and hostile mobs that come close (not creepers). Its strength comes from the colony's genetics:
- * health and bite from the Queen's Soldier Strength level, armor from the species' tier. Right-click to make it stay
- * or follow, feed it ant food to heal it, sneak-right-click with an empty hand to put it back in its tube.
- */
+/** A Guard Ant: a soldier a colony gave up to follow and defend its owner. */
 public class GuardAnt extends TamableAnimal implements AntLike {
     private static final EntityDataAccessor<String> DATA_SPECIES = SynchedEntityData.defineId(GuardAnt.class, EntityDataSerializers.STRING);
     /** How much bigger than a wild soldier it is. */
@@ -205,7 +200,8 @@ public class GuardAnt extends TamableAnimal implements AntLike {
                 jumping = false;
                 getNavigation().stop();
                 setTarget(null);
-                player.sendOverlayMessage(Component.translatable(isOrderedToSit() ? "message.antcolonies.guard.stay" : "message.antcolonies.guard.follow"));
+                player.sendOverlayMessage(Component.translatable(isOrderedToSit()
+                        ? "message.antcolonies.guard.stay" : "message.antcolonies.guard.follow"));
             }
         }
         return InteractionResult.SUCCESS;

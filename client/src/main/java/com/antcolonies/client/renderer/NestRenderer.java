@@ -29,14 +29,8 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Draws a colony block that stands in a stack (the Formicarium or a chamber with another part of a colony over or under
- * it): an upright nest. Behind a glass at the front and at the back is a slab of nest material with the block's chamber
- * and tunnels carved two pixels into it ({@link NestLayout}), what lies in the chamber, and the ants. Both glasses show
- * the same nest, the back one from behind (left and right swapped), as a real ant farm does.
- *
- * <p>Everything is drawn as if the block faced north and then turned to its facing (half a turn more for the back). A
- * point of the face is (u, v) as the layout has it (u to the right as seen from the front, v up) and a depth in pixels
- * behind the glass.
+ * Draws an upright colony block: behind each glass, a slab with its {@link NestLayout} carved in, the chamber's contents
+ * and the ants. Drawn as if facing north, then turned (half a turn more for the back).
  */
 public final class NestRenderer {
     private static final Identifier TEXTURE = AntColonies.id("textures/entity/nest.png");
@@ -85,7 +79,8 @@ public final class NestRenderer {
     }
 
     /** Fills what every colony block's state shares. */
-    public static void extract(State state, BlockPos pos, @Nullable Level level, Direction facing, Vec3 camera, float partialTicks, double visualDistance) {
+    public static void extract(State state, BlockPos pos, @Nullable Level level, Direction facing, Vec3 camera, float partialTicks,
+                               double visualDistance) {
         state.partialTicks = partialTicks;
         state.time = level == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(level.getGameTime(), partialTicks);
         state.turns = switch (facing) {
@@ -208,12 +203,7 @@ public final class NestRenderer {
         return new float[] {mirror ? u : 16 - u, v, depth};
     }
 
-    /**
-     * The slab's quads: its face where nothing is carved, the floor of what is, and the walls between, each merged into
-     * as few rectangles as its shading allows. The texture is laid a texel a cell, so the slab reads as one 16 px block
-     * face with holes cut in it. Shaded as if lit from the top left: a shadow under every ceiling and beside every left
-     * wall, a lit lip under every hollow.
-     */
+    /** The slab's quads (face, carved floor, walls between), merged into few rectangles and shaded as if lit from the top left. */
     private static List<SlabQuad> bake(NestLayout layout) {
         List<SlabQuad> quads = new ArrayList<>();
         int[] shade = new int[N * N];
@@ -286,8 +276,7 @@ public final class NestRenderer {
                     while (v + h < N && layout.carved(u, v + h) && !layout.carved(u - 1, v + h)) {
                         h++;
                     }
-                    // The wall on the low-u side of a hollow faces toward higher u: west in the block as it stands facing
-                    // north, east when it is the back that is drawn.
+                    // A hollow's low-u wall faces higher u: west as the block stands facing north, east when the back is drawn.
                     quads.add(wall(u, v, u, v + h, u, N - v - h, u + 1, N - v, 0.62F, mirror ? EAST_NORMAL : WEST_NORMAL));
                 }
                 if (u + 1 < N && !layout.carved(u + 1, v) && (v == 0 || !layout.carved(u, v - 1) || layout.carved(u + 1, v - 1))) {
@@ -299,8 +288,7 @@ public final class NestRenderer {
                 }
             }
         }
-        // The slab's own edges, on every side where no tunnel leaves the block (where one does, the next block's slab
-        // goes on from here).
+        // The slab's own edges, on every side where no tunnel leaves the block.
         if (layout.gates[NestLayout.LEFT] < 0) {
             quads.add(cap(0, 0, 0, N, 0, 0, 1, N, mirror ? WEST_NORMAL : EAST_NORMAL));
         }
@@ -404,7 +392,8 @@ public final class NestRenderer {
                     // A royal cell: silk, lighter toward the top.
                     boolean top = !layout.carved(u, v + 1);
                     flat(g, u, v, u + 1, v + 1, FLOOR - 0.6F, top ? 0xFFF1E6C8 : 0xFFDDCDA6);
-                    flat(g, u + ((h & 1) == 0 ? 0.1F : 0.6F), v + 0.25F, u + ((h & 1) == 0 ? 0.4F : 0.9F), v + 0.75F, FLOOR - 0.62F, top ? 0xFFFFF8E2 : 0xFFC9B88E);
+                    flat(g, u + ((h & 1) == 0 ? 0.1F : 0.6F), v + 0.25F, u + ((h & 1) == 0 ? 0.4F : 0.9F), v + 0.75F, FLOOR - 0.62F,
+                            top ? 0xFFFFF8E2 : 0xFFC9B88E);
                 }
                 case 'm' -> {
                     flat(g, u, v, u + 1, v + 0.5F, FLOOR - 0.8F, 0xFFBF962B);
@@ -437,7 +426,8 @@ public final class NestRenderer {
                         flat(g, u, v, u + 1, v + 0.2F, FLOOR - 0.5F, 0xFF8A5236);
                     }
                 }
-                case 'o' -> flat(g, u, v, u + 1, v + 1, FLOOR - 0.9F, nether ? ((h & 3) == 0 ? 0xFF2A1B3D : 0xFF1B1029) : ((h & 3) == 0 ? 0xFFC9CC8C : 0xFFDBDE9E));
+                case 'o' -> flat(g, u, v, u + 1, v + 1, FLOOR - 0.9F,
+                        nether ? ((h & 3) == 0 ? 0xFF2A1B3D : 0xFF1B1029) : ((h & 3) == 0 ? 0xFFC9CC8C : 0xFFDBDE9E));
                 case 'p' -> {
                     if (state.lit) {
                         g.light = LightCoordsUtil.FULL_BRIGHT;
@@ -483,7 +473,8 @@ public final class NestRenderer {
                 if (!layout.carved(cell[0], cell[1] + 1) && hash(cell[0], cell[1], 7) % 5 < 2) {
                     float tall = 0.5F + hash(cell[0], cell[1], 9) % 4 * 0.15F;
                     flat(g, cell[0] + 0.3F, cell[1] + 1 - tall, cell[0] + 0.7F, cell[1] + 1, deep - 0.3F, crystal);
-                    flat(g, cell[0] + 0.4F, cell[1] + 1 - tall - 0.2F, cell[0] + 0.6F, cell[1] + 1 - tall, deep - 0.3F, Geometry.shade(crystal, 1.3F));
+                    flat(g, cell[0] + 0.4F, cell[1] + 1 - tall - 0.2F, cell[0] + 0.6F, cell[1] + 1 - tall, deep - 0.3F,
+                            Geometry.shade(crystal, 1.3F));
                 }
             }
             g.light = light;
@@ -521,8 +512,7 @@ public final class NestRenderer {
             if (feature.type() != 'q') {
                 continue;
             }
-            // She walks her chamber's floor (NestVisuals): her legs step with the distance she covers, and stand still
-            // while she rests. Resting, her gaster swells a little (more while she lays) and she shifts a leg now and then.
+            // She walks her chamber's floor (NestVisuals). Resting, her gaster swells a little and she shifts a leg now and then.
             boolean walking = visuals.queenMoving && !Float.isNaN(visuals.queenU);
             float u = Float.isNaN(visuals.queenU) ? feature.u() + 0.5F : Mth.lerp(state.partialTicks, visuals.prevQueenU, visuals.queenU);
             float walked = Mth.lerp(state.partialTicks, visuals.prevQueenWalked, visuals.queenWalked);
@@ -562,14 +552,11 @@ public final class NestRenderer {
         float length = SPRITE_LENGTH * (actor.caste == Caste.SOLDIER ? 1.15F : 1);
         // Each ant at a depth of its own, so two that pass never share a plane.
         float depth = FLOOR - 0.35F - (actor.seed % 1) * 0.6F;
-        drawSprite(g, u, v, actor.facingPositive, Mth.lerp(pt, actor.prevPitch, actor.pitch), actor.caste, actor.former ? state.former : state.look, length,
-                frame, actor.carry, g.light, 1, depth);
+        drawSprite(g, u, v, actor.facingPositive, Mth.lerp(pt, actor.prevPitch, actor.pitch), actor.caste, actor.former ? state.former : state.look,
+                length, frame, actor.carry, g.light, 1, depth);
     }
 
-    /**
-     * One side-view ant on the face, its middle at (u, v), walking along +u or -u and tilted up by {@code pitch}. Gaster,
-     * body and crystals are layers of the sprite sheet, each in the species' color.
-     */
+    /** One side-view ant on the face, its middle at (u, v), walking along +u or -u and tilted up by {@code pitch}. */
     private static void drawSprite(Geometry g, float u, float v, boolean positive, float pitch, Caste caste, AntLook look, float length, int frame,
                                    int carry, int light, float gasterScale, float depth) {
         float d = positive ? 1 : -1;
@@ -588,7 +575,8 @@ public final class NestRenderer {
         if (look.crop().isPresent()) {
             // A Liquid Ant: its crop, always full, with the gaster's plates over it.
             g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
-            spriteLayer(g, baseU, baseV, fu, fv, upU, upV, len, height, frame, SIDE_CROP_ROW + caste.ordinal(), 0xFF000000 | look.crop().get(), depth);
+            spriteLayer(g, baseU, baseV, fu, fv, upU, upV, len, height, frame, SIDE_CROP_ROW + caste.ordinal(), 0xFF000000 | look.crop().get(),
+                    depth);
             g.light = light;
             spriteLayer(g, baseU, baseV, fu, fv, upU, upV, len, height, frame, SIDE_PLATES_ROW + caste.ordinal(), 0xFF000000 | visible(look.gaster()),
                     depth - 0.005F);
@@ -606,7 +594,8 @@ public final class NestRenderer {
             float cu = baseU + fu * len * 0.5F + upU * height * 0.35F;
             float cv = baseV + fv * len * 0.5F + upV * height * 0.35F;
             float s = len * 0.14F;
-            float[][] uv = {{88 / 96F, 112F / SIDE_TEX_H}, {92 / 96F, 112F / SIDE_TEX_H}, {92 / 96F, 108F / SIDE_TEX_H}, {88 / 96F, 108F / SIDE_TEX_H}};
+            float[][] uv = {{88 / 96F, 112F / SIDE_TEX_H}, {92 / 96F, 112F / SIDE_TEX_H}, {92 / 96F, 108F / SIDE_TEX_H},
+                    {88 / 96F, 108F / SIDE_TEX_H}};
             float[][] corners = {at(cu - s, cv - s, depth - 0.02F), at(cu + s, cv - s, depth - 0.02F), at(cu + s, cv + s, depth - 0.02F),
                     at(cu - s, cv + s, depth - 0.02F)};
             g.quadUv(corners, uv, carry, FRONT);
@@ -614,8 +603,8 @@ public final class NestRenderer {
         g.light = saved;
     }
 
-    private static void spriteLayer(Geometry g, float u, float v, float fu, float fv, float upU, float upV, float len, float height, int frame, int row,
-                                    int color, float depth) {
+    private static void spriteLayer(Geometry g, float u, float v, float fu, float fv, float upU, float upV, float len, float height, int frame,
+                                    int row, int color, float depth) {
         float half = len / 2;
         float[][] local = {{-half, 0}, {half, 0}, {half, height}, {-half, height}};
         float[][] corners = new float[4][];
@@ -630,10 +619,7 @@ public final class NestRenderer {
         g.quadUv(corners, uv, color, FRONT);
     }
 
-    /**
-     * A species color lifted toward white until it reads against the dark floor of the tunnels (a navy or black ant would
-     * otherwise vanish there); light colors are left alone.
-     */
+    /** A species color lifted toward white until it reads against the tunnels' dark floor; light colors are left alone. */
     private static int visible(int rgb) {
         int r = (rgb >> 16) & 0xFF;
         int gr = (rgb >> 8) & 0xFF;

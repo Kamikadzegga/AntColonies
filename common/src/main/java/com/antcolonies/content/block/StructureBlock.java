@@ -47,7 +47,8 @@ public class StructureBlock extends ColonyPartBlock {
     @Override
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) {
-            return createTickerHelper(type, ModBlockEntities.STRUCTURE.get(), (l, pos, s, be) -> com.antcolonies.client.ClientHooks.structureTick(be));
+            return createTickerHelper(type, ModBlockEntities.STRUCTURE.get(),
+                    (l, pos, s, be) -> com.antcolonies.client.ClientHooks.structureTick(be));
         }
         return createTickerHelper(type, ModBlockEntities.STRUCTURE.get(), StructureBlockEntity::serverTick);
     }

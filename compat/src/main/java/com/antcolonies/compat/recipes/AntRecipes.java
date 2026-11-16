@@ -95,7 +95,8 @@ public final class AntRecipes {
                 continue;
             }
             List<Component> tooltip = new ArrayList<>();
-            tooltip.add(line("weight", percent(com.antcolonies.colony.simulation.ColonySimulator.pickWeight(output, 1) / Math.max(0.0001, total)) + "%").withStyle(ChatFormatting.GRAY));
+            tooltip.add(line("weight", percent(com.antcolonies.colony.simulation.ColonySimulator.pickWeight(output, 1)
+                    / Math.max(0.0001, total)) + "%").withStyle(ChatFormatting.GRAY));
             if (output.minStage() > 1) {
                 tooltip.add(line("stage", output.minStage()).withStyle(ChatFormatting.GOLD));
             }
@@ -118,9 +119,11 @@ public final class AntRecipes {
             AntSpecies data = entry.value();
             List<Component> lines = new ArrayList<>();
             lines.add(Tooltips.species(id).withStyle(ChatFormatting.DARK_GREEN));
-            lines.add(Component.translatable("book.antcolonies.kind", Component.translatable("category.antcolonies." + data.category().getSerializedName()),
-                    data.tier(), Component.translatable("climate.antcolonies." + data.climate().getSerializedName())));
-            lines.add(data.spawn().isPresent() ? Component.translatable("book.antcolonies.wild", data.spawn().get().location().getPath().replace("spawns/", ""))
+            lines.add(Component.translatable("book.antcolonies.kind",
+                    Component.translatable("category.antcolonies." + data.category().getSerializedName()), data.tier(),
+                    Component.translatable("climate.antcolonies." + data.climate().getSerializedName())));
+            lines.add(data.spawn().isPresent()
+                    ? Component.translatable("book.antcolonies.wild", data.spawn().get().location().getPath().replace("spawns/", ""))
                     : Component.translatable("book.antcolonies.not_wild"));
             if (data.needsSpecialFood()) {
                 lines.add(line("diet", data.diet().specialKind(), data.diet().specialPerEgg()));
@@ -186,7 +189,8 @@ public final class AntRecipes {
             inputs.add(List.of(new ItemStack(ModItems.TEST_TUBE.get())));
             data.rearing().cost().forEach(cost -> inputs.add(stacks(cost)));
             list.add(new AntRecipe(id("rearing", id), inputs, List.of(AntRecipe.Output.of(queen(id))),
-                    List.of(line("time", data.rearing().time() / 20), line("needs_stage", 1, AntConfig.get(AntConfig.QUEEN_REARING_MIN_POPULATION)))));
+                    List.of(line("time", data.rearing().time() / 20),
+                            line("needs_stage", 1, AntConfig.get(AntConfig.QUEEN_REARING_MIN_POPULATION)))));
         }
         return list;
     }
@@ -231,7 +235,8 @@ public final class AntRecipes {
             inputs.add(List.of(new ItemStack(ModItems.QUEEN_TEST_TUBE.get())));
             mutation.catalyst().ifPresent(cost -> inputs.add(stacks(cost)));
             List<Component> lines = new ArrayList<>();
-            lines.add(Component.translatable(Mutation.translationKey(id)).withStyle(mutation.negative() ? ChatFormatting.RED : ChatFormatting.DARK_PURPLE));
+            lines.add(Component.translatable(Mutation.translationKey(id)).withStyle(mutation.negative() ? ChatFormatting.RED
+                    : ChatFormatting.DARK_PURPLE));
             lines.add(effects(mutation.effects()));
             lines.add(mutation.catalyst().isPresent() ? line("catalyst") : line("random", mutation.randomWeight()));
             if (mutation.negative()) {
@@ -294,7 +299,8 @@ public final class AntRecipes {
             AntSpecies data = entry.value();
             double minutes = AntConfig.get(AntConfig.LARVAE_GROW_MINUTES) / Math.max(0.01, data.breeding().growth());
             list.add(new AntRecipe(id("larvae", id), List.of(List.of(brood(id, false))),
-                    List.of(AntRecipe.Output.of(brood(id, true)), AntRecipe.Output.of(ants(id, Caste.WORKER)), AntRecipe.Output.of(ants(id, Caste.SOLDIER))),
+                    List.of(AntRecipe.Output.of(brood(id, true)), AntRecipe.Output.of(ants(id, Caste.WORKER)),
+                            AntRecipe.Output.of(ants(id, Caste.SOLDIER))),
                     List.of(line("larvae_info", String.format(Locale.ROOT, "%.1f", minutes), data.breeding().growth()))));
         }
         return list;
@@ -310,15 +316,13 @@ public final class AntRecipes {
                 continue;
             }
             list.add(new AntRecipe(id("production", id), List.of(List.of(ants(id, Caste.WORKER))), outputs(data.production().outputs()),
-                    List.of(line("rate", String.format(Locale.ROOT, base * data.production().rate() < 0.01 ? "%.4f" : "%.3f", base * data.production().rate())))));
+                    List.of(line("rate", String.format(Locale.ROOT, base * data.production().rate() < 0.01 ? "%.4f" : "%.3f",
+                            base * data.production().rate())))));
         }
         return list;
     }
 
-    /**
-     * The Nether and End expeditions: for each species that may go, its ants and the site in, the finds it can bring back
-     * out (the expedition table, filtered to that species).
-     */
+    /** The Nether and End expeditions: per species that may go, its ants and the site in, the finds it can bring back out. */
     public List<AntRecipe> expeditions() {
         List<AntRecipe> list = new ArrayList<>();
         double base = AntConfig.get(AntConfig.EXPEDITION_ROLLS);
@@ -329,7 +333,8 @@ public final class AntRecipes {
                 if (finds.isEmpty()) {
                     continue;
                 }
-                list.add(new AntRecipe(id("expedition", AntColonies.id(expedition.site().getSerializedName() + "_" + id.getNamespace() + "_" + id.getPath())),
+                list.add(new AntRecipe(id("expedition",
+                        AntColonies.id(expedition.site().getSerializedName() + "_" + id.getNamespace() + "_" + id.getPath())),
                         List.of(List.of(ants(id, Caste.WORKER)), List.of(site)), outputs(finds),
                         List.of(line("rate", String.format(Locale.ROOT, "%.3f", base * expedition.rate())),
                                 line("expedition_dimension", Component.translatable("dimension." + expedition.home().identifier().getNamespace() + "."
@@ -406,7 +411,8 @@ public final class AntRecipes {
                 }
                 list.add(new AntRecipe(AntColonies.id("lab/" + trait.getSerializedName() + "/" + level), inputs, List.of(),
                         List.of(Component.translatable(trait.translationKey()).withStyle(ChatFormatting.DARK_PURPLE),
-                                line("level_step", level, level + 1), line("energy", String.format(Locale.ROOT, "%,d", step.energy())), line("time", step.time() / 20))));
+                                line("level_step", level, level + 1), line("energy", String.format(Locale.ROOT, "%,d", step.energy())),
+                                line("time", step.time() / 20))));
             }
         }
         return list;
@@ -426,16 +432,13 @@ public final class AntRecipes {
                 }
             }
             lines.add(Component.literal("6-" + Trait.maxLevel() + ": " + levels.toString().trim()));
-            list.add(new AntRecipe(AntColonies.id("trait/" + trait.getSerializedName()), List.of(List.of(new ItemStack(ModItems.QUEEN_TEST_TUBE.get()))),
-                    List.of(), lines));
+            list.add(new AntRecipe(AntColonies.id("trait/" + trait.getSerializedName()),
+                    List.of(List.of(new ItemStack(ModItems.QUEEN_TEST_TUBE.get()))), List.of(), lines));
         }
         return list;
     }
 
-    /**
-     * Colony upgrades: one entry per type and tier. The upgrade on the left, every block it goes in on the right, and what
-     * it does there in numbers underneath (the same lines as its tooltip).
-     */
+    /** Colony upgrades, one entry per type and tier: the upgrade, every block it goes in, and its tooltip's lines underneath. */
     public List<AntRecipe> colonyUpgrades() {
         List<AntRecipe> list = new ArrayList<>();
         for (var type : com.antcolonies.colony.upgrade.UpgradeType.values()) {

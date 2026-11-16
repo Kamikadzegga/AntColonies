@@ -37,13 +37,7 @@ import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
-/**
- * Chitin gear, in four tiers: Chitin (from Chitin Plates, at iron level), Hardened (Hardened Chitin, between iron and
- * diamond), Infernal (a Hardened piece upgraded at a smithing table with Infernal Chitin: diamond level, fireproof) and
- * Void (an Infernal piece upgraded with a netherite ingot: past netherite). A full armor set of any chitin, tiers mixed
- * or not, makes wild ants take you for one of their own; its other bonuses go by its lowest tier: digging faster, and
- * from Infernal up Fire Resistance.
- */
+/** Chitin gear in four tiers, and the bonuses of a full armor set (which go by its lowest tier). */
 public final class ChitinGear {
     private static final EquipmentSlot[] ARMOR_SLOTS = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
     private static final Identifier SET_BONUS_ID = AntColonies.id("chitin_set");
@@ -130,7 +124,7 @@ public final class ChitinGear {
         }
     }
 
-    /** Gives the set's bonuses to a player wearing a full set (by its lowest tier), and takes the digging bonus away from one who isn't. */
+    /** Gives a full set's bonuses (by its lowest tier), and takes the digging bonus away from a player without one. */
     public static void updateSetBonus(Player player) {
         Tier tier = setTier(player);
         AttributeInstance speed = player.getAttribute(Attributes.BLOCK_BREAK_SPEED);
@@ -181,7 +175,8 @@ public final class ChitinGear {
             if (armor) {
                 tooltip.accept(Component.translatable("tooltip.antcolonies.chitin_set").withStyle(ChatFormatting.GOLD));
                 tooltip.accept(Component.translatable("tooltip.antcolonies.chitin_set.ants").withStyle(ChatFormatting.GRAY));
-                tooltip.accept(Component.translatable("tooltip.antcolonies.chitin_set.dig", Math.round(tier.digBonus * 100)).withStyle(ChatFormatting.GRAY));
+                tooltip.accept(Component.translatable("tooltip.antcolonies.chitin_set.dig",
+                        Math.round(tier.digBonus * 100)).withStyle(ChatFormatting.GRAY));
                 if (tier.fireproof) {
                     tooltip.accept(Component.translatable("tooltip.antcolonies.chitin_set.fire").withStyle(ChatFormatting.GRAY));
                 }

@@ -8,25 +8,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 /**
- * The plan of one anthill's nest, built from modular pieces: rooms (ellipsoids of a {@link RoomType}) joined by
- * tunnels (capsules). Every layout is a tree grown from the entrance shaft: each room is dug off a room or tunnel junction
- * already joined to the entrance, so every room (the Queen's chamber above all) can be reached, and rooms never cut
- * into each other. The plan depends only on its seed and style, so every chunk of the anthill builds its part of the
- * same nest. Coordinates are relative to the anthill's center (the ground's top block under the mound's peak).
- *
- * <p>Styles: {@link Style#BRANCHING} (rooms dug off the shaft in all directions), {@link Style#DEEP} (a long spine with
- * rooms off both sides), {@link Style#MULTI_LEVEL} (floors of rooms joined by ramps), {@link Style#SPIRAL} (rooms down a
- * spiral), {@link Style#CENTRAL} (rooms around a great hall), {@link Style#WINGS} (three wings off a gallery) and
- * {@link Style#ABANDONED} (a small nest left by its colony: only its Queen stayed). {@link Style#CLASSIC} is the one
- * fixed layout anthills had before, kept so anthills already in a world finish building the same way.
- *
- * <p>{@link Style#GROWN} is how anthills are planned since 0.2.0, with no fixed shape at all: the nest grows room by
- * room from the shaft, each new room dug off one already joined, by winding tunnels. Small, medium and large nests (6 to
- * 17 rooms); some tunnels loop back between neighbouring rooms, some end blind, side entrances come in through the
- * mound's flank, soldiers watch some tunnels, and the Queen's great chamber lies deep behind an antechamber of her
- * royal guard (the only way in). The older styles stay so anthills already in a world finish building the same way.
+ * The plan of one anthill's nest: rooms joined by tunnels, relative to the anthill's center. It depends only on its
+ * seed and style, so every chunk builds its part of the same nest.
  */
 public final class AnthillLayout {
+    /** A nest's shape. New anthills are GROWN; the others stay so anthills already in a world finish building the same way. */
     public enum Style {
         CLASSIC, BRANCHING, DEEP, MULTI_LEVEL, SPIRAL, CENTRAL, WINGS, ABANDONED, GROWN;
 
@@ -333,10 +319,7 @@ public final class AnthillLayout {
         return out;
     }
 
-    /**
-     * Places a room near a target spot (a few tries, nudged each time), dug from the nearest joined point; returns it, or
-     * null if no try fits.
-     */
+    /** Places a room near a target spot (a few tries, nudged each time), dug from {@code from} or the shaft; null if none fits. */
     private Room place(RoomType type, double x, double y, double z, int maxDepth, RandomSource random, Room from) {
         for (int attempt = 0; attempt < 12; attempt++) {
             double jitter = attempt * 0.8;
@@ -599,10 +582,7 @@ public final class AnthillLayout {
     }
 
 
-    /**
-     * A winding way from one point to another: the points of a tunnel bent once or twice on the way (dug with
-     * {@link #dig(double[][], double, boolean)} once it is known to keep clear of what it must).
-     */
+    /** A winding way from one point to another: the points of a tunnel bent once or twice on the way. */
     private static double[][] path(double x0, double y0, double z0, double x1, double y1, double z1, RandomSource random) {
         int bends = 1 + random.nextInt(2);
         double[][] points = new double[bends + 2][];
@@ -658,10 +638,7 @@ public final class AnthillLayout {
         return dug.get(random.nextInt(dug.size()));
     }
 
-    /**
-     * Reserves the Queen's great chamber, deep, and her antechamber beside it, joined by a short wide passage, before
-     * anything else is dug: every tunnel dug after keeps away from her chamber, so the antechamber stays the only way in.
-     */
+    /** Reserves the Queen's great chamber and her antechamber first: later tunnels keep away, so the antechamber is the only way in. */
     private Room[] reserveQueen(Size size, RandomSource random) {
         for (int attempt = 0; attempt < 40; attempt++) {
             double angle = random.nextDouble() * Math.PI * 2;
@@ -669,7 +646,8 @@ public final class AnthillLayout {
             double y = -size.depth + 1.5 + random.nextDouble() * 3;
             Room great = room(RoomType.QUEEN, Math.cos(angle) * out, y, Math.sin(angle) * out, random);
             double toward = random.nextDouble() * Math.PI * 2;
-            Room ante = room(RoomType.ANTECHAMBER, great.x + Math.cos(toward) * 11, y + 1.2 + random.nextDouble(), great.z + Math.sin(toward) * 11, random);
+            Room ante = room(RoomType.ANTECHAMBER, great.x + Math.cos(toward) * 11, y + 1.2 + random.nextDouble(), great.z + Math.sin(toward) * 11,
+                    random);
             if (fits(great, size.depth + 4) && fits(ante, size.depth + 4) && !ante.overlaps(great, 1)) {
                 add(great);
                 add(ante);

@@ -39,13 +39,8 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The living Terrarium: soil in its climate's colors behind the glass, with the colony's tunnels and chambers dug
- * into every side, eggs, larvae and food in the chambers, the Queen in her chamber on the front, the colony's
- * representative ants at work, and on the surface whatever the colony grows (fungus gardens, crystals at stage 4).
- * Everything follows the synced colony; nothing here feeds back into it.
- *
- * <p>That is the Formicarium standing on the ground. With another part of a colony over or under it, it is an upright
- * nest instead, drawn by {@link NestRenderer}.
+ * Draws the Formicarium on the ground: soil behind the glass with the colony's tunnels and chambers, its ants, and what
+ * grows on top. In a stack, {@link NestRenderer} draws it instead.
  */
 public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEntity, TerrariumRenderer.State> {
     private static final Identifier TEXTURE = AntColonies.id("textures/entity/terrarium_inside.png");
@@ -111,8 +106,8 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         state.upright = ColonyPartBlock.upright(terrarium.getBlockState());
         if (state.upright) {
             NestRenderer.State nest = state.nest;
-            NestRenderer.extract(nest, terrarium.getBlockPos(), terrarium.getLevel(), terrarium.getBlockState().getValue(ColonyEntityBlock.FACING), camera,
-                    partialTicks, AntConfig.client(AntConfig.VISUAL_DISTANCE));
+            NestRenderer.extract(nest, terrarium.getBlockPos(), terrarium.getLevel(), terrarium.getBlockState().getValue(ColonyEntityBlock.FACING),
+                    camera, partialTicks, AntConfig.client(AntConfig.VISUAL_DISTANCE));
             nest.visuals = terrarium.clientVisuals instanceof NestVisuals visuals ? visuals : null;
             nest.layout = nest.visuals == null ? null : nest.visuals.layout;
             AntSpecies species = ClientSpecies.get(terrarium.colony().species());
@@ -131,15 +126,16 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         state.visuals = terrarium.clientVisuals instanceof TerrariumVisuals visuals ? visuals : null;
         state.colony = terrarium.colony();
         state.partialTicks = partialTicks;
-        state.time = terrarium.getLevel() == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(terrarium.getLevel().getGameTime(), partialTicks);
+        state.time = terrarium.getLevel() == null ? 0
+                : com.antcolonies.client.ClientHooks.animationTime(terrarium.getLevel().getGameTime(), partialTicks);
         double distance = AntConfig.client(AntConfig.VISUAL_DISTANCE);
         state.near = Vec3.atCenterOf(terrarium.getBlockPos()).distanceToSqr(camera) < distance * distance;
         double detail = AntConfig.client(AntConfig.ANT_DETAIL_DISTANCE);
-        state.detailed = AntConfig.client(AntConfig.ANT_3D_MODELS) && Vec3.atCenterOf(terrarium.getBlockPos()).distanceToSqr(camera) < detail * detail;
+        state.detailed = AntConfig.client(AntConfig.ANT_3D_MODELS)
+                && Vec3.atCenterOf(terrarium.getBlockPos()).distanceToSqr(camera) < detail * detail;
         state.species = ClientSpecies.get(terrarium.colony().species());
         state.former = ClientSpecies.get(terrarium.colony().formerSpecies());
-        // Only the sides facing the camera can be seen (two at most): the others are left out, a good share of the work
-        // when many Terrariums are in view.
+        // Only the sides facing the camera can be seen (two at most): the others are left out.
         double cx = (camera.x - terrarium.getBlockPos().getX()) * 16;
         double cz = (camera.z - terrarium.getBlockPos().getZ()) * 16;
         FlatGround.facing(state.facing, cx, cz);
@@ -191,7 +187,8 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
                 }
                 List<float[]> hollows = new ArrayList<>();
                 for (TunnelLayout.Node node : layout.nodes) {
-                    hollows.add(new float[] {node.u(), node.v(), node.radiusU(), node.radiusV(), node.type() == TunnelLayout.ChamberType.CRYSTAL ? 1 : 0});
+                    hollows.add(new float[] {node.u(), node.v(), node.radiusU(), node.radiusV(),
+                            node.type() == TunnelLayout.ChamberType.CRYSTAL ? 1 : 0});
                 }
                 FlatGround.tunnels(g, face, shape, paths, hollows, dark);
             }
@@ -208,8 +205,8 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         AntLook look = state.species == null ? AntLook.UNKNOWN : state.species.look();
         if (look.glow() && visuals.stage >= 4 && look.crystal().isPresent()) {
             int crystal = 0xFF000000 | look.crystal().get();
-            collector.submitCustomGeometry(poseStack, GLOW, (pose, buffer) -> drawCrystals(new Geometry(pose, buffer, TEX, LightCoordsUtil.FULL_BRIGHT),
-                    visuals, Geometry.shade(crystal, 0.6F)));
+            collector.submitCustomGeometry(poseStack, GLOW, (pose, buffer) ->
+                    drawCrystals(new Geometry(pose, buffer, TEX, LightCoordsUtil.FULL_BRIGHT), visuals, Geometry.shade(crystal, 0.6F)));
         }
         if (!state.near) {
             return;
@@ -321,8 +318,8 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         for (int i = 0; i < 2 + Math.min(2, visuals.stage); i++) {
             float x = 4 + random.nextFloat() * 8;
             float z = 4 + random.nextFloat() * 8;
-            g.box(x - 0.9F, TOP, z - 0.9F, x + 0.9F, TOP + 0.35F, z + 0.9F, Geometry.shade(soilColor(species == null ? Climate.TEMPERATE : species.climate()), 0.7F),
-                    17, 1, 23, 7);
+            g.box(x - 0.9F, TOP, z - 0.9F, x + 0.9F, TOP + 0.35F, z + 0.9F,
+                    Geometry.shade(soilColor(species == null ? Climate.TEMPERATE : species.climate()), 0.7F), 17, 1, 23, 7);
             g.box(x - 0.35F, TOP + 0.01F, z - 0.35F, x + 0.35F, TOP + 0.37F, z + 0.35F, 0xFF1E140C, 17, 1, 19, 3);
         }
         if (species != null && species.canFarm() && visuals.stage >= 2) {
@@ -370,8 +367,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
             return;
         }
         TunnelLayout.Node node = layout.nodes.get(chamber);
-        // She walks her chamber's floor (TerrariumVisuals): her legs step with the distance she covers, and stand still
-        // while she rests.
+        // She walks her chamber's floor (TerrariumVisuals).
         float shuffle = Mth.lerp(state.partialTicks, visuals.prevQueenOffset, visuals.queenOffset);
         boolean positive = visuals.queenRight;
         boolean walking = visuals.queenMoving;
@@ -380,8 +376,8 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         float pulse = walking ? 1 : 1 + (visuals.queenLaying ? 0.06F : 0.02F) * Mth.sin(state.time * 0.25F);
         int frame = walking ? Math.floorMod((int) (walked * 2.4F), 4) : (int) (state.time / 40) % 6 == 0 ? 2 : 0;
         int light = visuals.evolutionGlow > 0.05F ? LightCoordsUtil.FULL_BRIGHT : g.light;
-        drawSprite(g, visuals.frontFace, node.u() + shuffle, FlatGround.chamberFloor(node.v(), node.radiusV()) + 0.02F, positive, 0, Caste.QUEEN, look,
-                SPRITE_LENGTH * 1.75F, frame, 0, light, pulse);
+        drawSprite(g, visuals.frontFace, node.u() + shuffle, FlatGround.chamberFloor(node.v(), node.radiusV()) + 0.02F, positive, 0, Caste.QUEEN,
+                look, SPRITE_LENGTH * 1.75F, frame, 0, light, pulse);
     }
 
     private static void drawActorSprite(Geometry g, TerrariumVisuals.Actor actor, State state, AntLook look) {
@@ -397,10 +393,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
                 actor.carry, g.light, 1);
     }
 
-    /**
-     * One side-view ant in a glass side's plane: feet at (u, v), walking along +u or -u, tilted up a slope by
-     * {@code pitch}. Gaster, body and crystals are layers of the sprite sheet, each in the species' color.
-     */
+    /** One side-view ant in a glass side's plane: feet at (u, v), walking along +u or -u, tilted up a slope by {@code pitch}. */
     static void drawSprite(Geometry g, int face, float u, float v, boolean positive, float pitch, Caste caste, AntLook look, float length,
                                    int frame, int carry, int light, float gasterScale) {
         float d = positive ? 1 : -1;
@@ -418,7 +411,8 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
             g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
             spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, SIDE_CROP_ROW + caste.ordinal(), 0xFF000000 | look.crop().get(), 0.075F);
             g.light = light;
-            spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, SIDE_PLATES_ROW + caste.ordinal(), 0xFF000000 | visible(look.gaster()), 0.08F);
+            spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, SIDE_PLATES_ROW + caste.ordinal(), 0xFF000000 | visible(look.gaster()),
+                    0.08F);
         } else {
             spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height * gasterScale, frame, row + 1, 0xFF000000 | visible(look.gaster()), 0.08F);
         }
@@ -433,7 +427,8 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
             float cu = u + fu * len * 0.5F + upU * height * 0.35F;
             float cv = v + fv * len * 0.5F + upV * height * 0.35F;
             float s = len * 0.14F;
-            float[][] uv = {{88 / 96F, 112F / SIDE_TEX_H}, {92 / 96F, 112F / SIDE_TEX_H}, {92 / 96F, 108F / SIDE_TEX_H}, {88 / 96F, 108F / SIDE_TEX_H}};
+            float[][] uv = {{88 / 96F, 112F / SIDE_TEX_H}, {92 / 96F, 112F / SIDE_TEX_H}, {92 / 96F, 108F / SIDE_TEX_H},
+                    {88 / 96F, 108F / SIDE_TEX_H}};
             float[][] local = {{-s, -s}, {s, -s}, {s, s}, {-s, s}};
             float[][] corners = new float[4][];
             for (int i = 0; i < 4; i++) {
@@ -444,10 +439,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         g.light = saved;
     }
 
-    /**
-     * A species color lifted toward white until it reads against the dark soil of the tunnels (a navy or black ant would
-     * otherwise vanish there); light colors are left alone.
-     */
+    /** A species color lifted toward white until it reads against the tunnels' dark soil; light colors are left alone. */
     private static int visible(int rgb) {
         int r = (rgb >> 16) & 0xFF;
         int gr = (rgb >> 8) & 0xFF;
@@ -486,11 +478,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         g.quadUv(corners, uv, color, NORMALS[face]);
     }
 
-    /**
-     * A surface ant as a 2D side-view sprite, the same as the ants in the tunnels: it stands on the soil in the vertical
-     * plane of its walk, head first, drawn from both sides so it shows through every glass wall. Used beyond the detail
-     * distance, past the 3D model cap, and always when 3D ants are turned off; far cheaper than the 3D model.
-     */
+    /** A surface ant as a side-view sprite standing on the soil, drawn from both sides: the cheap stand-in for the 3D model. */
     private static void drawSurfaceSprite(Geometry g, TerrariumVisuals.Actor actor, State state, AntLook look) {
         float pt = state.partialTicks;
         float x = Mth.lerp(pt, actor.prevX, actor.x);
@@ -514,7 +502,8 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
                 g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
                 surfaceLayer(g, x, z, fx, fz, n, len, height, frame, SIDE_CROP_ROW + actor.caste.ordinal(), 0xFF000000 | look.crop().get(), 0.005F);
                 g.light = light;
-                surfaceLayer(g, x, z, fx, fz, n, len, height, frame, SIDE_PLATES_ROW + actor.caste.ordinal(), 0xFF000000 | visible(look.gaster()), 0.01F);
+                surfaceLayer(g, x, z, fx, fz, n, len, height, frame, SIDE_PLATES_ROW + actor.caste.ordinal(), 0xFF000000 | visible(look.gaster()),
+                        0.01F);
             } else {
                 surfaceLayer(g, x, z, fx, fz, n, len, height, frame, row + 1, 0xFF000000 | visible(look.gaster()), 0.01F);
             }

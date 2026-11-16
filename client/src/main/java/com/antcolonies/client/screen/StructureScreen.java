@@ -144,7 +144,8 @@ public class StructureScreen extends AntScreen<StructureMenu> {
                 fluidLine(graphics, pendingFluid[0], pendingFluid[1]);
             }
         }
-        int status = menu.data(StructureBlockEntity.DATA_STATUS) | (kind == StructureKind.QUEEN_CHAMBER ? menu.data(StructureBlockEntity.DATA_REARING_STATUS) : 0);
+        int status = menu.data(StructureBlockEntity.DATA_STATUS)
+                | (kind == StructureKind.QUEEN_CHAMBER ? menu.data(StructureBlockEntity.DATA_REARING_STATUS) : 0);
         boolean slotted = kind == StructureKind.QUEEN_CHAMBER;
         if (kind == StructureKind.QUEEN_CHAMBER) {
             drawQueenChamber(graphics, x);
@@ -198,10 +199,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         return fit(full, 170);
     }
 
-    /**
-     * What this Nest Chamber adds to its colony, with the Population Upgrades in it (each tier adds half again): room for
-     * adults (some of them soldiers) and larvae. Updates as upgrades go in and out.
-     */
+    /** The room for adults and larvae this Nest Chamber adds to its colony, with the Population Upgrades in it. */
     private int nestRoom(GuiGraphicsExtractor graphics, int x, int y) {
         int tier = menu.structure().upgradeTier(com.antcolonies.colony.upgrade.UpgradeType.POPULATION);
         double room = 1 + 0.5 * tier;
@@ -250,14 +248,12 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         return y + 11;
     }
 
-    /**
-     * A job site's settings: what a Foraging Site looks for (its mode), its priority among the colony's sites, and a
-     * switch to turn it off. The tooltips explain each; the server applies the click and syncs back.
-     */
+    /** A job site's settings: what a Foraging Site looks for, its priority among the colony's sites, and a switch to turn it off. */
     private int settingsRow(int x, int y) {
         int bx = x;
         if (kind == StructureKind.FORAGING_SITE) {
-            com.antcolonies.colony.model.ForagingMode mode = com.antcolonies.colony.model.ForagingMode.byId(menu.data(StructureBlockEntity.DATA_MODE));
+            com.antcolonies.colony.model.ForagingMode mode =
+                    com.antcolonies.colony.model.ForagingMode.byId(menu.data(StructureBlockEntity.DATA_MODE));
             String text = Component.translatable(mode.translationKey()).getString();
             int w = buttonWidth(text);
             button(bx, y, w, 12, text, StructureMenu.CYCLE_MODE, List.of(Component.translatable("gui.antcolonies.mode"),
@@ -273,7 +269,8 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         bx += pw + 3;
         boolean enabled = menu.data(StructureBlockEntity.DATA_ENABLED) != 0;
         String onOff = Component.translatable(enabled ? "gui.antcolonies.site.on" : "gui.antcolonies.site.off").getString();
-        toggle(bx, y, buttonWidth(onOff), 12, onOff, StructureMenu.TOGGLE, List.of(Component.translatable("gui.antcolonies.site.toggle.hint")), enabled);
+        toggle(bx, y, buttonWidth(onOff), 12, onOff, StructureMenu.TOGGLE,
+                List.of(Component.translatable("gui.antcolonies.site.toggle.hint")), enabled);
         bx += buttonWidth(onOff) + 4;
         if (kind == StructureKind.LIQUID_CHAMBER) {
             pendingFluid = new int[] {bx, y};
@@ -306,7 +303,8 @@ public class StructureScreen extends AntScreen<StructureMenu> {
 
     /** The species an expedition site takes, from the synced species tag (names, comma-separated). */
     private String adaptedNames() {
-        var expedition = com.antcolonies.colony.expedition.Expedition.forSite(minecraft.level == null ? null : minecraft.level.registryAccess(), kind);
+        var expedition = com.antcolonies.colony.expedition.Expedition.forSite(minecraft.level == null ? null : minecraft.level.registryAccess(),
+                kind);
         if (expedition == null || minecraft.level == null) {
             return "?";
         }
@@ -320,17 +318,15 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         return names.toString();
     }
 
-    /**
-     * A Colony Connector: its channel (a colour), what it does with food (keep a reserve and supply the rest, or ask for food
-     * up to a target), how fast, what it does with the items its filter names, and what it moved lately.
-     */
+    /** A Colony Connector's page: its channel, what it does with food and with the items its filter names, and what it moved lately. */
     private void connectorPage(GuiGraphicsExtractor graphics, int x, int y, int mouseX, int mouseY) {
         int channel = menu.data(StructureBlockEntity.DATA_CHANNEL);
         label(graphics, Component.translatable("gui.antcolonies.connector.channel"), x, y + 2, LABEL);
         int sx = x + 44;
         for (int c = 0; c < 16; c++) {
             int bx = sx + c * 8;
-            button(bx, y, 7, 11, "", StructureMenu.CHANNEL + c, List.of(Component.translatable("color.minecraft." + net.minecraft.world.item.DyeColor.byId(c).getName())), true);
+            button(bx, y, 7, 11, "", StructureMenu.CHANNEL + c,
+                    List.of(Component.translatable("color.minecraft." + net.minecraft.world.item.DyeColor.byId(c).getName())), true);
             channelSwatches.add(new int[] {bx, y, c, c == channel ? 1 : 0});
         }
         y += 14;
@@ -341,8 +337,8 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         for (int i = 0; i < 3; i++) {
             String text = Component.translatable("gui.antcolonies.connector.food." + foodModes[i]).getString();
             int w = buttonWidth(text);
-            toggle(bx, y, w, 12, text, StructureMenu.FOOD_MODE + i, List.of(Component.translatable("gui.antcolonies.connector.food." + foodModes[i] + ".hint")),
-                    foodMode == i);
+            toggle(bx, y, w, 12, text, StructureMenu.FOOD_MODE + i,
+                    List.of(Component.translatable("gui.antcolonies.connector.food." + foodModes[i] + ".hint")), foodMode == i);
             bx += w + 2;
         }
         y += 15;
@@ -360,7 +356,8 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         String rateText = rate < 0 ? Component.translatable("gui.antcolonies.connector.rate.max").getString()
                 : Component.translatable("gui.antcolonies.connector.rate", rate).getString();
         int rw = buttonWidth(rateText);
-        button(x + 170 - rw, y, rw, 12, rateText, StructureMenu.CYCLE_RATE, List.of(Component.translatable("gui.antcolonies.connector.rate.hint")), true);
+        button(x + 170 - rw, y, rw, 12, rateText, StructureMenu.CYCLE_RATE,
+                List.of(Component.translatable("gui.antcolonies.connector.rate.hint")), true);
         y += 15;
         int itemMode = menu.data(StructureBlockEntity.DATA_ITEM_MODE);
         label(graphics, Component.translatable("gui.antcolonies.connector.items"), x, y + 2, LABEL);
@@ -369,8 +366,8 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         for (int i = 0; i < 3; i++) {
             String text = Component.translatable("gui.antcolonies.connector.items." + itemModes[i]).getString();
             int w = buttonWidth(text);
-            toggle(bx, y, w, 12, text, StructureMenu.ITEM_MODE + i, List.of(Component.translatable("gui.antcolonies.connector.items." + itemModes[i] + ".hint")),
-                    itemMode == i);
+            toggle(bx, y, w, 12, text, StructureMenu.ITEM_MODE + i,
+                    List.of(Component.translatable("gui.antcolonies.connector.items." + itemModes[i] + ".hint")), itemMode == i);
             bx += w + 2;
         }
         y += 15;
@@ -388,8 +385,8 @@ public class StructureScreen extends AntScreen<StructureMenu> {
     }
 
     /**
-     * Text wrapped to the 170-pixel column from {@code y}, with no line starting below {@code lastY}; if it needs more
-     * lines than that, the last one is cut and the whole text is its hover tooltip. Returns the y under the text.
+     * Text wrapped to the 170-pixel column, with no line starting below {@code lastY}: the last one is cut if it needs more
+     * (the whole text on hover). Returns the y under the text.
      */
     private int lines(GuiGraphicsExtractor graphics, String text, int x, int y, int lastY, int color) {
         List<String> wrapped = new ArrayList<>();
@@ -516,7 +513,8 @@ public class StructureScreen extends AntScreen<StructureMenu> {
                 lines.add(Component.literal(cost.count() + " x ").append(shown.getHoverName()).withStyle(ChatFormatting.GRAY));
             }
             AntSpecies.Rearing rearing = species.rearing();
-            lines.add(Component.translatable("gui.antcolonies.queen_chamber.time", Math.round(rearing.time() / 20.0)).withStyle(ChatFormatting.DARK_GRAY));
+            lines.add(Component.translatable("gui.antcolonies.queen_chamber.time",
+                    Math.round(rearing.time() / 20.0)).withStyle(ChatFormatting.DARK_GRAY));
         }
         return lines;
     }

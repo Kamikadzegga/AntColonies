@@ -2,10 +2,7 @@ package com.antcolonies.colony.model;
 
 import java.util.List;
 
-/**
- * The simulation's way into a colony's numbers. Kept apart from {@link Colony}'s public methods, which are what items,
- * GUIs and commands may change.
- */
+/** The simulation's way into a colony's numbers, apart from what {@link Colony} lets items, GUIs and commands change. */
 public final class ColonyAccess {
     public static double workers(Colony colony) {
         return colony.workers;
@@ -66,10 +63,7 @@ public final class ColonyAccess {
         colony.workers = Math.max(0, workers);
     }
 
-    /**
-     * New adults of the current species join: the share of adults already of it rises; once (almost) every adult is,
-     * the former species is gone.
-     */
+    /** New adults of the current species join: once (almost) every adult is of it, the former species is gone. */
     public static void addAdults(Colony colony, double workers) {
         double before = colony.workers;
         double added = workers;

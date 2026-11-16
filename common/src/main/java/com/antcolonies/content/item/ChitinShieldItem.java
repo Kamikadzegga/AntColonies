@@ -16,12 +16,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.TooltipDisplay;
 
-/**
- * The Chitin Shield: blocks like the vanilla shield, but is light. It is up in 0.15 s instead of 0.25 s, an axe knocks
- * it down for three quarters as long, and it lasts longer (450 uses against 336).
- * Repaired with Chitin Plates. A {@link ShieldItem}, so other mods treat it as a shield; its looks are a plain item model
- * (no banner patterns).
- */
+/** The Chitin Shield: a lighter {@link ShieldItem} that is up sooner, is knocked down for less long and lasts longer. */
 public class ChitinShieldItem extends ShieldItem {
     public static final int DURABILITY = 450;
     public static final float BLOCK_DELAY = 0.15F;

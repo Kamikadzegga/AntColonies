@@ -4,9 +4,8 @@ import com.antcolonies.colony.liquid.LiquidKind;
 import com.antcolonies.colony.liquid.LiquidKinds;
 
 /**
- * Ender IO (mod id {@code enderio}): nutrient distillation and hootch. Its still fluids are registered as
- * {@code enderio:fluid_<name>_still}, not under their plain names. Ids from its {@code EIOFluids} and
- * {@code FluidDeferredRegister} (branch 26.3).
+ * Ender IO (mod id {@code enderio}): nutrient distillation and hootch, registered as {@code enderio:fluid_<name>_still}.
+ * Ids from its {@code EIOFluids}.
  */
 public final class EnderIoLiquids {
     public static final String MOD = "enderio";
