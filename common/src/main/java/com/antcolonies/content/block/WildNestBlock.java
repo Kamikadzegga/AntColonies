@@ -1,6 +1,7 @@
 package com.antcolonies.content.block;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.client.ClientHooks;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.content.blockentity.HomeNestBlockEntity;
 import com.antcolonies.content.entity.WildAnt;
@@ -121,6 +122,6 @@ public class WildNestBlock extends Block implements EntityBlock {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        com.antcolonies.client.ClientHooks.nestParticles(level, pos, random);
+        ClientHooks.nestParticles(level, pos, random);
     }
 }

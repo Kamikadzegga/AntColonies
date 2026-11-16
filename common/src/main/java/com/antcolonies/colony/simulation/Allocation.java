@@ -1,6 +1,7 @@
 package com.antcolonies.colony.simulation;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,7 @@ public final class Allocation {
             order.addAll(step.of(kind));
         }
         // Higher priority first; within a priority the fixed order above (food first) and the scan's order (a stable sort).
-        order.sort(java.util.Comparator.comparingInt(StructureBlockEntity::priority).reversed());
+        order.sort(Comparator.comparingInt(StructureBlockEntity::priority).reversed());
         for (StructureBlockEntity entity : order) {
             StructureKind kind = entity.kind();
             int status = 0;
@@ -144,7 +145,6 @@ public final class Allocation {
         return assignedWorkers;
     }
 
-    /** The ants at the sites of a kind. */
     public int assigned(StructureKind kind) {
         return of(kind).stream().mapToInt(Site::assigned).sum();
     }

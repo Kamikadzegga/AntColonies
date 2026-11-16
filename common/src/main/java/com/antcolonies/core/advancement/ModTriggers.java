@@ -8,7 +8,6 @@ import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/** The mod's advancement triggers. */
 public final class ModTriggers {
     public static final DeferredRegister<CriterionTrigger<?>> TRIGGERS = DeferredRegister.create(Registries.TRIGGER_TYPE, AntColonies.MODID);
 

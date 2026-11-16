@@ -1,14 +1,16 @@
 package com.antcolonies.content.block;
 
+import com.antcolonies.client.ClientHooks;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.colony.model.StructureKind;
 import com.antcolonies.core.registry.ModBlockEntities;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -47,19 +49,19 @@ public class StructureBlock extends ColonyPartBlock {
     @Override
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) {
-            return createTickerHelper(type, ModBlockEntities.STRUCTURE.get(), (l, pos, s, be) -> com.antcolonies.client.ClientHooks.structureTick(be));
+            return createTickerHelper(type, ModBlockEntities.STRUCTURE.get(), (l, pos, s, be) -> ClientHooks.structureTick(be));
         }
         return createTickerHelper(type, ModBlockEntities.STRUCTURE.get(), StructureBlockEntity::serverTick);
     }
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        com.antcolonies.client.ClientHooks.structureParticles(level, pos, kind, random);
+        ClientHooks.structureParticles(level, pos, kind, random);
     }
 
     // 26.1.2: every block still names its codec.
     @Override
-    protected com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.block.BaseEntityBlock> codec() {
+    protected MapCodec<? extends BaseEntityBlock> codec() {
         return simpleCodec(properties -> new StructureBlock(kind, properties));
     }
 }

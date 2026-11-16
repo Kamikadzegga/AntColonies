@@ -1,5 +1,6 @@
 package com.antcolonies.content.item;
 
+import java.util.Locale;
 import java.util.function.Consumer;
 
 import com.antcolonies.core.config.AntConfig;
@@ -68,7 +69,7 @@ public class GuardAntItem extends Item {
         double max = GuardAnt.maxHealth(data.strength());
         double health = data.health() > 0 ? Math.min(data.health(), max) : max;
         tooltip.accept(Component.translatable("tooltip.antcolonies.guard_ant.stats", data.strength(), Math.round(health), Math.round(max),
-                String.format(java.util.Locale.ROOT, "%.1f", GuardAnt.damage(data.strength())),
+                String.format(Locale.ROOT, "%.1f", GuardAnt.damage(data.strength())),
                 Math.round(GuardAnt.armor(species == null ? 1 : species.tier()))).withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable("tooltip.antcolonies.guard_ant.use").withStyle(ChatFormatting.DARK_GRAY));
     }

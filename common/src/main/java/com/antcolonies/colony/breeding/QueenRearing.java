@@ -19,6 +19,7 @@ import com.antcolonies.colony.species.Cost;
 import com.antcolonies.colony.upgrade.UpgradeType;
 
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -90,7 +91,7 @@ public final class QueenRearing {
     }
 
     public static @Nullable Hybrid findHybrid(ServerLevel level, Identifier a, Identifier b) {
-        Optional<? extends net.minecraft.core.HolderLookup.RegistryLookup<Hybrid>> lookup = level.registryAccess().lookup(ModRegistries.HYBRID);
+        Optional<? extends HolderLookup.RegistryLookup<Hybrid>> lookup = level.registryAccess().lookup(ModRegistries.HYBRID);
         if (lookup.isEmpty()) {
             return null;
         }

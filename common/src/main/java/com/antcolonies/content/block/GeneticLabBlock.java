@@ -1,10 +1,13 @@
 package com.antcolonies.content.block;
 
+import com.antcolonies.client.ClientHooks;
 import com.antcolonies.content.blockentity.GeneticLabBlockEntity;
 import com.antcolonies.core.registry.ModBlockEntities;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -54,9 +57,9 @@ public class GeneticLabBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, net.minecraft.util.RandomSource random) {
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (state.getValue(WORKING)) {
-            com.antcolonies.client.ClientHooks.labParticles(level, pos, random);
+            ClientHooks.labParticles(level, pos, random);
         }
     }
 
@@ -65,9 +68,8 @@ public class GeneticLabBlock extends BaseEntityBlock {
         return true;
     }
 
-    /** How full its FE store is. */
     @Override
-    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, net.minecraft.core.Direction direction) {
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
         return level.getBlockEntity(pos) instanceof ComparatorSource source ? source.comparatorSignal() : 0;
     }
 
@@ -81,7 +83,7 @@ public class GeneticLabBlock extends BaseEntityBlock {
 
     // 26.1.2: every block still names its codec.
     @Override
-    protected com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.block.BaseEntityBlock> codec() {
+    protected MapCodec<? extends BaseEntityBlock> codec() {
         return simpleCodec(GeneticLabBlock::new);
     }
 }

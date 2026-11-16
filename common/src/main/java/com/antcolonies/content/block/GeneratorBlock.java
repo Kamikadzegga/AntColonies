@@ -3,6 +3,7 @@ package com.antcolonies.content.block;
 import com.antcolonies.content.blockentity.GeneratorBlockEntity;
 import com.antcolonies.core.registry.ModBlockEntities;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
@@ -58,9 +59,8 @@ public class GeneratorBlock extends BaseEntityBlock {
         return true;
     }
 
-    /** How full its FE store is. */
     @Override
-    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, net.minecraft.core.Direction direction) {
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
         return level.getBlockEntity(pos) instanceof ComparatorSource source ? source.comparatorSignal() : 0;
     }
 
@@ -74,7 +74,7 @@ public class GeneratorBlock extends BaseEntityBlock {
 
     // 26.1.2: every block still names its codec.
     @Override
-    protected com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.block.BaseEntityBlock> codec() {
+    protected MapCodec<? extends BaseEntityBlock> codec() {
         return simpleCodec(GeneratorBlock::new);
     }
 }

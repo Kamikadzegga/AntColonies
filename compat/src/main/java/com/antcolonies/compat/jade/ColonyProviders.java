@@ -3,8 +3,12 @@ package com.antcolonies.compat.jade;
 import java.util.Locale;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.colony.model.ForagingMode;
+import com.antcolonies.colony.model.StructureKind;
+import com.antcolonies.content.blockentity.CentrifugeBlockEntity;
 import com.antcolonies.content.blockentity.GeneratorBlockEntity;
 import com.antcolonies.content.blockentity.GeneticLabBlockEntity;
+import com.antcolonies.content.blockentity.HomeNestBlockEntity;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.colony.model.Colony;
@@ -13,12 +17,14 @@ import com.antcolonies.colony.genetics.Trait;
 import com.antcolonies.content.item.Tooltips;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import com.antcolonies.content.block.WildNestBlock;
 import com.antcolonies.content.entity.WildAnt;
+import net.minecraft.world.item.DyeColor;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.EntityAccessor;
 import snownee.jade.api.IEntityComponentProvider;
@@ -89,14 +95,14 @@ final class ColonyProviders {
             data.putInt("capacity", structure.capacity());
             data.putDouble("rate", structure.rate());
             data.putInt("status", structure.siteStatus() | structure.rearingStatus());
-            if (structure.kind() == com.antcolonies.colony.model.StructureKind.FORAGING_SITE) {
+            if (structure.kind() == StructureKind.FORAGING_SITE) {
                 data.putInt("mode", structure.mode().ordinal());
             }
             if (structure.kind().expedition()) {
                 // Active (ants out through the portal), or which ants it needs.
                 data.putBoolean("expedition", true);
             }
-            if (structure.kind() == com.antcolonies.colony.model.StructureKind.LIQUID_CHAMBER) {
+            if (structure.kind() == StructureKind.LIQUID_CHAMBER) {
                 data.putBoolean("liquid", true);
             }
             var connector = structure.connector();
@@ -128,7 +134,7 @@ final class ColonyProviders {
             if (data.contains("channel")) {
                 // A Colony Connector: its channel, what it does, what it moved.
                 tooltip.add(Component.translatable("gui.antcolonies.network.channel", Component.translatable("color.minecraft."
-                        + net.minecraft.world.item.DyeColor.byId(data.getIntOr("channel", 0)).getName())).withStyle(ChatFormatting.GRAY));
+                        + DyeColor.byId(data.getIntOr("channel", 0)).getName())).withStyle(ChatFormatting.GRAY));
                 String[] foodModes = {"off", "supply", "request"};
                 String[] itemModes = {"off", "send", "receive"};
                 tooltip.add(Component.translatable("gui.antcolonies.connector.food").append(": ")
@@ -143,7 +149,7 @@ final class ColonyProviders {
                         rate(data.getDoubleOr("items", 0))).withStyle(ChatFormatting.GRAY));
             }
             if (data.contains("mode")) {
-                tooltip.add(Component.translatable(com.antcolonies.colony.model.ForagingMode.byId(data.getIntOr("mode", 0)).translationKey())
+                tooltip.add(Component.translatable(ForagingMode.byId(data.getIntOr("mode", 0)).translationKey())
                         .withStyle(ChatFormatting.AQUA));
             }
             if (data.getBooleanOr("expedition", false)) {
@@ -183,15 +189,15 @@ final class ColonyProviders {
                     data.putInt("progress",
                             (int) Math.round(Math.clamp(labData.get(GeneticLabBlockEntity.DATA_PROGRESS) / (double) time, 0, 1) * 100));
                 }
-            } else if (accessor.getBlockEntity() instanceof com.antcolonies.content.blockentity.CentrifugeBlockEntity centrifuge) {
+            } else if (accessor.getBlockEntity() instanceof CentrifugeBlockEntity centrifuge) {
                 // What it is doing, and what its tank holds (Jade draws the FE bar itself).
                 data.putInt("energy", centrifuge.energy());
                 data.putInt("centrifuge", centrifuge.status().ordinal());
                 var fluid = centrifuge.fluid();
-                data.putInt("fluid", fluid.isEmpty() ? -1 : net.minecraft.core.registries.BuiltInRegistries.FLUID.getId(fluid.getFluid()));
+                data.putInt("fluid", fluid.isEmpty() ? -1 : BuiltInRegistries.FLUID.getId(fluid.getFluid()));
                 data.putInt("amount", fluid.getAmount());
                 data.putInt("tank", centrifuge.tankCapacity());
-                data.putInt("making", centrifuge.data().get(com.antcolonies.content.blockentity.CentrifugeBlockEntity.DATA_MAKING));
+                data.putInt("making", centrifuge.data().get(CentrifugeBlockEntity.DATA_MAKING));
             }
         }
 
@@ -206,17 +212,17 @@ final class ColonyProviders {
             }
             if (data.contains("centrifuge")) {
                 // A Droplet Centrifuge: what it is doing, and its tank.
-                var status = com.antcolonies.content.blockentity.CentrifugeBlockEntity.Status.byId(data.getIntOr("centrifuge", 0));
-                var making = com.antcolonies.content.blockentity.CentrifugeBlockEntity.fluidById(data.getIntOr("making", -1));
-                var held = com.antcolonies.content.blockentity.CentrifugeBlockEntity.fluidById(data.getIntOr("fluid", -1));
+                var status = CentrifugeBlockEntity.Status.byId(data.getIntOr("centrifuge", 0));
+                var making = CentrifugeBlockEntity.fluidById(data.getIntOr("making", -1));
+                var held = CentrifugeBlockEntity.fluidById(data.getIntOr("fluid", -1));
                 Component line = switch (status) {
                     case WORKING -> Component.translatable(status.translationKey(), making.getFluidType().getDescription());
                     case BLOCKED -> Component.translatable(status.translationKey(), held.getFluidType().getDescription());
                     default -> Component.translatable(status.translationKey());
                 };
-                tooltip.add(line.copy().withStyle(status == com.antcolonies.content.blockentity.CentrifugeBlockEntity.Status.WORKING
+                tooltip.add(line.copy().withStyle(status == CentrifugeBlockEntity.Status.WORKING
                         ? ChatFormatting.GREEN
-                        : status == com.antcolonies.content.blockentity.CentrifugeBlockEntity.Status.IDLE ? ChatFormatting.GRAY
+                        : status == CentrifugeBlockEntity.Status.IDLE ? ChatFormatting.GRAY
                         : ChatFormatting.GOLD));
                 // (Jade draws the tank and the FE store itself, from the block's fluid and energy handlers.)
                 return;
@@ -247,7 +253,7 @@ final class ColonyProviders {
                     .append(Component.translatable("caste.antcolonies." + ant.caste().getSerializedName())));
             if (ant.rank() != WildAnt.Rank.NORMAL) {
                 tooltip.add(Component.translatable("jade.antcolonies.rank."
-                        + ant.rank().name().toLowerCase(java.util.Locale.ROOT)).withStyle(ChatFormatting.GOLD));
+                        + ant.rank().name().toLowerCase(Locale.ROOT)).withStyle(ChatFormatting.GOLD));
             }
             Tooltips.speciesFacts(accessor.getLevel().registryAccess(), ant.species(), tooltip::add, false);
             tooltip.add(Component.translatable("jade.antcolonies.catch").withStyle(ChatFormatting.DARK_GRAY));
@@ -263,7 +269,7 @@ final class ColonyProviders {
     static final Server NEST_DATA = new Server("wild_nest") {
         @Override
         public void appendServerData(CompoundTag data, BlockAccessor accessor) {
-            if (accessor.getBlockEntity() instanceof com.antcolonies.content.blockentity.HomeNestBlockEntity home) {
+            if (accessor.getBlockEntity() instanceof HomeNestBlockEntity home) {
                 data.putInt("inside", home.inside());
                 data.putInt("out", home.out());
                 int stored = 0;

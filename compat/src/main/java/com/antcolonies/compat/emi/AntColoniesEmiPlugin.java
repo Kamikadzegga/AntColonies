@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import com.antcolonies.AntColonies;
 import com.antcolonies.colony.model.StructureKind;
+import com.antcolonies.colony.upgrade.UpgradeType;
 import com.antcolonies.compat.recipes.AntRecipe;
 import com.antcolonies.compat.recipes.AntRecipes;
 import com.antcolonies.colony.genetics.QueenData;
@@ -13,6 +14,7 @@ import com.antcolonies.content.item.AntSample;
 import com.antcolonies.content.item.SpeciesUpgrade;
 import com.antcolonies.core.registry.ModBlocks;
 import com.antcolonies.core.registry.ModDataComponents;
+import com.antcolonies.core.registry.ModDecor;
 import com.antcolonies.core.registry.ModItems;
 
 import dev.emi.emi.api.EmiEntrypoint;
@@ -59,7 +61,7 @@ public class AntColoniesEmiPlugin implements EmiPlugin {
                 new Kind("trait", ModItems.GENETIC_ANALYZER.get(), 1, 3, AntRecipes::traits, ModItems.GENETIC_LAB.get(),
                         ModItems.GENETIC_ANALYZER.get()),
                 new Kind("species_upgrade", ModItems.UPGRADE_STATION.get(), 1, 2, AntRecipes::speciesUpgrades, ModItems.UPGRADE_STATION.get()),
-                new Kind("colony_upgrade", ModItems.upgrade(com.antcolonies.colony.upgrade.UpgradeType.SPEED, 1), 2, 9, AntRecipes::colonyUpgrades));
+                new Kind("colony_upgrade", ModItems.upgrade(UpgradeType.SPEED, 1), 2, 9, AntRecipes::colonyUpgrades));
     }
 
     private static ItemLike structure(StructureKind kind) {
@@ -69,11 +71,11 @@ public class AntColoniesEmiPlugin implements EmiPlugin {
     @Override
     public void register(EmiRegistry registry) {
         // The creative tab's icon item is not an ingredient of anything.
-        registry.removeEmiStacks(dev.emi.emi.api.stack.EmiStack.of(ModItems.ANT_HEAD.get()));
+        registry.removeEmiStacks(EmiStack.of(ModItems.ANT_HEAD.get()));
         // The Formicarium was the Terrarium: a search for the old word still finds it and its glass.
         Component alias = Component.translatable("alias.antcolonies.terrarium");
         registry.addAlias(EmiStack.of(ModItems.TERRARIUM.get()), alias);
-        registry.addAlias(EmiStack.of(com.antcolonies.core.registry.ModDecor.TERRARIUM_GLASS.asItem()), alias);
+        registry.addAlias(EmiStack.of(ModDecor.TERRARIUM_GLASS.asItem()), alias);
         var level = Objects.requireNonNull(Minecraft.getInstance().level, "EMI registers recipes in a world");
         AntRecipes recipes = new AntRecipes(level.registryAccess());
         for (Kind kind : kinds()) {

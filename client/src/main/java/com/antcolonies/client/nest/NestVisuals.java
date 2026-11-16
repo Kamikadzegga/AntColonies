@@ -144,7 +144,7 @@ public final class NestVisuals {
         this.random = RandomSource.create(seed);
     }
 
-    // ------------------------------------------------------------------ Following the colony
+    // --- Following the colony ---
 
     public void tick(Brief brief, Host host, boolean animate) {
         age++;
@@ -277,7 +277,7 @@ public final class NestVisuals {
         actor.goal = -1;
     }
 
-    // ------------------------------------------------------------------ Walking
+    // --- Walking ---
 
     private void step(Actor actor, Brief brief, Host host, float hunger) {
         NestLayout layout = this.layout;
@@ -411,7 +411,7 @@ public final class NestVisuals {
         }
     }
 
-    // ------------------------------------------------------------------ What the ants are about
+    // --- What the ants are about ---
 
     /** Where an ant with nowhere to go goes next. */
     private void choose(Actor actor, Brief brief, Host host) {
@@ -712,7 +712,7 @@ public final class NestVisuals {
         evolutionGlow = 1;
     }
 
-    // ------------------------------------------------------------------ The Queen
+    // --- The Queen ---
 
     /** Half the Queen's length on the face, px (NestRenderer draws her 1.75 times a worker's 1.9 px). */
     private static final float QUEEN_HALF = 1.75F * 1.9F / 2;

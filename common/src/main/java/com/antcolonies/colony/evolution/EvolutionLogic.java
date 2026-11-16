@@ -9,9 +9,12 @@ import com.antcolonies.colony.genetics.Trait;
 import com.antcolonies.core.registry.ModRegistries;
 
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 /** Feeding a Queen evolution materials: one item is absorbed per attempt, and an attempt may evolve her. */
@@ -35,7 +38,7 @@ public final class EvolutionLogic {
         if (stack.isEmpty()) {
             return null;
         }
-        Optional<? extends net.minecraft.core.HolderLookup.RegistryLookup<Evolution>> lookup = registries.lookup(ModRegistries.EVOLUTION);
+        Optional<? extends HolderLookup.RegistryLookup<Evolution>> lookup = registries.lookup(ModRegistries.EVOLUTION);
         return lookup.flatMap(l -> l.listElements().map(Holder::value)
                 .filter(evolution -> evolution.from().equals(colony.species()) && evolution.item().test(stack)
                         && ModRegistries.species(registries, evolution.to()) != null)
@@ -52,7 +55,7 @@ public final class EvolutionLogic {
 
     /** One attempt with one item of {@code stack} (the caller removes the item when the result says it was used). */
     public static Result attempt(RegistryAccess registries, Colony colony, ItemStack stack, int evolutionUpgradeTiers,
-                                 net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension, RandomSource random) {
+                                 ResourceKey<Level> dimension, RandomSource random) {
         QueenData queen = colony.queen();
         if (queen == null) {
             return new Result(Outcome.NONE, null);

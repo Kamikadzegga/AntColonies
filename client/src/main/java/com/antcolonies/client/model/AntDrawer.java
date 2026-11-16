@@ -1,6 +1,7 @@
 package com.antcolonies.client.model;
 
 import java.util.EnumMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import com.antcolonies.AntColonies;
@@ -9,7 +10,9 @@ import com.antcolonies.colony.species.Caste;
 import com.antcolonies.colony.species.Pattern;
 import com.mojang.blaze3d.vertex.PoseStack;
 
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -48,7 +51,7 @@ public final class AntDrawer {
     }
 
     private final Map<Caste, AntModel> models = new EnumMap<>(Caste.class);
-    private final net.minecraft.client.model.geom.ModelPart carried;
+    private final ModelPart carried;
 
     public AntDrawer(EntityModelSet models) {
         this.models.put(Caste.WORKER, new AntModel(models.bakeLayer(AntModel.WORKER), Caste.WORKER));
@@ -124,24 +127,24 @@ public final class AntDrawer {
     }
 
     /** One part of an ant model, posed as this ant when it is drawn. Same arguments as submitModelPart. */
-    private void submit(SubmitNodeCollector collector, AntPose pose, AntModel model, net.minecraft.client.model.geom.ModelPart part, PoseStack poseStack,
+    private void submit(SubmitNodeCollector collector, AntPose pose, AntModel model, ModelPart part, PoseStack poseStack,
                         RenderType type, int light, int overlay, Object uv, int tint) {
         submit(collector, pose, model, part, poseStack, type, light, overlay, uv, tint, 0);
     }
 
-    private void submit(SubmitNodeCollector collector, AntPose pose, AntModel model, net.minecraft.client.model.geom.ModelPart part, PoseStack poseStack,
+    private void submit(SubmitNodeCollector collector, AntPose pose, AntModel model, ModelPart part, PoseStack poseStack,
                         RenderType type, int light, int overlay, Object uv, int tint, int outline) {
         Posed posed = posedParts.computeIfAbsent(part, p -> new Posed(model, p));
         collector.submitModel(posed, pose, poseStack, type, light, overlay, tint, null, outline, null);
     }
 
     /** Each ant model part wrapped as a model of its own, which poses the ant right before it is drawn. */
-    private final Map<net.minecraft.client.model.geom.ModelPart, Posed> posedParts = new java.util.IdentityHashMap<>();
+    private final Map<ModelPart, Posed> posedParts = new IdentityHashMap<>();
 
-    private static final class Posed extends net.minecraft.client.model.Model<AntPose> {
+    private static final class Posed extends Model<AntPose> {
         private final AntModel ant;
 
-        Posed(AntModel ant, net.minecraft.client.model.geom.ModelPart part) {
+        Posed(AntModel ant, ModelPart part) {
             super(part, texture -> RenderTypes.entityCutout(texture));
             this.ant = ant;
         }

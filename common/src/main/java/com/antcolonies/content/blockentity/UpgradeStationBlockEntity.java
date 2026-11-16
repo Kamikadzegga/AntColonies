@@ -1,5 +1,6 @@
 package com.antcolonies.content.blockentity;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -102,7 +103,7 @@ public class UpgradeStationBlockEntity extends BlockEntity implements Container,
 
     /** Every species with a signature material, for JEI. */
     public static Map<Identifier, AntSpecies> withSignatures(HolderLookup.Provider registries) {
-        java.util.LinkedHashMap<Identifier, AntSpecies> map = new java.util.LinkedHashMap<>();
+        LinkedHashMap<Identifier, AntSpecies> map = new LinkedHashMap<>();
         registries.lookup(ModRegistries.SPECIES).ifPresent(lookup -> lookup.listElements()
                 .filter(entry -> entry.value().signature().isPresent())
                 .forEach(entry -> map.put(entry.key().identifier(), entry.value())));

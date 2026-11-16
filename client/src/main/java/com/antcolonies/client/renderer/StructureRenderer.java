@@ -6,6 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.antcolonies.client.ClientHooks;
+import com.antcolonies.client.nest.NestVisuals;
+import com.antcolonies.colony.species.Climate;
+import com.antcolonies.content.block.ColonyEntityBlock;
+import com.antcolonies.content.block.ColonyPartBlock;
+import com.antcolonies.content.block.ExpeditionSiteBlock;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.client.ClientSpecies;
@@ -63,8 +69,8 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         /** On the ground: the colony's soil under the chamber, run on into the blocks it joins (FlatGround). */
         final FlatGround.Shape shape = new FlatGround.Shape();
         final boolean[] facing = new boolean[4];
-        int soil = FlatGround.soilColor(com.antcolonies.colony.species.Climate.TEMPERATE);
-        int top = FlatGround.topColor(com.antcolonies.colony.species.Climate.TEMPERATE);
+        int soil = FlatGround.soilColor(Climate.TEMPERATE);
+        int top = FlatGround.topColor(Climate.TEMPERATE);
         /** Ants walking the tunnels behind the glass: the chamber belongs to a colony with ants. */
         boolean wallAnts;
         AntLook wallLook = AntLook.UNKNOWN;
@@ -87,13 +93,13 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
     public void extractRenderState(StructureBlockEntity structure, State state, float partialTicks, Vec3 camera,
                                    ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(structure, state, partialTicks, camera, breakProgress);
-        state.upright = com.antcolonies.content.block.ColonyPartBlock.upright(structure.getBlockState());
+        state.upright = ColonyPartBlock.upright(structure.getBlockState());
         if (state.upright) {
             extractNest(structure, state.nest, partialTicks, camera);
             return;
         }
         state.kind = structure.kind();
-        state.time = structure.getLevel() == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(structure.getLevel().getGameTime(), partialTicks);
+        state.time = structure.getLevel() == null ? 0 : ClientHooks.animationTime(structure.getLevel().getGameTime(), partialTicks);
         state.seed = structure.getBlockPos().asLong();
         double distance = AntConfig.client(AntConfig.VISUAL_DISTANCE);
         state.near = Vec3.atCenterOf(structure.getBlockPos()).distanceToSqr(camera) < distance * distance;
@@ -104,9 +110,9 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             FlatGround.extract(state.shape, structure.getLevel(), structure.getBlockPos(), structure.getBlockState());
         }
         FlatGround.facing(state.facing, (camera.x - structure.getBlockPos().getX()) * 16, (camera.z - structure.getBlockPos().getZ()) * 16);
-        var colony = structure.clientLinked() ? com.antcolonies.client.ClientHooks.colonyOf(structure) : null;
+        var colony = structure.clientLinked() ? ClientHooks.colonyOf(structure) : null;
         AntSpecies colonySpecies = colony == null ? null : ClientSpecies.get(colony.species());
-        com.antcolonies.colony.species.Climate climate = colonySpecies == null ? com.antcolonies.colony.species.Climate.TEMPERATE : colonySpecies.climate();
+        Climate climate = colonySpecies == null ? Climate.TEMPERATE : colonySpecies.climate();
         state.soil = FlatGround.soilColor(climate);
         state.top = FlatGround.topColor(climate);
         state.wallAnts = state.near && colony != null && colony.adults() > 0 && AntConfig.client(AntConfig.STRUCTURE_ANTS);
@@ -261,20 +267,20 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
     /** A chamber in a stack: its own chamber in the upright nest, the ants at work there, the Storage's items on its shelves. */
     private void extractNest(StructureBlockEntity structure, NestRenderer.State nest, float partialTicks, Vec3 camera) {
         var block = structure.getBlockState();
-        NestRenderer.extract(nest, structure.getBlockPos(), structure.getLevel(), block.getValue(com.antcolonies.content.block.ColonyEntityBlock.FACING), camera,
+        NestRenderer.extract(nest, structure.getBlockPos(), structure.getLevel(), block.getValue(ColonyEntityBlock.FACING), camera,
                 partialTicks, AntConfig.client(AntConfig.VISUAL_DISTANCE));
-        nest.visuals = structure.clientVisuals instanceof com.antcolonies.client.nest.NestVisuals visuals ? visuals : null;
+        nest.visuals = structure.clientVisuals instanceof NestVisuals visuals ? visuals : null;
         nest.layout = nest.visuals == null ? null : nest.visuals.layout;
-        var colony = com.antcolonies.client.ClientHooks.colonyOf(structure);
+        var colony = ClientHooks.colonyOf(structure);
         AntSpecies species = colony == null ? null : ClientSpecies.get(colony.species());
         AntSpecies former = colony == null ? null : ClientSpecies.get(colony.formerSpecies());
-        nest.climate = species == null ? com.antcolonies.colony.species.Climate.TEMPERATE : species.climate();
+        nest.climate = species == null ? Climate.TEMPERATE : species.climate();
         nest.look = species == null ? AntLook.UNKNOWN : species.look();
         nest.former = former == null ? nest.look : former.look();
         nest.queen = false;
         nest.stage = 1;
         nest.linked = structure.clientLinked();
-        nest.lit = block.hasProperty(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE) && block.getValue(com.antcolonies.content.block.ExpeditionSiteBlock.ACTIVE);
+        nest.lit = block.hasProperty(ExpeditionSiteBlock.ACTIVE) && block.getValue(ExpeditionSiteBlock.ACTIVE);
         nest.shown = nest.linked && structure.kind().job().any() && structure.assigned() > 0
                 ? (int) Math.min(6, 1 + Math.floor(Math.log(structure.assigned()) / Math.log(2.5))) : 0;
         nest.items.clear();

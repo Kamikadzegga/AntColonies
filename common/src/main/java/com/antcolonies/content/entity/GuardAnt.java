@@ -11,6 +11,7 @@ import com.antcolonies.colony.species.Caste;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -191,7 +192,7 @@ public class GuardAnt extends TamableAnimal implements AntLike {
                 ItemStack tube = new ItemStack(ModItems.GUARD_ANT.get());
                 tube.set(ModDataComponents.GUARD.get(), toData());
                 if (hasCustomName()) {
-                    tube.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, getCustomName());
+                    tube.set(DataComponents.CUSTOM_NAME, getCustomName());
                 }
                 player.getInventory().placeItemBackInInventory(tube);
                 discard();

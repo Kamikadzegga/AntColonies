@@ -1,18 +1,30 @@
 package com.antcolonies.content.block;
 
+import com.antcolonies.colony.evolution.EvolutionLogic;
+import com.antcolonies.colony.genetics.Trait;
+import com.antcolonies.colony.model.Colony;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.client.ClientHooks;
+import com.antcolonies.content.item.GuardData;
+import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.core.registry.ModBlockEntities;
+import com.antcolonies.core.registry.ModDataMaps;
 import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModDataComponents;
+import com.antcolonies.core.registry.ModRegistries;
 
+import com.mojang.serialization.MapCodec;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -24,7 +36,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 
-/** The Terrarium: a glass formicarium with a living colony inside. */
 public class TerrariumBlock extends ColonyPartBlock {
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 16, 16);
 
@@ -61,7 +72,7 @@ public class TerrariumBlock extends ColonyPartBlock {
             return InteractionResult.PASS;
         }
         if (stack.is(ModItems.RALLY_PHEROMONE.get())) {
-            if (level instanceof net.minecraft.server.level.ServerLevel) {
+            if (level instanceof ServerLevel) {
                 recruitGuard(terrarium, player, stack);
             }
             return InteractionResult.SUCCESS;
@@ -84,8 +95,8 @@ public class TerrariumBlock extends ColonyPartBlock {
         slot = terrarium.isFeed(stack) ? TerrariumBlockEntity.SLOT_FEED : TerrariumBlockEntity.SLOT_FOOD;
         ItemStack inSlot = terrarium.getItem(slot);
         boolean feedable = stack.has(ModDataComponents.ANTS.get()) || stack.is(ModItems.ANT_EGG.get()) || stack.is(ModItems.ANT_LARVA.get())
-                || stack.is(ModItems.EVOLUTION_CATALYST.get()) || com.antcolonies.core.registry.ModDataMaps.food(stack) != null
-                || com.antcolonies.colony.evolution.EvolutionLogic.find(level.registryAccess(), terrarium.colony(), stack) != null;
+                || stack.is(ModItems.EVOLUTION_CATALYST.get()) || ModDataMaps.food(stack) != null
+                || EvolutionLogic.find(level.registryAccess(), terrarium.colony(), stack) != null;
         if (!feedable) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
@@ -94,7 +105,7 @@ public class TerrariumBlock extends ColonyPartBlock {
         }
         if (!level.isClientSide()) {
             int room = stack.getMaxStackSize() - inSlot.getCount();
-            int moved = Math.min(room, player.isCreative() ? stack.getCount() : stack.getCount());
+            int moved = Math.min(room, stack.getCount());
             if (moved > 0) {
                 ItemStack put = stack.copyWithCount(inSlot.getCount() + moved);
                 if (!player.isCreative()) {
@@ -108,31 +119,31 @@ public class TerrariumBlock extends ColonyPartBlock {
 
     /** A Rally Pheromone used on a Terrarium: a hunter colony gives up ants for one Guard Ant of its Queen's Hunting Strength. */
     public static boolean recruitGuard(TerrariumBlockEntity terrarium, Player player, ItemStack pheromone) {
-        com.antcolonies.colony.model.Colony colony = terrarium.colony();
-        int cost = com.antcolonies.core.config.AntConfig.get(com.antcolonies.core.config.AntConfig.GUARD_COST);
+        Colony colony = terrarium.colony();
+        int cost = AntConfig.get(AntConfig.GUARD_COST);
         if (colony.queen() == null) {
-            player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable("message.antcolonies.guard.no_queen")
-                    .withStyle(net.minecraft.ChatFormatting.RED));
+            player.sendOverlayMessage(Component.translatable("message.antcolonies.guard.no_queen")
+                    .withStyle(ChatFormatting.RED));
             return false;
         }
-        var species = com.antcolonies.core.registry.ModRegistries.species(terrarium.getLevel() == null ? null : terrarium.getLevel().registryAccess(), colony.species());
+        var species = ModRegistries.species(terrarium.getLevel() == null ? null : terrarium.getLevel().registryAccess(), colony.species());
         if (species == null || !species.canHunt()) {
-            player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable("message.antcolonies.guard.not_hunters")
-                    .withStyle(net.minecraft.ChatFormatting.RED));
+            player.sendOverlayMessage(Component.translatable("message.antcolonies.guard.not_hunters")
+                    .withStyle(ChatFormatting.RED));
             return false;
         }
         if (!colony.takeWorkers(cost)) {
-            player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable("message.antcolonies.guard.ants", cost, colony.workers())
-                    .withStyle(net.minecraft.ChatFormatting.RED));
+            player.sendOverlayMessage(Component.translatable("message.antcolonies.guard.ants", cost, colony.workers())
+                    .withStyle(ChatFormatting.RED));
             return false;
         }
-        int strength = colony.queen().genome().level(com.antcolonies.colony.genetics.Trait.SOLDIER_STRENGTH);
+        int strength = colony.queen().genome().level(Trait.SOLDIER_STRENGTH);
         ItemStack tube = new ItemStack(ModItems.GUARD_ANT.get());
-        tube.set(ModDataComponents.GUARD.get(), new com.antcolonies.content.item.GuardData(colony.species(), Math.clamp(strength, 1, 10), -1));
+        tube.set(ModDataComponents.GUARD.get(), new GuardData(colony.species(), Math.clamp(strength, 1, 10), -1));
         pheromone.consume(1, player);
         player.getInventory().placeItemBackInInventory(tube);
-        player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable("message.antcolonies.guard.recruited", cost)
-                .withStyle(net.minecraft.ChatFormatting.GREEN));
+        player.sendOverlayMessage(Component.translatable("message.antcolonies.guard.recruited", cost)
+                .withStyle(ChatFormatting.GREEN));
         terrarium.setChanged();
         terrarium.syncNow();
         return true;
@@ -145,7 +156,7 @@ public class TerrariumBlock extends ColonyPartBlock {
 
     // 26.1.2: every block still names its codec.
     @Override
-    protected com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.block.BaseEntityBlock> codec() {
+    protected MapCodec<? extends BaseEntityBlock> codec() {
         return simpleCodec(TerrariumBlock::new);
     }
 }

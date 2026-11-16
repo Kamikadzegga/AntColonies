@@ -2,6 +2,7 @@ package com.antcolonies.client.model;
 
 import com.antcolonies.AntColonies;
 
+import java.util.function.Supplier;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -91,7 +92,7 @@ public final class ChitinHelmetModel {
         wings = new HumanoidModel<>(models.bakeLayer(WINGS));
     }
 
-    private static IClientItemExtensions extensions(java.util.function.Supplier<@Nullable HumanoidModel<HumanoidRenderState>> model) {
+    private static IClientItemExtensions extensions(Supplier<@Nullable HumanoidModel<HumanoidRenderState>> model) {
         return new IClientItemExtensions() {
             @Override
             public Model getHumanoidArmorModel(ItemStack stack, EquipmentClientInfo.LayerType layerType, Model original) {

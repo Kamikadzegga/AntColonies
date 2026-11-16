@@ -3,6 +3,8 @@ package com.antcolonies.core.registry;
 import java.util.function.Supplier;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.content.menu.CentrifugeMenu;
+import com.antcolonies.content.menu.GeneratorMenu;
 import com.antcolonies.content.menu.GeneticLabMenu;
 import com.antcolonies.content.menu.StructureMenu;
 import com.antcolonies.content.menu.TerrariumMenu;
@@ -25,11 +27,11 @@ public final class ModMenus {
     public static final Supplier<MenuType<UpgradeStationMenu>> UPGRADE_STATION = MENUS.register("upgrade_station",
             () -> IMenuTypeExtension.create(UpgradeStationMenu::fromNetwork));
 
-    public static final Supplier<MenuType<com.antcolonies.content.menu.GeneratorMenu>> GENERATOR = MENUS.register("generator",
-            () -> IMenuTypeExtension.create(com.antcolonies.content.menu.GeneratorMenu::fromNetwork));
+    public static final Supplier<MenuType<GeneratorMenu>> GENERATOR = MENUS.register("generator",
+            () -> IMenuTypeExtension.create(GeneratorMenu::fromNetwork));
 
-    public static final Supplier<MenuType<com.antcolonies.content.menu.CentrifugeMenu>> CENTRIFUGE = MENUS.register("centrifuge",
-            () -> IMenuTypeExtension.create(com.antcolonies.content.menu.CentrifugeMenu::fromNetwork));
+    public static final Supplier<MenuType<CentrifugeMenu>> CENTRIFUGE = MENUS.register("centrifuge",
+            () -> IMenuTypeExtension.create(CentrifugeMenu::fromNetwork));
 
     private ModMenus() {}
 }

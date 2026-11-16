@@ -1,5 +1,6 @@
 package com.antcolonies.content.blockentity;
 
+import com.antcolonies.content.block.ComparatorSource;
 import com.antcolonies.content.block.GeneratorBlock;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.content.menu.GeneratorMenu;
@@ -32,11 +33,11 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.jspecify.annotations.Nullable;
 
 /** The Generator: burns furnace fuel into FE and gives it to every neighbour that takes energy. */
-public class GeneratorBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, com.antcolonies.content.block.ComparatorSource {
+public class GeneratorBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, ComparatorSource {
     /** Comparators read how full the FE buffer is. */
     @Override
     public int comparatorSignal() {
-        return com.antcolonies.content.block.ComparatorSource.fill(energy.getAmountAsInt(), energy.getCapacityAsInt());
+        return ComparatorSource.fill(energy.getAmountAsInt(), energy.getCapacityAsInt());
     }
 
     /** FE a Generator stores (config generatorCapacity). */

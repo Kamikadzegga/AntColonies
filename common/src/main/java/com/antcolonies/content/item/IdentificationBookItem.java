@@ -1,5 +1,7 @@
 package com.antcolonies.content.item;
 
+import com.antcolonies.client.ClientHooks;
+
 import java.util.function.Consumer;
 
 import net.minecraft.ChatFormatting;
@@ -22,7 +24,7 @@ public class IdentificationBookItem extends Item {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (level.isClientSide()) {
-            com.antcolonies.client.ClientHooks.openBook();
+            ClientHooks.openBook();
         }
         return InteractionResult.SUCCESS;
     }

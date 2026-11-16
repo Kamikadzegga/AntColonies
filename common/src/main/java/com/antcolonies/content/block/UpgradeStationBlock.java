@@ -2,6 +2,7 @@ package com.antcolonies.content.block;
 
 import com.antcolonies.content.blockentity.UpgradeStationBlockEntity;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -15,7 +16,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-/** The Upgrade Station: a workbench for species upgrades. */
 public class UpgradeStationBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 13, 16);
 
@@ -43,7 +43,7 @@ public class UpgradeStationBlock extends BaseEntityBlock {
 
     // 26.1.2: every block still names its codec.
     @Override
-    protected com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.block.BaseEntityBlock> codec() {
+    protected MapCodec<? extends BaseEntityBlock> codec() {
         return simpleCodec(UpgradeStationBlock::new);
     }
 }

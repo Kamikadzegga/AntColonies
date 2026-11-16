@@ -125,7 +125,7 @@ public final class NestLayout {
     private final Random random;
     private int[][] distances;
 
-    // ------------------------------------------------------------------ The chambers, drawn by hand
+    // --- The chambers, drawn by hand ---
     //
     // Rows from the top down. '.' is solid; every other character is carved. Letters mark what is there:
     //   q the Queen           e brood (eggs, larvae)     c food crumbs or finds     w waste
@@ -297,7 +297,7 @@ public final class NestLayout {
         }
     }
 
-    // ------------------------------------------------------------------ Chambers
+    // --- Chambers ---
 
     /** Carves a template with its lower left cell at (x0, v0); returns its node. */
     private int stamp(String[] rows, int x0, int v0, boolean mirror, Spot spot) {
@@ -440,13 +440,12 @@ public final class NestLayout {
         route(index, List.of(start), point, -1);
     }
 
-    /** A tunnel between two chambers. */
     private void tunnel(int from, int to) {
         Node node = nodes.get(from);
         route(from, node.cells, new float[] {node.u, node.v}, to);
     }
 
-    // ------------------------------------------------------------------ Digging a tunnel
+    // --- Digging a tunnel ---
 
     /**
      * Digs a tunnel from the start cells to chamber {@code to} (the nearest when -1), by the cheapest way. It keeps a cell
@@ -591,7 +590,7 @@ public final class NestLayout {
         return line;
     }
 
-    // ------------------------------------------------------------------ For the ants
+    // --- For the ants ---
 
     public boolean carved(int u, int v) {
         return u >= 0 && v >= 0 && u < N && v < N && carved[v * N + u];
@@ -670,7 +669,7 @@ public final class NestLayout {
         return true;
     }
 
-    // ------------------------------------------------------------------ Where the tunnels cross the sides
+    // --- Where the tunnels cross the sides ---
 
     /**
      * Where the tunnel between two touching blocks crosses their shared side, the same for both. {@code lower}: the

@@ -1,5 +1,6 @@
 package com.antcolonies.content.item;
 
+import java.util.Locale;
 import java.util.function.Consumer;
 
 import com.antcolonies.content.blockentity.StructureBlockEntity;
@@ -55,8 +56,8 @@ public class ColonyScannerItem extends Item {
         player.sendSystemMessage(Component.translatable("scanner.antcolonies.population", colony.workers(), colony.larvae(),
                 colony.eggs()).withStyle(ChatFormatting.GRAY));
         player.sendSystemMessage(Component.translatable("scanner.antcolonies.food", (long) colony.food(), (long) colony.stats().foodCapacity(),
-                String.format(java.util.Locale.ROOT, "%.1f", colony.stats().foodIn()),
-                String.format(java.util.Locale.ROOT, "%.1f", colony.stats().foodOut()))
+                String.format(Locale.ROOT, "%.1f", colony.stats().foodIn()),
+                String.format(Locale.ROOT, "%.1f", colony.stats().foodOut()))
                 .withStyle(ChatFormatting.GRAY));
         player.sendSystemMessage(Component.translatable("scanner.antcolonies.health", Math.round(colony.health() * 100), colony.stats().structures())
                 .withStyle(ChatFormatting.GRAY));
@@ -81,7 +82,7 @@ public class ColonyScannerItem extends Item {
                 .withStyle(ChatFormatting.GRAY));
         if (kind.job().any()) {
             player.sendSystemMessage(Component.translatable("scanner.antcolonies.site", structure.assigned(), structure.capacity(),
-                    String.format(java.util.Locale.ROOT, "%.2f", structure.rate())).withStyle(ChatFormatting.GRAY));
+                    String.format(Locale.ROOT, "%.2f", structure.rate())).withStyle(ChatFormatting.GRAY));
         }
         for (ColonyStatus status : ColonyStatus.of(structure.siteStatus())) {
             player.sendSystemMessage(Component.literal(" - ").append(Component.translatable(status.translationKey())).withStyle(status.color()));

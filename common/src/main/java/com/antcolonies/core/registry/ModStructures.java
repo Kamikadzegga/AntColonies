@@ -2,7 +2,9 @@ package com.antcolonies.core.registry;
 
 import com.antcolonies.AntColonies;
 import com.antcolonies.content.worldgen.AnthillPiece;
+import com.antcolonies.content.worldgen.EndAnthill;
 import com.antcolonies.content.worldgen.GiantAnthill;
+import com.antcolonies.content.worldgen.NetherAnthill;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.structure.StructureType;
@@ -19,11 +21,11 @@ public final class ModStructures {
     public static final DeferredHolder<StructureType<?>, StructureType<GiantAnthill>> GIANT_ANTHILL =
             STRUCTURE_TYPES.register("giant_anthill", () -> () -> GiantAnthill.CODEC);
     /** The same nest dug into the Nether's floor (its pieces are the giant anthill's, with a Nether flag). */
-    public static final DeferredHolder<StructureType<?>, StructureType<com.antcolonies.content.worldgen.NetherAnthill>> NETHER_ANTHILL =
-            STRUCTURE_TYPES.register("nether_anthill", () -> () -> com.antcolonies.content.worldgen.NetherAnthill.CODEC);
+    public static final DeferredHolder<StructureType<?>, StructureType<NetherAnthill>> NETHER_ANTHILL =
+            STRUCTURE_TYPES.register("nether_anthill", () -> () -> NetherAnthill.CODEC);
     /** Chorus Ants' nests in the End's outer islands. */
-    public static final DeferredHolder<StructureType<?>, StructureType<com.antcolonies.content.worldgen.EndAnthill>> END_ANTHILL =
-            STRUCTURE_TYPES.register("end_anthill", () -> () -> com.antcolonies.content.worldgen.EndAnthill.CODEC);
+    public static final DeferredHolder<StructureType<?>, StructureType<EndAnthill>> END_ANTHILL =
+            STRUCTURE_TYPES.register("end_anthill", () -> () -> EndAnthill.CODEC);
     public static final DeferredHolder<StructurePieceType, StructurePieceType> ANTHILL_PIECE =
             STRUCTURE_PIECES.register("giant_anthill", () -> (context, tag) -> new AnthillPiece(tag));
 

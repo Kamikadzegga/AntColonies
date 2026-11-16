@@ -1,6 +1,7 @@
 package com.antcolonies.colony.expedition;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.antcolonies.colony.model.StructureKind;
@@ -82,7 +83,7 @@ public record Expedition(StructureKind site, TagKey<AntSpecies> adapted, double 
         return registries.lookup(ModRegistries.SPECIES)
                 .flatMap(lookup -> lookup.get(adapted))
                 .map(set -> set.stream().map(holder -> holder.unwrapKey().map(ResourceKey::identifier).orElse(null))
-                        .filter(java.util.Objects::nonNull).toList())
+                        .filter(Objects::nonNull).toList())
                 .orElse(List.of());
     }
 
@@ -96,7 +97,6 @@ public record Expedition(StructureKind site, TagKey<AntSpecies> adapted, double 
                 .orElse(null);
     }
 
-    /** Every loaded expedition. */
     public static List<Expedition> all(HolderLookup.@Nullable Provider registries) {
         if (registries == null) {
             return List.of();

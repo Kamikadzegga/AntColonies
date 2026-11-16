@@ -1,6 +1,7 @@
 package com.antcolonies.colony.model;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import com.antcolonies.colony.upgrade.UpgradeType;
@@ -117,11 +118,11 @@ public enum StructureKind implements StringRepresentable {
     }
 
     /** All the Foraging Site kinds, in the order the colony hands out its workers to them. */
-    public static final java.util.List<StructureKind> FORAGING_KINDS = java.util.List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE);
+    public static final List<StructureKind> FORAGING_KINDS = List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE);
 
     /** Every job site with a store of its own ({@link #siteStore}), in the order finds overflow into them. */
-    public static final java.util.List<StructureKind> SITE_STORES =
-            java.util.List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER);
+    public static final List<StructureKind> SITE_STORES =
+            List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER);
 
     public String translationKey() {
         return "block.antcolonies." + name;

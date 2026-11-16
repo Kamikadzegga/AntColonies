@@ -7,6 +7,7 @@ import com.antcolonies.content.recipe.CentrifugingRecipe;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.core.registry.ModBlockEntities;
 
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -52,7 +53,6 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
     public enum Status {
         /** Nothing in the slot, nothing in the tank. */
         IDLE,
-        /** Spinning. */
         WORKING,
         /** A droplet waits, but there is not enough FE for the next tick of the run. */
         NO_ENERGY,
@@ -70,7 +70,7 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
         }
 
         public String translationKey() {
-            return "gui.antcolonies.centrifuge.status." + name().toLowerCase(java.util.Locale.ROOT);
+            return "gui.antcolonies.centrifuge.status." + name().toLowerCase(Locale.ROOT);
         }
     }
 

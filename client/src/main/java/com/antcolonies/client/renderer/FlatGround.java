@@ -10,6 +10,7 @@ import com.antcolonies.colony.species.Caste;
 import com.antcolonies.colony.species.Climate;
 import com.antcolonies.content.block.ColonyPartBlock;
 
+import java.util.Random;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
@@ -416,7 +417,7 @@ public final class FlatGround {
     /** A side's tunnels as paths: what a chamber's soil shows behind its glass (the Formicarium has its own, see {@link #exits}). */
     static List<float[][]> chamberPaths(Shape shape, int side, List<float[]> hollows) {
         List<float[][]> paths = new ArrayList<>();
-        java.util.Random random = new java.util.Random(shape.seed * 31 + side * 7919L);
+        Random random = new Random(shape.seed * 31 + side * 7919L);
         float[] mid = {4.5F + random.nextFloat() * 7, 2.8F + random.nextFloat() * (GROUND - 5F)};
         int ends = 0;
         for (int end = 0; end < 2; end++) {
@@ -440,7 +441,7 @@ public final class FlatGround {
     /** The Formicarium's way out on a side: from its nearest tunnel node to each place a tunnel crosses into the next wall. */
     static List<float[][]> exits(Shape shape, int side, TunnelLayout layout) {
         List<float[][]> paths = new ArrayList<>();
-        java.util.Random random = new java.util.Random(shape.seed * 17 + side * 131L);
+        Random random = new Random(shape.seed * 17 + side * 131L);
         for (int end = 0; end < 2; end++) {
             if (Float.isNaN(shape.crossV[side][end])) {
                 continue;
@@ -491,11 +492,9 @@ public final class FlatGround {
                         float u = Mth.lerp(t, path[i - 1][0], path[i][0]);
                         float v = Mth.lerp(t, path[i - 1][1], path[i][1]);
                         float du = path[i][0] - path[i - 1][0];
-                        float dv = path[i][1] - path[i - 1][1];
                         // Walking toward the path's start when coming back.
                         if (back) {
                             du = -du;
-                            dv = -dv;
                         }
                         boolean positive = du >= 0;
                         int frame = Math.floorMod((int) (travel * 1.1F), 4);
@@ -515,7 +514,7 @@ public final class FlatGround {
 
     /** Worn trails on the surface from the block's middle to each joined side, meeting the neighbour's trail at the edge. */
     static void trails(Geometry g, Shape shape, int color) {
-        java.util.Random random = new java.util.Random(shape.seed * 53);
+        Random random = new Random(shape.seed * 53);
         float[] centre = {8 + (random.nextFloat() - 0.5F) * 2.5F, 8 + (random.nextFloat() - 0.5F) * 2.5F};
         float y = GROUND + LIFT + 0.02F;
         float half = 0.75F;
@@ -564,7 +563,7 @@ public final class FlatGround {
 
     /** The middle of a block's trails, where they meet (the Formicarium's main entrance stands there). */
     static float[] trailCentre(Shape shape) {
-        java.util.Random random = new java.util.Random(shape.seed * 53);
+        Random random = new Random(shape.seed * 53);
         return new float[] {8 + (random.nextFloat() - 0.5F) * 2.5F, 8 + (random.nextFloat() - 0.5F) * 2.5F};
     }
 

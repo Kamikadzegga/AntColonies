@@ -3,6 +3,7 @@ package com.antcolonies.content.block;
 import com.antcolonies.content.blockentity.CentrifugeBlockEntity;
 import com.antcolonies.core.registry.ModBlockEntities;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -63,7 +64,6 @@ public class CentrifugeBlock extends BaseEntityBlock {
         return true;
     }
 
-    /** How full its tank is. */
     @Override
     protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
         return level.getBlockEntity(pos) instanceof ComparatorSource source ? source.comparatorSignal() : 0;
@@ -95,7 +95,7 @@ public class CentrifugeBlock extends BaseEntityBlock {
 
     // 26.1.2: every block still names its codec.
     @Override
-    protected com.mojang.serialization.MapCodec<? extends BaseEntityBlock> codec() {
+    protected MapCodec<? extends BaseEntityBlock> codec() {
         return simpleCodec(CentrifugeBlock::new);
     }
 }

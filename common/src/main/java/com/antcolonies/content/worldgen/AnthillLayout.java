@@ -122,7 +122,6 @@ public final class AnthillLayout {
         return size;
     }
 
-    /** Whether the Queen's chamber is a great one (grown nests). */
     public boolean grand() {
         return grand;
     }

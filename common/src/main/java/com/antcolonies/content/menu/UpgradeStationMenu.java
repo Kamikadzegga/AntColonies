@@ -4,11 +4,13 @@ import java.util.Optional;
 
 import com.antcolonies.content.blockentity.UpgradeStationBlockEntity;
 import com.antcolonies.core.registry.ModBlocks;
+import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModMenus;
 import com.antcolonies.colony.upgrade.SpeciesUpgradeKind;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -84,7 +86,7 @@ public class UpgradeStationMenu extends BaseMenu {
     /** Shift-clicking puts an Upgrade Base in the base slot and anything else in the material slot. */
     @Override
     protected boolean quickMovesInto(int slot, ItemStack stack) {
-        boolean base = stack.is(com.antcolonies.core.registry.ModItems.UPGRADE_BASE.get());
+        boolean base = stack.is(ModItems.UPGRADE_BASE.get());
         return slot == 0 ? base : slot != 1 || !base;
     }
 
@@ -123,7 +125,7 @@ public class UpgradeStationMenu extends BaseMenu {
     }
 
     @Override
-    public void slotsChanged(net.minecraft.world.Container container) {
+    public void slotsChanged(Container container) {
         super.slotsChanged(container);
         result.setItem(0, current().map(UpgradeStationBlockEntity.Result::output).orElse(ItemStack.EMPTY));
     }

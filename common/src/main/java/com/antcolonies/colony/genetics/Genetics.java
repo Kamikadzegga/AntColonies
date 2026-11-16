@@ -16,6 +16,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
@@ -104,13 +105,13 @@ public final class Genetics {
     }
 
     /** Whether a mutation is a flaw. Unknown ids (from a removed data pack) count as beneficial. */
-    public static boolean isFlaw(Identifier id, net.minecraft.core.HolderLookup.Provider registries) {
-        return registries.lookup(ModRegistries.MUTATION).flatMap(lookup -> lookup.get(net.minecraft.resources.ResourceKey.create(ModRegistries.MUTATION, id)))
+    public static boolean isFlaw(Identifier id, HolderLookup.Provider registries) {
+        return registries.lookup(ModRegistries.MUTATION).flatMap(lookup -> lookup.get(ResourceKey.create(ModRegistries.MUTATION, id)))
                 .map(mutation -> mutation.value().negative()).orElse(false);
     }
 
     /** How many of these mutations are beneficial (flaws don't count toward the cap). */
-    public static int beneficial(List<Identifier> mutations, net.minecraft.core.HolderLookup.Provider registries) {
+    public static int beneficial(List<Identifier> mutations, HolderLookup.Provider registries) {
         int count = 0;
         for (Identifier id : mutations) {
             if (!isFlaw(id, registries)) {
@@ -121,7 +122,7 @@ public final class Genetics {
     }
 
     /** Whether one more beneficial mutation fits (at most maxBeneficialMutations; their bonuses multiply). */
-    public static boolean roomForBeneficial(List<Identifier> mutations, net.minecraft.core.HolderLookup.Provider registries) {
+    public static boolean roomForBeneficial(List<Identifier> mutations, HolderLookup.Provider registries) {
         return beneficial(mutations, registries) < AntConfig.get(AntConfig.MAX_BENEFICIAL_MUTATIONS);
     }
 
@@ -161,7 +162,7 @@ public final class Genetics {
             return effects;
         }
         for (Identifier id : genome.mutations()) {
-            Optional<Holder.Reference<Mutation>> mutation = lookup.get().get(net.minecraft.resources.ResourceKey.create(ModRegistries.MUTATION, id));
+            Optional<Holder.Reference<Mutation>> mutation = lookup.get().get(ResourceKey.create(ModRegistries.MUTATION, id));
             if (mutation.isPresent()) {
                 effects = effects.and(mutation.get().value().effects());
             }

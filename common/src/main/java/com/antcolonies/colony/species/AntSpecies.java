@@ -14,6 +14,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.material.Fluid;
 
 /**
  * One ant species, as its data file gives it: it decides what a colony produces.
@@ -136,13 +137,11 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
                 Codec.doubleRange(0, 1000).optionalFieldOf("rate", 1.0).forGetter(Liquid::rate)
         ).apply(i, Liquid::new));
 
-        /** The droplet item, if it is registered. */
         public Optional<Item> dropletItem() {
             return BuiltInRegistries.ITEM.getOptional(droplet);
         }
 
-        /** The fluid, if it is registered. */
-        public Optional<net.minecraft.world.level.material.Fluid> fluidValue() {
+        public Optional<Fluid> fluidValue() {
             return BuiltInRegistries.FLUID.getOptional(fluid);
         }
 

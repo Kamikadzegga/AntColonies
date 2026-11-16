@@ -84,7 +84,7 @@ public final class ClientHooks {
         return visuals;
     }
 
-    // ------------------------------------------------------------------ The upright nest (colony blocks in a stack)
+    // --- The upright nest (colony blocks in a stack) ---
 
     /** A stacked Formicarium's tick: its nest follows its colony. */
     private static void nestTick(TerrariumBlockEntity terrarium, Level level) {

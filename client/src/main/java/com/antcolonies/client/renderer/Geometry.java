@@ -96,4 +96,27 @@ public final class Geometry {
         int b = Math.min(255, (int) ((color & 0xFF) * factor));
         return a << 24 | r << 16 | g << 8 | b;
     }
+
+    /** A species color lifted toward white until it reads against the tunnels' dark soil; light colors are left alone. */
+    static int visibleOnDark(int rgb) {
+        int r = (rgb >> 16) & 0xFF;
+        int gr = (rgb >> 8) & 0xFF;
+        int b = rgb & 0xFF;
+        float luma = 0.299F * r + 0.587F * gr + 0.114F * b;
+        float min = 105;
+        if (luma >= min) {
+            return rgb & 0xFFFFFF;
+        }
+        // Scale first (keeps the hue: navy becomes a clear blue, not grey), then blend toward white for what is left.
+        float scale = Math.min(2.6F, min / Math.max(luma, 1));
+        r = Math.min(255, (int) (r * scale));
+        gr = Math.min(255, (int) (gr * scale));
+        b = Math.min(255, (int) (b * scale));
+        luma = 0.299F * r + 0.587F * gr + 0.114F * b;
+        float t = Math.max(0, (min - luma) / (255 - luma));
+        r = (int) (r + (255 - r) * t);
+        gr = (int) (gr + (255 - gr) * t);
+        b = (int) (b + (255 - b) * t);
+        return r << 16 | gr << 8 | b;
+    }
 }

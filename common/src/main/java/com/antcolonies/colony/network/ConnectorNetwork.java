@@ -20,6 +20,7 @@ import com.antcolonies.core.config.AntConfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -307,7 +308,7 @@ public final class ConnectorNetwork {
     }
 
     /** When each colony last heard from each channel (a channel's entries expire when it stops hearing from it). */
-    private static final java.util.WeakHashMap<TerrariumBlockEntity, Map<Integer, Long>> NETWORK_SEEN = new java.util.WeakHashMap<>();
+    private static final WeakHashMap<TerrariumBlockEntity, Map<Integer, Long>> NETWORK_SEEN = new WeakHashMap<>();
 
     /** How long a colony keeps a channel's entries on its Network page after it last heard from it. */
     private static long quietTicks() {

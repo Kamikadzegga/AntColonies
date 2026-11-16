@@ -3,6 +3,7 @@ package com.antcolonies.colony.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Locale;
 import net.minecraft.ChatFormatting;
 
 /** Problems and notes a colony or one of its structures can show, kept as bit flags: one int in saves and packets. */
@@ -63,7 +64,7 @@ public enum ColonyStatus {
     }
 
     public String translationKey() {
-        return "status.antcolonies." + name().toLowerCase(java.util.Locale.ROOT);
+        return "status.antcolonies." + name().toLowerCase(Locale.ROOT);
     }
 
     public static List<ColonyStatus> of(int flags) {

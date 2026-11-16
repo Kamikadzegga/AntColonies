@@ -2,10 +2,13 @@ package com.antcolonies.content.block;
 
 import com.antcolonies.colony.model.StructureKind;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -35,7 +38,7 @@ public class ExpeditionSiteBlock extends StructureBlock {
         }
         // Motes drifting out of the little portal.
         boolean nether = structureKind() == StructureKind.NETHER_FORAGING_SITE;
-        net.minecraft.core.Direction front = state.getValue(FACING);
+        Direction front = state.getValue(FACING);
         if (upright(state)) {
             // In a stack the portal is in the chamber behind the glass: its motes drift out before it, or behind it.
             double side = random.nextBoolean() ? 0.56 : -0.56;
@@ -55,7 +58,7 @@ public class ExpeditionSiteBlock extends StructureBlock {
 
     // 26.1.2: every block still names its codec.
     @Override
-    protected com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.block.BaseEntityBlock> codec() {
+    protected MapCodec<? extends BaseEntityBlock> codec() {
         return simpleCodec(properties -> new ExpeditionSiteBlock(structureKind(), properties));
     }
 }

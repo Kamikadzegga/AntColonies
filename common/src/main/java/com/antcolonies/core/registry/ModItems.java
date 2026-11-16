@@ -1,15 +1,18 @@
 package com.antcolonies.core.registry;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 import com.antcolonies.AntColonies;
-import com.antcolonies.content.block.TerrariumBlock;
 import com.antcolonies.content.item.AntTestTubeItem;
+import com.antcolonies.content.item.BroodClusterItem;
 import com.antcolonies.content.item.ChitinGear;
+import com.antcolonies.content.item.ChitinShieldItem;
 import com.antcolonies.content.item.GuardAntItem;
 import com.antcolonies.content.item.ColonyScannerItem;
 import com.antcolonies.content.item.DescribedItem;
@@ -21,8 +24,11 @@ import com.antcolonies.content.item.TweezersItem;
 import com.antcolonies.content.item.UpgradeItem;
 import com.antcolonies.colony.upgrade.UpgradeType;
 
+import java.util.function.UnaryOperator;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
@@ -30,6 +36,7 @@ import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -70,7 +77,7 @@ public final class ModItems {
     public static final DeferredItem<DescribedItem> INFERNAL_CHITIN = ITEMS.registerItem("infernal_chitin", DescribedItem::new,
             p -> p.fireResistant());
     public static final DeferredItem<DescribedItem> VOID_CHITIN = ITEMS.registerItem("void_chitin", DescribedItem::new,
-            p -> p.rarity(net.minecraft.world.item.Rarity.UNCOMMON));
+            p -> p.rarity(Rarity.UNCOMMON));
     public static final DeferredItem<DescribedItem> UPGRADE_BASE = ITEMS.registerItem("upgrade_base", DescribedItem::new);
     /** Trail pheromones, found only by a colony living in that dimension: the Nether and End Foraging Sites are made from them. */
     public static final DeferredItem<DescribedItem> NETHER_TRAIL_PHEROMONE = ITEMS.registerItem("nether_trail_pheromone", DescribedItem::new,
@@ -123,7 +130,7 @@ public final class ModItems {
                 @Override
                 public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip,
                                             TooltipFlag flag) {
-                    tooltip.accept(Component.translatable("tooltip.antcolonies.terrarium").withStyle(net.minecraft.ChatFormatting.GRAY));
+                    tooltip.accept(Component.translatable("tooltip.antcolonies.terrarium").withStyle(ChatFormatting.GRAY));
                 }
             }, p -> p.useBlockDescriptionPrefix());
 
@@ -162,28 +169,28 @@ public final class ModItems {
             p -> p.shovel(ChitinGear.TOOLS, 1.5F, -3.0F));
     public static final DeferredItem<ChitinGear.Piece> CHITIN_HOE = ITEMS.registerItem("chitin_hoe", p -> new ChitinGear.Piece(false, p),
             p -> p.hoe(ChitinGear.TOOLS, -2.0F, -1.0F));
-    public static final DeferredItem<com.antcolonies.content.item.ChitinShieldItem> CHITIN_SHIELD = ITEMS.registerItem("chitin_shield",
-            com.antcolonies.content.item.ChitinShieldItem::new, com.antcolonies.content.item.ChitinShieldItem::properties);
+    public static final DeferredItem<ChitinShieldItem> CHITIN_SHIELD = ITEMS.registerItem("chitin_shield",
+            ChitinShieldItem::new, ChitinShieldItem::properties);
 
     public static final String[] GEAR_PIECES = {"helmet", "chestplate", "leggings", "boots", "sword", "pickaxe", "axe", "shovel", "hoe"};
 
     /** The higher chitin tiers (Hardened, Infernal, Void): armor and the five tools each, by tier and piece name. */
-    public static final java.util.Map<ChitinGear.Tier, java.util.Map<String, DeferredItem<ChitinGear.Piece>>> CHITIN_TIERS = tiers();
+    public static final Map<ChitinGear.Tier, Map<String, DeferredItem<ChitinGear.Piece>>> CHITIN_TIERS = tiers();
     /** Smithing templates: Hardened chitin gear to Infernal (with Infernal Chitin), Infernal to Void (with a netherite ingot). */
     public static final DeferredItem<DescribedItem> INFERNAL_REINFORCEMENT = ITEMS.registerItem("infernal_reinforcement", DescribedItem::new,
             p -> p.fireResistant());
     public static final DeferredItem<DescribedItem> VOID_REINFORCEMENT = ITEMS.registerItem("void_reinforcement", DescribedItem::new,
             p -> p.fireResistant().rarity(Rarity.UNCOMMON));
 
-    private static java.util.Map<ChitinGear.Tier, java.util.Map<String, DeferredItem<ChitinGear.Piece>>> tiers() {
-        java.util.Map<ChitinGear.Tier, java.util.Map<String, DeferredItem<ChitinGear.Piece>>> tiers = new java.util.EnumMap<>(ChitinGear.Tier.class);
+    private static Map<ChitinGear.Tier, Map<String, DeferredItem<ChitinGear.Piece>>> tiers() {
+        Map<ChitinGear.Tier, Map<String, DeferredItem<ChitinGear.Piece>>> tiers = new EnumMap<>(ChitinGear.Tier.class);
         ArmorType[] armor = {ArmorType.HELMET, ArmorType.CHESTPLATE, ArmorType.LEGGINGS, ArmorType.BOOTS};
         for (ChitinGear.Tier tier : ChitinGear.Tier.values()) {
             if (tier == ChitinGear.Tier.CHITIN) {
                 continue;
             }
-            java.util.Map<String, DeferredItem<ChitinGear.Piece>> pieces = new java.util.LinkedHashMap<>();
-            java.util.function.UnaryOperator<Item.Properties> extra = p -> tier == ChitinGear.Tier.VOID ? p.fireResistant().rarity(Rarity.UNCOMMON)
+            Map<String, DeferredItem<ChitinGear.Piece>> pieces = new LinkedHashMap<>();
+            UnaryOperator<Item.Properties> extra = p -> tier == ChitinGear.Tier.VOID ? p.fireResistant().rarity(Rarity.UNCOMMON)
                     : tier.fireproof ? p.fireResistant() : p;
             for (int i = 0; i < armor.length; i++) {
                 ArmorType type = armor[i];
@@ -200,29 +207,25 @@ public final class ModItems {
                     p -> extra.apply(p.shovel(tier.tools, 1.5F, -3.0F))));
             pieces.put("hoe", ITEMS.registerItem(tier.id("hoe"), p -> new ChitinGear.Piece(false, tier, p),
                     p -> extra.apply(p.hoe(tier.tools, -tier.tools.attackDamageBonus(), tier == ChitinGear.Tier.HARDENED ? -1.0F : 0.0F))));
-            tiers.put(tier, java.util.Collections.unmodifiableMap(pieces));
+            tiers.put(tier, Collections.unmodifiableMap(pieces));
         }
-        return java.util.Collections.unmodifiableMap(tiers);
+        return Collections.unmodifiableMap(tiers);
     }
 
     private static DeferredItem<ChitinGear.Piece> armor(String name, ArmorType type) {
         return ITEMS.registerItem(name, p -> new ChitinGear.Piece(true, p), p -> p.humanoidArmor(ChitinGear.ARMOR, type));
     }
 
-    private static DeferredItem<BlockItem> block(DeferredBlock<?> block) {
-        return ITEMS.registerSimpleBlockItem(block);
-    }
-
     static {
         // The nest-building palette, after everything else in the creative tab.
-        for (DeferredBlock<? extends net.minecraft.world.level.block.Block> block : ModDecor.ALL.values()) {
+        for (DeferredBlock<? extends Block> block : ModDecor.ALL.values()) {
             if (block == ModDecor.ANT_EGG_CLUSTER || block == ModDecor.LARVA_CLUSTER) {
                 // Taken from an anthill with Silk Touch: they carry its species.
                 boolean eggs = block == ModDecor.ANT_EGG_CLUSTER;
-                ITEMS.registerItem(block.getId().getPath(), p -> new com.antcolonies.content.item.BroodClusterItem(block.get(), eggs, p),
+                ITEMS.registerItem(block.getId().getPath(), p -> new BroodClusterItem(block.get(), eggs, p),
                         p -> p.useBlockDescriptionPrefix());
             } else if (block == ModDecor.NEST_DOOR) {
-                ITEMS.registerItem(block.getId().getPath(), p -> new net.minecraft.world.item.DoubleHighBlockItem(block.get(), p),
+                ITEMS.registerItem(block.getId().getPath(), p -> new DoubleHighBlockItem(block.get(), p),
                         p -> p.useBlockDescriptionPrefix());
             } else {
                 ITEMS.registerSimpleBlockItem(block);
@@ -237,7 +240,7 @@ public final class ModItems {
             @Override
             public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip,
                                         TooltipFlag flag) {
-                tooltip.accept(Component.translatable(key).withStyle(net.minecraft.ChatFormatting.GRAY));
+                tooltip.accept(Component.translatable(key).withStyle(ChatFormatting.GRAY));
             }
         }, p -> p.useBlockDescriptionPrefix());
     }

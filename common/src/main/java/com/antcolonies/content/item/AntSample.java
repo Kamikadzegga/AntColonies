@@ -1,6 +1,7 @@
 package com.antcolonies.content.item;
 
 import com.antcolonies.colony.species.Caste;
+import com.antcolonies.core.config.AntConfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -14,7 +15,7 @@ public record AntSample(Identifier species, Caste caste, int count) {
     public static final int MAX = 1000;
     /** How many a pinch of the Tweezers takes from a Terrarium (the Terrarium's buttons take a whole tube; config tweezersAnts). */
     public static int pinch() {
-        return com.antcolonies.core.config.AntConfig.get(com.antcolonies.core.config.AntConfig.TWEEZERS_ANTS);
+        return AntConfig.get(AntConfig.TWEEZERS_ANTS);
     }
     public static final Codec<AntSample> CODEC = RecordCodecBuilder.create(i -> i.group(
             Identifier.CODEC.fieldOf("species").forGetter(AntSample::species),

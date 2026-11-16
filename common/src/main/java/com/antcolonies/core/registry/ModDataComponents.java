@@ -5,11 +5,13 @@ import java.util.function.Supplier;
 import com.antcolonies.AntColonies;
 import com.antcolonies.colony.genetics.QueenData;
 import com.antcolonies.content.item.AntSample;
+import com.antcolonies.content.item.GuardData;
 import com.antcolonies.content.item.SpeciesUpgrade;
 
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.component.CustomData;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModDataComponents {
@@ -33,12 +35,12 @@ public final class ModDataComponents {
             builder -> builder.persistent(SpeciesUpgrade.CODEC).networkSynchronized(SpeciesUpgrade.STREAM_CODEC));
 
     /** A whole colony (Queen, population, food) kept in a broken Terrarium, put back when it is placed again. */
-    public static final Supplier<DataComponentType<net.minecraft.world.item.component.CustomData>> COLONY = DATA_COMPONENTS.registerComponentType("colony",
-            builder -> builder.persistent(net.minecraft.world.item.component.CustomData.CODEC).networkSynchronized(net.minecraft.world.item.component.CustomData.STREAM_CODEC));
+    public static final Supplier<DataComponentType<CustomData>> COLONY = DATA_COMPONENTS.registerComponentType("colony",
+            builder -> builder.persistent(CustomData.CODEC).networkSynchronized(CustomData.STREAM_CODEC));
 
     /** The Guard Ant in its tube. */
-    public static final Supplier<DataComponentType<com.antcolonies.content.item.GuardData>> GUARD = DATA_COMPONENTS.registerComponentType("guard",
-            builder -> builder.persistent(com.antcolonies.content.item.GuardData.CODEC).networkSynchronized(com.antcolonies.content.item.GuardData.STREAM_CODEC));
+    public static final Supplier<DataComponentType<GuardData>> GUARD = DATA_COMPONENTS.registerComponentType("guard",
+            builder -> builder.persistent(GuardData.CODEC).networkSynchronized(GuardData.STREAM_CODEC));
 
     private ModDataComponents() {}
 }

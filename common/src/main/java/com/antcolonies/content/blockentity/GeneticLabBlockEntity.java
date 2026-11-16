@@ -1,13 +1,14 @@
 package com.antcolonies.content.blockentity;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
+import com.antcolonies.client.ClientHooks;
+import com.antcolonies.colony.genetics.Genetics;
 import com.antcolonies.colony.model.ColonyStatus;
+import com.antcolonies.content.block.ComparatorSource;
+import com.antcolonies.content.block.GeneticLabBlock;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.colony.genetics.Genome;
 import com.antcolonies.colony.genetics.Mutation;
@@ -50,7 +51,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
@@ -63,11 +63,11 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
 /** The Genetic Laboratory: spends FE and materials to change the genes of the Queen in its Queen slot. */
-public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, com.antcolonies.content.block.ComparatorSource {
+public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, ComparatorSource {
     /** Comparators read how full the lab's FE store is. */
     @Override
     public int comparatorSignal() {
-        return com.antcolonies.content.block.ComparatorSource.fill(energy.getAmountAsInt(), energy.getCapacityAsInt());
+        return ComparatorSource.fill(energy.getAmountAsInt(), energy.getCapacityAsInt());
     }
 
     public static final int SLOT_QUEEN = 0;
@@ -225,9 +225,9 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         }
         // The block lights up while the lab works.
         boolean working = lab.operation != Operation.NONE;
-        if (state.hasProperty(com.antcolonies.content.block.GeneticLabBlock.WORKING)
-                && state.getValue(com.antcolonies.content.block.GeneticLabBlock.WORKING) != working) {
-            level.setBlock(pos, state.setValue(com.antcolonies.content.block.GeneticLabBlock.WORKING, working), Block.UPDATE_ALL);
+        if (state.hasProperty(GeneticLabBlock.WORKING)
+                && state.getValue(GeneticLabBlock.WORKING) != working) {
+            level.setBlock(pos, state.setValue(GeneticLabBlock.WORKING, working), Block.UPDATE_ALL);
         }
         if (!working) {
             return;
@@ -347,7 +347,7 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         if (catalyst.isEmpty()) {
             return null;
         }
-        if (!com.antcolonies.colony.genetics.Genetics.roomForBeneficial(genome.mutations(), registries)) {
+        if (!Genetics.roomForBeneficial(genome.mutations(), registries)) {
             return null;
         }
         var lookup = registries.lookup(ModRegistries.MUTATION);
@@ -449,7 +449,7 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
     @Override
     public boolean triggerEvent(int id, int param) {
         if (level != null && level.isClientSide()) {
-            com.antcolonies.client.ClientHooks.labEvent(this, id);
+            ClientHooks.labEvent(this, id);
         }
         return true;
     }

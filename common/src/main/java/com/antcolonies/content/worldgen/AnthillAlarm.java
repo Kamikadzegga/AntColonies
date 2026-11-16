@@ -14,6 +14,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import org.jspecify.annotations.Nullable;
@@ -62,7 +63,7 @@ public final class AnthillAlarm {
         BlockPos best = null;
         double bestDistance = Double.MAX_VALUE;
         for (WildAnt ant : level.getEntitiesOfClass(WildAnt.class, new AABB(pos).inflate(CHEST_REACH), ant -> ant.anthill() != null)) {
-            double distance = ant.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos));
+            double distance = ant.distanceToSqr(Vec3.atCenterOf(pos));
             if (distance < bestDistance) {
                 bestDistance = distance;
                 best = ant.anthill();

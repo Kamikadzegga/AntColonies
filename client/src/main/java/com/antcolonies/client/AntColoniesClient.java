@@ -4,23 +4,35 @@ import com.antcolonies.AntColonies;
 import com.antcolonies.client.model.AntModel;
 import com.antcolonies.client.model.CarryModel;
 import com.antcolonies.client.model.ChitinHelmetModel;
+import com.antcolonies.client.renderer.CentrifugeRenderer;
 import com.antcolonies.client.renderer.GeneticLabRenderer;
 import com.antcolonies.client.renderer.StructureRenderer;
 import com.antcolonies.client.renderer.TerrariumRenderer;
 import com.antcolonies.client.renderer.WildAntRenderer;
+import com.antcolonies.client.screen.CentrifugeScreen;
+import com.antcolonies.client.screen.GeneratorScreen;
 import com.antcolonies.client.screen.GeneticLabScreen;
 import com.antcolonies.client.screen.StructureScreen;
 import com.antcolonies.client.screen.TerrariumScreen;
 import com.antcolonies.client.screen.UpgradeStationScreen;
+import com.antcolonies.content.entity.GuardAnt;
+import com.antcolonies.content.entity.WildAnt;
+import com.antcolonies.content.item.ChitinGear;
+import com.antcolonies.content.recipe.CentrifugingRecipe;
 import com.antcolonies.core.registry.ModBlockEntities;
 import com.antcolonies.core.registry.ModEntities;
 import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModMenus;
 import com.antcolonies.core.registry.ModParticles;
 import com.antcolonies.colony.species.Caste;
+import com.antcolonies.core.registry.ModRecipes;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -31,6 +43,7 @@ import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 /** Client setup: renderers, model layers, screens, particles and the species tint. Never loaded on a dedicated server. */
 @Mod(value = AntColonies.MODID, dist = Dist.CLIENT)
@@ -61,19 +74,19 @@ public final class AntColoniesClient {
         // Spines on the Hardened and Infernal chestplates, a Queen's wings on the Void one.
         var tiers = ModItems.CHITIN_TIERS;
         event.registerItem(ChitinHelmetModel.SPINE_EXTENSIONS,
-                tiers.get(com.antcolonies.content.item.ChitinGear.Tier.HARDENED).get("chestplate").get(),
-                tiers.get(com.antcolonies.content.item.ChitinGear.Tier.INFERNAL).get("chestplate").get());
-        event.registerItem(ChitinHelmetModel.WING_EXTENSIONS, tiers.get(com.antcolonies.content.item.ChitinGear.Tier.VOID).get("chestplate").get());
+                tiers.get(ChitinGear.Tier.HARDENED).get("chestplate").get(),
+                tiers.get(ChitinGear.Tier.INFERNAL).get("chestplate").get());
+        event.registerItem(ChitinHelmetModel.WING_EXTENSIONS, tiers.get(ChitinGear.Tier.VOID).get("chestplate").get());
     }
 
     @SubscribeEvent
     static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(ModEntities.WILD_ANT.get(), WildAntRenderer<com.antcolonies.content.entity.WildAnt>::new);
-        event.registerEntityRenderer(ModEntities.GUARD_ANT.get(), WildAntRenderer<com.antcolonies.content.entity.GuardAnt>::new);
+        event.registerEntityRenderer(ModEntities.WILD_ANT.get(), WildAntRenderer<WildAnt>::new);
+        event.registerEntityRenderer(ModEntities.GUARD_ANT.get(), WildAntRenderer<GuardAnt>::new);
         event.registerBlockEntityRenderer(ModBlockEntities.TERRARIUM.get(), TerrariumRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.STRUCTURE.get(), StructureRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.GENETIC_LAB.get(), GeneticLabRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.CENTRIFUGE.get(), com.antcolonies.client.renderer.CentrifugeRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.CENTRIFUGE.get(), CentrifugeRenderer::new);
     }
 
     @SubscribeEvent
@@ -82,8 +95,8 @@ public final class AntColoniesClient {
         event.register(ModMenus.STRUCTURE.get(), StructureScreen::new);
         event.register(ModMenus.GENETIC_LAB.get(), GeneticLabScreen::new);
         event.register(ModMenus.UPGRADE_STATION.get(), UpgradeStationScreen::new);
-        event.register(ModMenus.GENERATOR.get(), com.antcolonies.client.screen.GeneratorScreen::new);
-        event.register(ModMenus.CENTRIFUGE.get(), com.antcolonies.client.screen.CentrifugeScreen::new);
+        event.register(ModMenus.GENERATOR.get(), GeneratorScreen::new);
+        event.register(ModMenus.CENTRIFUGE.get(), CentrifugeScreen::new);
     }
 
     @SubscribeEvent
@@ -104,12 +117,12 @@ public final class AntColoniesClient {
     public AntColoniesClient(ModContainer container) {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         // The Droplet Centrifuge's recipes, as the server sends them; dropped on leaving the world.
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.RecipesReceivedEvent event) -> {
-            java.util.List<com.antcolonies.content.recipe.CentrifugingRecipe> recipes = new java.util.ArrayList<>();
-            event.getRecipeMap().byType(com.antcolonies.core.registry.ModRecipes.CENTRIFUGING.get()).forEach(holder -> recipes.add(holder.value()));
-            com.antcolonies.content.recipe.CentrifugingRecipe.setClientRecipes(recipes);
+        NeoForge.EVENT_BUS.addListener((RecipesReceivedEvent event) -> {
+            List<CentrifugingRecipe> recipes = new ArrayList<>();
+            event.getRecipeMap().byType(ModRecipes.CENTRIFUGING.get()).forEach(holder -> recipes.add(holder.value()));
+            CentrifugingRecipe.setClientRecipes(recipes);
         });
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event)
-                -> com.antcolonies.content.recipe.CentrifugingRecipe.setClientRecipes(java.util.List.of()));
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event)
+                -> CentrifugingRecipe.setClientRecipes(List.of()));
     }
 }

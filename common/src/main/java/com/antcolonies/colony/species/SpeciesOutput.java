@@ -1,5 +1,6 @@
 package com.antcolonies.colony.species;
 
+import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 
 import com.mojang.serialization.Codec;
@@ -25,7 +26,7 @@ import net.minecraft.world.item.ItemStack;
 public record SpeciesOutput(Optional<Holder<Item>> item, Optional<TagKey<Item>> tag, int count, double weight, int minStage, boolean special,
                             Optional<Holder<Item>> processed, int ratio) {
     /** The fields alone, for records that add their own (expedition finds). Check {@link #validate} on the whole. */
-    public static final com.mojang.serialization.MapCodec<SpeciesOutput> MAP_CODEC = RecordCodecBuilder.<SpeciesOutput>mapCodec(i -> i.group(
+    public static final MapCodec<SpeciesOutput> MAP_CODEC = RecordCodecBuilder.<SpeciesOutput>mapCodec(i -> i.group(
             Item.CODEC.optionalFieldOf("item").forGetter(SpeciesOutput::item),
             TagKey.codec(Registries.ITEM).optionalFieldOf("tag").forGetter(SpeciesOutput::tag),
             Codec.intRange(1, 64).optionalFieldOf("count", 1).forGetter(SpeciesOutput::count),

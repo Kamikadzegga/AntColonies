@@ -5,6 +5,7 @@ import java.util.List;
 
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.client.ClientHooks;
 import com.antcolonies.content.block.ColonyEntityBlock;
 import com.antcolonies.content.block.ColonyPartBlock;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
@@ -35,6 +36,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -50,7 +52,6 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
     /** The soil block inside the glass, px. */
     private static final float MIN = 2;
     private static final float MAX = 14;
-    private static final float BOTTOM = 1;
     private static final float TOP = TunnelLayout.SURFACE;
     private static final float WORKER_LENGTH = 1.3F / 16;
     /** Most surface ants per Terrarium drawn as 3D models; the rest are flat. */
@@ -126,7 +127,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
         state.visuals = terrarium.clientVisuals instanceof TerrariumVisuals visuals ? visuals : null;
         state.colony = terrarium.colony();
         state.partialTicks = partialTicks;
-        state.time = terrarium.getLevel() == null ? 0 : com.antcolonies.client.ClientHooks.animationTime(terrarium.getLevel().getGameTime(), partialTicks);
+        state.time = terrarium.getLevel() == null ? 0 : ClientHooks.animationTime(terrarium.getLevel().getGameTime(), partialTicks);
         double distance = AntConfig.client(AntConfig.VISUAL_DISTANCE);
         state.near = Vec3.atCenterOf(terrarium.getBlockPos()).distanceToSqr(camera) < distance * distance;
         double detail = AntConfig.client(AntConfig.ANT_DETAIL_DISTANCE);
@@ -278,8 +279,6 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
     }
 
     private static final float[][] NORMALS = {{0, 0, -1}, {1, 0, 0}, {0, 0, 1}, {-1, 0, 0}};
-    /** The direction of +u on each side, in the block. */
-    private static final float[][] U_DIR = {{-1, 0, 0}, {0, 0, -1}, {1, 0, 0}, {0, 0, 1}};
 
     // --- Brood, food, surface ---
 
@@ -310,7 +309,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
     private static void drawSurface(Geometry g, TerrariumVisuals visuals, State state) {
         AntSpecies species = state.species;
         long seed = visuals.seed();
-        net.minecraft.util.RandomSource random = net.minecraft.util.RandomSource.create(seed);
+        RandomSource random = RandomSource.create(seed);
         // Entrance mounds.
         for (int i = 0; i < 2 + Math.min(2, visuals.stage); i++) {
             float x = 4 + random.nextFloat() * 8;
@@ -335,7 +334,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
     }
 
     private static void drawCrystals(Geometry g, TerrariumVisuals visuals, int color) {
-        net.minecraft.util.RandomSource random = net.minecraft.util.RandomSource.create(visuals.seed() * 7L);
+        RandomSource random = RandomSource.create(visuals.seed() * 7L);
         for (int i = 0; i < 5; i++) {
             float x = 3 + random.nextFloat() * 10;
             float z = 3 + random.nextFloat() * 10;
@@ -408,11 +407,11 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
             g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
             spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, SIDE_CROP_ROW + caste.ordinal(), 0xFF000000 | look.crop().get(), 0.075F);
             g.light = light;
-            spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, SIDE_PLATES_ROW + caste.ordinal(), 0xFF000000 | visible(look.gaster()), 0.08F);
+            spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, SIDE_PLATES_ROW + caste.ordinal(), 0xFF000000 | Geometry.visibleOnDark(look.gaster()), 0.08F);
         } else {
-            spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height * gasterScale, frame, row + 1, 0xFF000000 | visible(look.gaster()), 0.08F);
+            spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height * gasterScale, frame, row + 1, 0xFF000000 | Geometry.visibleOnDark(look.gaster()), 0.08F);
         }
-        spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, row, 0xFF000000 | visible(look.body()), 0.09F);
+        spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, row, 0xFF000000 | Geometry.visibleOnDark(look.body()), 0.09F);
         if (look.crystal().isPresent()) {
             g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
             spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, row + 2, 0xFF000000 | look.crystal().get(), 0.1F);
@@ -432,29 +431,6 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
             g.quadUv(corners, uv, carry, NORMALS[face]);
         }
         g.light = saved;
-    }
-
-    /** A species color lifted toward white until it reads against the tunnels' dark soil; light colors are left alone. */
-    private static int visible(int rgb) {
-        int r = (rgb >> 16) & 0xFF;
-        int gr = (rgb >> 8) & 0xFF;
-        int b = rgb & 0xFF;
-        float luma = 0.299F * r + 0.587F * gr + 0.114F * b;
-        float min = 105;
-        if (luma >= min) {
-            return rgb & 0xFFFFFF;
-        }
-        // Scale first (keeps the hue: navy becomes a clear blue, not grey), then blend toward white for what is left.
-        float scale = Math.min(2.6F, min / Math.max(luma, 1));
-        r = Math.min(255, (int) (r * scale));
-        gr = Math.min(255, (int) (gr * scale));
-        b = Math.min(255, (int) (b * scale));
-        luma = 0.299F * r + 0.587F * gr + 0.114F * b;
-        float t = Math.max(0, (min - luma) / (255 - luma));
-        r = (int) (r + (255 - r) * t);
-        gr = (int) (gr + (255 - gr) * t);
-        b = (int) (b + (255 - b) * t);
-        return r << 16 | gr << 8 | b;
     }
 
     private static void spriteLayer(Geometry g, int face, float u, float v, float fu, float fv, float upU, float upV, float len, float height,
@@ -497,11 +473,11 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
                 g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
                 surfaceLayer(g, x, z, fx, fz, n, len, height, frame, SIDE_CROP_ROW + actor.caste.ordinal(), 0xFF000000 | look.crop().get(), 0.005F);
                 g.light = light;
-                surfaceLayer(g, x, z, fx, fz, n, len, height, frame, SIDE_PLATES_ROW + actor.caste.ordinal(), 0xFF000000 | visible(look.gaster()), 0.01F);
+                surfaceLayer(g, x, z, fx, fz, n, len, height, frame, SIDE_PLATES_ROW + actor.caste.ordinal(), 0xFF000000 | Geometry.visibleOnDark(look.gaster()), 0.01F);
             } else {
-                surfaceLayer(g, x, z, fx, fz, n, len, height, frame, row + 1, 0xFF000000 | visible(look.gaster()), 0.01F);
+                surfaceLayer(g, x, z, fx, fz, n, len, height, frame, row + 1, 0xFF000000 | Geometry.visibleOnDark(look.gaster()), 0.01F);
             }
-            surfaceLayer(g, x, z, fx, fz, n, len, height, frame, row, 0xFF000000 | visible(look.body()), 0.02F);
+            surfaceLayer(g, x, z, fx, fz, n, len, height, frame, row, 0xFF000000 | Geometry.visibleOnDark(look.body()), 0.02F);
             if (look.crystal().isPresent()) {
                 g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
                 surfaceLayer(g, x, z, fx, fz, n, len, height, frame, row + 2, 0xFF000000 | look.crystal().get(), 0.03F);
@@ -556,7 +532,6 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
             poseStack.mulPose(Axis.YP.rotation(yaw));
             drawer.draw(collector, poseStack, actor.caste, look, pose, length, state.lightCoords, OverlayTexture.NO_OVERLAY, actor.carry, 0);
             poseStack.popPose();
-            return;
         }
     }
 

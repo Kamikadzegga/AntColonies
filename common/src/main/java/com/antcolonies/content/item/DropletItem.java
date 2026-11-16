@@ -26,7 +26,6 @@ public class DropletItem extends Item {
         return kind;
     }
 
-    /** The fluid it is a droplet of. */
     public Fluid fluid() {
         return BuiltInRegistries.FLUID.getValue(kind.fluid());
     }

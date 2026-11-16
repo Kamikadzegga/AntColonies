@@ -5,6 +5,7 @@ import java.util.List;
 import com.antcolonies.content.blockentity.GeneratorBlockEntity;
 import com.antcolonies.content.menu.GeneratorMenu;
 
+import java.util.Locale;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -89,7 +90,7 @@ public class GeneratorScreen extends AntScreen<GeneratorMenu> {
         }
         if (over(mouseX, mouseY, GAUGE_X, GAUGE_Y, GAUGE_W, GAUGE_H)) {
             graphics.setComponentTooltipForNextFrame(font, List.of(
-                    Component.literal(String.format(java.util.Locale.ROOT, "%,d / %,d FE", menu.data(GeneratorBlockEntity.DATA_ENERGY),
+                    Component.literal(String.format(Locale.ROOT, "%,d / %,d FE", menu.data(GeneratorBlockEntity.DATA_ENERGY),
                             GeneratorBlockEntity.capacity())),
                     Component.translatable("gui.antcolonies.generator.push").withStyle(ChatFormatting.GRAY),
                     Component.translatable("gui.antcolonies.generator.hint").withStyle(ChatFormatting.DARK_AQUA)), mouseX, mouseY);
