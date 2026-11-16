@@ -43,7 +43,7 @@ A shorter version of the GitHub README. Images load from the repository once it 
 **Build a civilization, one ant at a time.** Catch wild ants, raise a Queen in a living Formicarium and grow her colony
 into thousands of workers that mine, farm, hunt and evolve.
 
-![A colony at work](https://raw.githubusercontent.com/Kamikadzegga/AntColonies/main/docs/images/screenshots/terrarium.png)
+![A colony at work](https://raw.githubusercontent.com/Kamikadzegga/AntColonies/main/docs/images/screenshots/terrarium.jpg)
 
 ## Features
 
@@ -64,7 +64,7 @@ into thousands of workers that mine, farm, hunt and evolve.
   in-game guide book.
 - **Light on servers.** Colonies are numbers, not mobs: 100 big colonies used under 5% of a server tick in testing.
 
-![Chitin armor in four tiers](https://raw.githubusercontent.com/Kamikadzegga/AntColonies/main/docs/images/screenshots/chitin-tiers.png)
+![Chitin armor in four tiers](https://raw.githubusercontent.com/Kamikadzegga/AntColonies/main/docs/images/screenshots/chitin-tiers.jpg)
 
 ## Getting started
 
@@ -93,25 +93,25 @@ Upload these 19 from `docs/images/screenshots/`, in this order (they replace the
 
 | File | Title | Description |
 |---|---|---|
-| `overview.png` | A colony at work | A Formicarium and its chambers, joined into one glass build |
-| `terrarium.png` | A living Formicarium | Workers dig tunnels and carry food behind the glass |
-| `vertical-formicarium.png` | Built upward | Stacked blocks become one nest behind glass, chambers joined by tunnels |
-| `liquid-ants.png` | Liquid Ants | Ants that carry fluids, and the Droplet Centrifuge |
+| `overview.jpg` | A colony at work | A Formicarium and its chambers, joined into one glass build |
+| `terrarium.jpg` | A living Formicarium | Workers dig tunnels and carry food behind the glass |
+| `vertical-formicarium.jpg` | Built upward | Stacked blocks become one nest behind glass, chambers joined by tunnels |
+| `liquid-ants.jpg` | Liquid Ants | Ants that carry fluids, and the Droplet Centrifuge |
 | `colony-screen.png` | The colony screen | Queen, health, food and ants at a glance |
 | `jobs-screen.png` | Jobs | Ants, priority and modes for every working site |
 | `statistics-screen.png` | Statistics | The colony over the last half hour |
-| `chitin-tiers.png` | Chitin armor | Chitin, Hardened, Infernal and Void |
-| `chitin-tiers-back.png` | Spines and wings | The higher tiers from behind |
-| `expedition-sites.png` | Expeditions | Nether and End Foraging Sites |
-| `connected-colonies.png` | Colony Connectors | Food and items between nearby colonies |
-| `building-blocks.png` | Building blocks | Anthill, chitin, amber, fungal and royal blocks |
-| `giant-anthill.png` | A giant anthill | A structure shaped by its biome, with loot and defenders |
-| `anthill-queen-chamber.png` | Inside an anthill | Tunnels and chambers, and a Queen to catch |
-| `machines.png` | The machines | The Generator and the Droplet Centrifuge, working and idle |
+| `chitin-tiers.jpg` | Chitin armor | Chitin, Hardened, Infernal and Void |
+| `chitin-tiers-back.jpg` | Spines and wings | The higher tiers from behind |
+| `expedition-sites.jpg` | Expeditions | Nether and End Foraging Sites |
+| `connected-colonies.jpg` | Colony Connectors | Food and items between nearby colonies |
+| `building-blocks.jpg` | Building blocks | Anthill, chitin, amber, fungal and royal blocks |
+| `giant-anthill.jpg` | A giant anthill | A structure shaped by its biome, with loot and defenders |
+| `anthill-queen-chamber.jpg` | Inside an anthill | Tunnels and chambers, and a Queen to catch |
+| `machines.jpg` | The machines | The Generator and the Droplet Centrifuge, working and idle |
 | `genetic-laboratory.png` | The Genetic Laboratory | Raise, reroll and mutate a Queen's traits |
 | `recipe-viewer.png` | JEI and EMI | Expeditions and every recipe |
 | `identification-book.png` | The Ant Identification Book | How to play, and every species |
-| `jade.png` | Jade | A Formicarium's state without opening it |
+| `jade.jpg` | Jade | A Formicarium's state without opening it |
 
 ## 4. Files (upload a file)
 
