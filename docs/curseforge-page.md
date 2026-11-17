@@ -120,8 +120,8 @@ Upload these 19 from `docs/images/screenshots/`, in this order (they replace the
 
 | Field | Value |
 |---|---|
-| File | `build/libs/antcolonies-26.3.0.4.1.jar` |
-| Display name | `Ant Colonies 0.4.1` |
+| File | `build/libs/antcolonies-26.3.0.4.2.jar` |
+| Display name | `Ant Colonies 0.4.2` |
 | Release type | Beta (or Release once it has been played for a while) |
 | Game version | 26.3 |
 | Mod loader | NeoForge |
