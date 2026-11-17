@@ -84,7 +84,6 @@ public class AntColoniesJeiPlugin implements IModPlugin {
         registration.addAlias(ModDecor.TERRARIUM_GLASS.asItem(), "alias.antcolonies.terrarium");
     }
 
-    /** Tubes, samples, brood and species upgrades of each species are different entries. */
     @Override
     public void registerItemSubtypes(ISubtypeRegistration registration) {
         registration.registerSubtypeInterpreter(ModItems.QUEEN_TEST_TUBE.get(), (stack, context) -> {

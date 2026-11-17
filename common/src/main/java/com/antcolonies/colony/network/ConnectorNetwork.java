@@ -92,12 +92,10 @@ public final class ConnectorNetwork {
             return colony.food() / capacity;
         }
 
-        /** Food it can give: what its colony has above the reserve. */
         double spare() {
             return Math.max(0, colony.food() - capacity * settings.reserve / 100.0);
         }
 
-        /** Food it wants: what its colony lacks below the target. */
         double need() {
             return Math.max(0, capacity * settings.target / 100.0 - colony.food());
         }
@@ -388,7 +386,6 @@ public final class ConnectorNetwork {
         return sent;
     }
 
-    /** Whether a block is a Colony Connector (for the colony scan's kinds). */
     public static boolean isConnector(StructureBlockEntity be) {
         return be.kind() == StructureKind.COLONY_CONNECTOR;
     }

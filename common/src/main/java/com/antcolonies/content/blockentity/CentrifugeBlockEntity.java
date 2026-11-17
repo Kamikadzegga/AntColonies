@@ -49,14 +49,12 @@ import org.jspecify.annotations.Nullable;
 
 /** The Droplet Centrifuge: spins one droplet at a time into its recipe's fluid, paying the FE evenly over the run. */
 public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, ComparatorSource {
-    /** What the Centrifuge is doing, for its screen. */
     public enum Status {
         /** Nothing in the slot, nothing in the tank. */
         IDLE,
         WORKING,
         /** A droplet waits, but there is not enough FE for the next tick of the run. */
         NO_ENERGY,
-        /** The tank has no room for the run's fluid. */
         TANK_FULL,
         /** The tank holds another fluid: it has to be emptied first. */
         BLOCKED,
@@ -185,7 +183,6 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
         return energy;
     }
 
-    /** The tank for pipes, tanks and buckets, on every side: fluid can be taken, never put in. */
     public ResourceHandler<FluidResource> fluidOutput() {
         return output;
     }
@@ -199,7 +196,6 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
         energy.set(Math.clamp(amount, 0, energy.getCapacityAsInt()));
     }
 
-    /** What the tank holds (empty for nothing). */
     public FluidStack fluid() {
         return tank.getAmountAsInt(0) <= 0 ? FluidStack.EMPTY : tank.getResource(0).toStack(tank.getAmountAsInt(0));
     }
@@ -230,7 +226,6 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
         return getBlockState().hasProperty(CentrifugeBlock.WORKING) && getBlockState().getValue(CentrifugeBlock.WORKING);
     }
 
-    /** How full the tank is. */
     @Override
     public int comparatorSignal() {
         return ComparatorSource.fill(tank.getAmountAsInt(0), tankCapacity());
@@ -242,7 +237,6 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
         }
     }
 
-    /** The recipe of what is in the slot. Looked up only when the item or the server's recipes change. */
     private @Nullable CentrifugingRecipe currentRecipe(ServerLevel level) {
         ItemStack input = items.get(0);
         Object source = level.recipeAccess().recipeMap();
@@ -317,7 +311,6 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
         }
     }
 
-    /** Hands fluid to the tanks and pipes touching it, up to the push limit per tick, never more than they take. */
     private void push(ServerLevel level, BlockPos pos) {
         int budget = Math.min(tank.getAmountAsInt(0), AntConfig.get(AntConfig.CENTRIFUGE_PUSH));
         if (budget <= 0) {
@@ -365,7 +358,6 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
         return 1;
     }
 
-    /** Only what a Centrifuge recipe takes (the droplets, and whatever datapacks add). */
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
         return CentrifugingRecipe.find(level, stack) != null;
@@ -441,7 +433,6 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
-    /** The fluid a fluid-registry id from the menu's data names (the empty fluid for -1). */
     public static Fluid fluidById(int id) {
         return id < 0 ? Fluids.EMPTY : BuiltInRegistries.FLUID.byId(id);
     }

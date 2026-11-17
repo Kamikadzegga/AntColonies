@@ -200,7 +200,6 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         }
     }
 
-    /** The first line: linked or not, short enough for the panel (the full status is in the colony's screens). */
     private String linkLine(boolean linked) {
         String key = linked ? "gui.antcolonies.linked" : menu.data(StructureBlockEntity.DATA_CONTESTED) != 0 ? "gui.antcolonies.contested"
                 : "gui.antcolonies.not_linked";
@@ -208,7 +207,6 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         return fit(full, 170);
     }
 
-    /** The room for adults and larvae this Nest Chamber adds to its colony, with the Population Upgrades in it. */
     private int nestRoom(GuiGraphicsExtractor graphics, int x, int y) {
         int tier = menu.structure().upgradeTier(UpgradeType.POPULATION);
         double room = 1 + 0.5 * tier;
@@ -226,7 +224,6 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         return y + 11;
     }
 
-    /** A working site's ants: how many it has and wants, the +/- buttons, and how fast they work. */
     private int jobRow(GuiGraphicsExtractor graphics, int x, int y) {
         int assigned = menu.data(StructureBlockEntity.DATA_ASSIGNED);
         int requested = menu.data(StructureBlockEntity.DATA_REQUESTED);
@@ -257,7 +254,6 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         return y + 11;
     }
 
-    /** A job site's settings: what a Foraging Site looks for, its priority among the colony's sites, and a switch to turn it off. */
     private int settingsRow(int x, int y) {
         int bx = x;
         if (kind == StructureKind.FORAGING_SITE) {
@@ -290,7 +286,6 @@ public class StructureScreen extends AntScreen<StructureMenu> {
     /** Where this frame's Liquid Chamber shows its ants' droplet and fluid (after the buttons of its settings row); null otherwise. */
     private int @Nullable [] pendingFluid;
 
-    /** A Liquid Chamber's fluid: the droplet its ants give (the item itself) and the name of the fluid it is of. */
     private void fluidLine(GuiGraphicsExtractor graphics, int x, int y) {
         AntSpecies species = colonySpecies();
         AntSpecies.Liquid liquid = species == null ? null : species.liquid().orElse(null);
@@ -304,7 +299,6 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         hoverText(x, y - 2, 16, 16, Component.translatable("gui.antcolonies.liquid.makes", droplet.getHoverName(), name).getString());
     }
 
-    /** The colour of the colony's liquid (its ants' crop), for the droplet progress bar. */
     private int liquidColor() {
         AntSpecies species = colonySpecies();
         return 0xFF000000 | (species == null ? 0x3FD0A0 : species.look().crop().orElse(0x3FD0A0));
@@ -327,7 +321,6 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         return names.toString();
     }
 
-    /** A Colony Connector's page: its channel, what it does with food and with the items its filter names, and what it moved lately. */
     private void connectorPage(GuiGraphicsExtractor graphics, int x, int y) {
         int channel = menu.data(StructureBlockEntity.DATA_CHANNEL);
         label(graphics, Component.translatable("gui.antcolonies.connector.channel"), x, y + 2, LABEL);

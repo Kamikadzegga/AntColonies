@@ -68,7 +68,6 @@ public final class NestRenderer {
         /** The camera is before one of the block's two glasses (and nothing of a colony stands against it): {@link #back} says which. */
         public boolean front;
         public boolean back;
-        /** Near enough for the ants to be drawn. */
         public boolean near;
         public boolean queen;
         /** An expedition site with ants out through its portal. */
@@ -311,7 +310,6 @@ public final class NestRenderer {
                 gray(0.8F), normal);
     }
 
-    /** A wall from the slab's face down to the floor, along the line (ua, va) to (ub, vb) of the face. */
     private static SlabQuad wall(float ua, float va, float ub, float vb, float u0, float v0, float u1, float v1, float shade, float[] normal) {
         return new SlabQuad(new float[][] {at(ua, va, SURFACE), at(ub, vb, SURFACE), at(ub, vb, FLOOR), at(ua, va, FLOOR)}, u0, v0, u1, v1, 1,
                 gray(shade), normal);
@@ -479,7 +477,6 @@ public final class NestRenderer {
         }
     }
 
-    /** The Storage's items, standing on its shelves: the most plentiful ones, one a spot. */
     private static void drawItems(State state, NestLayout layout, PoseStack poseStack, SubmitNodeCollector collector) {
         if (state.items.isEmpty()) {
             return;
@@ -523,7 +520,6 @@ public final class NestRenderer {
         }
     }
 
-    /** Full Liquid Ants hanging head up from the ceiling, as many as there are ants at work, swaying a little. */
     private static void drawHanging(Geometry g, NestLayout layout, State state) {
         if (layout.kind != NestLayout.Kind.LIQUID_CHAMBER || state.shown <= 0 || state.look.crop().isEmpty()) {
             return;

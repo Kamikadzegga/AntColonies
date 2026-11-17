@@ -42,7 +42,6 @@ public class StructureMenu extends BaseMenu {
     public static final int ITEM_MODE = 50;
     private static final int LAST_ACTION = 52;
     public static final int UPGRADE_X = 184;
-    /** Where a Foraging Site's store slots are. */
     public static final int STORE_Y = 88;
     /** Where a Colony Connector's filter slots are: under its settings and the two lines of what it moved. */
     public static final int FILTER_Y = 121;
@@ -52,7 +51,6 @@ public class StructureMenu extends BaseMenu {
 
     private final StructureBlockEntity structure;
     private final ContainerData data;
-    /** A Storage's scrolling view of six rows, and the row it starts at. */
     private @Nullable StorageWindow window;
     private int scroll;
 
@@ -147,12 +145,10 @@ public class StructureMenu extends BaseMenu {
         return (data.get(StructureBlockEntity.DATA_UNLOCKED) + 8) / 9;
     }
 
-    /** The furthest a Storage scrolls: its last open row at the bottom (0 when all fit). */
     public int maxScroll() {
         return Math.max(0, storageRows() - StorageWindow.ROWS);
     }
 
-    /** The Storage row the window starts at. */
     public int firstRow() {
         return Math.clamp(scroll, 0, maxScroll());
     }
@@ -237,7 +233,6 @@ public class StructureMenu extends BaseMenu {
         site.contentsChanged();
     }
 
-    /** A Colony Connector's buttons. */
     private static void connector(StructureBlockEntity site, int action) {
         ConnectorSettings settings = site.connector();
         if (settings == null) {

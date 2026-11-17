@@ -60,7 +60,6 @@ import org.jspecify.annotations.Nullable;
 
 /** Any colony chamber: its slots, upgrades and settings. Its Terrarium's colony does the simulating and tells it the results. */
 public class StructureBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, ComparatorSource {
-    /** Job sites: how full their workforce is. Other structures: how full their slots are. */
     @Override
     public int comparatorSignal() {
         return kind.job().any() ? ComparatorSource.fill(assigned, capacityShown) : slotFill();
@@ -242,7 +241,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         return stack.is(ModItems.SPECIES_UPGRADE.get()) && kind.takesSpeciesUpgrades() && stack.has(ModDataComponents.SPECIES_UPGRADE.get());
     }
 
-    /** The summed tiers of the generic upgrades of a type in this structure. */
     public int upgradeTier(UpgradeType type) {
         if (!kind.allows(type)) {
             return 0;
@@ -256,7 +254,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         return sum;
     }
 
-    /** The summed tiers of this structure's species upgrades of a kind for a species (other species' do nothing). */
     public int speciesUpgradeTier(Identifier species, SpeciesUpgradeKind upgradeKind) {
         if (!kind.takesSpeciesUpgrades()) {
             return 0;
@@ -335,7 +332,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         return siteStatus;
     }
 
-    /** What an ordinary Foraging Site's workers look for (other sites: Balanced). */
     public ForagingMode mode() {
         return kind == StructureKind.FORAGING_SITE ? mode : ForagingMode.BALANCED;
     }
@@ -346,7 +342,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         contentsChanged();
     }
 
-    /** Whether this job site is turned on; one turned off takes no ants. */
     public boolean enabled() {
         return enabled;
     }
@@ -357,7 +352,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         contentsChanged();
     }
 
-    /** Its priority: higher ones get their ants first. */
     public int priority() {
         return priority;
     }
@@ -402,7 +396,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         return colonyStatus;
     }
 
-    /** A Terrarium found this chamber exactly as near to another colony: it joins neither. */
     public void markContested() {
         if (level != null) {
             boolean was = isContested();
@@ -444,15 +437,12 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
 
     // --- Storage ---
 
-    /** The slots a Storage has without upgrades: two rows. */
     public static final int STORAGE_BASE_SLOTS = 18;
 
-    /** Storage slots open with its Storage Upgrades; other chambers use all their slots. */
     public int unlockedSlots() {
         return kind != StructureKind.STORAGE ? kind.slots() : storageSlots(upgradeTier(UpgradeType.STORAGE));
     }
 
-    /** A Storage's slots with Storage Upgrades of these summed tiers. */
     public static int storageSlots(int tier) {
         return Math.min(StructureKind.STORAGE.slots(), STORAGE_BASE_SLOTS + AntConfig.get(AntConfig.STORAGE_SLOTS_PER_UPGRADE) * tier);
     }
@@ -486,7 +476,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         return true;
     }
 
-    /** A bit per upgrade slot whose upgrade can't come out now, for the screen. */
     private int upgradesHeld() {
         int held = 0;
         for (int slot = 0; slot < upgrades.getContainerSize(); slot++) {
@@ -709,7 +698,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         }
     }
 
-    /** A Colony Connector's settings changed (its screen): saved, sent, and its channel known to the network. */
     public void connectorChanged() {
         if (connector != null && level instanceof ServerLevel serverLevel) {
             ConnectorNetwork.register(serverLevel, worldPosition, connector.channel);
@@ -822,7 +810,6 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         return terrarium != null && linkedAt != Long.MIN_VALUE;
     }
 
-    /** Statuses with problems, for tooltips and the scanner. */
     public boolean hasProblem() {
         return ColonyStatus.of(siteStatus).stream().anyMatch(ColonyStatus::problem) || !isLinked();
     }

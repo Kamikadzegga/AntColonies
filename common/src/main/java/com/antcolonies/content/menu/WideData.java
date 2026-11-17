@@ -7,7 +7,6 @@ public final class WideData {
     private WideData() {
     }
 
-    /** Twice as many 16-bit slots as {@code ints} has values. */
     public static ContainerData slots(ContainerData ints) {
         return new ContainerData() {
             @Override

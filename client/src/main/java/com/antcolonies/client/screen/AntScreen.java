@@ -72,7 +72,6 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
         }
     }
 
-    /** The panel behind everything; screens with their own look draw their own. */
     protected void drawFrame(GuiGraphicsExtractor graphics) {
         drawPanel(graphics, leftPos, topPos, imageWidth, imageHeight);
     }
@@ -213,7 +212,6 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
         return false;
     }
 
-    /** By default a button is a menu button: the server gets its id. */
     protected void onButton(int id) {
         minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
         clickSound();
@@ -241,7 +239,6 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite(name), x, y, w, h);
     }
 
-    /** A console button; a selected (tab, toggle) or primary button glows. */
     protected void drawButton(GuiGraphicsExtractor graphics, Button button, boolean hovered) {
         boolean lit = button.selected();
         String name = !button.enabled() ? "button_disabled" : lit ? (hovered ? "button_primary_hover" : "button_primary")
@@ -262,12 +259,10 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
         graphics.text(font, label, button.x() + (button.w() - textW + 1) / 2, button.y() + (button.h() - 7) / 2, color, false);
     }
 
-    /** The width of a button that fits {@code label} with a little air either side. */
     protected int buttonWidth(String label) {
         return font.width(label) + 7;
     }
 
-    /** The console's riveted frame. */
     protected static void drawPanel(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
         sprite(graphics, "frame", x, y, width, height);
     }
@@ -276,12 +271,10 @@ public abstract class AntScreen<T extends AbstractContainerMenu> extends Abstrac
         sprite(graphics, "slot", x, y, 18, 18);
     }
 
-    /** A dark glass panel for text and lists. */
     protected static void drawWell(GuiGraphicsExtractor graphics, int x, int y, int w, int h) {
         sprite(graphics, "glass", x, y, w, h);
     }
 
-    /** A glass gauge filled to {@code fraction} in {@code color}. */
     protected static void drawBar(GuiGraphicsExtractor graphics, int x, int y, int w, int h, double fraction, int color) {
         graphics.fill(x, y, x + w, y + h, TRACK);
         int filled = (int) Math.round((w - 2) * Math.clamp(fraction, 0, 1));

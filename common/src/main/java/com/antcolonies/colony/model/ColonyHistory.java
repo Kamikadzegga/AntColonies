@@ -10,7 +10,6 @@ import net.minecraft.world.level.storage.ValueOutput;
 public final class ColonyHistory {
     /** Ticks between samples (30 seconds). */
     public static final int INTERVAL = 600;
-    /** Samples kept per series. */
     public static final int SIZE = 60;
 
     public enum Series {
@@ -47,7 +46,6 @@ public final class ColonyHistory {
     private int head;
     private long lastSample = Long.MIN_VALUE / 2;
 
-    /** Takes a sample if one is due at {@code time}. */
     public void sample(long time, Colony colony) {
         if (time - lastSample < INTERVAL) {
             return;

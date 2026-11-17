@@ -28,7 +28,6 @@ import org.jspecify.annotations.Nullable;
 /** The Genetic Laboratory, one block; it glows brighter while it works on a Queen. */
 public class GeneticLabBlock extends BaseEntityBlock {
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
-    /** Working on a Queen: lit up. */
     public static final BooleanProperty WORKING = BooleanProperty.create("working");
 
     public GeneticLabBlock(Properties properties) {

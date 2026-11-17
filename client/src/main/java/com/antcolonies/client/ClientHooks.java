@@ -86,7 +86,6 @@ public final class ClientHooks {
 
     // --- The upright nest (colony blocks in a stack) ---
 
-    /** A stacked Formicarium's tick: its nest follows its colony. */
     private static void nestTick(TerrariumBlockEntity terrarium, Level level) {
         BlockPos pos = terrarium.getBlockPos();
         Direction facing = facing(terrarium.getBlockState());
@@ -148,7 +147,6 @@ public final class ClientHooks {
         return state.hasProperty(ColonyEntityBlock.FACING) ? state.getValue(ColonyEntityBlock.FACING) : Direction.NORTH;
     }
 
-    /** The colony a chamber is joined to, as this client knows it. */
     public static @Nullable Colony colonyOf(StructureBlockEntity structure) {
         BlockPos home = structure.terrarium();
         return home != null && structure.getLevel() != null && structure.getLevel().getBlockEntity(home) instanceof TerrariumBlockEntity terrarium
@@ -325,7 +323,6 @@ public final class ClientHooks {
                 (random.nextDouble() - 0.5) * speed, random.nextDouble() * speed, (random.nextDouble() - 0.5) * speed);
     }
 
-    /** A colony at work kicks up soil on its surface; a stage 4 colony of a crystal species sparkles. */
     public static void terrariumParticles(Level level, BlockPos pos, RandomSource random) {
         if (!AntConfig.client(AntConfig.PARTICLES) || !(level.getBlockEntity(pos) instanceof TerrariumBlockEntity terrarium)) {
             return;
@@ -390,7 +387,6 @@ public final class ClientHooks {
         }
     }
 
-    /** Gene particles over a working Genetic Laboratory, in its four colors. */
     public static void labParticles(Level level, BlockPos pos, RandomSource random) {
         if (!AntConfig.client(AntConfig.PARTICLES) || random.nextInt(3) != 0) {
             return;

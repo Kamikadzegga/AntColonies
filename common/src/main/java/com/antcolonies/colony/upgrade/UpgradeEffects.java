@@ -24,7 +24,6 @@ public final class UpgradeEffects {
     /** What the upgrade does in one place: the place, and one short value per line ("+50% work speed"). */
     public record Effect(String place, List<Component> values) {}
 
-    /** The blocks that take an upgrade of this type, as items to show. */
     public static List<ItemStack> placements(UpgradeType type) {
         List<ItemStack> list = new ArrayList<>();
         if (TerrariumAccepts.types().contains(type)) {
@@ -41,7 +40,6 @@ public final class UpgradeEffects {
         return list;
     }
 
-    /** The upgrade's effects at this tier, a place at a time. */
     public static List<Effect> effects(UpgradeType type, int tier) {
         List<Effect> effects = new ArrayList<>();
         switch (type) {
@@ -84,7 +82,6 @@ public final class UpgradeEffects {
         return effects;
     }
 
-    /** The effects as tooltip lines: each place in gray, its values under it in blue. */
     public static List<Component> lines(UpgradeType type, int tier) {
         List<Component> lines = new ArrayList<>();
         for (Effect effect : effects(type, tier)) {

@@ -58,7 +58,6 @@ public class AnthillPiece extends StructurePiece {
     public static final ResourceKey<LootTable> END_LOOT = ResourceKey.create(Registries.LOOT_TABLE, AntColonies.id("chests/end_anthill"));
     public static final ResourceKey<LootTable> TREASURE = ResourceKey.create(Registries.LOOT_TABLE, AntColonies.id("chests/anthill_treasure"));
     public static final ResourceKey<LootTable> FOOD = ResourceKey.create(Registries.LOOT_TABLE, AntColonies.id("chests/anthill_food"));
-    /** What a midden's suspicious gravel or sand gives up to a Brush. */
     public static final ResourceKey<LootTable> MIDDEN = ResourceKey.create(Registries.LOOT_TABLE, AntColonies.id("archaeology/anthill_midden"));
     /** Every loot table an anthill's containers are filled from: opening one of them raises the anthill's alarm. */
     public static final Set<ResourceKey<LootTable>> CONTAINER_LOOT = Set.of(LOOT, NETHER_LOOT, END_LOOT, TREASURE, FOOD);
@@ -178,7 +177,6 @@ public class AnthillPiece extends StructurePiece {
         }
     }
 
-    /** The old mound's height over a column (0 outside it): a rounded cone, a little uneven. */
     private int legacyMoundHeight(long hashSeed, int x, int z) {
         double distance = Math.sqrt(x * x + z * z) + (hash(hashSeed, x, 0, z) - 0.5) * 1.4;
         if (distance >= RADIUS) {
@@ -255,7 +253,6 @@ public class AnthillPiece extends StructurePiece {
         }
     }
 
-    /** A themed anthill: its mound, trails and plants round it, and the nest's walls, ceilings and floors. */
     private void build(WorldGenLevel level, BoundingBox chunkBB, long hashSeed, AnthillTheme theme) {
         Set<Long> trailCells = trails(hashSeed, theme);
         BlockState trail = theme.trail();
@@ -321,7 +318,6 @@ public class AnthillPiece extends StructurePiece {
         }
     }
 
-    /** Outside the mound: a trail worn into the ground, or what grows round the mound's foot. */
     private void groundCover(WorldGenLevel level, BoundingBox chunkBB, int x, int z, int rx, int rz, long hashSeed, AnthillTheme theme,
                              @Nullable BlockState trail) {
         double distance = Math.sqrt(rx * rx + rz * rz);
@@ -356,7 +352,6 @@ public class AnthillPiece extends StructurePiece {
         }
     }
 
-    /** Three or four trails the ants wore from the mound out to where they forage, wandering a little. */
     private Set<Long> trails(long hashSeed, AnthillTheme theme) {
         if (trails == null) {
             Set<Long> cells = new HashSet<>();
@@ -617,7 +612,6 @@ public class AnthillPiece extends StructurePiece {
         }
     }
 
-    /** A few workers about a room. */
     private void workers(WorldGenLevel level, BoundingBox chunkBB, AnthillLayout.Room room, Identifier species, BlockPos anthill, int count) {
         int[][] spots = {{1, 1}, {-1, 0}, {0, -1}};
         for (int i = 0; i < count && i < spots.length; i++) {
@@ -625,7 +619,6 @@ public class AnthillPiece extends StructurePiece {
         }
     }
 
-    /** The space of the Queen's chamber in the world: stepping into it raises the alarm. */
     private AABB chamber(AnthillLayout.Room room) {
         return new AABB(center.getX() + room.x() - room.rx(), center.getY() + room.y() - room.ry() - 0.5, center.getZ() + room.z() - room.rz(),
                 center.getX() + room.x() + room.rx() + 1, center.getY() + room.y() + room.ry() + 1, center.getZ() + room.z() + room.rz() + 1);
@@ -665,7 +658,6 @@ public class AnthillPiece extends StructurePiece {
                 level.getLevel().getChunkSource().randomState().sampler());
     }
 
-    /** A Nether anthill's ants: Warped Ants in the fungus forests, Fire Ants elsewhere. */
     private static Identifier netherSpecies(Holder<Biome> biome) {
         boolean forest = biome.is(Biomes.WARPED_FOREST) || biome.is(Biomes.CRIMSON_FOREST);
         return AntColonies.id(forest ? "warped" : "fire");
@@ -727,7 +719,6 @@ public class AnthillPiece extends StructurePiece {
         return ant;
     }
 
-    /** A number from 0 to 1 for a spot, the same whichever chunk asks. */
     private static double hash(long seed, int x, int y, int z) {
         return AnthillTheme.hash(seed, x, y, z);
     }
@@ -751,7 +742,6 @@ public class AnthillPiece extends StructurePiece {
             return block.defaultBlockState();
         }
 
-        /** Tunnel walls: earth the ants packed hard, with a softer floor (a little special in some rooms). */
         BlockState wall(double roll, boolean floor, AnthillLayout.RoomType room) {
             if (floor && room == AnthillLayout.RoomType.QUEEN && roll < 0.6) {
                 return (this == END ? Blocks.PURPUR_BLOCK : ModDecor.ROYAL_CHITIN_BLOCK.get()).defaultBlockState();

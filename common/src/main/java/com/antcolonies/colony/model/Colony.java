@@ -77,7 +77,6 @@ public final class Colony {
         ).apply(i, NetworkLink::new));
     }
 
-    /** One kind of item in the colony's Storage, for the Production page: the item and how many there are in all. */
     public record StoredItem(ItemStack item, long count) {
         public static final Codec<StoredItem> CODEC = RecordCodecBuilder.create(i -> i.group(
                 ItemStack.CODEC.fieldOf("item").forGetter(StoredItem::item),
@@ -267,12 +266,10 @@ public final class Colony {
         return history;
     }
 
-    /** What the colony really brought in over the last half hour, for the Production page. */
     public ProductionLog production() {
         return production;
     }
 
-    /** How well its food holds up its work, egg laying and growth this step: 1 when fed, less when food runs low. */
     public double foodFactor() {
         return foodFactor;
     }
@@ -342,7 +339,6 @@ public final class Colony {
         }
     }
 
-    /** A Queen alone was put into an empty Terrarium: Queen-only founding starts. */
     public void startFounding() {
         if (queen != null && isEmptyOfAnts()) {
             founding = Founding.FEEDING;
@@ -350,7 +346,6 @@ public final class Colony {
         }
     }
 
-    /** Founding is over (or never began): the colony runs like any other. */
     public void endFounding() {
         founding = Founding.NONE;
         foundingRaised = 0;

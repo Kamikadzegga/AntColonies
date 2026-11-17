@@ -44,7 +44,6 @@ public final class ModBlockEntities {
                     () -> new BlockEntityType<>(HomeNestBlockEntity::new,
                             ModBlocks.NESTS.values().stream().map(b -> (Block) b.get()).toArray(Block[]::new)));
 
-    /** Ant Egg and Larva Clusters: their species, and the anthill of one it was built with. */
     public static final Supplier<BlockEntityType<BroodClusterBlockEntity>> BROOD_CLUSTER =
             BLOCK_ENTITY_TYPES.register("brood_cluster",
                     () -> new BlockEntityType<>(BroodClusterBlockEntity::new,

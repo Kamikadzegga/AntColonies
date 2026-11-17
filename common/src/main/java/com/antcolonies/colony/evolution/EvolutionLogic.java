@@ -33,7 +33,6 @@ public final class EvolutionLogic {
 
     public record Result(Outcome outcome, @Nullable Evolution evolution) {}
 
-    /** The evolution this item starts for a Queen of the colony's species, if any. */
     public static @Nullable Evolution find(RegistryAccess registries, Colony colony, ItemStack stack) {
         if (stack.isEmpty()) {
             return null;
@@ -45,7 +44,6 @@ public final class EvolutionLogic {
                 .findFirst()).orElse(null);
     }
 
-    /** The chance of one attempt, as the GUI and JEI show it. */
     public static double chance(Evolution evolution, Colony colony, int evolutionUpgradeTiers, boolean catalyst) {
         QueenData queen = colony.queen();
         double genetics = queen == null ? 1 : queen.genome().multiplier(Trait.MUTATION_PROBABILITY);

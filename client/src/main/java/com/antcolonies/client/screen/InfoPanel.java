@@ -40,7 +40,6 @@ public final class InfoPanel {
     static final int BAD = 0xFFFF6E6E;
     static final int ACCENT = 0xFFE07AFF;
 
-    /** One line of the page. */
     private interface Row {
         int height();
 
@@ -85,7 +84,6 @@ public final class InfoPanel {
         }
     }
 
-    /** An item icon with a line of text beside it. */
     private record ItemLine(ItemStack stack, FormattedCharSequence text, int color, List<Component> tip) implements Row {
         @Override
         public int height() {
@@ -106,7 +104,6 @@ public final class InfoPanel {
     private int width = 100;
     private @Nullable Object shown;
 
-    /** Starts the page again (after the species or page changed: the scroll goes back to the top). */
     private void begin(Object what, int width) {
         if (!what.equals(shown)) {
             scroll = 0;
@@ -126,7 +123,6 @@ public final class InfoPanel {
         cyclingIcons(stacks.stream().map(List::of).toList(), tips);
     }
 
-    /** Icons that each cycle through a family of items. */
     private void cyclingIcons(List<List<ItemStack>> families, List<List<Component>> tips) {
         int perRow = Math.max(1, width / 18);
         for (int i = 0; i < families.size(); i += perRow) {
@@ -271,7 +267,6 @@ public final class InfoPanel {
         }
     }
 
-    /** Output icons: each tells its chance, the stage it needs and whether it is a signature find. */
     private void outputs(Font font, List<SpeciesOutput> outputs, @Nullable String header) {
         double total = outputs.stream().filter(SpeciesOutput::available).mapToDouble(o -> ColonySimulator.pickWeight(o, 1)).sum();
         List<ItemStack> stacks = new ArrayList<>();
@@ -303,7 +298,6 @@ public final class InfoPanel {
 
     // --- How to play ---
 
-    /** One of the book's how-to-play pages: a title, then its text in paragraphs, with the blocks it is about. */
     public void guide(Font font, String page, List<ItemStack> items, int width) {
         begin("guide:" + page, width);
         text(font, Component.translatable("guide.antcolonies." + page + ".title"), TITLE);
@@ -324,7 +318,6 @@ public final class InfoPanel {
 
     // --- Drawing ---
 
-    /** Draws the rows that fit in the box, from the scrolled-to row on. */
     public void draw(GuiGraphicsExtractor graphics, Font font, int x, int y, int h) {
         hovers.clear();
         shownHeight = h;
@@ -375,14 +368,12 @@ public final class InfoPanel {
         return false;
     }
 
-    /** Scrolls a row at a time; true if the page moved. */
     public boolean scroll(double amount) {
         int before = scroll;
         scroll = Math.clamp(scroll - (int) Math.signum(amount), 0, maxScroll());
         return scroll != before;
     }
 
-    /** The tooltip of what is under the mouse, if anything. */
     public @Nullable List<Component> hover(double mouseX, double mouseY) {
         for (Hover hover : hovers) {
             if (mouseX >= hover.x() && mouseX < hover.x() + hover.w() && mouseY >= hover.y() && mouseY < hover.y() + hover.h()) {

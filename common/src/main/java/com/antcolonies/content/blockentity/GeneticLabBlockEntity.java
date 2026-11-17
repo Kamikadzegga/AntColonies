@@ -64,7 +64,6 @@ import org.jspecify.annotations.Nullable;
 
 /** The Genetic Laboratory: spends FE and materials to change the genes of the Queen in its Queen slot. */
 public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, ComparatorSource {
-    /** Comparators read how full the lab's FE store is. */
     @Override
     public int comparatorSignal() {
         return ComparatorSource.fill(energy.getAmountAsInt(), energy.getCapacityAsInt());
@@ -76,7 +75,6 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
     public static final int SLOT_CATALYST = 4;
     public static final int SLOTS = 5;
     public static final int UPGRADE_SLOTS = 2;
-    /** FE the lab stores (config labEnergy). */
     public static int energyCapacity() {
         return AntConfig.get(AntConfig.LAB_ENERGY);
     }
@@ -207,7 +205,6 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         return sum;
     }
 
-    /** Material costs after the configured multiplier and Genetic Upgrades (10% cheaper per tier, at most 50%). */
     public double costMultiplier() {
         return AntConfig.get(AntConfig.LAB_COST_MULTIPLIER) * (1 - Math.min(0.5, 0.1 * tier(UpgradeType.GENETIC)));
     }
@@ -282,7 +279,6 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         setChanged();
     }
 
-    /** What an operation on the selected trait takes: materials, energy, a catalyst-slot item, time. */
     public record Requirement(List<Cost> materials, int energy, @Nullable Item catalyst, int catalystCount, int time) {
         boolean met(GeneticLabBlockEntity lab) {
             if (lab.energy() < energy) {
@@ -341,7 +337,6 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
         return Math.max(1, Trait.maxLevel() - 4);
     }
 
-    /** The beneficial mutation the item in the catalyst slot gives, if the Queen doesn't have it yet. */
     private Map.@Nullable Entry<Identifier, Mutation> catalystMutation(Genome genome, HolderLookup.Provider registries) {
         ItemStack catalyst = items.get(SLOT_CATALYST);
         if (catalyst.isEmpty()) {

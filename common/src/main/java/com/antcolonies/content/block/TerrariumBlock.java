@@ -61,7 +61,6 @@ public class TerrariumBlock extends ColonyPartBlock {
         return createTickerHelper(type, ModBlockEntities.TERRARIUM.get(), TerrariumBlockEntity::serverTick);
     }
 
-    /** Things for the colony go straight into the right slot. */
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
                                           BlockHitResult hitResult) {

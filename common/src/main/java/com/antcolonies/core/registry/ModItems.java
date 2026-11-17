@@ -233,7 +233,6 @@ public final class ModItems {
         }
     }
 
-    /** A block item with a line saying what the block is for ({@code tooltip.antcolonies.<block>}). */
     private static DeferredItem<BlockItem> described(DeferredBlock<?> block) {
         String key = "tooltip.antcolonies." + block.getId().getPath();
         return ITEMS.registerItem(block.getId().getPath(), p -> new BlockItem(block.get(), p) {

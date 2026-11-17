@@ -231,7 +231,6 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         }
     }
 
-    /** The chamber's soil: its walls with their tunnels, its surface with the trails, and (up close) ants walking the tunnels. */
     private static void drawGround(State state, PoseStack poseStack, SubmitNodeCollector collector) {
         FlatGround.Shape shape = state.shape;
         @SuppressWarnings("unchecked")
@@ -264,7 +263,6 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         }
     }
 
-    /** A chamber in a stack: its own chamber in the upright nest, the ants at work there, the Storage's items on its shelves. */
     private void extractNest(StructureBlockEntity structure, NestRenderer.State nest, float partialTicks, Vec3 camera) {
         var block = structure.getBlockState();
         NestRenderer.extract(nest, structure.getBlockPos(), structure.getLevel(), block.getValue(ColonyEntityBlock.FACING), camera,
@@ -305,7 +303,6 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         }
     }
 
-    /** The most plentiful items, laid in a heap over the pile's crate; the more of one, the higher its stack. */
     private static void drawHeap(State state, PoseStack poseStack, SubmitNodeCollector collector) {
         float[][] spots = {{8, 8}, {5, 5}, {11, 5}, {5, 11}, {11, 11}};
         for (int i = 0; i < state.heap.size(); i++) {

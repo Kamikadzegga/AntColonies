@@ -30,7 +30,6 @@ public final class LiquidKinds {
     private static final Map<Identifier, LiquidKind> BY_FLUID = new LinkedHashMap<>();
     private static boolean closed;
 
-    /** The base game's two. */
     public static final LiquidKind WATER = LiquidKind.of("water", "minecraft", "minecraft:water");
     public static final LiquidKind LAVA = LiquidKind.of("lava", "minecraft", "minecraft:lava");
 
@@ -50,12 +49,10 @@ public final class LiquidKinds {
         }
     }
 
-    /** Every kind any integration offers, whether or not it exists in this game. */
     public static synchronized Collection<LiquidKind> offered() {
         return Collections.unmodifiableCollection(new ArrayList<>(OFFERED.values()));
     }
 
-    /** The kinds that exist in this game (after items are registered). */
     public static synchronized Collection<LiquidKind> available() {
         return Collections.unmodifiableCollection(new ArrayList<>(AVAILABLE.values()));
     }
@@ -72,12 +69,10 @@ public final class LiquidKinds {
         return OFFERED.get(species.getPath());
     }
 
-    /** The available kind of a fluid, if Liquid Ants make it. */
     public static synchronized @Nullable LiquidKind byFluid(Fluid fluid) {
         return BY_FLUID.get(BuiltInRegistries.FLUID.getKey(fluid));
     }
 
-    /** The droplet item of an available kind; null while the kind doesn't exist in this game. */
     public static @Nullable Item droplet(LiquidKind kind) {
         return BuiltInRegistries.ITEM.getOptional(kind.dropletId()).orElse(null);
     }

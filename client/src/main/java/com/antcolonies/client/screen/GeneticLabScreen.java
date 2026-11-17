@@ -135,7 +135,6 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
         strip(graphics, queen);
     }
 
-    /** The left column: the Queen under glass, who she is, and the lab's energy. */
     private void specimen(GuiGraphicsExtractor graphics, @Nullable QueenData queen) {
         int center = LEFT_X + LEFT_W / 2;
         if (queen == null) {
@@ -171,7 +170,6 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
         centered(graphics, fe(energy), LEFT_X + LEFT_W / 2, 116, TEXT_DIM);
     }
 
-    /** The middle: one row per trait, with its level as lit pips. */
     private void genome(GuiGraphicsExtractor graphics, @Nullable QueenData queen, int mouseX, int mouseY) {
         int max = Trait.maxLevel();
         Trait selected = selected();
@@ -200,7 +198,6 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
         }
     }
 
-    /** The right: the selected trait, now and next, what it takes, and the Upgrade button. */
     private void detail(GuiGraphicsExtractor graphics, @Nullable QueenData queen) {
         Trait trait = selected();
         int x = DETAIL_X + 5;
@@ -240,7 +237,6 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
         }
     }
 
-    /** The items raising the trait takes, each with its count green (enough in the material slots) or red. */
     private void costs(GuiGraphicsExtractor graphics, QueenData queen, int x, int y) {
         // The cost card: what it takes, set apart from the material slots under it.
         graphics.fill(leftPos + DETAIL_X + 3, topPos + y - 2, leftPos + DETAIL_X + DETAIL_W - 3, topPos + y + 17, 0x66000000);
@@ -416,7 +412,6 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
         return lines;
     }
 
-    /** The beneficial mutation the item in the catalyst slot would give this Queen, if any. */
     private @Nullable Component catalystMutation(@Nullable QueenData queen) {
         ItemStack catalyst = menu.getSlot(GeneticLabBlockEntity.SLOT_CATALYST).getItem();
         var registries = ClientSpecies.registries();

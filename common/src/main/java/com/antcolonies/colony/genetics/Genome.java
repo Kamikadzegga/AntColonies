@@ -84,7 +84,6 @@ public record Genome(List<Integer> levels, List<Identifier> mutations, Lineage l
         return levels.stream().mapToInt(Integer::intValue).average().orElse(1);
     }
 
-    /** Whether every trait is at the configured maximum. */
     public boolean perfect() {
         int max = Trait.maxLevel();
         return levels.stream().allMatch(level -> level >= max);

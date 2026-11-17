@@ -48,7 +48,6 @@ public class BroodClusterBlock extends Block implements EntityBlock {
         builder.add(NATURAL);
     }
 
-    /** Whether this is the Ant Egg Cluster (else the Larva Cluster). */
     public boolean eggs() {
         return this == ModDecor.ANT_EGG_CLUSTER.get();
     }
@@ -92,7 +91,6 @@ public class BroodClusterBlock extends Block implements EntityBlock {
         }
     }
 
-    /** Moves a live cluster on a stage: eggs become larvae, larvae become workers of the anthill. Returns whether it did. */
     public boolean grow(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (!state.getValue(NATURAL)) {
             return false;

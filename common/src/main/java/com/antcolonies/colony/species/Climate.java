@@ -37,7 +37,6 @@ public enum Climate implements StringRepresentable {
         return TagKey.create(Registries.BLOCK, AntColonies.id("climate/" + name));
     }
 
-    /** The climate a block under a Terrarium gives it, if any. */
     public static @Nullable Climate ofFloor(BlockState state) {
         for (Climate climate : values()) {
             if (climate != ANY && state.is(climate.floorTag())) {

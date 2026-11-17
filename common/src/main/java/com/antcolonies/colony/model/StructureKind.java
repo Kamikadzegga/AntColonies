@@ -92,12 +92,10 @@ public enum StructureKind implements StringRepresentable {
         return allowed.contains(type);
     }
 
-    /** Whether species-specific upgrades fit (they change what workers find). */
     public boolean takesSpeciesUpgrades() {
         return this == FORAGING_SITE;
     }
 
-    /** Whether finds can be kept here (Storage, and the small stores of the Foraging Sites and the Liquid Chamber). */
     public boolean stores() {
         return this == STORAGE || siteStore();
     }
@@ -107,7 +105,6 @@ public enum StructureKind implements StringRepresentable {
         return foraging() || this == LIQUID_CHAMBER;
     }
 
-    /** The three Foraging Sites: the ordinary one and the Nether and End expedition sites. */
     public boolean foraging() {
         return job == Job.FORAGING;
     }

@@ -428,7 +428,6 @@ public final class AntConfig {
         return CLIENT_SPEC.isLoaded() ? value.getAsDouble() : value.getDefault();
     }
 
-    /** Extra catch-up minutes from a Simulation Upgrade of the given tier (0 = none). */
     public static int simulationUpgradeMinutes(int tier) {
         List<? extends Integer> list = get(SIMULATION_UPGRADE_MINUTES);
         return tier <= 0 || list.isEmpty() ? 0 : list.get(Math.min(tier, list.size()) - 1);

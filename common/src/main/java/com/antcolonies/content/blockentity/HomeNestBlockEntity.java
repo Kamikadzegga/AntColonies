@@ -44,7 +44,6 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
         super(ModBlockEntities.HOME_NEST.get(), pos, state);
     }
 
-    /** How many ants live in a nest (config homeNestAnts). */
     public static int residents() {
         return AntConfig.get(AntConfig.HOME_NEST_ANTS);
     }
@@ -62,7 +61,6 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
         return out;
     }
 
-    /** Whether ants go out: daylight, no rain. */
     public static boolean foragingWeather(Level level) {
         return level.isBrightOutside() && !level.isRaining();
     }
@@ -129,7 +127,6 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
         return rest;
     }
 
-    /** Puts a stack into the store, filling partial stacks first; returns what didn't fit. */
     public ItemStack store(ItemStack stack) {
         ItemStack rest = stack.copy();
         for (int pass = 0; pass < 2 && !rest.isEmpty(); pass++) {

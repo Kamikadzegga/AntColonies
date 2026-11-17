@@ -77,17 +77,14 @@ public class GuardAnt extends TamableAnimal implements AntLike {
                 .add(Attributes.SCALE, SIZE);
     }
 
-    /** Health at a Soldier Strength level: 24 at level 1, 60 at level 10. */
     public static double maxHealth(int strength) {
         return 20 + 4 * strength;
     }
 
-    /** Bite damage at a Soldier Strength level: 3.6 at level 1, 9 at level 10. */
     public static double damage(int strength) {
         return 3 + 0.6 * strength;
     }
 
-    /** Armor from the species' tier: 2 per tier, at most 10. */
     public static double armor(int tier) {
         return Math.min(5, Math.max(1, tier)) * 2;
     }
@@ -140,7 +137,6 @@ public class GuardAnt extends TamableAnimal implements AntLike {
         return strength;
     }
 
-    /** Sets what it is and how strong (from its tube), and its stats with them. */
     public void setup(GuardData data) {
         entityData.set(DATA_SPECIES, data.species().toString());
         strength = Math.clamp(data.strength(), 1, 10);

@@ -92,7 +92,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
     /** The colour of what it carries in its mandibles (0: nothing), for the renderer. */
     private static final EntityDataAccessor<Integer> DATA_CARRY = SynchedEntityData.defineId(WildAnt.class, EntityDataSerializers.INT);
 
-    /** Its rank in an anthill: an ordinary ant, one of the Queen's royal guard, or the great Queen herself. */
     private static final EntityDataAccessor<Byte> DATA_RANK = SynchedEntityData.defineId(WildAnt.class, EntityDataSerializers.BYTE);
 
     /** Guards a giant anthill: its soldiers attack players who come close (not ones in a full Chitin set). */
@@ -115,13 +114,11 @@ public class WildAnt extends PathfinderMob implements AntLike {
         }
     }
 
-    /** How far from its home nest an ant works. */
     public static final int NEST_RANGE = 10;
     /** Crops and saplings an ant grows on one trip, like a bee's limit. */
     private static final int TENDS_PER_TRIP = 5;
     /** The home nest it lives in (a nest a player placed), or null for a wild ant. */
     private @Nullable BlockPos nest;
-    /** What it harvested, on its way home. */
     private final List<ItemStack> carried = new ArrayList<>();
     private boolean returning;
     private int outTicks;
@@ -191,22 +188,18 @@ public class WildAnt extends PathfinderMob implements AntLike {
 
     // --- Royal Guard Ants: the great Queen's guard ---
 
-    /** Whether it is a Royal Guard Ant: an anthill soldier of royal rank that keeps a post by the great Queen. */
     public boolean royalGuard() {
         return rank() == Rank.ROYAL && caste() == Caste.SOLDIER;
     }
 
-    /** Its post: where it was placed (its home), or where it stands for an ant without one. */
     public BlockPos post() {
         return hasHome() ? getHomePosition() : blockPosition();
     }
 
-    /** Whether someone has come up to this Royal Guard Ant's post. */
     public boolean atPost(Entity other) {
         return other.distanceToSqr(Vec3.atBottomCenterOf(post())) <= Mth.square(AntConfig.get(AntConfig.ROYAL_GUARD_REACH));
     }
 
-    /** Whether someone is still within the ground a Royal Guard Ant keeps (it lets anyone farther away go). */
     public boolean withinLeash(Entity other) {
         return other.distanceToSqr(Vec3.atBottomCenterOf(post())) <= Mth.square(AntConfig.get(AntConfig.ROYAL_GUARD_LEASH));
     }
@@ -303,7 +296,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
         applyCaste();
     }
 
-    /** Soldiers are bigger and hit harder; Queens are the biggest. Royal guards and the great Queen are bigger still. */
     private void applyCaste() {
         Caste caste = caste();
         Rank rank = rank();
@@ -353,7 +345,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
         return data;
     }
 
-    /** A species that lives in the biome here, or Common Ants where none does. */
     public static Identifier speciesFor(ServerLevelAccessor level, BlockPos pos, RandomSource random) {
         return speciesFor(level.registryAccess(), level.getBiome(pos), random);
     }
@@ -449,14 +440,12 @@ public class WildAnt extends PathfinderMob implements AntLike {
         return guardian;
     }
 
-    /** Makes it one of an anthill's defenders, staying near it. */
     public void setGuardian(boolean guardian) {
         this.guardian = guardian;
         // An anthill's ants keep chasing an intruder through its tunnels (as applyCaste sets it).
         set(Attributes.FOLLOW_RANGE, guardian ? 24 : 12);
     }
 
-    /** A player in a full Chitin set is left alone, until they raise an anthill's alarm. */
     @Override
     public boolean canAttack(LivingEntity target) {
         return hostileTo(target) && super.canAttack(target);
@@ -475,7 +464,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
         this.anthill = anthill == null ? null : anthill.immutable();
     }
 
-    /** A great Queen's chamber (null for any other ant, or a Queen from before chambers were kept). */
     public @Nullable AABB chamber() {
         if (chamber == null && rank() == Rank.GREAT_QUEEN && anthill != null) {
             // A Queen from before 0.2.0: her chamber was about this big round her spot.
@@ -488,7 +476,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
         this.chamber = chamber;
     }
 
-    /** Whether its anthill is alarmed at this one now. */
     public boolean alarmedAt(LivingEntity target) {
         Long until = target instanceof Player ? alarms.get(target.getUUID()) : null;
         return until != null && until > level().getGameTime();
@@ -498,7 +485,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
         return alarmed;
     }
 
-    /** Alarms it at a player until the game time {@code until} (see {@link com.antcolonies.content.worldgen.AnthillAlarm}). */
     public void alarm(Player player, long until) {
         alarms.merge(player.getUUID(), until, Math::max);
         alarmed = true;
@@ -524,7 +510,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
         return super.hurtServer(level, source, damage);
     }
 
-    /** Whether wild ants leave this one alone: a player in a full Chitin set. */
     public static boolean ignores(LivingEntity target) {
         return target instanceof Player player && ChitinGear.fullSet(player);
     }
@@ -569,7 +554,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
 
     // --- Home nests: ants that live in a nest a player placed, working the land around it like bees ---
 
-    /** Makes it an ant of the home nest at {@code pos}: it works within {@link #NEST_RANGE} blocks and goes back in. */
     public void setNest(BlockPos pos) {
         nest = pos.immutable();
         setHomeTo(nest, NEST_RANGE);
@@ -581,7 +565,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
         return nest;
     }
 
-    /** Whether it is heading back into its nest. */
     public boolean returning() {
         return returning;
     }
@@ -594,7 +577,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
         return carried;
     }
 
-    /** The colour of its load for the renderer (0: none). */
     public int carryColor() {
         return entityData.get(DATA_CARRY);
     }
@@ -603,7 +585,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
         entityData.set(DATA_CARRY, carried.isEmpty() ? 0 : loadColor(carried.getFirst()));
     }
 
-    /** A crumb's colour for a harvest: golden grain, orange carrots and so on. */
     private static int loadColor(ItemStack stack) {
         Item item = stack.getItem();
         int rgb = item == Items.WHEAT || item == Items.WHEAT_SEEDS ? 0xE3C95A : item == Items.CARROT ? 0xE8862A : item == Items.POTATO ? 0xC9A35A
@@ -669,7 +650,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
         }
     }
 
-    /** Back in the nest: what it carried goes into the nest's store (what doesn't fit drops by the nest), and it is gone. */
     private void enterNest(ServerLevel level) {
         if (!(level.getBlockEntity(nest) instanceof HomeNestBlockEntity home)) {
             // The nest is gone: it lives wild from now on.
@@ -689,7 +669,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
         discard();
     }
 
-    /** A crop, berry bush, nether wart or stem fruit here that is ripe for harvest. */
     public static boolean ripe(Level level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
         if (state.getBlock() instanceof CropBlock crop) {
@@ -712,14 +691,12 @@ public class WildAnt extends PathfinderMob implements AntLike {
         return false;
     }
 
-    /** A crop or sapling here that tending would grow on. */
     public static boolean growable(Level level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
         return state.is(BlockTags.SAPLINGS) || state.is(BlockTags.BEE_GROWABLES) && !ripe(level, pos)
                 && !(state.getBlock() instanceof CropBlock crop && crop.isMaxAge(state));
     }
 
-    /** Harvests the ripe crop at {@code pos} and replants it; the drops, less one seed, go into its mandibles. */
     public boolean harvest(ServerLevel level, BlockPos pos) {
         if (!ripe(level, pos)) {
             return false;
@@ -938,7 +915,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
             }
         }
 
-        /** The nearest-ish ripe crop around the nest (if harvesting is on and its mandibles are free), else a growing one. */
         private @Nullable BlockPos findWork() {
             List<BlockPos> ripe = new ArrayList<>();
             List<BlockPos> growing = new ArrayList<>();
