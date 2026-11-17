@@ -70,7 +70,6 @@ public enum AnthillTheme {
         return TEMPERATE;
     }
 
-    /** An Overworld anthill's theme from the biome at its center. */
     public static AnthillTheme of(Holder<Biome> biome) {
         if (biome.is(BiomeTags.IS_BADLANDS)) {
             return BADLANDS;
@@ -104,17 +103,14 @@ public enum AnthillTheme {
 
     // --- The mound ---
 
-    /** How far the mound and what grows round it reach from the center. */
     public int reach() {
         return shape.radius + (trail() != null ? 12 : 3);
     }
 
-    /** The highest the mound rises over the center's ground (spires included). */
     public int maxHeight() {
         return shape == Shape.SPIRES ? 14 : shape.height;
     }
 
-    /** The mound's height over a column (0 outside it), the same whichever chunk asks. */
     public int moundHeight(long seed, int x, int z) {
         double noise = (hash(seed, x, 0, z) - 0.5);
         double distance = Math.sqrt(x * x + z * z) + noise * (shape == Shape.MOSSY ? 2.4 : 1.4);
@@ -189,7 +185,6 @@ public enum AnthillTheme {
         return state.hasProperty(LeavesBlock.PERSISTENT) ? state.setValue(LeavesBlock.PERSISTENT, true) : state;
     }
 
-    /** What lies on top of the mound (or round its foot), or null for nothing: snow, petals, mushrooms, dead bushes. */
     public BlockState topping(double roll, boolean onMound) {
         return switch (this) {
             case SNOWY -> onMound || roll < 0.5 ? Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS, 1 + (int) (roll * 10) % 3) : null;
@@ -208,7 +203,6 @@ public enum AnthillTheme {
         };
     }
 
-    /** The block the ants' foraging trails wear into the ground round the mound, or null where none show. */
     public BlockState trail() {
         return switch (this) {
             case TEMPERATE, TAIGA, JUNGLE, CHERRY, MUSHROOM -> Blocks.DIRT_PATH.defaultBlockState();
@@ -219,7 +213,6 @@ public enum AnthillTheme {
 
     // --- The nest ---
 
-    /** Tunnel walls: earth the ants packed hard, with a softer floor (a little special in some rooms). */
     public BlockState wall(double roll, boolean floor, AnthillLayout.RoomType room, int y) {
         if (floor && room == AnthillLayout.RoomType.QUEEN && roll < 0.6) {
             return (this == END ? Blocks.PURPUR_BLOCK : ModDecor.ROYAL_CHITIN_BLOCK.get()).defaultBlockState();
@@ -268,7 +261,6 @@ public enum AnthillTheme {
         return block.defaultBlockState();
     }
 
-    /** What hangs from a tunnel's ceiling here, or null: roots, and glowing lichen where it's damp. */
     public BlockState ceiling(double roll) {
         BlockState lichen = Blocks.GLOW_LICHEN.defaultBlockState().setValue(MultifaceBlock.getFaceProperty(Direction.UP), true);
         return switch (this) {
@@ -279,7 +271,6 @@ public enum AnthillTheme {
         };
     }
 
-    /** What lies on a room's floor here, or null: moss in the jungle, snow in the cold. */
     public BlockState carpet(double roll) {
         return switch (this) {
             case JUNGLE -> roll < 0.18 ? Blocks.MOSS_CARPET.defaultBlockState() : null;

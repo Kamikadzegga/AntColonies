@@ -44,7 +44,6 @@ public record QueenData(Identifier species, Genome genome, int grown, float grow
         this(species, genome, 1, 0.0F);
     }
 
-    /** A Queen grown into a stage, with nothing yet towards the next. */
     public QueenData(Identifier species, Genome genome, int grown) {
         this(species, genome, grown, 0.0F);
     }
@@ -53,17 +52,14 @@ public record QueenData(Identifier species, Genome genome, int grown, float grow
         return new QueenData(species, genome, grown, growth);
     }
 
-    /** The same Queen evolved into another species; her lineage records it. */
     public QueenData evolvedInto(Identifier next) {
         return new QueenData(next, genome.withLineage(genome.lineage().withSpecies(next)), grown, growth);
     }
 
-    /** Minutes at a bigger colony stage a Queen needs to grow into {@code stage}. */
     public static double minutesFor(int stage) {
         return AntConfig.get(AntConfig.QUEEN_GROWTH_MINUTES) * Math.max(1, stage - 1);
     }
 
-    /** Minutes still to go before she grows into her next stage. */
     public double minutesToNext() {
         return Math.max(0, minutesFor(grown + 1) - growth);
     }

@@ -17,7 +17,6 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<WildAnt>> WILD_ANT = ENTITY_TYPES.registerEntityType("wild_ant",
             WildAnt::new, MobCategory.CREATURE, b -> b.sized(0.45F, 0.25F).eyeHeight(0.15F).clientTrackingRange(8));
 
-    /** A colony soldier that follows and defends its owner. */
     public static final DeferredHolder<EntityType<?>, EntityType<GuardAnt>> GUARD_ANT =
             ENTITY_TYPES.registerEntityType("guard_ant", GuardAnt::new, MobCategory.CREATURE,
                     b -> b.sized(0.45F, 0.25F).eyeHeight(0.15F).clientTrackingRange(10));

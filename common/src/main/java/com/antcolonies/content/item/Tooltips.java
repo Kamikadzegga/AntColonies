@@ -30,7 +30,6 @@ public final class Tooltips {
     private static final ChatFormatting[] RARITY = {ChatFormatting.WHITE, ChatFormatting.GREEN, ChatFormatting.AQUA, ChatFormatting.LIGHT_PURPLE,
             ChatFormatting.GOLD, ChatFormatting.RED};
 
-    /** A dimension's name for text ("the Nether"); unknown ones by their id. */
     public static MutableComponent dimension(ResourceKey<Level> dimension) {
         Identifier id = dimension.identifier();
         return Component.translatableWithFallback("dimension." + id.getNamespace() + "." + id.getPath(), id.toString());
@@ -53,7 +52,6 @@ public final class Tooltips {
         queen(queen, tooltip, detailed, null);
     }
 
-    /** The same, with what her species is like when the registries are known (item tooltips). */
     public static void queen(QueenData queen, Consumer<Component> tooltip, boolean detailed, HolderLookup.@Nullable Provider registries) {
         Genome genome = queen.genome();
         if (!genome.lineage().name().isEmpty()) {
@@ -92,7 +90,6 @@ public final class Tooltips {
         }
     }
 
-    /** What a species is like, for tube tooltips: its climate, what it finds or grows, and with {@code detailed} its evolutions. */
     public static void speciesFacts(HolderLookup.@Nullable Provider registries, Identifier id, Consumer<Component> tooltip, boolean detailed) {
         AntSpecies data = ModRegistries.species(registries, id);
         if (data == null) {
@@ -143,7 +140,6 @@ public final class Tooltips {
         }));
     }
 
-    /** The Queen's two best traits, for the short tooltip. */
     public static void bestTraits(Genome genome, Consumer<Component> tooltip) {
         List<Trait> traits = new ArrayList<>(List.of(Trait.values()));
         traits.sort(Comparator.comparingInt(genome::level).reversed());

@@ -81,7 +81,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     private static int colonyCard;
     private static int series;
     private int jobScroll;
-    /** Where the Production page's item cards start, as last drawn. */
     private int productionCardsY = CONTENT_Y + 26;
     private final InfoPanel info = new InfoPanel();
     /** Network nodes drawn this frame, for their tooltips: x, y, radius, index into the colony's network list. */
@@ -255,14 +254,12 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
 
     // --- Drawing helpers ---
 
-    /** A card: a lighter panel with an accent strip on top. */
     private void card(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int accent, boolean lit) {
         graphics.fill(leftPos + x, topPos + y, leftPos + x + w, topPos + y + h, lit ? CARD_HI : CARD);
         graphics.fill(leftPos + x, topPos + y, leftPos + x + w, topPos + y + 1, accent);
         graphics.outline(leftPos + x - 1, topPos + y - 1, w + 2, h + 2, 0xFF0B1820);
     }
 
-    /** A rounded chip with a note in it (statuses). Returns its width. */
     private int chip(GuiGraphicsExtractor graphics, String text, int x, int y, int color) {
         // A solid dark plate with a coloured bar on its left: the text reads on it whatever its colour.
         int w = font.width(text) + 7;
@@ -402,7 +399,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         return Math.clamp((colony.exactAdults() - from) / Math.max(1, to - from), 0, 1);
     }
 
-    /** Eggs, larvae and workers as their items (tinted to the species) with their counts. */
     private void populationIcons(GuiGraphicsExtractor graphics, Colony colony, int x, int y) {
         ItemStack egg = new ItemStack(ModItems.ANT_EGG.get());
         egg.set(ModDataComponents.SPECIES.get(), colony.species());
@@ -419,7 +415,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         }
     }
 
-    /** The colony's problems first, then its notes, as coloured chips that wrap. */
     private void statusChips(GuiGraphicsExtractor graphics, Colony colony, int x, int y) {
         List<ColonyStatus> statuses = new ArrayList<>(ColonyStatus.of(colony.status() | menu.terrarium().feedStatus()));
         statuses.sort((a, b) -> Boolean.compare(b.problem(), a.problem()));
@@ -450,7 +445,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         }
     }
 
-    /** Queen-only founding: its three steps, and a bar for the food she waits for or the first workers raised so far. */
     private void founding(GuiGraphicsExtractor graphics, Colony colony, int x, int y) {
         double needed = ColonySimulator.foundingFood();
         int target = AntConfig.get(AntConfig.FOUNDING_WORKERS);
@@ -752,7 +746,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     /** The site each tile shows this frame, by its index in the list (for drawing the tile). */
     private final Map<Integer, Colony.Assignment> tileSites = new HashMap<>();
 
-    /** Visual mode: every site as a tile in a grid; hovered, all about it; clicked, it opens in the Detailed list. */
     private void siteGrid(List<Colony.Assignment> list, int x, int y) {
         tileSites.clear();
         int columns = Math.max(1, (CONTENT_W - 4) / TILE_STEP);
@@ -770,7 +763,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         }
     }
 
-    /** One site's tile: its icon on a plate, and a light in the corner: green working, red a problem, grey switched off. */
     private void drawTile(GuiGraphicsExtractor graphics, Button button, boolean hovered) {
         Colony.Assignment job = tileSites.get(BUTTON_TILE - button.id());
         if (job == null) {
@@ -808,7 +800,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                 .orElse(ItemStack.EMPTY);
     }
 
-    /** A site's icon at a screen position: a Liquid Chamber of a Liquid Ant colony shows that colony's droplet. */
     private void siteIconAt(GuiGraphicsExtractor graphics, StructureKind kind, int x, int y) {
         if (kind == StructureKind.LIQUID_CHAMBER && !liquidIcon.isEmpty()) {
             graphics.item(liquidIcon, x, y);
@@ -868,7 +859,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
 
     // --- Production ---
 
-    /** One find this colony makes: the item, its expected finds per minute from its sites' real rates, and how many are stored. */
     private record Find(ItemStack item, double perMinute, long stored) {}
 
     /** The minutes the Production page's rates are averaged over, or 0 while the colony has brought nothing in yet (it shows estimates). */
@@ -886,7 +876,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                 : Math.round(window);
     }
 
-    /** "30 min", or how long the colony's log covers so far; "est." while the rates are estimates. With its hover. */
     private void productionWindowNote(GuiGraphicsExtractor graphics, Colony colony, int right, int y) {
         double window = productionWindow(colony);
         String note = window > 0 ? Component.translatable("gui.antcolonies.production.window", shownMinutes(window)).getString()
@@ -975,7 +964,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         }
     }
 
-    /** What the colony finds and what its Storage holds, most first: from its production log, or estimated from its sites' rates. */
     private List<Find> finds(Colony colony) {
         List<Find> finds = new ArrayList<>();
         // What the ants really brought in over the last half hour, once there is any: it stays when the Storage is emptied.
@@ -1046,12 +1034,10 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         return finds;
     }
 
-    /** The name of the fluid a Liquid Ant species makes (as the fluid's own mod names it), or a dash if it is gone. */
     private static String liquidName(AntSpecies species) {
         return species.liquid().flatMap(AntSpecies.Liquid::fluidValue).map(fluid -> fluid.getFluidType().getDescription().getString()).orElse("-");
     }
 
-    /** A Liquid Ant colony's line on the Production page: its fluid, ants, droplets a minute and efficiency. Returns the y under it. */
     private int liquidLine(GuiGraphicsExtractor graphics, Colony colony, AntSpecies species, int x, int y) {
         AntSpecies.Liquid liquid = species.liquid().orElse(null);
         long ants = 0;
@@ -1241,7 +1227,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         return fit(Component.translatable(key).getString(), 42);
     }
 
-    /** A colony on the network: a disc in its channel's colour with its ant, and a food bar under it. */
     private void node(GuiGraphicsExtractor graphics, Colony.NetworkLink link, int x, int y, int r) {
         int color = link.online() ? 0xFF000000 | DyeColor.byId(link.channel()).getTextureDiffuseColor() : 0xFF3A4A55;
         for (int dy = -r; dy <= r; dy++) {

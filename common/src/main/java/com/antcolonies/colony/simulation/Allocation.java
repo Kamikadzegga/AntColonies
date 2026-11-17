@@ -14,7 +14,6 @@ import com.antcolonies.colony.expedition.Expedition;
 
 /** Puts the colony's ants to work: each site takes what it asks for up to its capacity, and no ant is counted twice. */
 public final class Allocation {
-    /** The order workers are handed out in. */
     private static final List<StructureKind> WORKER_ORDER = List.of(StructureKind.HARVESTING_SITE, StructureKind.HUNTING_GROUND,
             StructureKind.FORAGING_SITE, StructureKind.NETHER_FORAGING_SITE, StructureKind.END_FORAGING_SITE, StructureKind.LIQUID_CHAMBER);
 
@@ -43,7 +42,6 @@ public final class Allocation {
             return entity.kind();
         }
 
-        /** Its ants (farmers at a Harvesting Site, hunters at a Hunting Ground). */
         public int assigned() {
             return assigned;
         }
@@ -149,7 +147,6 @@ public final class Allocation {
         return of(kind).stream().mapToInt(Site::assigned).sum();
     }
 
-    /** Tells each site what it got, for its GUI and its animation. */
     void publish(ColonySimulator.Step step) {
         for (Site site : all()) {
             site.entity.setAssignment(site.assigned, site.capacity, site.status, site.rate);

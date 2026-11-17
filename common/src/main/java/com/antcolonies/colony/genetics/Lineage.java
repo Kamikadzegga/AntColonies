@@ -38,7 +38,6 @@ public record Lineage(UUID id, String name, Optional<UUID> parent, int generatio
             Identifier.STREAM_CODEC.apply(ByteBufCodecs.list(64)), Lineage::history,
             Lineage::new);
 
-    /** The same Queen, now of another species (after an evolution). */
     public Lineage withSpecies(Identifier species) {
         List<Identifier> next = new ArrayList<>(history);
         if (next.isEmpty() || !next.getLast().equals(species)) {

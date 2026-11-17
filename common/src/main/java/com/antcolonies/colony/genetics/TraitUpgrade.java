@@ -13,7 +13,6 @@ public record TraitUpgrade(Trait trait, List<Step> steps) {
             Step.CODEC.listOf().fieldOf("steps").forGetter(TraitUpgrade::steps)
     ).apply(i, TraitUpgrade::new));
 
-    /** The step raising {@code fromLevel} to the next level. */
     public Step step(int fromLevel) {
         if (steps.isEmpty()) {
             return Step.EMPTY;

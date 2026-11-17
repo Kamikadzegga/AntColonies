@@ -37,7 +37,6 @@ public final class AnthillAlarm {
 
     private AnthillAlarm() {}
 
-    /** Players in creative or spectator mode never raise an alarm. */
     public static boolean exempt(Player player) {
         return player.isCreative() || player.isSpectator();
     }
@@ -78,7 +77,6 @@ public final class AnthillAlarm {
                 && AnthillPiece.CONTAINER_LOOT.contains(container.getLootTable());
     }
 
-    /** A player opening (or breaking) an anthill's container: the anthill nearby raises its alarm. */
     public static boolean containerTouched(ServerLevel level, BlockPos pos, Player player) {
         if (exempt(player) || !anthillContainer(level, pos)) {
             return false;

@@ -25,7 +25,6 @@ public final class ModRegistries {
     public static final ResourceKey<Registry<Hybrid>> HYBRID = ResourceKey.createRegistryKey(AntColonies.id("hybrid"));
     public static final ResourceKey<Registry<Mutation>> MUTATION = ResourceKey.createRegistryKey(AntColonies.id("mutation"));
     public static final ResourceKey<Registry<TraitUpgrade>> TRAIT_UPGRADE = ResourceKey.createRegistryKey(AntColonies.id("trait_upgrade"));
-    /** The Nether and End Foraging Sites' expedition tables. */
     public static final ResourceKey<Registry<Expedition>> EXPEDITION =
             ResourceKey.createRegistryKey(AntColonies.id("expedition"));
 

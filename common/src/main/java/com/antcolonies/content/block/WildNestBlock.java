@@ -76,7 +76,6 @@ public class WildNestBlock extends Block implements EntityBlock {
         return SHAPE;
     }
 
-    /** Ants were taken: the nest recovers over the configured time. */
     public void raid(ServerLevel level, BlockPos pos, BlockState state, Player player) {
         level.setBlock(pos, state.setValue(RECOVERING, true), Block.UPDATE_ALL);
         level.scheduleTick(pos, this, Math.max(1, AntConfig.get(AntConfig.NEST_COOLDOWN_SECONDS) * 20));

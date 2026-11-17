@@ -40,7 +40,6 @@ public final class AnthillLayout {
         ANTECHAMBER,
         /** The colony's refuse heap: bones and spoil, with things worth brushing out of it. */
         MIDDEN,
-        /** Where the ants keep aphids for their honeydew: moss, azaleas and honey. */
         APHID_FARM
     }
 
@@ -70,7 +69,6 @@ public final class AnthillLayout {
             return dx < 0 && dy < 0 && dz < 0;
         }
 
-        /** The floor of the room under its middle. */
         public double floorY() {
             return y - ry;
         }
@@ -78,10 +76,8 @@ public final class AnthillLayout {
 
     public record Tunnel(double x0, double y0, double z0, double x1, double y1, double z1, double radius) {}
 
-    /** The entrance shaft runs from above the mound down to here. */
     public static final double SHAFT_BOTTOM = -3;
     public static final double TUNNEL = 1.1;
-    /** How far the plan may reach from the center, and how deep. */
     public static final int REACH = 20;
 
     private final Style style;
@@ -200,7 +196,6 @@ public final class AnthillLayout {
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
-    /** The room a spot (relative) lies in, or null in a tunnel or outside. */
     public Room roomAt(double x, double y, double z) {
         for (Room c : rooms) {
             double dx = (x - c.x) / c.rx;
@@ -249,7 +244,6 @@ public final class AnthillLayout {
         max[2] = Math.max(max[2], z);
     }
 
-    /** Whether a room fits: inside the reach, not under the depth limit, and clear of every other room. */
     private boolean fits(Room room, int maxDepth) {
         if (Math.abs(room.x) + room.rx > reach || Math.abs(room.z) + room.rz > reach || room.y - room.ry < -maxDepth || room.y + room.ry > -2) {
             return false;
@@ -276,7 +270,6 @@ public final class AnthillLayout {
         };
     }
 
-    /** The anthill's plan for a style, from its seed. */
     public static AnthillLayout create(Style style, long seed) {
         AnthillLayout layout = new AnthillLayout(style);
         RandomSource random = RandomSource.create(seed);
@@ -318,7 +311,6 @@ public final class AnthillLayout {
         return out;
     }
 
-    /** Places a room near a target spot (a few tries, nudged each time), dug from {@code from} or the shaft; null if none fits. */
     private Room place(RoomType type, double x, double y, double z, int maxDepth, RandomSource random, Room from) {
         for (int attempt = 0; attempt < 12; attempt++) {
             double jitter = attempt * 0.8;
@@ -350,7 +342,6 @@ public final class AnthillLayout {
         return best;
     }
 
-    /** The Queen's chamber: placed last-but-not-least, in the deepest spot the style offers (it must fit). */
     private void queenAt(double x, double y, double z, int maxDepth, RandomSource random) {
         Room from = nearest(x, y, z);
         if (place(RoomType.QUEEN, x, y, z, maxDepth, random, from) == null) {
@@ -580,8 +571,6 @@ public final class AnthillLayout {
         return out;
     }
 
-
-    /** A winding way from one point to another: the points of a tunnel bent once or twice on the way. */
     private static double[][] path(double x0, double y0, double z0, double x1, double y1, double z1, RandomSource random) {
         int bends = 1 + random.nextInt(2);
         double[][] points = new double[bends + 2][];
@@ -595,7 +584,6 @@ public final class AnthillLayout {
         return points;
     }
 
-    /** Digs a path; with {@code patrol} a soldier watches its first bend. */
     private void dig(double[][] path, double radius, boolean patrol) {
         for (int i = 0; i + 1 < path.length; i++) {
             tunnel(path[i][0], path[i][1], path[i][2], path[i + 1][0], path[i + 1][1], path[i + 1][2], radius);
@@ -605,7 +593,6 @@ public final class AnthillLayout {
         }
     }
 
-    /** Whether every stretch of a path keeps away from a room (a sphere round its widest radius, with a margin). */
     private static boolean keepsAway(double[][] path, Room room) {
         for (int i = 0; i + 1 < path.length; i++) {
             if (!keepsAway(path[i][0], path[i][1], path[i][2], path[i + 1][0], path[i + 1][1], path[i + 1][2], room)) {
@@ -620,7 +607,6 @@ public final class AnthillLayout {
         return room.y - room.ry + TUNNEL;
     }
 
-    /** Whether a tunnel from a to b would keep away from a room (a sphere round its widest radius, with a margin). */
     private static boolean keepsAway(double x0, double y0, double z0, double x1, double y1, double z1, Room room) {
         if (room == null) {
             return true;

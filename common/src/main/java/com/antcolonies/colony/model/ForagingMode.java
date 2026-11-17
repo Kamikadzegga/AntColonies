@@ -44,7 +44,6 @@ public enum ForagingMode {
         return !stack.isEmpty() && stack.is(MINERAL_TAG);
     }
 
-    /** Whether an output is of the kind this mode looks for (Balanced looks for everything). */
     public boolean wants(SpeciesOutput output) {
         return switch (this) {
             case BALANCED -> true;
@@ -53,7 +52,6 @@ public enum ForagingMode {
         };
     }
 
-    /** How much more (or less) often this mode picks an output. */
     public double weight(SpeciesOutput output) {
         if (this == BALANCED) {
             return 1;

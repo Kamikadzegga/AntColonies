@@ -26,7 +26,6 @@ public final class ProductionMath {
         return 0.5 + 0.5 * Math.clamp(health, 0, 1);
     }
 
-    /** Work speed from Speed Upgrade tiers. */
     public static double speed(int tiers) {
         return 1 + AntConfig.get(AntConfig.SPEED_UPGRADE_BONUS) * tiers;
     }
@@ -36,7 +35,6 @@ public final class ProductionMath {
         return 1 - Math.min(0.75, AntConfig.get(AntConfig.FOOD_UPGRADE_SAVING) * tiers);
     }
 
-    /** n structures of a kind with a bonus each, diminishing: 1 + bonus * n^0.7. */
     public static double diminishing(int count, double bonus) {
         return count <= 0 ? 1 : 1 + bonus * Math.pow(count, 0.7);
     }

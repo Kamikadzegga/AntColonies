@@ -35,7 +35,6 @@ import snownee.jade.api.config.IPluginConfig;
 
 /** The Jade providers: for each block a server half (the numbers) and a client half (the lines), sharing one id. */
 final class ColonyProviders {
-    /** At most this many status lines, so a struggling colony doesn't fill the screen. */
     private static final int MAX_STATUS_LINES = 3;
 
     static final Server TERRARIUM_DATA = new Server("terrarium") {
@@ -265,7 +264,6 @@ final class ColonyProviders {
         }
     };
 
-    /** A home nest's ants and store, from the server. */
     static final Server NEST_DATA = new Server("wild_nest") {
         @Override
         public void appendServerData(CompoundTag data, BlockAccessor accessor) {
@@ -281,7 +279,6 @@ final class ColonyProviders {
         }
     };
 
-    /** A nest: whose it is; for a wild one how to take ants from it, for a home nest its ants and store. */
     static final Client WILD_NEST = new Client("wild_nest") {
         @Override
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {

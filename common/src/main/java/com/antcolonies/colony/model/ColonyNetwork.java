@@ -45,7 +45,6 @@ public final class ColonyNetwork {
         }
     }
 
-    /** Whether a block is a chamber, in a loaded chunk. */
     private static boolean chamber(Level level, BlockPos pos) {
         return level.isLoaded(pos) && level.getBlockState(pos).getBlock() instanceof StructureBlock;
     }

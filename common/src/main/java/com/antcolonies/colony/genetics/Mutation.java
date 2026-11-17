@@ -58,7 +58,6 @@ public record Mutation(MutationEffects effects, int randomWeight, boolean negati
                 Codec.BOOL.optionalFieldOf("heat_resistant", false).forGetter(MutationEffects::heatResistant)
         ).apply(i, MutationEffects::new));
 
-        /** Both together, as a Queen with several mutations has them. */
         public MutationEffects and(MutationEffects other) {
             return new MutationEffects(production * other.production, gathering * other.gathering, food * other.food, eggs * other.eggs,
                     growth * other.growth, soldiers * other.soldiers, farming * other.farming, special * other.special,

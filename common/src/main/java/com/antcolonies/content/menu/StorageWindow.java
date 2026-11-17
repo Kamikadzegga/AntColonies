@@ -21,7 +21,6 @@ public class StorageWindow implements Container {
         this.firstRow = firstRow;
     }
 
-    /** The Storage slot this window slot shows. */
     public int storageSlot(int slot) {
         return firstRow.getAsInt() * 9 + slot;
     }

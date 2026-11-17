@@ -78,7 +78,6 @@ public final class ColonyAccess {
         }
     }
 
-    /** A hunter lost on a hunt. */
     public static void killWorker(Colony colony) {
         colony.workers = Math.max(0, colony.workers - 1);
     }
@@ -96,7 +95,6 @@ public final class ColonyAccess {
         colony.endFounding();
     }
 
-    /** The founding Queen's food is in: she begins her first brood. */
     public static void beginFoundingBrood(Colony colony) {
         if (colony.founding == Founding.FEEDING) {
             colony.founding = Founding.BROOD;
@@ -104,13 +102,11 @@ public final class ColonyAccess {
         }
     }
 
-    /** The founding Queen's first brood is grown: the colony is founded and runs like any other from now on. */
     public static void completeFounding(Colony colony) {
         colony.endFounding();
         colony.queenFounded = true;
     }
 
-    /** Counts adults raised during founding's first brood; returns the total so far. */
     public static double countFoundingRaised(Colony colony, double raised) {
         colony.foundingRaised += Math.max(0, raised);
         return colony.foundingRaised;

@@ -20,7 +20,6 @@ public class NetherAnthill extends Structure {
     /** The highest floor looked for, and the lowest: the nest goes {@link AnthillPiece#DEPTH} down, and lava lies at 31. */
     private static final int TOP = 100;
     private static final int LOWEST = 31 + AnthillPiece.DEPTH + 6;
-    /** Open air needed over the floor for the mound. */
     private static final int HEADROOM = AnthillPiece.HEIGHT + 3;
     private static final int MAX_SLOPE = 3;
 

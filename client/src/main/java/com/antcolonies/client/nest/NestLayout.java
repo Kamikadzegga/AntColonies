@@ -26,7 +26,6 @@ public final class NestLayout {
         END_FORAGING_SITE, COLONY_CONNECTOR, LIQUID_CHAMBER
     }
 
-    /** What a node of the ants' paths is. */
     public enum Spot {
         /** The block's own chamber. */
         MAIN,
@@ -343,7 +342,6 @@ public final class NestLayout {
         return index;
     }
 
-    /** Where the block's ants come from and go to: its portal or shaft, or else a burrow at the end of a short tunnel. */
     private void source(int main) {
         float sumU = 0;
         float sumV = 0;
@@ -596,7 +594,6 @@ public final class NestLayout {
         return u >= 0 && v >= 0 && u < N && v < N && carved[v * N + u];
     }
 
-    /** Whether a cell is carved and stands on solid nest: somewhere an ant can stand. */
     public boolean floor(int u, int v) {
         return carved(u, v) && !carved(u, v - 1);
     }
@@ -629,7 +626,6 @@ public final class NestLayout {
         return list;
     }
 
-    /** Steps from every node to a node (through the edges). */
     public int[] distances(int to) {
         if (distances == null) {
             distances = new int[nodes.size()][];

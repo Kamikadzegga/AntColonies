@@ -42,7 +42,6 @@ public final class ColonyStorage {
         return storages;
     }
 
-    /** Moves what waits in a Foraging Site's store into the colony's Storage, as much as fits. */
     public static void moveToStorage(ServerLevel level, Colony colony, StructureBlockEntity site) {
         List<StructureBlockEntity> storages = storages(level, colony);
         if (storages.isEmpty()) {
@@ -111,7 +110,6 @@ public final class ColonyStorage {
         return canFitInto(storages(level, colony), List.of(stack));
     }
 
-    /** Puts a stack into the colony's Storage chambers alone; returns what didn't fit. */
     public static ItemStack insertIntoStorage(ServerLevel level, Colony colony, ItemStack stack) {
         return insertInto(storages(level, colony), stack);
     }

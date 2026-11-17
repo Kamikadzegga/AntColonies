@@ -32,7 +32,6 @@ public record Evolution(Identifier from, Identifier to, Ingredient item, double 
             ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension").forGetter(Evolution::dimension)
     ).apply(i, Evolution::new));
 
-    /** Whether a Terrarium in {@code level} may attempt it. */
     public boolean allowedIn(ResourceKey<Level> level) {
         return dimension.isEmpty() || dimension.get().equals(level);
     }

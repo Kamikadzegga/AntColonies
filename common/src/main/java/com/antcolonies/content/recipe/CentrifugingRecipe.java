@@ -63,12 +63,10 @@ public record CentrifugingRecipe(Ingredient ingredient, FluidStackTemplate resul
         return result.amount();
     }
 
-    /** The FE one run takes with the config's multiplier. */
     public int energyCost() {
         return (int) Math.min(Integer.MAX_VALUE, Math.round(energy * AntConfig.get(AntConfig.CENTRIFUGE_ENERGY_MULTIPLIER)));
     }
 
-    /** The ticks one run takes with the config's multiplier. */
     public int duration() {
         return (int) Math.clamp(Math.round(time * AntConfig.get(AntConfig.CENTRIFUGE_TIME_MULTIPLIER)), 1, 1_000_000);
     }
@@ -133,7 +131,6 @@ public record CentrifugingRecipe(Ingredient ingredient, FluidStackTemplate resul
         clientRecipes = List.copyOf(recipes);
     }
 
-    /** Every recipe this side knows: the server's own, or the client's synced copy. */
     public static List<CentrifugingRecipe> all(@Nullable Level level) {
         if (level instanceof ServerLevel server) {
             List<CentrifugingRecipe> list = new ArrayList<>();
@@ -145,7 +142,6 @@ public record CentrifugingRecipe(Ingredient ingredient, FluidStackTemplate resul
         return clientRecipes;
     }
 
-    /** The recipe for an item, if a Centrifuge can spin it. */
     public static @Nullable CentrifugingRecipe find(@Nullable Level level, ItemStack stack) {
         if (stack.isEmpty()) {
             return null;

@@ -59,12 +59,10 @@ public record Expedition(StructureKind site, TagKey<AntSpecies> adapted, double 
         }
     }
 
-    /** The finds a colony of this species can bring back. */
     public List<SpeciesOutput> outputsFor(Identifier speciesId) {
         return outputs.stream().filter(find -> find.foundBy(speciesId)).map(Find::output).toList();
     }
 
-    /** Whether a species can go on this expedition (it is in the {@code adapted} tag). */
     public boolean adapted(HolderLookup.@Nullable Provider registries, Identifier speciesId) {
         if (registries == null) {
             return false;
@@ -75,7 +73,6 @@ public record Expedition(StructureKind site, TagKey<AntSpecies> adapted, double 
                 .orElse(false);
     }
 
-    /** The species that can go, by id (for JEI, EMI and the screens). */
     public List<Identifier> adaptedSpecies(HolderLookup.@Nullable Provider registries) {
         if (registries == null) {
             return List.of();
@@ -87,7 +84,6 @@ public record Expedition(StructureKind site, TagKey<AntSpecies> adapted, double 
                 .orElse(List.of());
     }
 
-    /** The expedition a site kind runs, if any is loaded. */
     public static @Nullable Expedition forSite(HolderLookup.@Nullable Provider registries, StructureKind kind) {
         if (registries == null || !kind.expedition()) {
             return null;

@@ -23,7 +23,6 @@ public final class TunnelLayout {
 
     public record Node(float u, float v, float radiusU, float radiusV, ChamberType type) {}
 
-    /** A tunnel between two nodes, bent through a middle point. */
     public record Edge(int a, int b, float midU, float midV) {
         public int other(int node) {
             return node == a ? b : a;

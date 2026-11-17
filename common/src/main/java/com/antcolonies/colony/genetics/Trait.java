@@ -48,7 +48,6 @@ public enum Trait implements StringRepresentable {
         return "trait.antcolonies." + name;
     }
 
-    /** The configured highest level (the Genetic Laboratory stops there). */
     public static int maxLevel() {
         return Mth.clamp(AntConfig.get(AntConfig.MAX_TRAIT_LEVEL), 2, ABSOLUTE_MAX_LEVEL);
     }

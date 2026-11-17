@@ -17,7 +17,6 @@ public record Cost(Ingredient ingredient, int count) {
         return ingredient.test(stack);
     }
 
-    /** The count with a multiplier applied, at least one. */
     public int scaled(double multiplier) {
         return Math.max(1, (int) Math.ceil(count * multiplier));
     }

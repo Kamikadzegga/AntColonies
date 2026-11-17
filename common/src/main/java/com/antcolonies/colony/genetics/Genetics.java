@@ -29,7 +29,6 @@ public final class Genetics {
     private static final String[] NAME_END = {"a", "ia", "is", "ra", "elle", "ine", "ys", "ora", "eth", "ix"};
     private static final String[] NUMERALS = {"", " II", " III", " IV", " V", " VI", " VII", " VIII", " IX", " X"};
 
-    /** A new wild Queen of the species: every trait rolled from the configured starting weights. */
     public static QueenData wildQueen(Identifier species, RandomSource random) {
         List<Integer> levels = new ArrayList<>();
         for (int t = 0; t < Trait.values().length; t++) {
@@ -110,7 +109,6 @@ public final class Genetics {
                 .map(mutation -> mutation.value().negative()).orElse(false);
     }
 
-    /** How many of these mutations are beneficial (flaws don't count toward the cap). */
     public static int beneficial(List<Identifier> mutations, HolderLookup.Provider registries) {
         int count = 0;
         for (Identifier id : mutations) {
@@ -121,12 +119,10 @@ public final class Genetics {
         return count;
     }
 
-    /** Whether one more beneficial mutation fits (at most maxBeneficialMutations; their bonuses multiply). */
     public static boolean roomForBeneficial(List<Identifier> mutations, HolderLookup.Provider registries) {
         return beneficial(mutations, registries) < AntConfig.get(AntConfig.MAX_BENEFICIAL_MUTATIONS);
     }
 
-    /** A random mutation that suits the category; rare ones only for Queens with Mutation Probability 5 or more. */
     public static @Nullable Identifier randomMutation(RegistryAccess registries, Category category, int mutationLevel, RandomSource random) {
         Optional<Registry<Mutation>> registry = registries.lookup(ModRegistries.MUTATION);
         if (registry.isEmpty()) {
@@ -179,7 +175,6 @@ public final class Genetics {
         return name + NUMERALS[Math.min(generation, NUMERALS.length - 1)];
     }
 
-    /** Whether a species allows natural farming in its garden (used where species data may be missing). */
     public static boolean canFarm(@Nullable AntSpecies species) {
         return species != null && species.canFarm();
     }

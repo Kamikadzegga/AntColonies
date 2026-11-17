@@ -86,7 +86,6 @@ public final class FlatGround {
         }
     }
 
-    /** Whether this block is a part of a colony built flat. */
     private static boolean flatPart(BlockState state) {
         return state.getBlock() instanceof ColonyPartBlock && !ColonyPartBlock.upright(state);
     }
@@ -96,7 +95,6 @@ public final class FlatGround {
         return state.getBlock() instanceof ColonyPartBlock && state.getValue(ColonyPartBlock.CONNECTED.get(SIDES[side]));
     }
 
-    /** Works out the shape of the flat colony block at {@code pos} from its state and its neighbours'. */
     public static void extract(Shape shape, BlockGetter level, BlockPos pos, BlockState state) {
         shape.seed = pos.asLong();
         BlockState[] around = new BlockState[4];
@@ -221,7 +219,6 @@ public final class FlatGround {
         };
     }
 
-    /** A trail's colour: the surface worn down toward the soil under it. */
     static int trailColor(int soil, int top) {
         int r = (int) (((top >> 16) & 0xFF) * 0.35F + ((soil >> 16) & 0xFF) * 0.65F);
         int g = (int) (((top >> 8) & 0xFF) * 0.35F + ((soil >> 8) & 0xFF) * 0.65F);
@@ -235,7 +232,6 @@ public final class FlatGround {
         return new float[][] {{u0 / TEX, v1 / TEX}, {u1 / TEX, v1 / TEX}, {u1 / TEX, v0 / TEX}, {u0 / TEX, v0 / TEX}};
     }
 
-    /** The soil: its walls behind the outer glasses that face the camera, the little walls at inner corners, and its surface. */
     static void soil(Geometry g, Shape shape, int soil, int top, boolean[] facing) {
         float x0 = shape.x0();
         float x1 = shape.x1();
@@ -275,7 +271,6 @@ public final class FlatGround {
                 new float[] {0, 1, 0});
     }
 
-    /** Grid cells on a side: none, tunnel, chamber, crystal chamber. */
     private static final byte NONE = 0;
     private static final byte TUNNEL = 1;
     private static final byte CHAMBER = 2;
@@ -512,7 +507,6 @@ public final class FlatGround {
         return Mth.sqrt((b[0] - a[0]) * (b[0] - a[0]) + (b[1] - a[1]) * (b[1] - a[1]));
     }
 
-    /** Worn trails on the surface from the block's middle to each joined side, meeting the neighbour's trail at the edge. */
     static void trails(Geometry g, Shape shape, int color) {
         Random random = new Random(shape.seed * 53);
         float[] centre = {8 + (random.nextFloat() - 0.5F) * 2.5F, 8 + (random.nextFloat() - 0.5F) * 2.5F};
@@ -561,7 +555,6 @@ public final class FlatGround {
         }
     }
 
-    /** The middle of a block's trails, where they meet (the Formicarium's main entrance stands there). */
     static float[] trailCentre(Shape shape) {
         Random random = new Random(shape.seed * 53);
         return new float[] {8 + (random.nextFloat() - 0.5F) * 2.5F, 8 + (random.nextFloat() - 0.5F) * 2.5F};

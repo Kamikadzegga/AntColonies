@@ -184,14 +184,12 @@ public final class AntModel {
         return LayerDefinition.create(mesh, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }
 
-    /** The dark plates on top of a Liquid Ant's crop. */
     public static final int CROP_PLATES = 4;
     /** How much of each edge of the crop's bounding box is cut away to round it, in units. */
     public static final float CROP_CHAMFER = 1.5F;
     /** How far the crop's skin stands off the liquid inside it. */
     public static final float CROP_SKIN = 0.45F;
 
-    /** The crop's rounded body: four crossed boxes, each with its own quarter of the crop texture. */
     private static CubeListBuilder cropBoxes(float w, float h, float l, CubeDeformation grow) {
         float c = CROP_CHAMFER;
         return CubeListBuilder.create()
@@ -214,7 +212,6 @@ public final class AntModel {
         return Shape.of(caste).gasterL() * (caste == Caste.QUEEN ? 1.1F : 1.25F);
     }
 
-    /** Puts every part back at rest, then poses the ant. */
     public void pose(AntPose pose) {
         body.loadPose(bodyRest);
         gaster.loadPose(gasterRest);

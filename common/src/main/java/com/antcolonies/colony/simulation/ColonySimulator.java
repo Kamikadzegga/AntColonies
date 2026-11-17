@@ -130,7 +130,6 @@ public final class ColonySimulator {
 
         private @Nullable List<Expedition> expeditions;
 
-        /** The loaded expedition tables (looked up once per step). */
         List<Expedition> expeditions() {
             if (expeditions == null) {
                 expeditions = Expedition.all(level.registryAccess());
@@ -138,7 +137,6 @@ public final class ColonySimulator {
             return expeditions;
         }
 
-        /** The expedition a Nether or End Foraging Site runs, if its table is loaded. */
         @Nullable Expedition expedition(StructureKind kind) {
             for (Expedition expedition : expeditions()) {
                 if (expedition.site() == kind) {
@@ -179,7 +177,6 @@ public final class ColonySimulator {
         }
     }
 
-    /** How many adults and larvae the colony has room for, and how much food. */
     private record Capacity(double adults, double larvae, double food) {}
 
     /** A step's food per minute: what the farms grew and what the colony eats. */
@@ -259,7 +256,6 @@ public final class ColonySimulator {
         }
     }
 
-    /** Room for adults and larvae (the Terrarium and its Nest Chambers) and for food (the Terrarium and its Storages). */
     private static Capacity capacity(Step step) {
         int terrariumPopulation = step.terrarium.upgradeTier(UpgradeType.POPULATION);
         long maxPopulation = AntConfig.get(AntConfig.MAX_COLONY_POPULATION);
@@ -278,7 +274,6 @@ public final class ColonySimulator {
         return new Capacity(adultCapacity, larvaeCapacity, foodCapacity);
     }
 
-    /** Health drifts toward what the climate, the nest's upkeep and hunger allow. */
     private static void updateHealth(Step step, int maintenance, int maintenanceNeeded, boolean starving) {
         Colony colony = step.colony;
         double resistance = (step.trait(Trait.ENVIRONMENTAL_RESISTANCE) - Trait.multiplier(Trait.MIN_LEVEL))
@@ -317,7 +312,6 @@ public final class ColonySimulator {
         step.foodWork = Math.max(step.foodFactor, AntConfig.get(AntConfig.HUNGRY_FOOD_WORK));
     }
 
-    /** Queen-only founding: the Queen waits for her food before her first brood. */
     private static void checkFounding(Step step) {
         Colony colony = step.colony;
         if (colony.founding() == Founding.FEEDING && ColonyAccess.food(colony) >= foundingFood() - 0.5) {
@@ -359,7 +353,6 @@ public final class ColonySimulator {
         return new FoodFlow(farmed, consumption);
     }
 
-    /** Eggs, larvae and adults; a founding colony is founded once its first workers are grown. */
     private static Breeding.Result breed(Step step, Capacity capacity) {
         Colony colony = step.colony;
         Breeding.Result bred = Breeding.run(step, capacity.adults(), capacity.larvae());
@@ -370,7 +363,6 @@ public final class ColonySimulator {
         return bred;
     }
 
-    /** Every working chamber does its job, and what waits in the sites' own stores moves on to Storage. */
     private static Work workSites(Step step, Allocation allocation, double foodCapacity) {
         Colony colony = step.colony;
         double finds = 0;
@@ -408,7 +400,6 @@ public final class ColonySimulator {
         return new Work(finds, hunts, hunted);
     }
 
-    /** The Queen grows with her colony, in her own time (see QueenData.growTo). */
     private static void growQueen(Step step, int stage) {
         Colony colony = step.colony;
         if (colony.queen() == null) {
@@ -424,7 +415,6 @@ public final class ColonySimulator {
         }
     }
 
-    /** The statuses that depend on the whole step: what the colony lacks, and whether it is at work. */
     private static void noteProblems(Step step, Allocation allocation, Breeding.Result bred, boolean starving) {
         Colony colony = step.colony;
         if (colony.queen() == null) {
@@ -454,7 +444,6 @@ public final class ColonySimulator {
         }
     }
 
-    /** The structures of the layout that are loaded and still what the scan found. */
     private static void collectSites(Step step, ColonyLayout layout) {
         for (Map.Entry<StructureKind, List<BlockPos>> entry : layout.structures().entrySet()) {
             List<StructureBlockEntity> found = new ArrayList<>();
@@ -470,7 +459,6 @@ public final class ColonySimulator {
         }
     }
 
-    /** The food a founding Queen waits for before her first brood: foundingFoodShare of the Terrarium's own food room. */
     public static double foundingFood() {
         return AntConfig.get(AntConfig.FOUNDING_FOOD_SHARE) * AntConfig.get(AntConfig.TERRARIUM_FOOD_CAPACITY);
     }
@@ -649,7 +637,6 @@ public final class ColonySimulator {
             return rate;
         }
 
-        /** The site's harvest (mushrooms, seeds, berries), into the colony's stores. */
         static double harvest(Step step, Allocation.Site site) {
             if (site.assigned() <= 0 || !step.species.canFarm() || step.species.farming().harvest().isEmpty()) {
                 return 0;
@@ -821,7 +808,6 @@ public final class ColonySimulator {
         return rolls;
     }
 
-    /** An output's weight in a pick: rare (special) ones scaled by Specialization and the config's rareFindMultiplier. */
     public static double pickWeight(SpeciesOutput output, double specialWeight) {
         return output.special() ? output.weight() * specialWeight * AntConfig.get(AntConfig.RARE_FIND_MULTIPLIER) : output.weight();
     }
@@ -830,7 +816,6 @@ public final class ColonySimulator {
         return pickOutput(outputs, stage, specialWeight, random, ForagingMode.BALANCED);
     }
 
-    /** An output's weight in a pick by a Foraging Site in this mode (Mineral or Organic Gathering favour their kind). */
     public static double pickWeight(SpeciesOutput output, double specialWeight, ForagingMode mode) {
         return pickWeight(output, specialWeight) * mode.weight(output);
     }

@@ -164,7 +164,6 @@ public final class TerrariumVisuals {
         meet();
     }
 
-    /** Matches the actors to the colony: how many, which castes and jobs, and which species they look like. */
     private void updateComposition(Colony colony) {
         long adults = colony.adults();
         int max = AntConfig.client(AntConfig.MAX_VISUAL_ANTS);
@@ -255,7 +254,6 @@ public final class TerrariumVisuals {
         actor.v = actor.prevV = point[1];
     }
 
-    /** Eggs, larvae and stored food lying in the chambers, as many as the colony's numbers call for (log scale). */
     private void updateItems(Colony colony) {
         int eggs = colony.eggs() <= 0 ? 0 : (int) Math.min(18, Math.round(2 + 4 * Math.log10(1 + colony.eggs())));
         int larvae = colony.larvae() <= 0 ? 0 : (int) Math.min(14, Math.round(1 + 3.5 * Math.log10(1 + colony.larvae())));
@@ -390,7 +388,6 @@ public final class TerrariumVisuals {
         actor.t = 0;
     }
 
-    /** Where an ant's task takes it next. */
     private static TunnelLayout.ChamberType goal(Actor actor) {
         return switch (actor.task) {
             case CARRY, FARM -> actor.carry != 0 ? TunnelLayout.ChamberType.FOOD : TunnelLayout.ChamberType.ENTRANCE;
@@ -438,7 +435,6 @@ public final class TerrariumVisuals {
         actor.action = action;
     }
 
-    /** Two walking ants that meet stop and feed each other (trophallaxis). */
     private void meet() {
         if (age % 5 != 0) {
             return;
@@ -528,7 +524,6 @@ public final class TerrariumVisuals {
         evolutionGlow = 1;
     }
 
-    /** A slow walk to a spot of her floor, a rest there, and on to another. */
     private void walkQueen() {
         prevQueenOffset = queenOffset;
         prevQueenWalked = queenWalked;

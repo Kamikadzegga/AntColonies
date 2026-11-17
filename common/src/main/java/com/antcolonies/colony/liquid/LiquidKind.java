@@ -38,7 +38,6 @@ public record LiquidKind(String name, String mod, Identifier fluid) {
         return mod.equals("minecraft") || ModList.get() != null && ModList.get().isLoaded(mod);
     }
 
-    /** Whether this kind exists in this game: its mod is installed and its fluid is registered as a still fluid. */
     public boolean available() {
         return modLoaded() && usable(fluid);
     }

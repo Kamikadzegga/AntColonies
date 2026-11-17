@@ -16,16 +16,13 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 /** What a colony's ants put into its stores, item by item, per minute of game time over the last {@link #MINUTES} minutes. */
 public final class ProductionLog {
-    /** Minutes kept. */
     public static final int MINUTES = 30;
-    /** Ticks in a minute. */
     public static final int MINUTE = 1200;
     /** Most items sent to a client. */
     private static final int SYNCED = 64;
 
     /** Per item, a ring of counts: slot {@code minute mod MINUTES} holds what came in during that minute. */
     private final Map<Item, int[]> counts = new LinkedHashMap<>();
-    /** The latest minute the rings are up to date for (every slot older than {@link #MINUTES} before it is zero). */
     private long newest = Long.MIN_VALUE;
     /** The game time of the first thing in the log, or -1 while it is empty: a young log averages over its own age. */
     private long start = -1;
@@ -38,10 +35,8 @@ public final class ProductionLog {
         ).apply(i, Entry::new));
     }
 
-    /** An item and how many of it came in within the window. */
     public record Total(Item item, long count) {}
 
-    /** Counts {@code count} of an item as brought in at game time {@code time}. */
     public void record(long time, Item item, int count) {
         if (count <= 0) {
             return;
@@ -53,7 +48,6 @@ public final class ProductionLog {
         counts.computeIfAbsent(item, key -> new int[MINUTES])[slot(newest)] += count;
     }
 
-    /** Moves the rings on to {@code minute}: the slots of the minutes passed are cleared, items with nothing left go. */
     private void advance(long minute) {
         if (newest == Long.MIN_VALUE || minute - newest >= MINUTES) {
             counts.clear();
@@ -81,7 +75,6 @@ public final class ProductionLog {
         return (int) Math.floorMod(minute, (long) MINUTES);
     }
 
-    /** How many of an item came in during the {@link #MINUTES} minutes up to game time {@code time}. */
     public long total(long time, Item item) {
         int[] ring = counts.get(item);
         return ring == null ? 0 : total(ring, Math.floorDiv(time, MINUTE));
@@ -99,7 +92,6 @@ public final class ProductionLog {
         return sum;
     }
 
-    /** Every item that came in within the window at {@code time}, with how many; most first. */
     public List<Total> totals(long time) {
         long minuteNow = Math.floorDiv(time, MINUTE);
         List<Total> totals = new ArrayList<>();
@@ -113,7 +105,6 @@ public final class ProductionLog {
         return totals;
     }
 
-    /** Whether nothing came in within the window at {@code time}. */
     public boolean isEmpty(long time) {
         return totals(time).isEmpty();
     }
@@ -127,7 +118,6 @@ public final class ProductionLog {
         return Math.clamp((time - from) / (double) MINUTE, 1, MINUTES);
     }
 
-    /** An item's average per minute over the window at {@code time}. */
     public double perMinute(long time, Item item) {
         return total(time, item) / minutes(time);
     }

@@ -150,7 +150,6 @@ public final class AntRecipes {
         return list;
     }
 
-    /** Liquid Ants: each species and the one droplet its workers give at a Liquid Chamber. */
     public List<AntRecipe> liquids() {
         List<AntRecipe> list = new ArrayList<>();
         for (Holder.Reference<AntSpecies> entry : species) {
@@ -171,7 +170,6 @@ public final class AntRecipes {
         return list;
     }
 
-    /** The Droplet Centrifuge: every recipe the server sent (droplets, and whatever datapacks add), with its fluid. */
     public List<AntRecipe> centrifuging() {
         List<AntRecipe> list = new ArrayList<>();
         int index = 0;
@@ -334,7 +332,6 @@ public final class AntRecipes {
         return list;
     }
 
-    /** The Nether and End expeditions: per species that may go, its ants and the site in, the finds it can bring back out. */
     public List<AntRecipe> expeditions() {
         List<AntRecipe> list = new ArrayList<>();
         double base = AntConfig.get(AntConfig.EXPEDITION_ROLLS);
@@ -450,7 +447,6 @@ public final class AntRecipes {
         return list;
     }
 
-    /** Colony upgrades, one entry per type and tier: the upgrade, every block it goes in, and its tooltip's lines underneath. */
     public List<AntRecipe> colonyUpgrades() {
         List<AntRecipe> list = new ArrayList<>();
         for (var type : UpgradeType.values()) {

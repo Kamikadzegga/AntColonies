@@ -26,7 +26,6 @@ public class ChitinShieldItem extends ShieldItem {
         super(properties);
     }
 
-    /** The item's properties: durability, repair, the off hand and how it blocks. */
     public static Properties properties(Properties properties) {
         return properties.durability(DURABILITY)
                 .repairable(ChitinGear.REPAIRS)

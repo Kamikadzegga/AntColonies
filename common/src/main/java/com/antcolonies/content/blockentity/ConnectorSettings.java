@@ -35,7 +35,6 @@ public final class ConnectorSettings {
     /** Other colonies online on its channel at the last pass. */
     public int members;
 
-    /** The most food per minute it moves. */
     public int foodPerMinute() {
         int max = AntConfig.get(AntConfig.CONNECTOR_FOOD_RATE);
         int rate = RATES[Math.clamp(rateLimit, 0, RATES.length - 1)];

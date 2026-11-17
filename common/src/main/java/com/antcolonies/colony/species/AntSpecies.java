@@ -43,22 +43,18 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
             Liquid.CODEC.optionalFieldOf("liquid").forGetter(AntSpecies::liquid)
     ).apply(i, AntSpecies::new));
 
-    /** Whether its workers can tend a Harvesting Site. */
     public boolean canFarm() {
         return farming.foodPerMinute() > 0;
     }
 
-    /** Whether its workers hunt at a Hunting Ground (hunter species only). */
     public boolean canHunt() {
         return category == Category.HUNTER;
     }
 
-    /** Whether it is a Liquid Ant species: its workers only make droplets, at a Liquid Chamber. */
     public boolean makesLiquid() {
         return category == Category.LIQUID;
     }
 
-    /** Whether its eggs need a special food besides plain food. */
     public boolean needsSpecialFood() {
         return !diet.specialKind().isEmpty() && diet.specialPerEgg() > 0;
     }
@@ -145,7 +141,6 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
             return BuiltInRegistries.FLUID.getOptional(fluid);
         }
 
-        /** Whether both the fluid and the droplet exist in this game. */
         public boolean available() {
             return dropletItem().isPresent() && fluidValue().isPresent();
         }

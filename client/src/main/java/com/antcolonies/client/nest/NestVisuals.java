@@ -13,7 +13,6 @@ import org.jspecify.annotations.Nullable;
 
 /** The life drawn in one colony block: its {@link NestLayout} and a handful of client-only ants that follow the synced colony. */
 public final class NestVisuals {
-    /** What a block's own ants do. */
     public enum Role {
         /** Formicarium: eggs from the Queen to the brood. */
         NURSE,
@@ -237,7 +236,6 @@ public final class NestVisuals {
         return actor;
     }
 
-    /** Makes an ant one of the block's own, with a job. */
     private void settle(Actor actor, Brief brief) {
         actor.mission = Mission.RESIDENT;
         actor.goal = -1;
@@ -386,7 +384,6 @@ public final class NestVisuals {
         actor.moving = false;
     }
 
-    /** Sets an ant milling about in the chamber it stands in: to some point of it, a pause, and back. */
     private void roam(Actor actor, Action action) {
         NestLayout.Node node = layout.nodes.get(actor.node);
         if (node.cells.isEmpty()) {
@@ -413,7 +410,6 @@ public final class NestVisuals {
 
     // --- What the ants are about ---
 
-    /** Where an ant with nowhere to go goes next. */
     private void choose(Actor actor, Brief brief, Host host) {
         NestLayout layout = this.layout;
         int main = layout.find(NestLayout.Spot.MAIN);
@@ -507,7 +503,6 @@ public final class NestVisuals {
         return pick >= 0 || not < 0 ? pick : layout.gate(not) >= 0 && host.neighbour(not) != null ? not : -1;
     }
 
-    /** An ant came to where it was going. */
     private void reached(Actor actor, Brief brief, Host host) {
         NestLayout.Node node = layout.nodes.get(actor.node);
         switch (actor.mission) {
@@ -590,7 +585,6 @@ public final class NestVisuals {
         }
     }
 
-    /** Into the burrow (or through the portal) for a moment. */
     private void dive(Actor actor) {
         pause(actor, 25 + random.nextInt(50), Action.NONE);
         actor.hidden = true;
@@ -679,7 +673,6 @@ public final class NestVisuals {
         return true;
     }
 
-    /** Two walking ants that meet stop and feed each other (trophallaxis). */
     private void meet() {
         if (age % 5 != 0) {
             return;
@@ -717,7 +710,6 @@ public final class NestVisuals {
     /** Half the Queen's length on the face, px (NestRenderer draws her 1.75 times a worker's 1.9 px). */
     private static final float QUEEN_HALF = 1.75F * 1.9F / 2;
 
-    /** Finds the floor of her chamber (the run of floor cells round her spot) and sets her on it. */
     private void placeQueen() {
         queenU = Float.NaN;
         prevQueenU = Float.NaN;
@@ -748,7 +740,6 @@ public final class NestVisuals {
         }
     }
 
-    /** A slow walk to a spot of her floor, a rest there, and on to another. */
     private void walkQueen() {
         prevQueenU = queenU;
         prevQueenWalked = queenWalked;

@@ -31,7 +31,6 @@ public final class ClientSpecies {
         return species == null ? AntLook.UNKNOWN : species.look();
     }
 
-    /** Every species, in registry order. */
     public static List<Holder.Reference<AntSpecies>> all() {
         RegistryAccess registries = registries();
         if (registries == null) {

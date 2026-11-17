@@ -29,7 +29,6 @@ public final class ModBlocks {
                     .isViewBlocking((state, level, pos, near) -> false).isSuffocating((state, level, pos) -> false)
                     .isRedstoneConductor((state, level, pos) -> false));
 
-    /** The colony chambers, in {@link StructureKind} order. */
     public static final Map<StructureKind, DeferredBlock<StructureBlock>> STRUCTURES = new EnumMap<>(StructureKind.class);
 
     static {
@@ -67,7 +66,6 @@ public final class ModBlocks {
             p -> p.mapColor(MapColor.METAL).strength(3.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
                     .lightLevel(state -> state.getValue(GeneratorBlock.LIT) ? 10 : 0));
 
-    /** The Droplet Centrifuge: spins Liquid Ants' droplets into fluid, for FE. */
     public static final DeferredBlock<CentrifugeBlock> CENTRIFUGE = BLOCKS.registerBlock("centrifuge",
             CentrifugeBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.COPPER).noOcclusion().requiresCorrectToolForDrops()

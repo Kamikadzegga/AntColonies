@@ -92,7 +92,6 @@ public class CentrifugeScreen extends AntScreen<CentrifugeMenu> {
         drawDrum(graphics, leftPos + DRUM_X, topPos + DRUM_Y, status == Status.WORKING, making);
         drawBar(graphics, leftPos + RUN_X, topPos + RUN_Y, RUN_W, 5, duration <= 0 ? 0 : progress / (double) duration, 0xFF3FD0A0);
 
-        // The tank.
         drawTank(graphics, leftPos + TANK_X, topPos + TANK_Y, tank, held, room);
 
         // Beside it: what is in it, and what one droplet gives and takes.
@@ -125,7 +124,6 @@ public class CentrifugeScreen extends AntScreen<CentrifugeMenu> {
         drawBar(graphics, leftPos + ENERGY_X, topPos + ENERGY_Y, ENERGY_W, ENERGY_H, energy / (double) energyRoom, 0xFFE0A030);
     }
 
-    /** The drum seen from above, its tubes in the colour of the fluid being made; the arms turn while it works. */
     private static void drawDrum(GuiGraphicsExtractor graphics, int x, int y, boolean spinning, Fluid making) {
         int cx = x + DRUM_SIZE / 2;
         int cy = y + DRUM_SIZE / 2;
@@ -155,7 +153,6 @@ public class CentrifugeScreen extends AntScreen<CentrifugeMenu> {
         graphics.fill(cx - 1, cy - 1, cx + 2, cy + 2, 0xFFB8CCD8);
     }
 
-    /** The tank: the fluid's own texture and tint filling it from the bottom, with a mark at every quarter. */
     private static void drawTank(GuiGraphicsExtractor graphics, int x, int y, Fluid fluid, int amount, int capacity) {
         graphics.fill(x, y, x + TANK_W, y + TANK_H, TRACK);
         int filled = fluid == Fluids.EMPTY || amount <= 0 ? 0 : Math.max(1, Mth.ceil((double) amount * (TANK_H - 2) / capacity));

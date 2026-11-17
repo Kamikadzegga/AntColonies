@@ -37,13 +37,11 @@ import org.jspecify.annotations.Nullable;
 
 /** The Generator: burns furnace fuel into FE and gives it to every neighbour that takes energy. */
 public class GeneratorBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, ComparatorSource {
-    /** Comparators read how full the FE buffer is. */
     @Override
     public int comparatorSignal() {
         return ComparatorSource.fill(energy.getAmountAsInt(), energy.getCapacityAsInt());
     }
 
-    /** FE a Generator stores (config generatorCapacity). */
     public static int capacity() {
         return AntConfig.get(AntConfig.GENERATOR_CAPACITY);
     }
@@ -163,7 +161,6 @@ public class GeneratorBlockEntity extends BaseContainerBlockEntity implements Wo
         setChanged();
     }
 
-    /** Shares the buffer out to the neighbours that take energy, up to the push limit per tick. */
     private void push(ServerLevel level, BlockPos pos) {
         int budget = Math.min(energy.getAmountAsInt(), AntConfig.get(AntConfig.GENERATOR_PUSH));
         for (Direction side : Direction.values()) {

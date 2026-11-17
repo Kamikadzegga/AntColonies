@@ -58,7 +58,6 @@ public final class ChitinHelmetModel {
         return LayerDefinition.create(mesh, 64, 32);
     }
 
-    /** The chestplate with two spines on the upper back. */
     public static LayerDefinition createSpines() {
         MeshDefinition mesh = HumanoidModel.createArmorMeshSet(LayerDefinitions.INNER_ARMOR_DEFORMATION,
                 LayerDefinitions.OUTER_ARMOR_DEFORMATION).chest();
@@ -71,7 +70,6 @@ public final class ChitinHelmetModel {
         return LayerDefinition.create(mesh, 64, 32);
     }
 
-    /** The chestplate with a Queen's folded wings down the back. */
     public static LayerDefinition createWings() {
         MeshDefinition mesh = HumanoidModel.createArmorMeshSet(LayerDefinitions.INNER_ARMOR_DEFORMATION,
                 LayerDefinitions.OUTER_ARMOR_DEFORMATION).chest();

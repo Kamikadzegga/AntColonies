@@ -44,7 +44,6 @@ public final class ChitinGear {
     /** How long the set's Fire Resistance lasts; renewed every second while the set is worn. */
     public static final int FIRE_TICKS = 220;
 
-    /** A tier of chitin gear: its materials, what repairs it, and its full set's bonuses. */
     public enum Tier {
         /** Iron's defense (2, 6, 5, 2), more durable (iron is 15) and enchantable; mines what iron mines (iron: 250 uses, 6, +2). */
         CHITIN("", 17, new int[] {2, 6, 5, 2}, 15, SoundEvents.ARMOR_EQUIP_TURTLE, 0.5F, 0.0F,
@@ -81,7 +80,6 @@ public final class ChitinGear {
             this.fireproof = fireproof;
         }
 
-        /** An item id of this tier: {@code chitin_sword}, {@code void_chitin_sword}. */
         public String id(String piece) {
             return prefix + "chitin_" + piece;
         }
@@ -92,12 +90,10 @@ public final class ChitinGear {
     public static final ResourceKey<EquipmentAsset> ASSET = Tier.CHITIN.asset;
     public static final ArmorMaterial ARMOR = Tier.CHITIN.armor;
     public static final ToolMaterial TOOLS = Tier.CHITIN.tools;
-    /** The Chitin set's mining speed bonus. */
     public static final double SET_DIG_BONUS = Tier.CHITIN.digBonus;
 
     private ChitinGear() {}
 
-    /** Wears chitin armor (any tiers) on head, chest, legs and feet. */
     public static boolean fullSet(LivingEntity entity) {
         return setTier(entity) != null;
     }
@@ -116,7 +112,6 @@ public final class ChitinGear {
         return lowest;
     }
 
-    /** Adds or removes the set's bonuses; checked once a second. */
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         Player player = event.getEntity();
         if (!player.level().isClientSide() && player.tickCount % 20 == 0) {
@@ -124,7 +119,6 @@ public final class ChitinGear {
         }
     }
 
-    /** Gives a full set's bonuses (by its lowest tier), and takes the digging bonus away from a player without one. */
     public static void updateSetBonus(Player player) {
         Tier tier = setTier(player);
         AttributeInstance speed = player.getAttribute(Attributes.BLOCK_BREAK_SPEED);

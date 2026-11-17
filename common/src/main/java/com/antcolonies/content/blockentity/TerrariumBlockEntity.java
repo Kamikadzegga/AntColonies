@@ -78,7 +78,6 @@ import org.jspecify.annotations.Nullable;
 
 /** The heart of a colony: holds its numbers and its Queen, takes what is fed to it, and runs its simulation steps. */
 public class TerrariumBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, ComparatorSource {
-    /** Comparators read how full the colony's food store is. */
     @Override
     public int comparatorSignal() {
         return ComparatorSource.fill(colony.food(), colony.stats().foodCapacity());
@@ -188,7 +187,6 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         nether = level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, worldPosition);
     }
 
-    /** Reads the block under the Terrarium (cheap: once a second). */
     private void updateFloor(Level level) {
         Climate now = Climate.ofFloor(level.getBlockState(worldPosition.below()));
         if (now != floor) {
@@ -257,13 +255,11 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         return false;
     }
 
-    /** Lets the colony advancements check this colony for one player (near it, or opening it). */
     private void checkAdvancements(ServerLevel level, ServerPlayer player) {
         ModTriggers.COLONY.get().trigger(player, colony,
                 ModRegistries.species(level.registryAccess(), colony.species()));
     }
 
-    /** Runs the simulation: one step per interval, and after loading a bounded catch-up. */
     private void simulate(ServerLevel level, long time, int interval) {
         long last = ColonyAccess.lastSimTime(colony);
         if (!caughtUp) {
@@ -303,7 +299,6 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         return Math.max(0, Math.min(awayTicks / 1200.0, allowance));
     }
 
-    /** Looks at the ring of chambers around the Terrarium again. */
     public void rescan(ServerLevel level) {
         scannedVersion = ColonyNetwork.version(level);
         scannedAt = level.getGameTime();
@@ -492,7 +487,6 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         }
     }
 
-    /** Whether a stack belongs in the food slot: food the colony eats. */
     public static boolean isFood(ItemStack stack) {
         return ModDataMaps.food(stack) != null;
     }
@@ -507,7 +501,6 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         return data == null ? "" : data.diet().specialKind();
     }
 
-    /** The Queen grew with her colony: effects, and a note to the players nearby saying which traits went up. */
 public void queenGrew(ServerLevel level, int stage, List<Trait> raised) {
     level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_QUEEN_GREW, 0);
     level.playSound(null, worldPosition, ModSounds.QUEEN_ACTIVITY.get(), SoundSource.BLOCKS, 1.0F, 1.2F);
@@ -552,7 +545,6 @@ public void queenGrew(ServerLevel level, int stage, List<Trait> raised) {
         }
     }
 
-    /** Puts an item into the output slot; false when it doesn't fit. */
     private boolean giveBack(ItemStack stack) {
         ItemStack output = items.get(SLOT_OUTPUT);
         if (output.isEmpty()) {

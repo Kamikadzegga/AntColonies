@@ -22,7 +22,6 @@ public final class ModDataComponents {
     public static final Supplier<DataComponentType<QueenData>> QUEEN = DATA_COMPONENTS.registerComponentType("queen",
             builder -> builder.persistent(QueenData.CODEC).networkSynchronized(QueenData.STREAM_CODEC));
 
-    /** The ants in a filled Test Tube. */
     public static final Supplier<DataComponentType<AntSample>> ANTS = DATA_COMPONENTS.registerComponentType("ants",
             builder -> builder.persistent(AntSample.CODEC).networkSynchronized(AntSample.STREAM_CODEC));
 
@@ -30,7 +29,6 @@ public final class ModDataComponents {
     public static final Supplier<DataComponentType<Identifier>> SPECIES = DATA_COMPONENTS.registerComponentType("species",
             builder -> builder.persistent(Identifier.CODEC).networkSynchronized(Identifier.STREAM_CODEC));
 
-    /** What a Species Upgrade is for. */
     public static final Supplier<DataComponentType<SpeciesUpgrade>> SPECIES_UPGRADE = DATA_COMPONENTS.registerComponentType("species_upgrade",
             builder -> builder.persistent(SpeciesUpgrade.CODEC).networkSynchronized(SpeciesUpgrade.STREAM_CODEC));
 
@@ -38,7 +36,6 @@ public final class ModDataComponents {
     public static final Supplier<DataComponentType<CustomData>> COLONY = DATA_COMPONENTS.registerComponentType("colony",
             builder -> builder.persistent(CustomData.CODEC).networkSynchronized(CustomData.STREAM_CODEC));
 
-    /** The Guard Ant in its tube. */
     public static final Supplier<DataComponentType<GuardData>> GUARD = DATA_COMPONENTS.registerComponentType("guard",
             builder -> builder.persistent(GuardData.CODEC).networkSynchronized(GuardData.STREAM_CODEC));
 

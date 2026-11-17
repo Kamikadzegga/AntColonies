@@ -106,7 +106,6 @@ public class UpgradeStationMenu extends BaseMenu {
                 station.getItem(UpgradeStationBlockEntity.SLOT_MATERIAL), selected());
     }
 
-    /** Whether the result slot shows exactly what the inputs make now. */
     private boolean resultIsCurrent() {
         ItemStack shown = result.getItem(0);
         return !shown.isEmpty() && current().map(made -> ItemStack.matches(made.output(), shown)).orElse(false);

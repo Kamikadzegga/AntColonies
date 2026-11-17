@@ -17,7 +17,6 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 public class GiantAnthill extends Structure {
     public static final MapCodec<GiantAnthill> CODEC = simpleCodec(GiantAnthill::new);
 
-    /** At most this much difference in ground height under the mound. */
     private static final int MAX_SLOPE = 3;
 
     public GiantAnthill(StructureSettings settings) {

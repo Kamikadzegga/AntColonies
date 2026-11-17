@@ -27,7 +27,6 @@ public final class AntDrawer {
     private static final Map<Caste, Map<Pattern, Identifier>> PATTERNS = new EnumMap<>(Caste.class);
     /** A Liquid Ant's crop, per caste: the liquid in it (solid, shaded pale to deep), tinted with the liquid's colour. */
     private static final Map<Caste, RenderType> CROPS = new EnumMap<>(Caste.class);
-    /** And the crop's thin skin around the liquid: nearly clear, with a gloss. */
     private static final Map<Caste, RenderType> CROP_SKINS = new EnumMap<>(Caste.class);
     private static final Identifier CRYSTAL = AntColonies.id("textures/entity/ant/crystal.png");
     private static final RenderType CRYSTAL_TYPE = RenderTypes.entityTranslucent(CRYSTAL);
@@ -129,7 +128,6 @@ public final class AntDrawer {
         poseStack.popPose();
     }
 
-    /** One part of an ant model, posed as this ant when it is drawn. Same arguments as submitModelPart. */
     private void submit(SubmitNodeCollector collector, AntPose pose, AntModel model, ModelPart part,
                         PoseStack poseStack, RenderType type, int light, int overlay, Object uv, int tint) {
         submit(collector, pose, model, part, poseStack, type, light, overlay, uv, tint, 0);
@@ -158,12 +156,10 @@ public final class AntDrawer {
         }
     }
 
-    /** A colour channel a third of the way to white: the crop's skin is a paler shade of the liquid in it. */
     private static int paler(int channel) {
         return channel + (255 - channel) / 3;
     }
 
-    /** How long a caste is drawn compared to a worker. */
     public static float casteScale(Caste caste) {
         return switch (caste) {
             case WORKER -> 1.0F;

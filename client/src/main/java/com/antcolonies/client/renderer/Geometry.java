@@ -28,7 +28,6 @@ public final class Geometry {
         this.light = light;
     }
 
-    /** The normal for the next vertices, turned by the pose. */
     private void normal(float x, float y, float z) {
         pose.transformNormal(x, y, z, scratch);
         nx = scratch.x;
@@ -73,7 +72,6 @@ public final class Geometry {
         }
     }
 
-    /** An axis-aligned box from (x0, y0, z0) to (x1, y1, z1), every face the same texture rectangle. */
     public void box(float x0, float y0, float z0, float x1, float y1, float z1, int color, float u0, float v0, float u1, float v1) {
         // Down and up.
         quad(x0, y0, z1, x0, y0, z0, x1, y0, z0, x1, y0, z1, shade(color, 0.5F), u0, v0, u1, v1, 0, -1, 0);
@@ -88,7 +86,6 @@ public final class Geometry {
         quad(x1, y0, z1, x1, y0, z0, x1, y1, z0, x1, y1, z1, westEast, u0, v0, u1, v1, 1, 0, 0);
     }
 
-    /** The color with its RGB scaled (alpha kept). */
     public static int shade(int color, float factor) {
         int a = color >>> 24;
         int r = Math.min(255, (int) (((color >> 16) & 0xFF) * factor));
