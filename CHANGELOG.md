@@ -6,6 +6,12 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-11-17
+
+### Changed
+
+- **Fewer code comments, no gameplay change.** Comments that only repeated a name were removed from the source.
+
 ## [0.3.1] - 2026-11-17
 
 ### Fixed
@@ -309,6 +315,7 @@ The first release, for Minecraft 26.3 and NeoForge 26.3.0.101 (Java 25).
 - Tested together with MachinaOpus and its Tools Addon: no clashing recipes or names.
 
 [Unreleased]: https://github.com/Kamikadzegga/AntColonies/compare/v0.3.0-26.1.2...26.1.2
+[0.3.2]: https://github.com/Kamikadzegga/AntColonies/compare/9a1bf3a...0c3306a
 [0.3.1]: https://github.com/Kamikadzegga/AntColonies/compare/v0.3.0-26.1.2...d69ef6f
 [0.3.0]: https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.3.0-26.1.2
 [0.2.0]: https://github.com/Kamikadzegga/AntColonies/compare/v0.1.0-26.1.2...717fdfd
