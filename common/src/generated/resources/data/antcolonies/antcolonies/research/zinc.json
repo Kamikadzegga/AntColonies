@@ -1,0 +1,11 @@
+{
+  "material": "#c:ingots/zinc",
+  "species": "antcolonies:zinc",
+  "tier": "basic",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "create"
+    }
+  ]
+}

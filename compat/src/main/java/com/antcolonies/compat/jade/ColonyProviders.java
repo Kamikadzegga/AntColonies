@@ -184,6 +184,7 @@ final class ColonyProviders {
                 if (operation != GeneticLabBlockEntity.Operation.NONE) {
                     data.putString("operation", operation.name().toLowerCase(Locale.ROOT));
                     data.putInt("trait", labData.get(GeneticLabBlockEntity.DATA_TRAIT));
+                    data.putString("subject", lab.workingOnKey(accessor.getLevel().registryAccess()));
                     int time = Math.max(1, labData.get(GeneticLabBlockEntity.DATA_TIME));
                     data.putInt("progress",
                             (int) Math.round(Math.clamp(labData.get(GeneticLabBlockEntity.DATA_PROGRESS) / (double) time, 0, 1) * 100));
@@ -235,7 +236,9 @@ final class ColonyProviders {
             if (!operation.isEmpty()) {
                 Trait[] traits = Trait.values();
                 int trait = Math.clamp(data.getIntOr("trait", 0), 0, traits.length - 1);
-                tooltip.add(Component.translatable("gui.antcolonies.lab.working." + operation, Component.translatable(traits[trait].translationKey()),
+                // What it works on: a trait, or the species or gene the server names.
+                String subject = data.getStringOr("subject", traits[trait].translationKey());
+                tooltip.add(Component.translatable("gui.antcolonies.lab.working." + operation, Component.translatable(subject),
                         data.getIntOr("progress", 0)).withStyle(ChatFormatting.AQUA));
             }
         }

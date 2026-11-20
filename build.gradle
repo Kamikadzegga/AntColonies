@@ -34,6 +34,11 @@ repositories {
         url = 'https://api.modrinth.com/maven'
         content { includeGroup 'maven.modrinth' }
     }
+    maven {
+        name = 'FTB (FTB Teams)'
+        url = 'https://maven.ftb.dev/releases'
+        content { includeGroup 'dev.ftb.mods' }
+    }
 }
 
 base {
@@ -85,6 +90,9 @@ dependencies {
     // EMI: compiled against PF-EMI ("EMI - Port Forward"; Modrinth version RHajWT5D = 1.0+26.1.2+neoforge).
     // Optional at runtime.
     compileOnly "maven.modrinth:pf-emi:RHajWT5D"
+    // FTB Teams (shared research for parties): optional. Compiled against its API as of 26.1.2.5.
+    compileOnly("dev.ftb.mods:ftb-teams-neoforge:${ftb_teams_version}") { transitive = false }
+    compileOnly("dev.ftb.mods:ftb-library-neoforge:${ftb_library_version}") { transitive = false }
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

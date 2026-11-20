@@ -965,10 +965,111 @@ public class DataGen {
             if (e.length > 8) {
                 json.put("dimension", e[8]);
             }
+            if (LAB_AMOUNTS.containsKey((String) e[0])) {
+                json.put("lab_amount", LAB_AMOUNTS.get((String) e[0]));
+            }
             if (NEEDS_MODS.containsKey((String) e[2])) {
                 json.put("neoforge:conditions", conditions(NEEDS_MODS.get((String) e[2])));
             }
             write(DATA.resolve(NS + "/evolution/" + e[0] + ".json"), json);
+        }
+    }
+
+    /** How many of its material one Genetic Laboratory mutation takes, by evolution (the species with research below). */
+    static final Map<String, Integer> LAB_AMOUNTS = new LinkedHashMap<>();
+
+    static {
+        String[][] amounts = {{"stone_to_iron", "8"}, {"stone_to_copper", "8"}, {"stone_to_coal", "4"}, {"stone_to_deepslate", "16"},
+                {"iron_to_gold", "8"}, {"desert_to_gold", "2"}, {"iron_to_redstone", "4"}, {"stone_to_lapis", "4"}, {"stone_to_amethyst", "4"},
+                {"gold_to_diamond", "6"}, {"lapis_to_diamond", "6"}, {"diamond_to_emerald", "6"}, {"diamond_to_netherite", "4"},
+                {"fire_to_soul", "2"}, {"amethyst_to_ender", "4"}, {"chorus_to_ender", "4"}, {"ender_to_dragon", "4"}, {"soul_to_wither", "1"},
+                {"stone_to_osmium", "8"}, {"copper_to_tin", "8"}, {"copper_to_zinc", "8"}, {"iron_to_lead", "8"}, {"iron_to_nickel", "8"},
+                {"iron_to_aluminum", "8"}, {"lead_to_silver", "8"}, {"lead_to_uranium", "8"}, {"amethyst_to_fluorite", "8"},
+                {"amethyst_to_certus", "8"}, {"iron_to_molybdenum", "8"}, {"fire_to_sulfur", "8"}};
+        for (String[] amount : amounts) {
+            LAB_AMOUNTS.put(amount[0], Integer.parseInt(amount[1]));
+        }
+    }
+
+    /**
+     * Genetic research: the species made in the Genetic Laboratory (every mineral and endgame species that is evolved,
+     * but Fire Ants, which live wild in Nether anthills). Scanning the material discovers the mutation; the evolutions
+     * into that species then run in the laboratory instead of the Formicarium's feed slot.
+     */
+    static void research() {
+        Object[][] list = {
+                // species, scanned material(s), tier, Evolution Catalysts per mutation, requires, hint
+                {"iron", "iron_ingot", "basic", 0, null, "The grey metal of every smith. Stone Ants take to it first."},
+                {"copper", "copper_ingot", "basic", 0, null, "An orange metal that turns green with age."},
+                {"coal", "coal", "basic", 0, null, "Black fuel dug from stone."},
+                {"deepslate", "cobbled_deepslate", "basic", 0, null, "The dark rock under the stone, broken loose."},
+                {"tin", "#c:ingots/tin", "basic", 0, null, "A soft white metal that makes bronze with copper."},
+                {"zinc", "#c:ingots/zinc", "basic", 0, null, "A pale metal that makes brass with copper."},
+                {"aluminum", "#c:ingots/aluminum", "basic", 0, null, "A light silvery metal."},
+                {"gold", "gold_ingot", "advanced", 1, null, "A soft yellow metal piglins love."},
+                {"redstone", "redstone", "advanced", 1, null, "Red dust that carries a signal."},
+                {"lapis", "lapis_lazuli", "advanced", 1, null, "A deep blue stone enchanters use."},
+                {"amethyst", "amethyst_shard", "advanced", 1, null, "A purple crystal that grows in geodes."},
+                {"osmium", "#c:ingots/osmium", "advanced", 1, null, "A dense blue-grey metal."},
+                {"lead", "#c:ingots/lead", "advanced", 1, null, "A heavy, dull metal."},
+                {"nickel", "#c:ingots/nickel", "advanced", 1, null, "A pale yellowish metal."},
+                {"silver", "#c:ingots/silver", "advanced", 1, "lead", "A bright white metal, found with lead."},
+                {"fluorite", "#c:gems/fluorite", "advanced", 1, null, "A violet crystal chemists prize."},
+                {"certus", "#c:gems/certus_quartz", "advanced", 1, null, "A clear crystal that holds a charge."},
+                {"molybdenum", "#c:ingots/molybdenum", "advanced", 1, null, "The metal that hardens steel."},
+                {"sulfur", "#c:dusts/sulfur", "advanced", 1, null, "Yellow dust from hot vents."},
+                {"diamond", "diamond", "advanced", 1, null, "The hardest gem, found deep down."},
+                {"emerald", "emerald", "advanced", 1, "diamond", "The green gem villagers trade in."},
+                {"soul", "ghast_tear", "advanced", 1, null, "What a ghast leaves behind."},
+                {"uranium", "#c:raw_materials/uranium", "advanced", 1, "lead", "A raw ore that glows green."},
+                {"netherite", arr("minecraft:netherite_ingot", "minecraft:netherite_scrap"), "experimental", 2, "diamond",
+                        "The Nether's ancient metal, as scrap or as an ingot."},
+                {"ender", "ender_eye", "experimental", 2, null, "An eye that looks for strongholds."},
+                {"dragon", "dragon_breath", "experimental", 2, "ender", "The breath of the End's ruler, caught in a bottle."},
+                {"wither", "nether_star", "experimental", 2, "soul", "What the Wither leaves behind."},
+        };
+        for (Object[] r : list) {
+            String id = (String) r[0];
+            Object material = r[1] instanceof String item ? mc(item) : r[1];
+            Map<String, Object> json = obj("material", material, "species", ac(id), "tier", r[2],
+                    "catalysts", (Integer) r[3] == 0 ? null : arr(obj("ingredient", ac("evolution_catalyst"), "count", r[3])),
+                    "requires", r[4] == null ? null : arr(ac((String) r[4])));
+            if (NEEDS_MODS.containsKey(id)) {
+                json.put("neoforge:conditions", conditions(NEEDS_MODS.get(id)));
+            }
+            write(DATA.resolve(NS + "/research/" + id + ".json"), json);
+            LANG.put("research." + NS + "." + id + ".hint", (String) r[5]);
+        }
+    }
+
+    /** The tier and the hint of each gene's research (the mutations the laboratory gives on purpose, by their catalyst). */
+    static final Map<String, String[]> GENE_RESEARCH = new LinkedHashMap<>();
+
+    static {
+        String[][] genes = {
+                {"crystal_genetics", "advanced", "The hardest gem changes how a Queen's workers look for treasure."},
+                {"efficient_metabolism", "advanced", "A green gem teaches a colony thrift."},
+                {"energized", "basic", "Red dust quickens the brood."},
+                {"heat_resistance", "advanced", "The powder of a burning rod."},
+                {"cold_resistance", "basic", "Ice pressed until it no longer melts."},
+                {"golden_touch", "basic", "A soft yellow metal sharpens the foragers."},
+                {"iron_jaws", "basic", "A whole block of the smith's metal."},
+                {"green_thumb", "basic", "Bones pressed into a block feed more than soil."},
+                {"industrious", "advanced", "A block of red dust drives workers harder."},
+                {"keen_senses", "basic", "A tool for looking far."},
+                {"fertile", "basic", "A carrot dressed in gold."},
+                {"rapid_growth", "basic", "Berries that glow in caves."},
+                {"armored_carapace", "advanced", "A plate shed by an armoured animal of the savanna."},
+                {"lucky_strike", "advanced", "A lucky charm from a small hopping animal."},
+                {"deep_roots", "basic", "A soft green block from lush caves."},
+                {"ember_heart", "advanced", "Cream from a bouncing cube of the Nether."},
+                {"frost_heart", "advanced", "The bluest, coldest ice."},
+                {"symbiotic", "basic", "What bees build their nests from."},
+                {"resonant", "experimental", "A shard that rings in the ancient cities."},
+                {"void_touched", "experimental", "The shell of a creature that hides in End cities."},
+        };
+        for (String[] gene : genes) {
+            GENE_RESEARCH.put(gene[0], new String[] {gene[1], gene[2]});
         }
     }
 
@@ -1053,14 +1154,14 @@ public class DataGen {
         advancement("stage_2", "first_colony", structureItem("nest_chamber"), "task", "Growing Family",
                 "Reach colony stage 2 (100 adults)", colony("stage", obj("min", 2)));
         advancement("stage_4", "stage_2", structureItem("foraging_site"), "goal", "Metropolis", "Reach colony stage 4", colony("stage", obj("min", 4)));
-        advancement("evolution", "first_colony", "evolution_catalyst", "task", "Evolution", "Evolve a colony into a mineral species",
+        advancement("evolution", "first_colony", "evolution_catalyst", "task", "Evolution", "Turn a colony into a mineral species",
                 colony("category", "mineral"));
         advancement("hybrid", "evolution", "genetic_sample", "goal", "Hybrid Vigor", "Raise a hybrid colony from a Queen Chamber cross",
                 colony("category", "hybrid"));
         advancement("generator", "root", "generator", "task", "Power Up", "Make a Generator to power the Genetic Laboratory", hasItem("generator"));
         advancement("lab", "generator", "genetic_laboratory", "task", "Genetic Engineer", "Make a Genetic Laboratory",
                 hasItem("genetic_laboratory"));
-        advancement("perfect_trait", "lab", "genetic_analyzer", "challenge", "Perfection", "Own a colony whose Queen has a trait at level 10",
+        advancement("perfect_trait", "lab", "crystal_core", "challenge", "Perfection", "Own a colony whose Queen has a trait at level 10",
                 colony("best_trait", obj("min", 10)));
         advancement("netherite", "evolution", "minecraft:netherite_scrap", "challenge", "Forged in the Deep", "Raise a Netherite Ant colony",
                 colony("species", ac("netherite")));
@@ -1112,6 +1213,14 @@ public class DataGen {
     }
 
     static void mutations() {
+        // What each effect of a mutation is called where a screen spells it out; %s is the change, like +25%.
+        String[][] effects = {{"production", "%s worker finds"}, {"gathering", "%s items per find"}, {"food", "%s food eaten"},
+                {"eggs", "%s eggs laid"}, {"growth", "%s larva growth"}, {"soldiers", "%s hunting"},
+                {"farming", "%s farmer food"}, {"special", "%s special finds"},
+                {"cold_resistant", "Bears cold climates"}, {"heat_resistant", "Bears hot climates"}};
+        for (String[] effect : effects) {
+            LANG.put("mutation." + NS + ".effect." + effect[0], effect[1]);
+        }
         Object[][] list = {
                 // id, name, effects, catalyst, count, weight, negative, rare, categories
                 {"crystal_genetics", "Crystal Genetics", obj("production", 1.15, "special", 1.25), "diamond", 4, 6, false, false, List.of("mineral", "hybrid", "endgame")},
@@ -1155,6 +1264,16 @@ public class DataGen {
                     "categories", ((List<?>) m[8]).isEmpty() ? null : m[8]);
             write(DATA.resolve(NS + "/mutation/" + m[0] + ".json"), json);
             LANG.put("mutation." + NS + "." + m[0], (String) m[1]);
+            if (m[3] != null) {
+                // Scanning a mutation's catalyst reveals the gene in the laboratory's Research page and the book.
+                String[] gene = GENE_RESEARCH.get((String) m[0]);
+                if (gene == null) {
+                    throw new IllegalStateException("No research row for the mutation " + m[0]);
+                }
+                write(DATA.resolve(NS + "/research/gene_" + m[0] + ".json"),
+                        obj("material", mc((String) m[3]), "mutation", ac((String) m[0]), "tier", gene[0]));
+                LANG.put("research." + NS + ".gene_" + m[0] + ".hint", gene[1]);
+            }
         }
     }
 
@@ -1247,7 +1366,7 @@ public class DataGen {
         shapeless("emerald_from_fragments", "emerald", 1, repeat(ac("emerald_fragment"), 9));
         shapeless("ant_identification_book", ac("ant_identification_book"), 1, "book", ac("test_tube"));
         shaped("colony_scanner", ac("colony_scanner"), 1, new String[] {" G ", "IRI", " I "}, "G", "glass_pane", "I", "iron_ingot", "R", "redstone");
-        shaped("genetic_analyzer", ac("genetic_analyzer"), 1, new String[] {" G ", "ICI", " I "}, "G", "glass_pane", "I", "iron_ingot", "C", ac("genetic_circuit"));
+
         // Blocks.
         shaped("terrarium", ac("terrarium"), 1, new String[] {"PGP", "GDG", "PPP"}, "P", "#minecraft:planks", "G", "glass", "D", "dirt");
         // The colony chambers: packed mud and what each one is for.
@@ -1263,8 +1382,8 @@ public class DataGen {
         shaped("generator", ac("generator"), 1, new String[] {"III", "IFI", "CRC"}, "I", "iron_ingot", "F", "furnace", "C", "copper_ingot", "R", "redstone");
         shaped("upgrade_station", ac("upgrade_station"), 1, new String[] {"CCC", "PTP", "P P"}, "C", ac("chitin_plate"), "P", "#minecraft:planks", "T", "crafting_table");
         // The Genetic Laboratory.
-        shaped("genetic_laboratory", ac("genetic_laboratory"), 1, new String[] {"IGI", "CXC", "ARA"}, "I", ac("hardened_chitin"), "G", "glass",
-                "C", ac("genetic_circuit"), "X", ac("genetic_analyzer"), "A", "amethyst_block", "R", "redstone_block");
+        shaped("genetic_laboratory", ac("genetic_laboratory"), 1, new String[] {"IGI", "CCC", "ARA"}, "I", ac("hardened_chitin"), "G", "glass",
+                "C", ac("genetic_circuit"), "A", "amethyst_block", "R", "redstone_block");
         // Upgrades: tier 1 from an Upgrade Base, tiers 2 to 4 from the tier below.
         String[][] materials = {{"speed", "sugar"}, {"food_efficiency", "golden_carrot"}, {"simulation", "comparator"}, {"storage", "chest"},
                 {"breeding", "egg"}, {"genetic", ac("genetic_circuit")}, {"hunting", "iron_sword"}, {"automation", "hopper"},
@@ -1699,7 +1818,7 @@ public class DataGen {
         Path models = ASSETS.resolve("models/item");
         String[] flat = {"tweezers", "test_tube", "ant_food", "mineral_ant_food", "crystal_ant_food", "nether_ant_food", "royal_jelly", "nuptial_pheromone",
                 "evolution_catalyst", "reroll_serum", "chitin_plate", "hardened_chitin", "infernal_chitin", "void_chitin", "upgrade_base", "genetic_circuit", "crystal_core", "ant_identification_book",
-                "colony_scanner", "genetic_analyzer", "diamond_fragment", "emerald_fragment", "wild_ant_spawn_egg", "ant_head", "nether_trail_pheromone",
+                "colony_scanner", "diamond_fragment", "emerald_fragment", "wild_ant_spawn_egg", "ant_head", "nether_trail_pheromone",
                 "end_trail_pheromone", "ant_resin"};
         for (String item : flat) {
             write(models.resolve(item + ".json"), obj("parent", item.equals("tweezers") ? "minecraft:item/handheld" : "minecraft:item/generated",
@@ -1766,6 +1885,8 @@ public class DataGen {
                 {"block.genetic_lab.hum", "minecraft:block.beacon.ambient", 0.5, 1.6},
                 {"block.genetic_lab.complete", "minecraft:block.amethyst_block.resonate", 1.0, 1.2},
                 {"item.tweezers.capture", "minecraft:block.glass.hit", 0.6, 1.8},
+                {"block.genetic_lab.scan", "minecraft:block.note_block.hat", 0.5, 1.9},
+                {"block.genetic_lab.discovery", "minecraft:block.amethyst_block.chime", 1.0, 1.5},
         };
         for (Object[] s : list) {
             String name = (String) s[0];
@@ -1774,9 +1895,22 @@ public class DataGen {
                     .replace("Hurt", "Ant hurts").replace("Bite", "Ant bites").replace("Ambience", "Colony bustles").replace("Food", "Ants collect food")
                     .replace("Queen", "Queen stirs").replace("Egg", "Queen lays eggs").replace("Activate", "Colony structure starts").replace("Battle", "Soldiers fight")
                     .replace("Evolution", "Queen evolves").replace("Hum", "Genetic Laboratory hums").replace("Complete", "Genetic work completes")
-                    .replace("Capture", "Ant caught"));
+                    .replace("Capture", "Ant caught").replace("Scan", "Laboratory scanner reads").replace("Discovery", "Genetic discovery"));
         }
         write(ASSETS.resolve("sounds.json"), sounds);
+    }
+
+    // --- Other mods' files ---
+
+    /**
+     * FTB Library's face icons for the mod's mobs (FTB Quests and FTB Chunks draw them): the ant head of the creative
+     * tab. They go in FTB Library's own namespace, at textures/faces/<mod>/<mob>.json.
+     */
+    static void ftbFaces() {
+        for (String mob : List.of("wild_ant", "guard_ant")) {
+            write(RES.resolve("assets/ftblibrary/textures/faces/" + NS + "/" + mob + ".json"),
+                    obj("texture", NS + ":textures/item/ant_head.png"));
+        }
     }
 
     // --- Hand-shaped block models ---
@@ -2137,6 +2271,203 @@ public class DataGen {
             "bonusExponent", "Bonus exponent");
 
     /** The info pages (the Formicarium's Species page, the book's species pages) and the book's how-to-play pages. */
+    /** Names and texts of genetic research: the scanner, the laboratory's pages and the book's sections. */
+    static void researchLang() {
+        Map<String, String> l = LANG;
+        l.put("tooltip." + NS + ".species.mutates", "Its Queens can be mutated in the Genetic Laboratory");
+        l.put("tooltip." + NS + ".queen.locked", "[locked]");
+        l.put("tooltip." + NS + ".queen.protected", "[protected]");
+        l.put("tooltip." + NS + ".queen.stability", "Genetic stability: %s%%");
+        l.put("origin." + NS + ".natural", "Natural species");
+        l.put("origin." + NS + ".modified", "Genetically modified species");
+        l.put("origin." + NS + ".hybrid", "Hybrid species");
+        l.put("research." + NS + ".tier.basic", "Basic Research");
+        l.put("research." + NS + ".tier.advanced", "Advanced Research");
+        l.put("research." + NS + ".tier.experimental", "Experimental Research");
+        l.put("research." + NS + ".tier.basic.short", "Basic");
+        l.put("research." + NS + ".tier.advanced.short", "Advanced");
+        l.put("research." + NS + ".tier.experimental.short", "Experimental");
+        l.put("research." + NS + ".title.species", "%s Mutation");
+        l.put("research." + NS + ".title.gene", "Gene: %s");
+        l.put("research." + NS + ".hint.basic", "A common material of the Overworld.");
+        l.put("research." + NS + ".hint.advanced", "A rare mineral, or a rarer find.");
+        l.put("research." + NS + ".hint.experimental", "An endgame material, from another dimension or a boss.");
+        l.put("toast." + NS + ".research", "Genetic discovery");
+        l.put("toast." + NS + ".research.team", "Team discovery");
+        l.put("toast." + NS + ".species", "New species");
+        l.put("toast." + NS + ".species.team", "Team: new species");
+        l.put("toast." + NS + ".analysis", "Queen analysed");
+        l.put("toast." + NS + ".analysis.team", "Team: Queen analysed");
+        l.put("status." + NS + ".needs_laboratory", "A species mutation: it is made in the Genetic Laboratory, not by feeding");
+        l.put("status." + NS + ".not_researched", "This mutation is not researched: scan its material in a Genetic Laboratory");
+        l.put("status." + NS + ".queen_not_grown", "The Queen has not grown enough: her colony must reach a bigger stage first");
+
+        String g = "gui." + NS + ".lab.";
+        // Each page: its tab, its full name, the line in the strip under the panels, and the help its tab and the "?" show.
+        String[][] pages = {
+                {"research", "Research", "Research", "Scanned once, researched for good",
+                        "The laboratory's scanner. Put a material in the scanner slot and press Scan.\n"
+                                + "The right material reveals a species mutation or a gene, for good.\n"
+                                + "The material is not used up. A Test Tube of ants records their species.\n"
+                                + "The list shows what you have found. What is still unknown is in the book."},
+                {"analysis", "Analysis", "Analysis", "What this Queen is and what she can become",
+                        "Shows the Queen in the slot on the left. Her genes: how far she has grown,\n"
+                                + "and each of her mutations with what it does. Under that, what she can become.\n"
+                                + "A check: she is ready. A yellow dot: something is still missing.\n"
+                                + "A green dot: a natural change, made by feeding her Formicarium.\n"
+                                + "Looking at her here records her in the Ant Identification Book."},
+                {"mutation", "Mutation", "Species Mutation", "Choose a species, add its materials, press Mutate",
+                        "Turns the Queen into another species.\n"
+                                + "1. Research that species' material on the Research page.\n"
+                                + "2. Put a Queen of the right species, grown enough, in the slot on the left.\n"
+                                + "3. Choose the species, put the materials in the two slots, press Mutate.\n"
+                                + "It always works. She keeps her traits, mutations and name.\n"
+                                + "Back in her Formicarium, her colony keeps its ants."},
+                {"editing", "Editing", "Genetic Editing", "",
+                        "Changes the Queen's genes, as before.\n"
+                                + "Upgrade: click a trait, put its materials in, press Upgrade.\n"
+                                + "Reroll, Mutate and Purge take an item from the catalyst slot.\n"
+                                + "Copy puts her genes into an empty Test Tube."},
+                {"hybrid", "Hybrids", "Hybridization", "Copy genes here for a cross in a Queen Chamber",
+                        "A hybrid is the daughter of two species, raised in a Queen Chamber.\n"
+                                + "1. Put a Queen of one species here, and an empty Test Tube below.\n"
+                                + "2. Press Copy genes: you get her Genetic Sample.\n"
+                                + "3. Put the sample in the Queen Chamber of a colony of the other species.\n"
+                                + "4. Each daughter raised there may be the hybrid. The listed chance is for two Queens at the listed trait level: higher traits raise it, lower ones cut it.\n"
+                                + "The list shows the crosses whose two species you have both met."},
+                {"stability", "Stability", "Stabilization", "For breeding: lock genes for her daughters",
+                        "For breeding. It fixes what a Queen's daughters inherit in a Queen Chamber.\n"
+                                + "Trait: click it and press Stabilize. Every daughter gets exactly that level.\n"
+                                + "Mutation: click it on the right. Her Genetic Sample then always passes it on.\n"
+                                + "The Stability % is the chance that a daughter's new flaw is dropped.\n"
+                                + "It changes nothing in her own colony, and nothing else needs it.\n"
+                                + "Release undoes it for free."}};
+        for (String[] page : pages) {
+            l.put(g + "tab." + page[0], page[1]);
+            l.put(g + "page." + page[0], page[2]);
+            l.put(g + "page." + page[0] + ".strip", page[3]);
+            l.put(g + "page." + page[0] + ".help", page[4]);
+        }
+        String[][] lab = {
+                {"scan", "Scan"}, {"scan.hint", "Reads the item in the scanner slot"},
+                {"scan.keeps", "The item is not used up; scanning it again gains nothing"},
+                {"scan.empty", "Put a material in the slot"}, {"scan.ready", "Ready to scan %s"},
+                {"scan.no_power", "The scanner needs power"}, {"scan.nothing", "%s: no use to ants"},
+                {"scan.new", "New discovery: %s!"}, {"scan.known", "%s: already known"},
+                {"scan.locked", "%s: research more first"},
+                {"scan.species_new", "New species recorded in the book"}, {"scan.species_known", "That species is already known"},
+                {"research.none", "Nothing researched yet. Scan a material below."},
+                {"research.intro", "Put a material in the scanner slot under this panel and press Scan: an ingot, a gem, a mob's drop. "
+                        + "If ants can use it, you learn a species mutation or a gene. The Ant Identification Book has hints."},
+                {"research.team", "%s, the team's"}, {"research.personal", "%s, yours"},
+                {"research.scanned", "Scanned: %s"},
+                {"research.source", "%s, stage %s:"},
+                {"research.on_mutation", "On the Mutation page"},
+                {"research.gives", "The mutation gives:"},
+                {"research.on_editing", "Editing page: %s in the catalyst slot, then Mutate."},
+                {"analysis.insert", "Put a Queen in the slot on the left."},
+                {"analysis.intro", "Analysis shows how far a Queen has grown, her strengths and flaws, and what her species can become."},
+                {"analysis.becomes", "She can become:"}, {"analysis.nothing", "Nothing known yet. Scan materials on the Research page."},
+                {"analysis.growth", "Stage %s, traits %s"}, {"analysis.genes", "Her genes"},
+                {"analysis.strength", "Strength: %s"}, {"analysis.flaw", "Flaw: %s"},
+                {"analysis.no_mutations", "No mutations: no strengths and no flaws. A catalyst on the Editing page gives her one."},
+                {"analysis.natural", "Natural: no laboratory"},
+                {"analysis.natural.how", "Feed %s to her Formicarium from colony stage %s. It works by chance."},
+                {"need.stage", "Queen stage %s"},
+                {"need.stage.hint", "The Queen must have grown with a colony of stage %s. This one has grown to stage %s."},
+                {"need.dimension", "Lab in %s"}, {"need.ready", "Ready: Mutation page"},
+                {"need.waits", "Not ready yet"},
+                {"mutation.insert", "Put a Queen in the slot on the left."},
+                {"mutation.none", "Nothing researched for %s Queens yet. Scan materials on the Research page."},
+                {"mutation.blocked", "Not ready"}, {"mutation.start", "Mutate"},
+                {"mutation.start.hint", "Turns this Queen into a %s Queen"},
+                {"mutation.keeps", "Her traits, mutations and lineage stay; her colony keeps its ants"},
+                {"hybrid.list", "Known crosses:"},
+                {"hybrid.none", "None yet. A cross shows here once you have met both of its species."},
+                {"hybrid.intro", "A hybrid is the daughter of two species. Copy one Queen's genes here, then raise daughters in a Queen "
+                        + "Chamber of a colony of the other species."},
+                {"hybrid.parents", "%s + %s"}, {"hybrid.odds", "Chance: %s%% at traits %s, rising with them."},
+                {"hybrid.queen", "Her traits: %s"}, {"hybrid.queen.low", "Her traits: %s, low"},
+                {"hybrid.queen.hint", "The chance is for two Queens, this one and the one whose colony raises the daughter, with an average trait level of %s. Higher traits raise it. Lower traits cut it, down to a few per cent with every trait at level 1."},
+                {"hybrid.how", "Copy her genes for the Queen Chamber of a %s colony."},
+                {"hybrid.other", "Put a Queen of one of the two species in the lab."},
+                {"hybrid.copy", "Copy genes"},
+                {"hybrid.copy.hint", "Copies the Queen's genes into a Genetic Sample for a Queen Chamber"},
+                {"hybrid.copy.cost", "Takes an empty Test Tube and 10,000 FE"},
+                {"hybrid.step.queen", "Needs a Queen"}, {"hybrid.step.tube", "Add a Test Tube"}, {"hybrid.step.copy", "Ready to copy"},
+                {"hybrid.step.take", "Take the sample"},
+                {"stability", "Stability %s%%"}, {"stability.no_mutations", "No mutations"}, {"stability.held", "Stabilized"},
+                {"stability.release", "Release"},
+                {"stability.release.hint", "Lets this gene vary again (free; the Royal Jelly is not returned)"},
+                {"stability.start", "Stabilize"}, {"stability.trait.hint", "Locks this trait: her daughters get exactly this level"},
+                {"stability.mutation.hint", "Protects this mutation: it always passes on when her genes are crossed in"},
+                {"stability.optional", "Optional: nothing needs it"}, {"stability.locked", "Stabilized: passes on unchanged"},
+                {"stability.purpose", "For breeding: stabilized genes pass to her daughters unchanged."},
+                {"stability.pick", "Click a trait or a mutation to stabilize it"},
+                {"stability.trait.will", "Stabilize: her daughters get exactly %s %s"},
+                {"stability.trait.held", "Locked: her daughters get exactly %s %s"},
+                {"stability.mutation.will", "%s (%s): her sample would always pass it on"},
+                {"stability.mutation.held", "%s (%s): her sample always passes it on"},
+                {"stability.hint.1", "Genetic stability"},
+                {"stability.hint.2", "The share of her traits and mutations that are stabilized."},
+                {"stability.hint.3", "It is also the chance that a daughter's new flaw is dropped."},
+                {"slot.mutation", "Materials of the chosen mutation"}, {"slot.mutation_output", "The transformed Queen comes out here"},
+                {"slot.tube", "An empty Test Tube for the copy"}, {"slot.sample_output", "The Genetic Sample comes out here"},
+                {"slot.stabilizer", "Royal Jelly"}, {"slot.scan", "Scanner: a material to research, or ants in a Test Tube"},
+                {"working.transform", "Mutating into %s... %s%%"}, {"working.prepare_sample", "Copying her genes... %2$s%%"},
+                {"working.stabilize", "Stabilizing %s... %s%%"}};
+        for (String[] s : lab) {
+            l.put(g + s[0], s[1]);
+        }
+
+        String[][] info = {{"mutation.unknown", "Unknown mutation"}, {"mutation.lab", "Genetic Laboratory: %sx %s"},
+                {"mutation.needs", "A Queen grown to stage %s"}, {"mutation.dimension", "Laboratory in %s"}};
+        for (String[] s : info) {
+            l.put("info." + NS + "." + s[0], s[1]);
+        }
+        String[][] book = {
+                {"unknown.name", "???"}, {"unknown.title", "Undiscovered species"},
+                {"research.unknown_species", "Unknown mutation"}, {"research.unknown_gene", "Unknown gene"},
+                {"research.undiscovered", "Undiscovered"}, {"research.locked", "Needs earlier research"}, {"research.first", "First: %s"},
+                {"research.team", "Team discovery"}, {"research.personal", "Your discovery"},
+                {"research.researched", "Researched"}, {"research.not_researched", "Not researched"},
+                {"research.power", "Power: %s"}, {"research.catalyst", "Catalyst: %s"}, {"research.no_catalyst", "none"},
+                {"research.takes", "Takes: %s"}, {"research.on_editing", "Given on the laboratory's Editing page."},
+                {"compatibility.natural_change", "Natural, not a mutation"}, {"compatibility.nothing", "Nothing known"},
+                {"unknown.natural", "A natural species. Meet it to fill in this page: catch one, scan a tube of them in the Genetic Laboratory, or keep a colony of it."},
+                {"unknown.hybrid", "A hybrid, crossed in a Queen Chamber from two species:"}, {"unknown.cross", "%s x %s"},
+                {"unknown.modified", "Its mutation is still to be researched: scan materials in the Genetic Laboratory."},
+                {"unknown.evolves", "Evolves from %s"},
+                {"researched", "Its mutation is researched:"}, {"researched.make", "Make one in the Genetic Laboratory to learn what it finds."},
+                {"research.how", "Scan the right material in the Genetic Laboratory."}, {"research.material", "Scanned material:"},
+                {"research.unlocks", "Unlocks %s:"}, {"research.complete", "Made: its species page is complete."},
+                {"research.gene", "Reveals the mutation %s."},
+                {"compatibility.analysed", "Queen analysed"}, {"compatibility.not_analysed", "No Queen analysed yet"},
+                {"compatibility.mutations", "Laboratory mutations:"}, {"compatibility.natural", "By feeding the Formicarium:"},
+                {"compatibility.hybrids", "Crosses:"}, {"compatibility.cross", "x %s = %s (%s%% at traits %s)"},
+                {"compatibility.scan", "Scan a Queen of this species to learn what she needs"},
+                {"production.kind", "%s species"}, {"production.rate", "Finds x%s compared to Common Ants"},
+                {"production.unique", "Unique finds:"}, {"production.upgrades", "Its Species Upgrades:"},
+                {"production.signature", "The material its Species Upgrades are made from"},
+                {"discovered", "%s / %s discovered"},
+                {"section.guide", "How to Play"}, {"section.guide.hint", "What everything is for"},
+                {"section.species", "Species"}, {"section.species.hint", "Every species: what it looks like, where it lives, what it finds"},
+                {"section.research", "Genetic Research"}, {"section.research.hint", "Scanned materials and what they unlock"},
+                {"section.compatibility", "Ant Compatibility"}, {"section.compatibility.hint", "What the Queens of each species can become"},
+                {"section.production", "Production"}, {"section.production.hint", "What each species brings in, and what it is best at"},
+                {"section.guide.empty", "Nothing here."}, {"section.species.empty", "No species in this game."},
+                {"section.research.empty", "No research in this game."},
+                {"section.compatibility.empty", "No species met yet. Catch an ant, or open a Formicarium."},
+                {"section.production.empty", "No species met yet. Catch an ant, or open a Formicarium."}};
+        for (String[] s : book) {
+            l.put("book." + NS + "." + s[0], s[1]);
+        }
+        l.put("jei." + NS + ".species_mutation", "Species Mutation");
+        l.put("jei." + NS + ".research", "Research: scan %s");
+        l.put("jei." + NS + ".queen_stage", "Queen grown to stage %s");
+        l.put("jei." + NS + ".lab_dimension", "Laboratory in %s");
+    }
+
     static void guideLang() {
         String[][] info = {{"climate.any", "Any climate suits it"}, {"climate.right", "The climate here suits it"},
                 {"climate.wrong", "Wrong climate here: the colony loses health"}, {"climate.floor", "The block under the Formicarium makes it %s"},
@@ -2177,11 +2508,18 @@ public class DataGen {
                         "Each site takes up to 256 ants, more with Population Upgrades. Its screen sets how many it wants; Auto takes all it can.",
                         "The more ants on a job, the more they find, a little less for each extra ant. Only Farmer species farm, and only hunter species hunt: the Info page says which.")},
                 {"evolution", "Evolution", String.join("\n",
-                        "Queens evolve into new species: feed the Formicarium the right material once the colony is big enough (the Info page lists it). A try may fail, but one always works after enough tries. An Evolution Catalyst helps.",
+                        "Some species adapt by themselves: feed the Formicarium the right material once the colony is big enough (the Info page lists it). A try may fail, but one always works after enough tries. An Evolution Catalyst helps.",
+                        "Mineral and endgame species are not fed into being: they are species mutations, researched and then made in the Genetic Laboratory (see Genetic Research).",
                         "A Queen Chamber raises daughter Queens from the colony's Queen; with a Genetic Sample of another species it can raise a hybrid.")},
                 {"genetics", "Genetics", String.join("\n",
                         "Each Queen has ten traits from 1 to 10, and daughters inherit them with small changes. Mutations add strengths, or flaws.",
-                        "The Genetic Laboratory raises one trait at a time, rerolls, mutates and purges flaws. It runs on FE: put a Generator next to it, or any mod's cable.")},
+                        "The Genetic Laboratory raises one trait at a time, rerolls, mutates and purges flaws on its Editing page. It runs on FE: put a Generator next to it, or any mod's cable.",
+                        "Its Stabilization page is optional: a locked trait passes to her daughters exactly as it is, and a protected mutation always passes on when her genes are crossed in.")},
+                {"research", "Genetic Research", String.join("\n",
+                        "The Genetic Laboratory has a scanner on its Research page. Put a material in its slot and press Scan: the right material reveals a species mutation or a gene, for good. The material stays in the slot, and scanning it again gains nothing.",
+                        "A Test Tube of ants in the scanner records their species; a Queen in the lab's Queen slot is analysed on the Analysis page. Catching ants and opening a Formicarium record the species too.",
+                        "A researched mutation is made in the Genetic Laboratory, on its Species Mutation page: a Queen of the right species who has grown with a big enough colony, the material, power, and for the rarer ones Evolution Catalysts. It always works. Take the Queen out of her Formicarium in a Test Tube and put her back afterwards: her ants stay and turn into the new species as they are replaced.",
+                        "Research is yours. With FTB Teams, the members of a party share what they discover while they are in it.")},
                 {"upgrades", "Upgrades", String.join("\n",
                         "Upgrades go in a screen's upgrade slots; shift-clicking one puts it there. Each block takes the kinds it can use: the slot's tooltip, and JEI or EMI, tell which.",
                         "The Colony Upgrade Station makes species upgrades from an Upgrade Base and a species' signature material. They work only for that species, in Foraging Sites.")},
@@ -2250,7 +2588,7 @@ public class DataGen {
                 {"royal_jelly", "Royal Jelly"}, {"nuptial_pheromone", "Nuptial Pheromone"}, {"evolution_catalyst", "Evolution Catalyst"},
                 {"reroll_serum", "Genetic Reroll Serum"}, {"chitin_plate", "Chitin Plate"}, {"hardened_chitin", "Hardened Chitin"}, {"infernal_chitin", "Infernal Chitin"}, {"void_chitin", "Void Chitin"}, {"upgrade_base", "Upgrade Base"},
                 {"genetic_circuit", "Genetic Circuit"}, {"crystal_core", "Crystal Core"}, {"ant_identification_book", "Ant Identification Book"},
-                {"colony_scanner", "Colony Scanner"}, {"genetic_analyzer", "Genetic Analyzer"}, {"species_upgrade", "Species Upgrade"},
+                {"colony_scanner", "Colony Scanner"}, {"species_upgrade", "Species Upgrade"},
                 {"diamond_fragment", "Diamond Fragment"}, {"emerald_fragment", "Emerald Fragment"}, {"wild_ant_spawn_egg", "Wild Ant Spawn Egg"},
                 {"ant_head", "Ant Colonies"}};
         for (String[] item : items) {
@@ -2301,13 +2639,13 @@ public class DataGen {
                 {"queen_chamber", "Raises new Queens from the colony's Queen."},
                 {"upgrade_station", "Makes species upgrades from an Upgrade Base and a species' signature material."},
                 {"generator", "Burns furnace fuel into FE and gives it to the machines next to it, such as the Genetic Laboratory."},
-                {"genetic_laboratory", "Upgrades, rerolls, mutates and purges a Queen's genes. Runs on FE: put a Generator next to it."},
+                {"genetic_laboratory", "Scans materials for research, mutates Queens into researched species and edits their genes. Runs on FE: put a Generator next to it."},
                 {"tweezers", "Catches wild ants into empty Test Tubes in your inventory. Also works on wild nests."},
                 {"test_tube", "Holds caught ants. Keep some in your inventory when using Tweezers."},
                 {"ant_food", "Basic colony food (200 food)."}, {"mineral_ant_food", "Food for mineral species; their eggs need it."},
                 {"crystal_ant_food", "Food for crystal species (Amethyst, Diamond, Emerald)."}, {"nether_ant_food", "Food for Netherite Ants."},
                 {"royal_jelly", "Rich food (400) and the base of Queen rearing."}, {"nuptial_pheromone", "Needed to rear Queens of advanced species."},
-                {"evolution_catalyst", "Feed to a Formicarium: doubles the chance of the next evolution attempt."},
+                {"evolution_catalyst", "Feed to a Formicarium: doubles the chance of the next evolution attempt. The rarer species mutations of the Genetic Laboratory take it too."},
                 {"reroll_serum", "Genetic Laboratory: reroll a trait (never lower) or purge a harmful mutation."},
                 {"chitin_plate", "Only from ants: wild ants leave it, and foraging colonies bring it home."},
                 {"hardened_chitin", "Only from ants: sometimes from wild ants, and from colonies of stage 2 and up. For tier II upgrades and the Genetic Laboratory."},
@@ -2325,7 +2663,7 @@ public class DataGen {
         }
         l.put("tooltip." + NS + ".tweezers.terrarium", "On a Formicarium: take workers (sneak: eggs) to start another colony.");
         l.put("tooltip." + NS + ".colony_scanner", "Right-click a Formicarium or colony structure for a report.");
-        l.put("tooltip." + NS + ".genetic_analyzer", "Right-click a Formicarium, or use with a Queen in the other hand.");
+
         l.put("tooltip." + NS + ".ant_test_tube.count", "%s %s");
         l.put("tooltip." + NS + ".ant_test_tube.use", "Put into a Formicarium of the same species (or an empty one).");
         l.put("tooltip." + NS + ".queen_test_tube.empty", "Empty");
@@ -2461,7 +2799,15 @@ public class DataGen {
                 {"storage.slots", "%s slots"}, {"storage.upgrade_held", "Stuck: take out what won't fit without it"},
                 {"queen_chamber.slots", "Rears a new Queen"}, {"queen_chamber.time", "Takes %s s at full speed"},
                 {"slot.qc_tube", "Test Tube slot"}, {"slot.qc_tube.hint", "An empty Test Tube to hold the new Queen"},
-                {"slot.qc_sample", "Sample slot (optional)"}, {"slot.qc_sample.hint", "A Genetic Sample can cross a hybrid into the daughter"},
+                {"slot.qc_sample", "Sample slot (optional)"},
+                {"slot.qc_sample.hint", "A Genetic Sample of another species, copied in the Genetic Laboratory (Hybrids page). "
+                        + "Each new Queen uses up one, the left-most first."},
+                {"queen_chamber.samples", "Genetic Samples"},
+                {"queen_chamber.cross.none", "Optional: put Genetic Samples in the four slots above to cross another species in."},
+                {"queen_chamber.cross.ready", "Cross: %s, %s%% chance per new Queen. Higher traits raise it. Each new Queen uses up one sample."},
+                {"queen_chamber.cross.weak", "Cross: %s, only %s%% chance per new Queen: low traits (%s of %s). Each new Queen uses a sample."},
+                {"queen_chamber.cross.no_pair", "No cross: %s and %s make no hybrid. Their traits still mix."},
+                {"queen_chamber.cross.same", "Same species, so no hybrid. The new Queen mixes the two Queens' traits."},
                 {"slot.qc_output", "New Queen"}, {"slot.qc_output.hint", "The finished Queen Test Tube comes out here"},
                 {"queen_chamber.needs", "Rearing needs:"}, {"lab.queen", "Queen"}, {"lab.materials", "Materials"}, {"lab.fuel", "Fuel"},
                 {"lab.range", "Within 2 blocks of the controller, 1 up or down."}, {"lab.insert_queen", "Insert a Queen Test Tube"},
@@ -2482,7 +2828,7 @@ public class DataGen {
                 {"lab.working.mutate", "Inducing a mutation... %2$s%%"}, {"lab.working.purge", "Purging a harmful mutation... %2$s%%"},
                 {"lab.working.sample", "Copying her genes... %2$s%%"},
                 {"lab.hint", "Select a trait, put its materials below, then Upgrade"}, {"lab.trait_hint", "%s: %s"}, {"lab.time", "Takes %s s"}, {"lab.have", "Have %s, need %s"},
-                {"lab.materials_hint", "Materials go in the three slots under the costs"},
+                {"lab.materials_hint", "Materials go in the slots under the costs"},
                 {"lab.power_hint", "Runs on FE: put a Generator, or any mod's cable, next to it"},
                 {"lab.mutation_cap", "This Queen already carries %s beneficial mutations, the most one can (flaws don't count)"},
                 {"generator.making", "Making %s FE/t"}, {"generator.full", "Full: waiting for a machine"}, {"generator.idle", "Idle: needs fuel"},
@@ -2511,8 +2857,8 @@ public class DataGen {
                 {"scanner." + NS + ".colony", "%s colony, stage %s"}, {"scanner." + NS + ".population", "%s workers, %s larvae, %s eggs"},
                 {"scanner." + NS + ".food", "Food %s / %s (+%s, -%s per minute)"}, {"scanner." + NS + ".health", "Health %s%%, %s chambers"},
                 {"scanner." + NS + ".queen", "Queen %s (%s)"}, {"scanner." + NS + ".linked", "Linked to the Formicarium at %s, %s, %s"},
-                {"scanner." + NS + ".site", "%s / %s ants, %s per minute"}, {"analyzer." + NS + ".header", "Genetic analysis"},
-                {"analyzer." + NS + ".lineage", "Lineage: %s"}, {"book." + NS + ".kind", "%s, tier %s, %s"}, {"book." + NS + ".wild", "Wild in: %s"},
+                {"scanner." + NS + ".site", "%s / %s ants, %s per minute"}, {"tooltip." + NS + ".queen.lineage", "Lineage: %s"},
+                {"book." + NS + ".kind", "%s, tier %s, %s"}, {"book." + NS + ".wild", "Wild in: %s"},
                 {"book." + NS + ".not_wild", "Not found in the wild"}, {"book." + NS + ".diet", "Eats plain food"},
                 {"book." + NS + ".diet_special", "Eggs need %s food"}, {"book." + NS + ".finds", "Finds:"}, {"book." + NS + ".farms", "Grows:"},
                 {"book." + NS + ".evolution", "%s -> %s (%s%%)"}};
@@ -2531,7 +2877,8 @@ public class DataGen {
                 {"weight", "Weight %s"}, {"stage", "From stage %s"}, {"special", "Signature find"}, {"climate", "Climate: %s"},
                 {"diet", "Eggs need %s food (%s each)"}, {"rate", "%s finds/min per worker"},
                 {"food_rate", "%s food/min per farmer"}, {"strength", "Hunting strength x%s"},
-                {"loot", "Drops from this mob's own loot table"}, {"hybrid_chance", "Chance: %s%%, both parents average level %s+"},
+                {"loot", "Drops from this mob's own loot table"}, {"hybrid_chance", "Chance: %s%% with both parents at trait level %s"},
+                {"hybrid_quality", "Higher traits raise the chance, lower ones cut it"},
                 {"catalyst", "Catalyst in the Mutation Chamber"}, {"random", "Random only (weight %s)"}, {"negative", "Harmful"},
                 {"level_step", "Level %s -> %s"}, {"energy", "%s FE"}, {"eggs_info", "%s eggs/min, hatch in %s min"},
                 {"larvae_info", "Grows in %s min (species x%s)"}, {"needs", "Needs:"}, {"structures", "Structures:"},
@@ -3189,7 +3536,8 @@ public class DataGen {
                 {"no_storage", "No Storage"}, {"no_special_food", "Special food"}, {"climate", "Wrong climate"}, {"low_health", "Low health"},
                 {"no_nest_chamber", "No Nest Chamber"}, {"population_full", "Nest full"}, {"starving", "Starving!"}, {"working", "Working"},
                 {"paused", "Paused"}, {"wrong_dimension", "Wrong dimension"}, {"founding", "Founding"}, {"low_food", "Low food"},
-                {"nothing_to_focus", "Nothing to focus"}, {"disabled", "Off"}};
+                {"nothing_to_focus", "Nothing to focus"}, {"disabled", "Off"},
+                {"needs_laboratory", "Lab mutation"}, {"not_researched", "Not researched"}, {"queen_not_grown", "Queen too young"}};
         for (String[] s : shorts) {
             l.put("status." + NS + "." + s[0] + ".short", s[1]);
         }
@@ -3604,6 +3952,7 @@ public class DataGen {
         species();
         liquids();
         evolutions();
+        research();
         hybrids();
         mutations();
         commonTags();
@@ -3620,10 +3969,12 @@ public class DataGen {
         newFeatures();
         chitinTiers();
         colonyUpdate();
+        researchLang();
         configLang();
         guideLang();
         particles();
         sounds();
+        ftbFaces();
         lang();
         System.out.println("Wrote " + written + " files.");
     }

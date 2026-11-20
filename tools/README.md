@@ -40,3 +40,16 @@ One row in each of three tables, with the same name:
 
 Then run both programs. The droplet item is registered, and the data files load, only when that mod is installed and the
 fluid is in the fluid registry.
+
+## Adding genetic research
+
+A species is made in the Genetic Laboratory, and no longer by feeding, when it has a research entry. In
+`tools/DataGen.java`:
+
+1. `research()`: one row with the species, the material the laboratory's scanner reads, the tier, how many Evolution
+   Catalysts a mutation takes, the research it waits for (or `null`) and its hint. This writes the research file and the
+   hint's line in `en_us.json`.
+2. `LAB_AMOUNTS`: a row for each evolution into that species, with how many of its material one mutation takes.
+
+A gene (a mutation the laboratory gives by a catalyst) gets its research from its row in `mutations()` and its tier and
+hint from `GENE_RESEARCH`; DataGen stops if a catalyst mutation has no row there. Then run `java tools/DataGen.java`.

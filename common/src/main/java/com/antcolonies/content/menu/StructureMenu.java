@@ -85,11 +85,16 @@ public class StructureMenu extends BaseMenu {
             }
             case QUEEN_CHAMBER -> {
                 for (int slot = 0; slot < StructureKind.QUEEN_CHAMBER_MATERIALS; slot++) {
-                    addSlot(new FilteredSlot(structure, slot, 8 + slot * 18, 52, stack -> true, 64));
+                    int s = slot;
+                    addSlot(new FilteredSlot(structure, slot, 8 + slot * 18, 52, stack -> structure.canPlaceItem(s, stack), 64));
                 }
-                addSlot(new FilteredSlot(structure, StructureKind.QUEEN_CHAMBER_TUBE, 98, 52, stack -> stack.is(ModItems.TEST_TUBE.get()), 64));
-                addSlot(new FilteredSlot(structure, StructureKind.QUEEN_CHAMBER_SAMPLE, 116, 52, stack -> stack.is(ModItems.GENETIC_SAMPLE.get()), 1));
+                addSlot(new FilteredSlot(structure, StructureKind.QUEEN_CHAMBER_TUBE, 116, 52, stack -> stack.is(ModItems.TEST_TUBE.get()), 64));
+                // The sample slots have a row of their own; the first comes before the output, as it always did.
+                addSlot(sampleSlot(0));
                 addSlot(new FilteredSlot(structure, StructureKind.QUEEN_CHAMBER_OUTPUT, 152, 52, stack -> false, 1));
+                for (int i = 1; i < StructureKind.QUEEN_CHAMBER_SAMPLES.length; i++) {
+                    addSlot(sampleSlot(i));
+                }
             }
             default -> {
             }
@@ -108,6 +113,14 @@ public class StructureMenu extends BaseMenu {
         addDataSlots(WideData.slots(data));
     }
 
+    /** Where the Queen Chamber's row of sample slots is. */
+    public static final int SAMPLE_Y = 74;
+
+    private FilteredSlot sampleSlot(int index) {
+        return new FilteredSlot(structure, StructureKind.QUEEN_CHAMBER_SAMPLES[index], 8 + index * 18, SAMPLE_Y,
+                stack -> stack.is(ModItems.GENETIC_SAMPLE.get()), 1);
+    }
+
     public static int inventoryY(StructureKind kind) {
         if (kind == StructureKind.COLONY_CONNECTOR) {
             return 161;
@@ -116,6 +129,10 @@ public class StructureMenu extends BaseMenu {
             return 152;
         }
         // Nether and End sites have a line more under their store: the species they need, when the colony's are not.
+        if (kind == StructureKind.QUEEN_CHAMBER) {
+            // Under its two rows of slots, four lines on what the next Genetic Sample will do.
+            return 144;
+        }
         return kind.expedition() ? 145 : kind.siteStore() ? 136 : kind.job().any() ? 104 : 84;
     }
 
@@ -158,10 +175,16 @@ public class StructureMenu extends BaseMenu {
         scroll = Math.clamp(row, 0, maxScroll());
     }
 
+    /** A job site's store is where its ants put their finds: nothing is shift-clicked into it. */
+    @Override
+    protected boolean quickMovesInto(int slot, ItemStack stack) {
+        return !(structure.kind().siteStore() && slot < structure.kind().slots());
+    }
+
     /** Shift-clicking into a Storage fills the whole Storage, not only the rows on screen: slots holding the item first. */
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        if (window == null || index < blockSlots || isUpgrade(slots.get(index).getItem()) || !slots.get(index).hasItem()) {
+        if (window == null || index < blockSlots || structure.acceptsUpgrade(slots.get(index).getItem()) || !slots.get(index).hasItem()) {
             return super.quickMoveStack(player, index);
         }
         Slot from = slots.get(index);

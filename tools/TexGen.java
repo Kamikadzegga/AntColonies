@@ -1145,17 +1145,7 @@ public class TexGen {
         scanner.set(9, 11, rgb(80, 160, 255));
         outline(scanner, rgb(30, 32, 38));
         scanner.save("item/colony_scanner");
-        // Genetic Analyzer: a lens over a double helix.
-        Img analyzer = item();
-        for (int y = 2; y < 14; y++) {
-            int x1 = 6 + (int) Math.round(Math.sin(y * 0.8) * 2);
-            int x2 = 6 - (int) Math.round(Math.sin(y * 0.8) * 2);
-            analyzer.set(x1, y, rgb(80, 220, 255));
-            analyzer.set(x2, y, rgb(220, 90, 255));
-        }
-        disc(analyzer, 10, 10, 3.2, argb(150, 220, 240, 255));
-        line(analyzer, 12, 12, 14, 14, rgb(120, 90, 60));
-        analyzer.save("item/genetic_analyzer");
+
         // Gem fragments.
         Object[][] fragments = {{"diamond_fragment", rgb(110, 230, 240)}, {"emerald_fragment", rgb(70, 220, 120)}};
         for (Object[] fragment : fragments) {

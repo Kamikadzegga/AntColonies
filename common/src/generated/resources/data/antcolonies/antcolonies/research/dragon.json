@@ -1,0 +1,14 @@
+{
+  "material": "minecraft:dragon_breath",
+  "species": "antcolonies:dragon",
+  "tier": "experimental",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 2
+    }
+  ],
+  "requires": [
+    "antcolonies:ender"
+  ]
+}

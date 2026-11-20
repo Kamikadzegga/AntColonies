@@ -1,0 +1,5 @@
+{
+  "material": "minecraft:shulker_shell",
+  "mutation": "antcolonies:void_touched",
+  "tier": "experimental"
+}

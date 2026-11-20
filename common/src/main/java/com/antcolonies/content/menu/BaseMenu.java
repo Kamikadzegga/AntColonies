@@ -23,7 +23,7 @@ public abstract class BaseMenu extends AbstractContainerMenu {
         super(type, containerId);
     }
 
-    /** Adds one of the block's upgrade slots: shift-clicked upgrades go only into these. */
+    /** Adds one of the block's upgrade slots: shift-clicked upgrades of a kind it takes go only into these. */
     protected Slot addUpgradeSlot(Slot slot) {
         Slot added = addSlot(slot);
         upgradeSlots.add(added.index);
@@ -59,7 +59,8 @@ public abstract class BaseMenu extends AbstractContainerMenu {
             }
         } else {
             boolean moved = false;
-            boolean upgrade = isUpgrade(stack);
+            // An upgrade this block has no slot for is an item like any other (a Storage stores it).
+            boolean upgrade = isUpgrade(stack) && upgradeSlots.stream().anyMatch(i -> slots.get(i).mayPlace(stack));
             for (int i = 0; i < blockSlots && !stack.isEmpty(); i++) {
                 if (upgrade != upgradeSlots.contains(i)) {
                     continue;

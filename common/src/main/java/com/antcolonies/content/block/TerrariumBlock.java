@@ -67,7 +67,7 @@ public class TerrariumBlock extends ColonyPartBlock {
         if (!(level.getBlockEntity(pos) instanceof TerrariumBlockEntity terrarium) || stack.isEmpty() || player.isShiftKeyDown()) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-        if (stack.is(ModItems.TWEEZERS.get()) || stack.is(ModItems.COLONY_SCANNER.get()) || stack.is(ModItems.GENETIC_ANALYZER.get())) {
+        if (stack.is(ModItems.TWEEZERS.get()) || stack.is(ModItems.COLONY_SCANNER.get())) {
             return InteractionResult.PASS;
         }
         if (stack.is(ModItems.RALLY_PHEROMONE.get())) {

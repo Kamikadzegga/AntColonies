@@ -1,0 +1,33 @@
+{
+  "material": "#c:ingots/silver",
+  "species": "antcolonies:silver",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "requires": [
+    "antcolonies:lead"
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "thermal"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "immersiveengineering"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "machinaopus"
+        }
+      ]
+    }
+  ]
+}

@@ -102,7 +102,10 @@ public final class AntConfig {
     // --- Evolution and breeding ---
     public static final ModConfigSpec.DoubleValue EVOLUTION_CHANCE_MULTIPLIER;
     public static final ModConfigSpec.DoubleValue HYBRID_CHANCE_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue HYBRID_QUALITY_BONUS;
+    public static final ModConfigSpec.DoubleValue HYBRID_WEAK_CHANCE;
     public static final ModConfigSpec.IntValue QUEEN_REARING_MIN_POPULATION;
+    public static final ModConfigSpec.BooleanValue FEEDING_MAKES_LAB_SPECIES;
 
     // --- Wild ants ---
     public static final ModConfigSpec.DoubleValue WILD_SPAWN_CHANCE;
@@ -314,8 +317,15 @@ public final class AntConfig {
         s.push("evolution");
         EVOLUTION_CHANCE_MULTIPLIER = s.comment("Multiplier on every evolution chance.").defineInRange("chanceMultiplier", 1.0, 0, 100);
         HYBRID_CHANCE_MULTIPLIER = s.comment("Multiplier on every hybrid chance.").defineInRange("hybridChanceMultiplier", 1.0, 0, 100);
+        HYBRID_QUALITY_BONUS = s.comment("How much of a hybrid's chance is added for each trait level the two Queens average above the cross's level",
+                "(0.15 = 15% more a level; 0 = better traits do not raise the chance).").defineInRange("hybridQualityBonus", 0.15, 0, 10);
+        HYBRID_WEAK_CHANCE = s.comment("Share of a hybrid's chance left when every trait of both Queens is at level 1; it grows to the whole chance",
+                "at the cross's trait level (1 = weak traits do not cut the chance).").defineInRange("hybridWeakChance", 0.1, 0, 1);
         QUEEN_REARING_MIN_POPULATION = s.comment("Adults a colony needs before its Queen Chamber can raise a new Queen.")
                 .defineInRange("queenRearingMinPopulation", 150, 0, 1000000);
+        FEEDING_MAKES_LAB_SPECIES = s.comment("Whether feeding a Formicarium still evolves a colony into a species that has a research entry",
+                        "(the mineral and endgame species). Off: those are made only in the Genetic Laboratory, once researched.")
+                .define("feedingMakesLabSpecies", false);
         s.pop();
 
         s.push("wild");

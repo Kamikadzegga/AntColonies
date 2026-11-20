@@ -6,6 +6,64 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
+### Added
+
+- **A scanner in the Genetic Laboratory.** Put a material in the scanner slot of its Research page and press Scan. The
+  right material reveals a species mutation or a gene for good; nothing is used up.
+- **Genetic research.** 15 species mutations (12 more with other mods' metals) and 20 genes to discover, in three
+  tiers. Research is saved per player and survives death and restarts.
+- **Species Mutation in the Genetic Laboratory.** A researched mutation turns a Queen in her Test Tube into the new
+  species: it always works and keeps her traits, mutations and lineage. Her colony keeps its ants when she moves back in.
+- **Laboratory pages.** Research, Analysis, Mutation, Editing, Hybrids and Stability, named on tabs, each with its own
+  slots. The laboratory lists only what you have discovered, and every tab explains its page step by step.
+- **Mutation effects.** The laboratory, the Formicarium's Genetics page and a Queen's tooltip now say what each mutation
+  does, such as "+25% hunting" for Iron Jaws. A flaw is listed in red with a minus.
+- **Scroll bars.** The laboratory's lists, the Ant Identification Book and the Formicarium's Info page, Genetics page
+  and Working Sites list have a scroll bar you can drag.
+- **Stabilization.** Optional: lock a trait or protect a mutation with Royal Jelly, and it passes to daughters unchanged.
+- **Ant Identification Book sections.** Species, Genetic Research, Ant Compatibility and Production fill in as you
+  discover things; unknown entries show as question marks with a hint.
+- **FTB Teams.** Optional: the players of a party share their research. Tested with FTB Teams 26.1.2.5.
+- **FTB Library face icons.** Wild Ants and Guard Ants have a face icon (the ant head) where FTB mods show a mob's face.
+- **For modpacks.** A `research` data registry, `lab_amount` on evolutions and a Species Mutation page in JEI and EMI.
+
+### Changed
+
+- **Mineral and endgame species are made in the laboratory.** Feeding a Formicarium no longer evolves a colony into
+  them; it keeps the material and says so. `feedingMakesLabSpecies` in the server config brings feeding back.
+- **Natural evolutions are unchanged.** Farmer, Fire, the hunters and the Liquid Ants still evolve by feeding, and Fire
+  Ants still live in Nether anthills.
+- **Existing worlds.** Colonies keep their species. The book fills in when you open a Formicarium or catch an ant.
+- **The Queen Chamber explains its Genetic Sample.** Under its slots it names the hybrid and its chance, says when the
+  Queens' traits are low for the cross, or says that the two species make no hybrid.
+- **A hybrid's chance follows the two Queens' traits.** No trait level is required any more: weak Queens can cross, but
+  with every trait at level 1 only a tenth of the listed chance is left. Each level the two Queens average above the
+  cross's level adds 15% of it. `hybridWeakChance` and `hybridQualityBonus` in the server config set both numbers.
+- **Both Queens' Mutation trait counts for a hybrid.** The chance was multiplied by the colony Queen's Mutation trait
+  alone. It now takes the average of hers and the sample Queen's, so a strong Queen helps as much on either side.
+- **Four Genetic Sample slots in the Queen Chamber.** It had one. Each new Queen uses up one sample, the left-most
+  first, and hoppers can fill all four.
+
+### Removed
+
+- **The Genetic Analyzer.** A Queen's tooltip already showed what its report did, and now shows her lineage too.
+  The Genetic Laboratory recipe takes a third Genetic Circuit in its place. Analyzers already in a world disappear.
+
+### Fixed
+
+- **Shift-click in the Queen Chamber.** A Genetic Sample or a Test Tube went into the material slots, where it did
+  nothing. They now go to their own slots, and the material slots take only what the colony's species is raised with.
+- **Shift-click in the Genetic Laboratory.** Reroll Serum landed among the materials, where Reroll could not find it,
+  and any item at all went into the material, mutation and stabilizer slots. Each slot now takes only what its page uses.
+- **Shift-click in the Formicarium.** Any item that is not food went into the feed slot and sat there. The slot now
+  takes only ants, brood, empty Test Tubes, Evolution Catalysts and the colony's own materials.
+- **Shift-click in the Upgrade Station.** A species upgrade could not be shift-clicked in to raise its tier, and any
+  item went into the material slot. Both slots now take only what the station works with.
+- **Shift-click in job sites and Storages.** Items no longer go into a job site's store, which is for its ants' finds.
+  A Storage now also stores upgrades it has no slot for.
+- **A log warning for every generated nest.** Each wild nest the world generated left a "Tried to load a block entity"
+  warning in the server log. Nests now generate without it; nests already in a world are unchanged.
+
 ## [0.3.3] - 2026-11-20
 
 ### Fixed

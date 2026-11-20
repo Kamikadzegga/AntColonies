@@ -16,7 +16,7 @@ optional.
 3. [Recipes](#3-recipes)
 4. [Ant food](#4-ant-food)
 5. [Species](#5-species)
-6. [Evolutions](#6-evolutions)
+6. [Evolutions](#6-evolutions) and [genetic research](#genetic-research)
 7. [Hybrids](#7-hybrids)
 8. [Mutations](#8-mutations)
 9. [Genetic Laboratory costs](#9-genetic-laboratory-costs)
@@ -405,7 +405,8 @@ species don't list (another mod with tin, say), replace the species file and its
 ## 6. Evolutions
 
 File: `data/<ns>/antcolonies/evolution/<id>.json`. Feeding `item` to a Formicarium of species `from` gives a chance per
-attempt to turn the colony into `to`.
+attempt to turn the colony into `to`. If the species `to` has a research file (below), the evolution is a species
+mutation instead: it is made in the Genetic Laboratory, always works, and the Formicarium no longer makes it.
 
 ```json
 {
@@ -427,10 +428,54 @@ attempt to turn the colony into `to`.
 | `guaranteed_after` | `32` | Attempts after which it always works. |
 | `min_stage` | `1` | Colony stage needed. |
 | `min_population` | `0` | Adults needed. |
-| `dimension` | none | If set (e.g. `"minecraft:the_nether"`), the Formicarium must be in that dimension. |
+| `dimension` | none | If set (e.g. `"minecraft:the_nether"`), the Formicarium (or the laboratory) must be in that dimension. |
+| `lab_amount` | `4` | Species mutations only: how many of `item` one laboratory mutation takes (1-64). |
 
-To remove a built-in evolution, replace its file (for example `data/antcolonies/antcolonies/evolution/stone_to_iron.json`)
-with one whose `chance` is `0` and `guaranteed_after` is very large (`100000`).
+For a species mutation, `min_stage` is the stage the Queen must have grown to (her colony's stage, which she grows into
+in time); `chance`, `guaranteed_after` and `min_population` are not used.
+
+To remove a built-in evolution by feeding, replace its file (for example
+`data/antcolonies/antcolonies/evolution/common_to_farmer.json`) with one whose `chance` is `0` and `guaranteed_after` is
+very large (`100000`). To remove a species mutation, replace its evolution file with one whose `from` is a species that
+does not exist (the file must still load).
+
+### Genetic research
+
+File: `data/<ns>/antcolonies/research/<id>.json`. One discovery: scanning `material` in the Genetic Laboratory reveals
+either a species (every evolution into it becomes a laboratory mutation) or a Queen mutation (knowledge only: the
+laboratory's Mutate works with or without it).
+
+```json
+{
+  "material": "minecraft:copper_block",
+  "species": "mypack:copper",
+  "tier": "basic",
+  "energy": 30000,
+  "time": 400,
+  "catalysts": [{ "ingredient": "antcolonies:royal_jelly", "count": 1 }],
+  "requires": ["antcolonies:copper"]
+}
+```
+
+| Field | Default | Meaning |
+|---|---|---|
+| `material` | required | What the scanner reads: an item, a `#tag`, or a list of items. |
+| `species` | one of the two | The species it unlocks in the laboratory. |
+| `mutation` | one of the two | The Queen mutation it reveals. |
+| `tier` | `basic` | `basic`, `advanced` or `experimental`: where it is listed, and the default cost. |
+| `energy` | by tier | FE one species mutation takes (40,000 / 120,000 / 400,000). |
+| `time` | by tier | Ticks one species mutation takes (600 / 1200 / 2400). |
+| `catalysts` | none | What a species mutation takes on top of the evolution's own `item` (the laboratory has two material slots, so at most one kind). |
+| `requires` | none | Research ids that must be discovered first. |
+
+- **Which route a species takes** is decided by this file alone. Add one for a species and its evolutions move to the
+  laboratory; remove the built-in one (a data pack file with a `neoforge:conditions` that never holds, such as
+  `[{ "type": "neoforge:mod_loaded", "modid": "none" }]`) and they go back to feeding.
+- **Hints.** An undiscovered entry shows the line `research.<ns>.<id>.hint` from the language file, or its tier's
+  general hint when there is none.
+- **Both routes at once:** `feedingMakesLabSpecies = true` in the server config lets feeding make laboratory species
+  as before, next to the laboratory.
+- Research is saved per player (and per FTB Teams party) in the world, in the Overworld's `data/antcolonies/genetic_research.dat`.
 
 ## 7. Hybrids
 
@@ -448,8 +493,11 @@ not listed never cross.
 }
 ```
 
-`chance` (0–1) is multiplied by the mother's Mutation Probability genetics and the config's hybrid multiplier. Both
-parents need an average trait level of at least `min_average_level` (1–10, default 1).
+`chance` (0–1) is the chance for two parents whose traits average `min_average_level` (1–10, default 1). The level is
+not a requirement, whatever its name says: any two Queens of the pair can cross. Each level the two parents average
+above it adds `hybridQualityBonus` (server config, default 0.15) of the chance. Below it the chance falls in a straight
+line to `hybridWeakChance` (default 0.1) of itself with every trait at level 1. The result is multiplied by the average of
+the two parents' Mutation Probability genetics and by the config's `hybridChanceMultiplier`, and capped at 1.
 
 ## 8. Mutations
 
@@ -692,7 +740,7 @@ ship the edited file as `config/antcolonies/server.toml` in your pack. It is a g
 The mod has its own Copper Ant (`antcolonies:copper`) since this example was written; the example still works because it
 lives in your namespace (`mypack:copper`), next to it. Use it as a pattern for your own species.
 
-A new species that evolves from Stone Ants with copper blocks and finds raw copper. Four files:
+A new species that Stone Ants become with copper blocks and that finds raw copper. Five files:
 
 `kubejs/data/mypack/antcolonies/species/copper.json` (or the same path in a data pack):
 
@@ -725,6 +773,10 @@ A new species that evolves from Stone Ants with copper blocks and finds raw copp
 { "from": "antcolonies:stone", "to": "mypack:copper", "item": "minecraft:copper_block", "chance": 0.1, "guaranteed_after": 20, "min_stage": 2 }
 ```
 
+`kubejs/data/mypack/antcolonies/research/copper.json` is the research file of [section 6](#genetic-research): with it
+the Copper Ant is researched by scanning a copper block and made in the laboratory from four copper blocks and a Royal
+Jelly. Leave it out and the evolution above runs by feeding instead.
+
 `kubejs/assets/mypack/lang/en_us.json`:
 
 ```json
@@ -737,9 +789,9 @@ These files, the food example from section 4, the spawn tags from section 11 and
 condition holds, one that needs Mekanism) are tested with each version: loaded as a separate data pack, they must all
 load, merge or stay out as described here.
 
-Then restart the server (or reopen the world). The Copper Ant appears in JEI's *Ant Species*, *Queen Evolution*,
-*Resource Production*, *Queen Rearing*, *Egg Production* and *Species Upgrades* categories, and in the Ant
-Identification Book.
+Then restart the server (or reopen the world). The Copper Ant appears in JEI's *Ant Species*, *Species Mutation*,
+*Resource Production*, *Queen Rearing*, *Egg Production* and *Species Upgrades* categories. The Ant Identification Book
+lists it as "???" until the player meets it, like every species.
 
 ## 15. Advancements and the colony trigger
 
@@ -808,5 +860,5 @@ These are fixed in the mod's code today:
 - **The game log** (`logs/latest.log`) names any file that failed to load and why (a misspelled field, a wrong value
   range, an unknown item). A species, evolution or other registry file with an error stops that world from loading,
   with the error on screen; fix the file and try again.
-- **In game**: the Ant Identification Book lists every species with its diet and finds; the Colony Scanner and Genetic
-  Analyzer report a colony's state in chat.
+- **In game**: the Ant Identification Book lists every species with its diet and finds; the Colony Scanner reports a
+  colony's state in chat.

@@ -46,6 +46,12 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
         super(ModBlockEntities.HOME_NEST.get(), pos, state);
     }
 
+    /** Only while the nest is a home: a wild nest has a {@link WildNestBlockEntity}. */
+    @Override
+    public boolean isValidBlockState(BlockState state) {
+        return super.isValidBlockState(state) && state.getValue(WildNestBlock.HOME);
+    }
+
     public static int residents() {
         return AntConfig.get(AntConfig.HOME_NEST_ANTS);
     }

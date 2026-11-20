@@ -27,6 +27,85 @@ import org.jspecify.annotations.Nullable;
 
 /** Queen Chambers raise new Queens: a daughter of the colony's Queen, crossed with a Genetic Sample if one is given. */
 public final class QueenRearing {
+    /** What a Genetic Sample in a Queen Chamber does, as the chamber's screen says it. */
+    public enum CrossState {
+        /** No sample (or no Queen): a plain daughter. */
+        NO_SAMPLE,
+        /** The two species make no hybrid: the daughter only mixes the two Queens' traits. */
+        NO_PAIR,
+        /** The two Queens' traits are below the cross's level: the hybrid at a cut chance. */
+        WEAK,
+        /** Each new Queen has {@code chance} of being the hybrid. */
+        READY
+    }
+
+    /**
+     * @param hybrid the cross of the two species, when there is one
+     * @param chance of the hybrid for each new Queen, 0 when there is no cross
+     * @param level  the two Queens' average trait level
+     */
+    public record Cross(CrossState state, @Nullable Hybrid hybrid, double chance, double level) {}
+
+    public static final Cross NO_CROSS = new Cross(CrossState.NO_SAMPLE, null, 0, 0);
+
+    /** What crossing a sample into a colony of {@code species} would do. */
+    public static Cross cross(HolderLookup.Provider registries, Identifier species, @Nullable QueenData queen, @Nullable QueenData sample) {
+        if (queen == null || sample == null) {
+            return NO_CROSS;
+        }
+        Hybrid hybrid = findHybrid(registries, species, sample.species());
+        if (hybrid == null || ModRegistries.species(registries, hybrid.result()) == null) {
+            return new Cross(CrossState.NO_PAIR, null, 0, 0);
+        }
+        double quality = (queen.genome().averageLevel() + sample.genome().averageLevel()) / 2;
+        // Both Queens' Mutation trait counts, the same as the rest of their traits.
+        double mutation = (queen.genome().multiplier(Trait.MUTATION_PROBABILITY) + sample.genome().multiplier(Trait.MUTATION_PROBABILITY)) / 2;
+        double chance = hybrid.chance() * qualityFactor(hybrid, quality) * mutation * AntConfig.get(AntConfig.HYBRID_CHANCE_MULTIPLIER);
+        CrossState state = quality < hybrid.minAverageLevel() ? CrossState.WEAK : CrossState.READY;
+        return new Cross(state, hybrid, Math.clamp(chance, 0, 1), quality);
+    }
+
+    /** How many times two Queens' traits multiply a hybrid's chance: 1 at the cross's level, more above it, the weak share at level 1. */
+    public static double qualityFactor(Hybrid hybrid, double quality) {
+        double level = hybrid.minAverageLevel();
+        if (quality >= level) {
+            return 1 + AntConfig.get(AntConfig.HYBRID_QUALITY_BONUS) * (quality - level);
+        }
+        double weak = AntConfig.get(AntConfig.HYBRID_WEAK_CHANCE);
+        return weak + (1 - weak) * (quality - Trait.MIN_LEVEL) / (level - Trait.MIN_LEVEL);
+    }
+
+    /** The slot of the Genetic Sample the next Queen will use up: the first sample slot that holds one, or -1. */
+    public static int nextSampleSlot(StructureBlockEntity chamber) {
+        for (int slot : StructureKind.QUEEN_CHAMBER_SAMPLES) {
+            if (sampleOf(chamber.getItem(slot)) != null) {
+                return slot;
+            }
+        }
+        return -1;
+    }
+
+    /** The Queen a Genetic Sample was copied from; null for any other stack. */
+    public static @Nullable QueenData sampleOf(ItemStack stack) {
+        return stack.is(ModItems.GENETIC_SAMPLE.get()) ? stack.get(ModDataComponents.QUEEN.get()) : null;
+    }
+
+    /**
+     * Whether a stack belongs in the rearing materials' slots: what the colony's species takes to raise a Queen, or
+     * (the chamber has no colony yet, {@code colony} is null) what any species takes.
+     */
+    public static boolean isMaterial(HolderLookup.@Nullable Provider registries, @Nullable AntSpecies colony, ItemStack stack) {
+        if (stack.is(ModItems.TEST_TUBE.get()) || stack.is(ModItems.GENETIC_SAMPLE.get())) {
+            return false;
+        }
+        if (colony != null) {
+            return colony.rearing().cost().stream().anyMatch(cost -> cost.test(stack));
+        }
+        var species = ModRegistries.lookup(registries, ModRegistries.SPECIES);
+        return species.isEmpty() || species.get().listElements()
+                .anyMatch(holder -> holder.value().rearing().cost().stream().anyMatch(cost -> cost.test(stack)));
+    }
+
     public static void tick(ServerLevel level, Colony colony, AntSpecies species, StructureBlockEntity chamber, double dt, double foodFactor) {
         int status = 0;
         QueenData queen = colony.queen();
@@ -57,23 +136,15 @@ public final class QueenRearing {
             return;
         }
         // Done: the daughter.
-        ItemStack sampleStack = chamber.getItem(StructureKind.QUEEN_CHAMBER_SAMPLE);
-        QueenData sample = sampleStack.is(ModItems.GENETIC_SAMPLE.get()) ? sampleStack.get(ModDataComponents.QUEEN.get()) : null;
+        int sampleSlot = nextSampleSlot(chamber);
+        ItemStack sampleStack = sampleSlot < 0 ? ItemStack.EMPTY : chamber.getItem(sampleSlot);
+        QueenData sample = sampleOf(sampleStack);
         Identifier daughterSpecies = colony.species();
         AntSpecies daughterData = species;
-        if (sample != null) {
-            Hybrid hybrid = findHybrid(level, colony.species(), sample.species());
-            double chance = hybrid == null ? 0 : hybrid.chance() * queen.genome().multiplier(Trait.MUTATION_PROBABILITY)
-                    * AntConfig.get(AntConfig.HYBRID_CHANCE_MULTIPLIER);
-            if (hybrid != null && queen.genome().averageLevel() >= hybrid.minAverageLevel()
-                    && sample.genome().averageLevel() >= hybrid.minAverageLevel()
-                    && level.getRandom().nextDouble() < chance) {
-                AntSpecies result = ModRegistries.species(level.registryAccess(), hybrid.result());
-                if (result != null) {
-                    daughterSpecies = hybrid.result();
-                    daughterData = result;
-                }
-            }
+        Cross cross = cross(level.registryAccess(), colony.species(), queen, sample);
+        if (cross.chance() > 0 && level.getRandom().nextDouble() < cross.chance()) {
+            daughterSpecies = cross.hybrid().result();
+            daughterData = ModRegistries.species(level.registryAccess(), daughterSpecies);
         }
         double mutationBonus = 1 + 0.25 * chamber.upgradeTier(UpgradeType.GENETIC);
         Genome genome = Genetics.daughter(queen.genome(), sample == null ? null : sample.genome(), daughterSpecies, level.getRandom(),
@@ -91,7 +162,12 @@ public final class QueenRearing {
     }
 
     public static @Nullable Hybrid findHybrid(ServerLevel level, Identifier a, Identifier b) {
-        Optional<? extends HolderLookup.RegistryLookup<Hybrid>> lookup = level.registryAccess().lookup(ModRegistries.HYBRID);
+        return findHybrid(level.registryAccess(), a, b);
+    }
+
+    /** The hybrid two species make, whichever of them is the colony and whichever the sample. */
+    public static @Nullable Hybrid findHybrid(HolderLookup.Provider registries, Identifier a, Identifier b) {
+        Optional<? extends HolderLookup.RegistryLookup<Hybrid>> lookup = registries.lookup(ModRegistries.HYBRID);
         if (lookup.isEmpty()) {
             return null;
         }

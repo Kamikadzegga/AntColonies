@@ -1,0 +1,11 @@
+{
+  "material": "minecraft:ghast_tear",
+  "species": "antcolonies:soul",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ]
+}

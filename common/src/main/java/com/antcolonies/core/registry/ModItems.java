@@ -16,7 +16,7 @@ import com.antcolonies.content.item.ChitinShieldItem;
 import com.antcolonies.content.item.GuardAntItem;
 import com.antcolonies.content.item.ColonyScannerItem;
 import com.antcolonies.content.item.DescribedItem;
-import com.antcolonies.content.item.GeneticAnalyzerItem;
+
 import com.antcolonies.content.item.IdentificationBookItem;
 import com.antcolonies.content.item.SpeciesItem;
 import com.antcolonies.content.item.SpeciesUpgradeItem;
@@ -100,8 +100,7 @@ public final class ModItems {
             IdentificationBookItem::new, p -> p.stacksTo(1));
     public static final DeferredItem<ColonyScannerItem> COLONY_SCANNER = ITEMS.registerItem("colony_scanner", ColonyScannerItem::new,
             p -> p.stacksTo(1));
-    public static final DeferredItem<GeneticAnalyzerItem> GENETIC_ANALYZER = ITEMS.registerItem("genetic_analyzer", GeneticAnalyzerItem::new,
-            p -> p.stacksTo(1));
+
 
     // --- Upgrades ---
     public static final DeferredItem<SpeciesUpgradeItem> SPECIES_UPGRADE = ITEMS.registerItem("species_upgrade", SpeciesUpgradeItem::new,

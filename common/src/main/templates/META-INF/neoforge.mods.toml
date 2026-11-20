@@ -38,3 +38,11 @@ Queens into mineral species and perfect their genetics in the Genetic Laboratory
     versionRange="[29.47,)"
     ordering="NONE"
     side="CLIENT"
+
+# FTB Teams: optional. With it, the players of a party share their genetic research.
+[[dependencies.${mod_id}]]
+    modId="ftbteams"
+    type="optional"
+    versionRange="[26.1.2.5,)"
+    ordering="AFTER"
+    side="BOTH"

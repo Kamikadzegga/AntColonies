@@ -43,6 +43,7 @@ import com.antcolonies.core.registry.ModRegistries;
 import java.util.Map;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -66,6 +67,8 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     private static final int CONTENT_H = 116;
     private static final int JOB_ROWS = 3;
     private static final int JOB_ROW_H = 33;
+    /** Pixels the Genetics page moves per notch of the mouse wheel: a line of text. */
+    private static final int GENETICS_STEP = 9;
     private static final int BUTTON_MODE = -50;
     private static final int BUTTON_CARD = -60;
     private static final int BUTTON_SERIES = -80;
@@ -81,6 +84,11 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     private static int colonyCard;
     private static int series;
     private int jobScroll;
+    private final ScrollBar jobBar = new ScrollBar();
+    /** How far the Genetics page is scrolled, in pixels; new screens start at {@link #startScroll}. */
+    private static int startScroll;
+    private int geneticsScroll = startScroll;
+    private final ScrollBar geneticsBar = new ScrollBar();
     private int productionCardsY = CONTENT_Y + 26;
     private final InfoPanel info = new InfoPanel();
     /** Network nodes drawn this frame, for their tooltips: x, y, radius, index into the colony's network list. */
@@ -104,6 +112,11 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     /** Which chart the Statistics page shows (the showcase's screenshots). */
     public static void showSeries(int index) {
         series = index;
+    }
+
+    /** Scrolls the Genetics page of screens opened from now on (for the in-game showcase). */
+    public static void showScroll(int pixels) {
+        startScroll = pixels;
     }
 
     /** Opens a page (for the in-game showcase). */
@@ -165,7 +178,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         }
         // Icons that look different at a glance (the chambers all look alike as items: glass cases).
         return new ItemStack[] {new ItemStack(ModItems.TERRARIUM.get()), queen, new ItemStack(ModItems.CHITIN_PICKAXE.get()),
-                new ItemStack(Items.CHEST), new ItemStack(ModItems.GENETIC_ANALYZER.get()), new ItemStack(ModItems.RALLY_PHEROMONE.get()),
+                new ItemStack(Items.CHEST), new ItemStack(ModItems.GENETIC_CIRCUIT.get()), new ItemStack(ModItems.RALLY_PHEROMONE.get()),
                 new ItemStack(ModItems.COLONY_SCANNER.get()), new ItemStack(ModItems.ANT_IDENTIFICATION_BOOK.get())};
     }
 
@@ -525,6 +538,17 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
 
     @Override
     protected boolean clickPage(double mouseX, double mouseY) {
+        if (page == 7 && info.press(mouseX, mouseY)) {
+            return true;
+        }
+        if (page == 2 && detailed() && jobBar.press(mouseX, mouseY)) {
+            jobScroll = jobBar.offsetAt(mouseY);
+            return true;
+        }
+        if (page == 4 && geneticsBar.press(mouseX, mouseY)) {
+            geneticsScroll = geneticsBar.offsetAt(mouseY);
+            return true;
+        }
         if (page == 1) {
             for (int i = 0; i < 5; i++) {
                 if (over(mouseX, mouseY, cardX(i), CONTENT_Y + 5, 36, 44)) {
@@ -671,6 +695,10 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             return;
         }
         jobScroll = Math.clamp(jobScroll, 0, Math.max(0, list.size() - JOB_ROWS));
+        // With more sites than fit, the plates make room for a scroll bar at the page's right edge.
+        int bar = list.size() > JOB_ROWS ? ScrollBar.WIDTH + 1 : 0;
+        jobBar.draw(graphics, leftPos + CONTENT_X + CONTENT_W - 1 - ScrollBar.WIDTH, topPos + y - 2, JOB_ROWS * JOB_ROW_H - 1, jobScroll,
+                Math.max(0, list.size() - JOB_ROWS), JOB_ROWS / (double) Math.max(1, list.size()), -1, -1);
         for (int row = 0; row < JOB_ROWS && jobScroll + row < list.size(); row++) {
             int index = jobScroll + row;
             Colony.Assignment job = list.get(index);
@@ -679,12 +707,12 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             // Each site its own plate, with a dark gap to the next. Its state is a stripe down its left edge.
             int plateTop = topPos + rowY - 1;
             int plateBottom = topPos + rowY + JOB_ROW_H - 3;
-            graphics.outline(leftPos + x - 3, plateTop - 1, CONTENT_W - 2, plateBottom - plateTop + 2, 0xFF0B1820);
-            graphics.fill(leftPos + x - 2, plateTop, leftPos + x - 2 + CONTENT_W - 4, plateBottom, row % 2 == 0 ? CARD : 0xFF243F52);
+            graphics.outline(leftPos + x - 3, plateTop - 1, CONTENT_W - 2 - bar, plateBottom - plateTop + 2, 0xFF0B1820);
+            graphics.fill(leftPos + x - 2, plateTop, leftPos + x - 2 + CONTENT_W - 4 - bar, plateBottom, row % 2 == 0 ? CARD : 0xFF243F52);
             graphics.fill(leftPos + x - 2, plateTop, leftPos + x, plateBottom, job.enabled() ? (problem ? BAD : GOOD) : FAINT);
             // An icon per kind of site (as items they are all the same glass case).
             siteIconAt(graphics, job.kind(), leftPos + x + 1, topPos + rowY + 1);
-            int right = CONTENT_X + CONTENT_W - 6;
+            int right = CONTENT_X + CONTENT_W - 6 - bar;
             // Line 1: its name, numbered when the colony has more than one of the kind, and its rate.
             String perMinute = rate(job.rate()) + Component.translatable("gui.antcolonies.per_minute").getString();
             int rateX = right - font.width(perMinute) + 1;
@@ -845,9 +873,34 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     }
 
     @Override
+    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        if (jobBar.dragging()) {
+            jobScroll = jobBar.offsetAt(event.y());
+            return true;
+        }
+        if (geneticsBar.dragging()) {
+            geneticsScroll = geneticsBar.offsetAt(event.y());
+            return true;
+        }
+        return page == 7 && info.drag(event.y()) || super.mouseDragged(event, dx, dy);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        info.release();
+        jobBar.release();
+        geneticsBar.release();
+        return super.mouseReleased(event);
+    }
+
+    @Override
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
         if (page == 2 && over(x, y, CONTENT_X, CONTENT_Y, CONTENT_W, CONTENT_H)) {
             jobScroll -= (int) Math.signum(scrollY);
+            return true;
+        }
+        if (page == 4 && over(x, y, CONTENT_X, CONTENT_Y, CONTENT_W, CONTENT_H)) {
+            geneticsScroll -= (int) Math.signum(scrollY) * GENETICS_STEP;
             return true;
         }
         if (page == 7 && over(x, y, CONTENT_X, CONTENT_Y, CONTENT_W, CONTENT_H)) {
@@ -1080,19 +1133,28 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
 
     private void genetics(GuiGraphicsExtractor graphics, Colony colony) {
         int x = CONTENT_X + 4;
-        int y = CONTENT_Y + 5;
+        int top = CONTENT_Y + 5;
         QueenData queen = colony.queen();
         if (queen == null) {
-            label(graphics, Component.translatable("status.antcolonies.no_queen"), x, y, BAD);
+            geneticsBar.hide();
+            label(graphics, Component.translatable("status.antcolonies.no_queen"), x, top, BAD);
             return;
         }
+        // The whole page scrolls when her mutations don't fit under her traits.
+        int y = top - geneticsScroll;
         Genome genome = queen.genome();
-        sideAnt(graphics, Caste.QUEEN, ClientSpecies.look(colony.species()), CONTENT_X + CONTENT_W - 30, y - 2, 1);
-        label(graphics, fit(Component.translatable("gui.antcolonies.genetics_of", genome.lineage().name(),
-                genome.lineage().generation()).getString(), 150), x, y, LABEL);
+        if (y > CONTENT_Y - 10) {
+            sideAnt(graphics, Caste.QUEEN, ClientSpecies.look(colony.species()), CONTENT_X + CONTENT_W - 30, y - 2, 1);
+            label(graphics, fit(Component.translatable("gui.antcolonies.genetics_of", genome.lineage().name(),
+                    genome.lineage().generation()).getString(), 150), x, y, LABEL);
+        }
         y += 11;
         int max = Trait.maxLevel();
         for (Trait trait : Trait.values()) {
+            if (y <= CONTENT_Y - 8) {
+                y += 8;
+                continue;
+            }
             int level = genome.level(trait);
             double multiplier = Trait.multiplier(level);
             if (trait.ordinal() % 2 == 0) {
@@ -1108,29 +1170,34 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             label(graphics, text, x + 76 + max * 6, y, multiplier > 1.001 ? GOOD : multiplier < 0.999 ? BAD : DIM);
             y += 8;
         }
-        y += 2;
+        y += 1;
         if (genome.mutations().isEmpty()) {
             label(graphics, Component.translatable("gui.antcolonies.no_mutations"), x, y, DIM);
-            return;
+            y += 10;
         }
-        int cx = x;
+        // The text keeps clear of the scroll bar at the page's right edge.
+        int right = CONTENT_X + CONTENT_W - 4 - ScrollBar.WIDTH - 1;
         for (Identifier id : genome.mutations()) {
             Mutation mutation = ModRegistries.lookup(ClientSpecies.registries(), ModRegistries.MUTATION)
                     .flatMap(lookup -> lookup.get(ResourceKey.create(ModRegistries.MUTATION, id)))
                     .map(Holder::value).orElse(null);
             boolean bad = mutation != null && mutation.negative();
-            String name = Component.translatable(Mutation.translationKey(id)).getString();
-            int w = font.width(name) + 7;
-            if (cx + w > CONTENT_X + CONTENT_W - 4) {
-                cx = x;
+            int w = chip(graphics, Component.translatable(Mutation.translationKey(id)).getString(), x, y, bad ? BAD : GOOD);
+            // What it does: beside its name when it fits there, under it when not.
+            String effects = Tooltips.mutationEffectLine(ClientSpecies.registries(), id);
+            if (font.width(effects) <= right - (x + w + 4)) {
+                label(graphics, effects, x + w + 4, y + 1, LABEL);
                 y += 11;
+            } else {
+                y = wrapped(graphics, Component.literal(effects), x + 5, y + 10, right - x - 5, 9, LABEL) + 1;
             }
-            if (y > CONTENT_Y + CONTENT_H - 10) {
-                break;
-            }
-            chip(graphics, name, cx, y, bad ? BAD : GOOD);
-            cx += w + 3;
         }
+        // Each row ends in a pixel of spacing, which may fall outside the page.
+        int bottom = y - 1 + geneticsScroll;
+        int overflow = Math.max(0, bottom - (CONTENT_Y + CONTENT_H - 1));
+        geneticsScroll = Math.clamp(geneticsScroll, 0, overflow);
+        geneticsBar.draw(graphics, leftPos + CONTENT_X + CONTENT_W - 1 - ScrollBar.WIDTH, topPos + CONTENT_Y + 2, CONTENT_H - 4, geneticsScroll, overflow,
+                (CONTENT_H - 6) / (double) Math.max(1, bottom - top), -1, -1);
     }
 
     // --- Network ---
@@ -1519,7 +1586,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             if (over(mouseX, mouseY, CONTENT_X + 2, CONTENT_Y + 3, 150, 10)) {
                 // The Queen herself: her lineage, and how far she has grown with her colony.
                 List<Component> lines = new ArrayList<>();
-                Tooltips.queen(menu.colony().queen(), lines::add, true);
+                Tooltips.queen(menu.colony().queen(), lines::add, true, ClientSpecies.registries());
                 graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
                 return;
             }

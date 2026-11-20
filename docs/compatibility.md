@@ -16,7 +16,7 @@ Ant Colonies needs nothing but NeoForge. Everything below is optional.
 
 ## Other mods
 
-Nothing here needs another mod. Only MachinaOpus (below) was tested with Ant Colonies, and only on the 26.3 version.
+Nothing here needs another mod. FTB Teams (below) was tested with this version; MachinaOpus (below) only with the 26.3 version.
 Everything goes through NeoForge's shared systems, which those mods use:
 
 - **Items** (Create funnels, chutes and arms; Mekanism transporters; Ender IO conduits; AE2 and Refined Storage
@@ -50,6 +50,29 @@ Everything goes through NeoForge's shared systems, which those mods use:
   The Mechanical Miner Ant also turns up raw tin, osmium, zinc, lead and molybdenum at stage 3 when a mod adds them.
   Ender IO and Refined Storage add no ores of their own; the vanilla materials they use (quartz, redstone, gold, ender
   pearls) come from Fire, Redstone, Gold and Ender Ants.
+
+### FTB Teams
+
+Optional. With FTB Teams installed, the players of a **party** share their genetic research (see
+[Genetic research](gameplay.md#genetic-research)):
+
+- A discovery made while in a party is the party's: every member can use it at once, it is saved under the party's id
+  and survives restarts, and a player who joins later gets all of it.
+- What a player discovered on their own stays their own. Leaving a party takes the party's research away again and
+  leaves the personal part; joining another party adds that party's research to it. Nothing of a party's ever becomes
+  personal by itself.
+- A player in no party (FTB Teams gives everyone a personal team) researches for themselves, exactly as without the mod.
+- Without FTB Teams nothing changes and nothing is missing: research is each player's own.
+
+The bridge is one small class (`compat/ftbteams/FtbTeamsResearch`), loaded only when the mod `ftbteams` is present, and
+written against the API of FTB Teams 26.1.2.5: `FTBTeamsAPI.api().getManager().getTeamForPlayerID(uuid)`, the team's
+`isPartyTeam()` and `getId()`, and the `FTBTeamsEvent.PlayerChangedTeam` event. Besides that event, every online
+player's party is looked at again every two seconds, so a change is never missed.
+
+**Tested with FTB Teams 26.1.2.5 and FTB Library 26.1.2.11** on a dedicated server with two players: a party made with
+`/ftbteams party create`, `invite` and `join` shares what a member scans, and `/ftbteams party leave` takes the party's
+research away again. The mod also gives FTB Library a face icon for its two mobs, the Wild Ant and the Guard Ant
+(`assets/ftblibrary/textures/faces/antcolonies/`): the ant head, shown where FTB mods draw a mob's face.
 
 ### Liquid Ants for other mods' fluids
 

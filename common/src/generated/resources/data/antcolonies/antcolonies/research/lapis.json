@@ -1,0 +1,11 @@
+{
+  "material": "minecraft:lapis_lazuli",
+  "species": "antcolonies:lapis",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ]
+}

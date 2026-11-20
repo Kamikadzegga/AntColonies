@@ -12,6 +12,7 @@ import com.antcolonies.colony.model.ColonyAccess;
 import com.antcolonies.colony.model.ColonyNetwork;
 import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.colony.model.Founding;
+import com.antcolonies.colony.research.Discovery;
 import com.antcolonies.colony.resource.ColonyStorage;
 import com.antcolonies.colony.upgrade.UpgradeEffects;
 import com.antcolonies.content.block.BroodClusterBlock;
@@ -457,6 +458,10 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
                 case NONE -> {
                 }
             }
+        } else if (EvolutionLogic.findLaboratory(level.registryAccess(), colony, feed) != null) {
+            // A species mutation's material: the Queen keeps it and the screen says where that mutation is made.
+            feedStatus = ColonyStatus.NEEDS_LABORATORY.bit();
+            return;
         } else {
             // Food left in the feed slot (from before the food slot): eaten like the food slot's.
             if (ModDataMaps.food(feed) == null) {
@@ -491,9 +496,9 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         return ModDataMaps.food(stack) != null;
     }
 
-    /** Whether a stack belongs in the feed slot: anything but food, and food that is also this colony's evolution material. */
+    /** Whether a stack belongs in the feed slot: what the colony takes in there, and a laboratory material (it says so). */
     public boolean isFeed(ItemStack stack) {
-        return !isFood(stack) || level != null && EvolutionLogic.find(level.registryAccess(), colony, stack) != null;
+        return feedRole(stack) || level != null && EvolutionLogic.findLaboratory(level.registryAccess(), colony, stack) != null;
     }
 
     private String speciesDiet(Level level) {
@@ -694,7 +699,7 @@ public void queenGrew(ServerLevel level, int stage, List<Trait> raised) {
         return (slot == SLOT_FOOD || slot == SLOT_FEED && feedRole(stack)) && canPlaceItem(slot, stack);
     }
 
-    /** Whether automation may put a stack into the feed slot: only what the slot uses up, as anything else would block it. */
+    /** Whether the feed slot uses a stack up: ants, brood, empty tubes, catalysts and this colony's evolution material. */
     private boolean feedRole(ItemStack stack) {
         return stack.is(ModItems.TEST_TUBE.get()) || stack.is(ModItems.ANT_TEST_TUBE.get()) || stack.is(ModItems.ANT_EGG.get())
                 || stack.is(ModItems.ANT_LARVA.get()) || stack.is(ModItems.EVOLUTION_CATALYST.get())
@@ -719,6 +724,10 @@ public void queenGrew(ServerLevel level, int stage, List<Trait> raised) {
     public @Nullable AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
         if (player instanceof ServerPlayer serverPlayer && level instanceof ServerLevel serverLevel) {
             checkAdvancements(serverLevel, serverPlayer);
+        }
+        // Looking into a living colony is meeting its species.
+        if (colony.queen() != null || !colony.isEmptyOfAnts()) {
+            Discovery.species(player, colony.species());
         }
         return new TerrariumMenu(containerId, inventory, this);
     }

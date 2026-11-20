@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.antcolonies.colony.breeding.QueenRearing;
 import com.antcolonies.colony.model.ForagingMode;
 import com.antcolonies.colony.network.ConnectorNetwork;
 import com.antcolonies.content.block.ColonyPartBlock;
@@ -20,6 +21,8 @@ import com.antcolonies.content.menu.StructureMenu;
 import com.antcolonies.core.registry.ModBlockEntities;
 import com.antcolonies.core.registry.ModDataComponents;
 import com.antcolonies.core.registry.ModItems;
+import com.antcolonies.core.registry.ModRegistries;
+import com.antcolonies.colony.species.AntSpecies;
 import com.antcolonies.colony.species.SpeciesOutput;
 import com.antcolonies.colony.upgrade.SpeciesUpgradeKind;
 import com.antcolonies.colony.upgrade.UpgradeType;
@@ -112,7 +115,11 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     public static final int DATA_FOOD_OUT = 23;
     public static final int DATA_ITEMS_MOVED = 24;
     public static final int DATA_MEMBERS = 25;
-    public static final int DATA_COUNT = 26;
+    /** Queen Chambers, what the sample in the slot does: a CrossState, the hybrid's chance in thousandths, the too-low trait average times 10. */
+    public static final int DATA_CROSS = 26;
+    public static final int DATA_CROSS_CHANCE = 27;
+    public static final int DATA_CROSS_LEVEL = 28;
+    public static final int DATA_COUNT = 29;
 
     /** Job site priorities: the colony hands out its workers to higher ones first. */
     public static final int PRIORITY_LOW = 0;
@@ -178,6 +185,9 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
                 case DATA_FOOD_OUT -> connector == null ? 0 : (int) Math.round(connector.foodOut * 10);
                 case DATA_ITEMS_MOVED -> connector == null ? 0 : (int) Math.round(connector.itemsMoved * 10);
                 case DATA_MEMBERS -> connector == null ? 0 : connector.members;
+                case DATA_CROSS -> cross().state().ordinal();
+                case DATA_CROSS_CHANCE -> (int) Math.round(cross().chance() * 1000);
+                case DATA_CROSS_LEVEL -> (int) Math.round(cross().level() * 10);
                 default -> 0;
             };
         }
@@ -426,6 +436,17 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         return rearingStatus;
     }
 
+    /** What the next Genetic Sample in this Queen Chamber would do to the next Queen it raises. */
+    public QueenRearing.Cross cross() {
+        if (kind == StructureKind.QUEEN_CHAMBER && level != null && terrarium() != null
+                && level.getBlockEntity(terrarium()) instanceof TerrariumBlockEntity home) {
+            int slot = QueenRearing.nextSampleSlot(this);
+            return QueenRearing.cross(level.registryAccess(), home.colony().species(), home.colony().queen(),
+                    slot < 0 ? null : QueenRearing.sampleOf(getItem(slot)));
+        }
+        return QueenRearing.NO_CROSS;
+    }
+
     public void onQueenRaised() {
         queensRaised++;
         contentsChanged();
@@ -541,7 +562,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         }
     }
 
-    /** Automation: a Storage empties into the container under it, a stack per second per tier. */
+    /** Automation: a Storage empties into the container under it, 16 items a second per tier. */
     private void pushDown(ServerLevel level, BlockPos pos) {
         var target = level.getCapability(Capabilities.Item.BLOCK, pos.below(), Direction.UP);
         if (target == null) {
@@ -612,10 +633,20 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
             // A Colony Connector's filter: one of each item it should send.
             case COLONY_CONNECTOR -> slot < items.size();
             case QUEEN_CHAMBER -> slot < StructureKind.QUEEN_CHAMBER_MATERIALS
+                    && QueenRearing.isMaterial(level == null ? null : level.registryAccess(), colonySpecies(), stack)
                     || slot == StructureKind.QUEEN_CHAMBER_TUBE && stack.is(ModItems.TEST_TUBE.get())
-                    || slot == StructureKind.QUEEN_CHAMBER_SAMPLE && stack.is(ModItems.GENETIC_SAMPLE.get());
+                    || StructureKind.isQueenChamberSample(slot) && stack.is(ModItems.GENETIC_SAMPLE.get());
             default -> false;
         };
+    }
+
+    /** The species of this chamber's colony, or null while it has none (or its Formicarium isn't loaded). */
+    private @Nullable AntSpecies colonySpecies() {
+        if (level == null || terrarium == null || !level.isLoaded(terrarium)
+                || !(level.getBlockEntity(terrarium) instanceof TerrariumBlockEntity home)) {
+            return null;
+        }
+        return ModRegistries.species(level.registryAccess(), home.colony().species());
     }
 
     @Override

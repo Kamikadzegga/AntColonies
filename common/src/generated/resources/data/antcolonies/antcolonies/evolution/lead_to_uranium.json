@@ -6,6 +6,7 @@
   "guaranteed_after": 32,
   "min_stage": 3,
   "min_population": 1500,
+  "lab_amount": 8,
   "neoforge:conditions": [
     {
       "type": "neoforge:or",

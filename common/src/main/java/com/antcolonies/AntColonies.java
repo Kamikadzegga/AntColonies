@@ -5,7 +5,10 @@ import org.slf4j.Logger;
 import com.antcolonies.colony.liquid.LiquidKinds;
 import com.antcolonies.colony.model.ColonyNetwork;
 import com.antcolonies.colony.network.ConnectorNetwork;
+import com.antcolonies.colony.research.KnowledgePayload;
+import com.antcolonies.colony.research.ResearchSync;
 import com.antcolonies.colony.resource.MobLoot;
+import com.antcolonies.compat.ftbteams.FtbTeamsResearch;
 import com.antcolonies.compat.liquid.LiquidIntegrations;
 import com.antcolonies.content.item.ChitinGear;
 import com.antcolonies.content.worldgen.AnthillAlarm;
@@ -31,6 +34,7 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -65,6 +69,7 @@ public class AntColonies {
         modEventBus.addListener(ModEntities::registerAttributes);
         modEventBus.addListener(WildAnt::registerSpawnPlacement);
         modEventBus.addListener(ModCapabilities::register);
+        modEventBus.addListener(KnowledgePayload::register);
         NeoForge.EVENT_BUS.addListener(ColonyNetwork::onLevelUnload);
         NeoForge.EVENT_BUS.addListener(MobLoot::onLevelUnload);
         NeoForge.EVENT_BUS.addListener(ChitinGear::onPlayerTick);
@@ -75,6 +80,14 @@ public class AntColonies {
         NeoForge.EVENT_BUS.addListener(ConnectorNetwork::onLevelTick);
         // The Droplet Centrifuge's recipes go to every client.
         NeoForge.EVENT_BUS.addListener(ModRecipes::onDatapackSync);
+        // Genetic research: each player's client is told what they and their team know.
+        NeoForge.EVENT_BUS.addListener(ResearchSync::onLogin);
+        NeoForge.EVENT_BUS.addListener(ResearchSync::onLogout);
+        NeoForge.EVENT_BUS.addListener(ResearchSync::onServerTick);
+        // With FTB Teams, the players of a party share their research.
+        if (ModList.get().isLoaded(FtbTeamsResearch.MOD_ID)) {
+            FtbTeamsResearch.register();
+        }
     }
 
     public static Identifier id(String path) {

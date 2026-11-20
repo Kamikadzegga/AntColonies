@@ -1,0 +1,26 @@
+{
+  "material": "#c:gems/fluorite",
+  "species": "antcolonies:fluorite",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mekanism"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "machinaopus"
+        }
+      ]
+    }
+  ]
+}

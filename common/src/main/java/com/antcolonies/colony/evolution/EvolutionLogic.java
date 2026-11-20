@@ -33,14 +33,25 @@ public final class EvolutionLogic {
 
     public record Result(Outcome outcome, @Nullable Evolution evolution) {}
 
+    /** The evolution this item starts in this colony by feeding, or null. */
     public static @Nullable Evolution find(RegistryAccess registries, Colony colony, ItemStack stack) {
+        return find(registries, colony, stack, false);
+    }
+
+    /** The species mutation this item belongs to that only the Genetic Laboratory makes, or null. */
+    public static @Nullable Evolution findLaboratory(RegistryAccess registries, Colony colony, ItemStack stack) {
+        return find(registries, colony, stack, true);
+    }
+
+    private static @Nullable Evolution find(RegistryAccess registries, Colony colony, ItemStack stack, boolean laboratory) {
         if (stack.isEmpty()) {
             return null;
         }
         Optional<? extends HolderLookup.RegistryLookup<Evolution>> lookup = registries.lookup(ModRegistries.EVOLUTION);
         return lookup.flatMap(l -> l.listElements().map(Holder::value)
                 .filter(evolution -> evolution.from().equals(colony.species()) && evolution.item().test(stack)
-                        && ModRegistries.species(registries, evolution.to()) != null)
+                        && ModRegistries.species(registries, evolution.to()) != null
+                        && SpeciesMutation.laboratoryOnly(registries, evolution) == laboratory)
                 .findFirst()).orElse(null);
     }
 

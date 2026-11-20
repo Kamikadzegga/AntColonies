@@ -1,0 +1,5 @@
+{
+  "material": "minecraft:packed_ice",
+  "mutation": "antcolonies:cold_resistance",
+  "tier": "basic"
+}

@@ -11,6 +11,7 @@ import com.antcolonies.content.blockentity.HomeNestBlockEntity;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.content.blockentity.UpgradeStationBlockEntity;
+import com.antcolonies.content.blockentity.WildNestBlockEntity;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
@@ -38,10 +39,16 @@ public final class ModBlockEntities {
             BLOCK_ENTITY_TYPES.register("centrifuge",
                     () -> new BlockEntityType<>(CentrifugeBlockEntity::new, ModBlocks.CENTRIFUGE.get()));
 
-    /** Nests a player placed (only those have one: see WildNestBlock.HOME). */
+    /** Nests a player placed (see WildNestBlock.HOME). */
     public static final Supplier<BlockEntityType<HomeNestBlockEntity>> HOME_NEST =
             BLOCK_ENTITY_TYPES.register("home_nest",
                     () -> new BlockEntityType<>(HomeNestBlockEntity::new,
+                            ModBlocks.NESTS.values().stream().map(b -> (Block) b.get()).toArray(Block[]::new)));
+
+    /** Every other nest: the ones the world generates. */
+    public static final Supplier<BlockEntityType<WildNestBlockEntity>> WILD_NEST =
+            BLOCK_ENTITY_TYPES.register("wild_nest",
+                    () -> new BlockEntityType<>(WildNestBlockEntity::new,
                             ModBlocks.NESTS.values().stream().map(b -> (Block) b.get()).toArray(Block[]::new)));
 
     public static final Supplier<BlockEntityType<BroodClusterBlockEntity>> BROOD_CLUSTER =

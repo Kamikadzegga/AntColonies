@@ -36,6 +36,8 @@ import org.jspecify.annotations.Nullable;
 public class UpgradeStationBlockEntity extends BlockEntity implements Container, MenuProvider {
     public static final int SLOT_BASE = 0;
     public static final int SLOT_MATERIAL = 1;
+    /** The highest tier a species upgrade is raised to. */
+    public static final int MAX_TIER = 3;
 
     private NonNullList<ItemStack> items = NonNullList.withSize(2, ItemStack.EMPTY);
     private SpeciesUpgradeKind selected = SpeciesUpgradeKind.EXTRACTION;
@@ -73,7 +75,7 @@ public class UpgradeStationBlockEntity extends BlockEntity implements Container,
             upgrade = new SpeciesUpgrade(species, kind, 1);
         } else {
             SpeciesUpgrade existing = base.get(ModDataComponents.SPECIES_UPGRADE.get());
-            if (existing == null || existing.tier() >= 3 || !existing.species().equals(species)) {
+            if (existing == null || existing.tier() >= MAX_TIER || !existing.species().equals(species)) {
                 return Optional.empty();
             }
             upgrade = new SpeciesUpgrade(species, existing.kind(), existing.tier() + 1);
@@ -141,6 +143,16 @@ public class UpgradeStationBlockEntity extends BlockEntity implements Container,
     public void setItem(int slot, ItemStack stack) {
         items.set(slot, stack);
         setChanged();
+    }
+
+    /** The base slot takes an Upgrade Base or a species upgrade to raise; the material slot, a species' signature material. */
+    @Override
+    public boolean canPlaceItem(int slot, ItemStack stack) {
+        if (slot == SLOT_BASE) {
+            SpeciesUpgrade upgrade = stack.get(ModDataComponents.SPECIES_UPGRADE.get());
+            return stack.is(ModItems.UPGRADE_BASE.get()) || stack.is(ModItems.SPECIES_UPGRADE.get()) && upgrade != null && upgrade.tier() < MAX_TIER;
+        }
+        return level == null || speciesWithSignature(level.registryAccess(), stack) != null;
     }
 
     @Override

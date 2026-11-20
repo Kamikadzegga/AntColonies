@@ -11,6 +11,7 @@ import com.antcolonies.client.terrarium.TerrariumVisuals;
 import com.antcolonies.colony.species.AntSpecies;
 import com.antcolonies.content.block.ColonyPartBlock;
 import com.antcolonies.colony.model.Colony;
+import com.antcolonies.colony.research.KnowledgePayload;
 import com.antcolonies.colony.model.StructureKind;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.core.registry.ModParticles;
@@ -402,6 +403,10 @@ public final class ClientHooks {
             level.addParticle(ColorParticleOption.create(ModParticles.SOIL.get(), 0xFF6B4A2E), pos.getX() + 0.3 + random.nextDouble() * 0.4,
                     pos.getY() + 0.6, pos.getZ() + 0.3 + random.nextDouble() * 0.4, 0, 0.02, 0);
         }
+    }
+
+    public static void knowledge(KnowledgePayload payload) {
+        ClientResearch.accept(payload);
     }
 
     public static void openBook() {
