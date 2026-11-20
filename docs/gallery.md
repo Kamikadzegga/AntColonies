@@ -19,15 +19,21 @@ Screenshots of Ant Colonies. The [gameplay guide](gameplay.md) explains what the
 |:---:|:---:|
 | ![Colony screen](images/screenshots/colony-screen.png) | ![Jobs](images/screenshots/jobs-screen.png) |
 | The colony screen | Jobs: ants, priority and modes per site |
-| ![Statistics](images/screenshots/statistics-screen.png) | ![Ant Identification Book](images/screenshots/identification-book.png) |
-| Statistics: the colony over the last half hour | The Ant Identification Book: how to play, and every species |
+| ![Statistics](images/screenshots/statistics-screen.png) | ![Genetics](images/screenshots/genetics-screen.png) |
+| Statistics: the colony over the last half hour | Genetics: the Queen's traits and what her mutations do |
+| ![Ant Identification Book](images/screenshots/identification-book.png) | ![Genetic Research in the book](images/screenshots/book-research.png) |
+| The Ant Identification Book: how to play, and every species | Its Genetic Research section: what you have discovered and what is still unknown |
 
-## Machines
+## Genetics
 
 | | |
 |:---:|:---:|
-| ![Generator and Droplet Centrifuge](images/screenshots/machines.jpg) | ![Genetic Laboratory](images/screenshots/genetic-laboratory.png) |
-| The Generator and the Droplet Centrifuge, working and idle | The Genetic Laboratory at work |
+| ![The scanner](images/screenshots/laboratory-research.png) | ![Analysis](images/screenshots/laboratory-analysis.png) |
+| Research: scan a material in the Genetic Laboratory and keep the discovery | Analysis: a Queen's genes and what she can become |
+| ![Species Mutation](images/screenshots/laboratory-mutation.png) | ![Editing](images/screenshots/genetic-laboratory.png) |
+| Mutation: a Stone Ant Queen becomes an Iron Ant | Editing: raise, reroll, mutate, purge and copy a Queen's genes |
+| ![Hybrids](images/screenshots/laboratory-hybrids.png) | ![Queen Chamber](images/screenshots/queen-chamber.png) |
+| Hybrids: copy a Queen's genes for a cross | The Queen Chamber: four Genetic Samples, and the hybrid's chance |
 
 ## The world
 
@@ -37,12 +43,14 @@ Screenshots of Ant Colonies. The [gameplay guide](gameplay.md) explains what the
 | A giant anthill | Inside it |
 | ![Chitin armor tiers](images/screenshots/chitin-tiers.jpg) | ![Chitin armor from behind](images/screenshots/chitin-tiers-back.jpg) |
 | Chitin, Hardened, Infernal and Void armor | Spines and a Queen's wings on the back |
-| ![Building blocks](images/screenshots/building-blocks.jpg) | |
-| Building blocks: anthill, chitin, amber, fungal and royal | |
+| ![Building blocks](images/screenshots/building-blocks.jpg) | ![Generator and Droplet Centrifuge](images/screenshots/machines.jpg) |
+| Building blocks: anthill, chitin, amber, fungal and royal | The Generator and the Droplet Centrifuge, working and idle |
 
 ## Other mods
 
 | | |
 |:---:|:---:|
-| ![Recipe viewer](images/screenshots/recipe-viewer.png) | ![Jade tooltip](images/screenshots/jade.jpg) |
-| Expeditions and the whole progression in JEI and EMI | A Formicarium at a glance with Jade |
+| ![Recipe viewer](images/screenshots/recipe-viewer.png) | ![Species Mutation recipes](images/screenshots/recipe-viewer-mutation.png) |
+| Expeditions and the whole progression in JEI and EMI | Every species mutation and what it needs |
+| ![Jade tooltip](images/screenshots/jade.jpg) | |
+| A Formicarium at a glance with Jade | |

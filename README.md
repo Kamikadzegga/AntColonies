@@ -28,8 +28,10 @@ that mine, farm, hunt and evolve.
   and reach the endgame Wither and Dragon Ants.
 - **Genetic research.** Scan materials in the Genetic Laboratory. Discoveries are permanent, fill in the Ant
   Identification Book and unlock species mutations.
-- **Genetics.** Every Queen has ten traits and can carry any of 31 mutations. The Genetic Laboratory upgrades, rerolls
-  and copies them.
+- **Genetics.** Every Queen has ten traits and can carry any of 31 mutations, and the game says what each one does. The
+  Genetic Laboratory has a page for every step: Research, Analysis, Mutation, Editing, Hybrids and Stability.
+- **Hybrids.** Copy a Queen's genes into a Genetic Sample and raise her daughters in another species' Queen Chamber.
+  Better Queens make a hybrid more likely, and the chamber shows the chance.
 - **Liquid Ants.** Ants that carry water, lava and other mods' fluids, and a Droplet Centrifuge that turns their
   droplets into the real fluid.
 - **The Nether and the End.** Expeditions through little portals at home, Colony Connectors that share food and items,
@@ -50,6 +52,8 @@ The [gameplay guide](docs/gameplay.md) explains all of it.
 | A living Formicarium | The colony screen |
 | ![Vertical Formicarium](docs/images/screenshots/vertical-formicarium.jpg) | ![Liquid Ants](docs/images/screenshots/liquid-ants.jpg) |
 | A colony built upward: one nest behind glass | Liquid Ants and the Droplet Centrifuge |
+| ![The Genetic Laboratory's scanner](docs/images/screenshots/laboratory-research.png) | ![Species Mutation](docs/images/screenshots/laboratory-mutation.png) |
+| Genetic research: scan a material, keep the discovery | Species Mutation: a Stone Ant Queen becomes an Iron Ant |
 | ![Giant anthill](docs/images/screenshots/giant-anthill.jpg) | ![Chitin armor tiers](docs/images/screenshots/chitin-tiers.jpg) |
 | A giant anthill | Chitin, Hardened, Infernal and Void armor |
 

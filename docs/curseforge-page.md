@@ -35,10 +35,7 @@ Catch wild ants, raise Queens in living Formicariums, and grow colonies that min
 
 ## 2. Description (Markdown)
 
-A shorter version of the GitHub README. Images load from the repository once it is pushed.
-
-The description pasted before 2026-11-16 loads `screenshots/terrarium.png` and `screenshots/chitin-tiers.png`. Those two
-files stay in the repository for it; once this text is pasted again (it uses the `.jpg` ones), they can be deleted.
+A shorter version of the GitHub README, for both Minecraft versions. Images load from the `main` branch.
 
 ---
 ![Ant Colonies](https://raw.githubusercontent.com/Kamikadzegga/AntColonies/main/docs/images/banner.png)
@@ -56,12 +53,16 @@ into thousands of workers that mine, farm, hunt and evolve.
   and reach the endgame Wither and Dragon Ants.
 - **Genetic research.** Scan materials in the Genetic Laboratory. Discoveries are permanent, fill in the Ant
   Identification Book and unlock species mutations.
-- **Genetics.** Every Queen has ten traits and grows stronger with her colony. Breed daughters and perfect them in the
-  Genetic Laboratory.
+- **Genetics.** Every Queen has ten traits and can carry any of 31 mutations, and the game says what each one does.
+  The Genetic Laboratory has a page for every step: Research, Analysis, Mutation, Editing, Hybrids and Stability.
+- **Hybrids.** Copy a Queen's genes into a Genetic Sample and raise her daughters in another species' Queen Chamber.
+  Better Queens make a hybrid more likely, and the chamber shows the chance.
+- **Liquid Ants.** Ants that carry water, lava and other mods' fluids, and a Droplet Centrifuge that turns their
+  droplets into the real fluid.
 - **Expeditions.** Nether and End ants bring back that dimension's riches through little portals at home.
 - **Colony Connectors.** Link nearby colonies so food and items flow to where they are needed.
 - **Anthills.** Explore giant anthills in the Overworld, the Nether and the End, each shaped by its biome, with loot,
-  soldiers and a great Queen guarded by her royal soldiers. Touch their chests and the whole anthill comes after you.
+  soldiers and a great Queen guarded by her Royal Guard Ants. Touch their chests and the whole anthill comes after you.
 - **Chitin gear.** Four tiers of ant armor and tools, with jaws, spines and wings. In a full set, wild ants leave you
   alone.
 - **Building blocks.** Anthill bricks, chitin plates, amber, fungal and royal blocks, with stairs, slabs and walls.
@@ -69,7 +70,7 @@ into thousands of workers that mine, farm, hunt and evolve.
   in-game guide book.
 - **Light on servers.** Colonies are numbers, not mobs: 100 big colonies used under 5% of a server tick in testing.
 
-![Chitin armor in four tiers](https://raw.githubusercontent.com/Kamikadzegga/AntColonies/main/docs/images/screenshots/chitin-tiers.jpg)
+![The Genetic Laboratory's scanner](https://raw.githubusercontent.com/Kamikadzegga/AntColonies/main/docs/images/screenshots/laboratory-research.png)
 
 ## Getting started
 
@@ -77,11 +78,15 @@ into thousands of workers that mine, farm, hunt and evolve.
 2. Use the Tweezers on a wild ant nest until you catch a Queen.
 3. Place a **Formicarium** and put the Queen and some Ant Food in it.
 4. Add chambers as the colony grows. JEI or EMI shows every recipe.
+5. Build a **Genetic Laboratory**, scan materials in it and mutate your Queens into mineral ants.
+
+![Chitin armor in four tiers](https://raw.githubusercontent.com/Kamikadzegga/AntColonies/main/docs/images/screenshots/chitin-tiers.jpg)
 
 ## Requirements
 
-Minecraft **26.3**, NeoForge **26.3.0.101** or newer, Java 25. Install it on both the client and the server.
-Optional: JEI, EMI, Jade, MachinaOpus.
+Minecraft **26.3** with NeoForge **26.3.0.101** or newer, or Minecraft **26.1.2** with NeoForge **26.1.2.122** or newer.
+Java 25. Install it on both the client and the server.
+Optional: JEI, EMI, Jade, FTB Teams, MachinaOpus.
 
 ## Links
 
@@ -92,9 +97,9 @@ Optional: JEI, EMI, Jade, MachinaOpus.
 Free to use in any modpack (MIT License).
 ---
 
-## 3. Images (Images tab, with the carousel turned on)
+## 3. Images (Media tab)
 
-Upload these 19 from `docs/images/screenshots/`, in this order (they replace the 0.0.2 images):
+Upload these 27 from `docs/images/screenshots/`, in this order:
 
 | File | Title | Description |
 |---|---|---|
@@ -105,6 +110,15 @@ Upload these 19 from `docs/images/screenshots/`, in this order (they replace the
 | `colony-screen.png` | The colony screen | Queen, health, food and ants at a glance |
 | `jobs-screen.png` | Jobs | Ants, priority and modes for every working site |
 | `statistics-screen.png` | Statistics | The colony over the last half hour |
+| `genetics-screen.png` | Genetics | The Queen's traits and what her mutations do |
+| `laboratory-research.png` | Genetic research | Scan a material in the Genetic Laboratory and keep the discovery |
+| `laboratory-analysis.png` | Analysis | A Queen's genes and what she can become |
+| `laboratory-mutation.png` | Species Mutation | A Stone Ant Queen becomes an Iron Ant |
+| `genetic-laboratory.png` | Editing | Raise, reroll, mutate, purge and copy a Queen's genes |
+| `laboratory-hybrids.png` | Hybrids | Copy a Queen's genes for a cross |
+| `queen-chamber.png` | The Queen Chamber | Four Genetic Samples, and the hybrid's chance |
+| `identification-book.png` | The Ant Identification Book | How to play, and every species |
+| `book-research.png` | Research in the book | What you have discovered and what is still unknown |
 | `chitin-tiers.jpg` | Chitin armor | Chitin, Hardened, Infernal and Void |
 | `chitin-tiers-back.jpg` | Spines and wings | The higher tiers from behind |
 | `expedition-sites.jpg` | Expeditions | Nether and End Foraging Sites |
@@ -113,9 +127,8 @@ Upload these 19 from `docs/images/screenshots/`, in this order (they replace the
 | `giant-anthill.jpg` | A giant anthill | A structure shaped by its biome, with loot and defenders |
 | `anthill-queen-chamber.jpg` | Inside an anthill | Tunnels and chambers, and a Queen to catch |
 | `machines.jpg` | The machines | The Generator and the Droplet Centrifuge, working and idle |
-| `genetic-laboratory.png` | The Genetic Laboratory | Raise, reroll and mutate a Queen's traits |
 | `recipe-viewer.png` | JEI and EMI | Expeditions and every recipe |
-| `identification-book.png` | The Ant Identification Book | How to play, and every species |
+| `recipe-viewer-mutation.png` | Species Mutation recipes | Every species mutation and what it needs |
 | `jade.jpg` | Jade | A Formicarium's state without opening it |
 
 ## 4. Files (upload a file)
@@ -129,7 +142,7 @@ Upload these 19 from `docs/images/screenshots/`, in this order (they replace the
 | Mod loader | NeoForge |
 | Java | Java 25 |
 | Environment | Client and Server |
-| Related projects | Optional: JEI, EMI, Jade, MachinaOpus (if published) |
-| Changelog | The `[0.3.0]` section of `CHANGELOG.md` |
+| Related projects | Optional: JEI, EMI, Jade, FTB Teams, MachinaOpus |
+| Changelog | The `[0.5.0]` section of `CHANGELOG.md` |
 
-The version is 0.3.0 (`mod_version` in `gradle.properties`). `CHANGELOG.md` lists what 0.3.0 changed.
+The version is 0.5.0 (`mod_version` in `gradle.properties`). `CHANGELOG.md` lists what 0.5.0 changed.
