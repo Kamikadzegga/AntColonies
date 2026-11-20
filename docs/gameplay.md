@@ -24,6 +24,7 @@ world content, species, genetics and the settings. For data packs and modpacks s
 - [Liquid Ants and the Droplet Centrifuge](#liquid-ants-and-the-droplet-centrifuge)
 - [Species](#species)
 - [Progression through the dimensions](#progression-through-the-dimensions)
+- [Genetic research](#genetic-research)
 - [Genetics](#genetics)
 - [Configuration](#configuration)
 
@@ -94,7 +95,8 @@ the feed slot fill with workers (up to 1,000 a tube). The Colony page's **Take o
 buttons do the same from the tubes in your inventory. Then break the Formicarium and put the tubes into a new one.
 **Ants still in a Formicarium when it is broken are lost**, and so are its eggs, larvae and food.
 
-The **Ant Identification Book** has how-to-play pages and a page for every species.
+The **Ant Identification Book** has how-to-play pages and a page for every species. It fills in as you discover
+things: see [Genetic research](#genetic-research).
 
 ## Queen-only founding
 
@@ -140,7 +142,7 @@ The Formicarium's screen has eight tabs, with an icon each:
 | Colony | Cards for the Queen, eggs, larvae, workers and the ants at work; click one for its details |
 | Jobs | Every working site: its ants, its priority, on or off, a Foraging Site's mode, and how fast it works |
 | Production | What the colony's ants brought in over the last 30 minutes, item by item, as items per minute (the real count, averaged; a note says how many minutes it covers so far), and what its Storage holds. An item stays listed for half an hour after it came in even when the Storage has been emptied, so the rates can be read with hoppers or pipes attached. Until the ants bring something in, it shows an estimate from the sites' rates, marked "est." |
-| Genetics | The Queen's traits (green help, red hurt) and her mutations (green good, red flaws) |
+| Genetics | The Queen's traits (green help, red hurt) and her mutations (green good, red flaws), each with what it does, such as "+25% hunting". The page scrolls when they don't all fit. |
 | Network | The colonies its Colony Connectors link it to, their food, and the food moving between them |
 | Statistics | Charts of the last half hour: adults, brood, food, eggs, finds, food in against food out |
 | Info | The species: climate, diet, finds and evolutions (as before) |
@@ -163,16 +165,16 @@ by job, instead.
 | Hunting Ground | Hunter species (see below) kill mobs: drops from the hunted mobs' own loot tables (vanilla or modded; no mobs spawn), and 40 food for the colony from each catch. Other species leave it alone. |
 | Harvesting Site | Farmer Ants grow food and harvest mushrooms, seeds, berries. Other species can't farm. |
 | Storage | More room for finds and 25,000 food room. A Storage starts with 18 slots; each Storage Upgrade tier adds 18 (Storage IV: 90, two Storage IV: 162, the screen scrolls), a stack per slot (Storage II: three stacks in each slot) and 25,000 food room. An upgrade stays in while the Storage holds more than would fit without it. The colony eats the food items in it (not Royal Jelly). Hoppers can empty it; Automation pushes it down. |
-| Queen Chamber | Raises daughter Queens; a Genetic Sample crossed in can make hybrids. |
+| Queen Chamber | Raises daughter Queens; a Genetic Sample crossed in can make hybrids, and the chamber says what the sample will do. |
 | Liquid Chamber | Liquid Ants (see below) hang here with full crops and give droplets of their fluid. Sends them to Storage; holds 9 stacks while the Storage is full. Other species leave it alone. |
 | Nether Foraging Site | Nether-adapted ants go on simulated expeditions through its little portal and bring back the Nether's finds. No power. |
 | End Foraging Site | The same for End-adapted ants and the End's finds. No power. |
 | Colony Connector | Links its colony to colonies with a connector on the same channel up to 30 blocks away: food and filtered items move between them. No power. |
-| Genetic Laboratory | One block. Upgrades one trait at a time, rerolls, mutates, purges, copies genes. Runs on FE (1,000,000 stored) from any side: a Generator next to it or any mod's FE cable. |
+| Genetic Laboratory | One block, six pages: Research, Analysis, Species Mutation, Genetic Editing (upgrade one trait at a time, reroll, mutate, purge, copy genes), Hybridization and Stabilization. Runs on FE (1,000,000 stored) from any side: a Generator next to it or any mod's FE cable. |
 | Generator | Burns furnace fuel into FE (40 FE/t, 100k buffer) and gives it to the blocks next to it; any mod's FE cables work too. |
 | Colony Upgrade Station | Makes species upgrades (Upgrade Base + the species' signature material). |
 
-Shift-clicking an upgrade puts it only into an upgrade slot, never into a store or the feed slot. Each colony upgrade's tooltip
+Shift-clicking an upgrade puts it only into an upgrade slot, never into a job site's store or the feed slot (a Storage also stores the upgrades it has no slot for). Each colony upgrade's tooltip
 says in numbers what it does at its tier and where it goes, and JEI and EMI have a Colony Upgrades page for every
 upgrade and tier. Upgrades of a kind in one block add up their tiers.
 
@@ -520,10 +522,13 @@ With other mods installed, more Liquid Ants appear, each only if that mod's flui
 - Hunters, which work at a Hunting Ground: Army (wild: zombies, skeletons, spiders), Bullet (from Jungle, fed gunpowder:
   creepers, witches), Trap-Jaw (from Swamp, fed slime balls: slimes, drowned), Inferno (from Fire, fed blaze powder: blazes,
   magma cubes, wither skeletons, ghasts).
-- Evolved: Iron, Copper, Coal, Deepslate, Lapis, Amethyst (from Stone); Redstone and Gold (from Iron; Gold also from
-  Desert); Diamond (from Gold or Lapis); Emerald and Netherite (from Diamond); Fire (from Desert or Warped); Soul (from
-  Fire); Ender (from Amethyst or Chorus).
-- Endgame, gated by bosses: Wither (Soul Ants fed a Nether Star) and Dragon (Ender Ants fed dragon's breath).
+- Genetically modified, made in the Genetic Laboratory once researched: Iron, Copper, Coal, Deepslate, Lapis, Amethyst
+  (from Stone); Redstone and Gold (from Iron; Gold also from Desert); Diamond (from Gold or Lapis); Emerald and
+  Netherite (from Diamond); Soul (from Fire); Ender (from Amethyst or Chorus).
+- Endgame, gated by bosses and made in the laboratory too: Wither (Soul Ants and a Nether Star) and Dragon (Ender Ants
+  and dragon's breath).
+- Natural, evolved by feeding the Formicarium: Farmer (from Common), Fire (from Desert or Warped; Fire Ants also live
+  wild in Nether anthills), the hunters above and the Liquid Ants.
 - Hybrids: Crystal Wood (Wood x Diamond), Frost Emerald (Snow x Emerald), Mechanical Miner (Stone x Redstone),
   Obsidian (Stone x Fire), Crimson (Farmer x Fire; farms Nether fungus), Honeypot (Blossom x Farmer; farms honey),
   Harvester (Farmer x Savanna; farms crops), Reef (Shore x Jungle; corals), Abyssal (Shore x Lapis; prismarine, sea
@@ -536,11 +541,12 @@ Ant Identification Book.
 
 The Overworld gets a colony going; the Nether and the End take it further.
 
-- **Evolutions bound to a dimension.** The Nether's line evolves only in a Formicarium standing in the Nether: Fire Ants
-  (from Desert or Warped), Inferno, Soul and Netherite, and the Wither Ant. The End's line evolves only in the End: Ender
-  Ants (from Amethyst or Chorus) and the Dragon Ant. Bring the colony there in its Test Tubes, evolve it, and bring it
-  home: an evolved colony lives anywhere. Fed in the wrong dimension, the Queen keeps the material and the Formicarium
-  says why; the Info page, the tooltips and JEI/EMI show which dimension each evolution needs.
+- **Changes bound to a dimension.** The Nether's line is made only in the Nether: Fire and Inferno Ants evolve only in a
+  Formicarium standing there, and Soul, Netherite and Wither Ants are mutated only in a Genetic Laboratory standing
+  there. The End's line is made only in the End: Ender and Dragon Ants, in a laboratory there. Bring the Queen (or the
+  colony, in its Test Tubes) there and bring her home afterwards: a changed colony lives anywhere. In the wrong
+  dimension nothing is used and the Formicarium or the laboratory says why; the Info page, the book and JEI/EMI show
+  which dimension each change needs.
 - **The Chitin ladder.** Chitin is never crafted: it comes only from ants.
   - **Chitin Plates**: wild ants leave one about a third of the time, and every foraging colony brings some home with
     its finds (`chitinFindChance`, 4% of finds).
@@ -553,9 +559,83 @@ The Overworld gets a colony going; the Nether and the End take it further.
 - **What needs it.** Tier II upgrades take Hardened Chitin and tier III Infernal Chitin; tier IV, the endgame, takes
   four Void Chitin and two netherite ingots on top of tier III; the Genetic Laboratory takes
   Hardened Chitin; raising a trait to level 8 takes Infernal Chitin and to level 9 Void Chitin (level 10 a Nether Star).
-- **Endgame.** Soul Ants fed a Nether Star in the Nether become **Wither Ants** (soul sand, coal, bones, wither roses,
-  skulls and, very rarely, a Nether Star). Ender Ants fed dragon's breath in the End become **Dragon Ants** (pearls,
-  purpur, shulker shells, dragon's breath, a rare dragon head). Their Queens are reared with Infernal and Void Chitin.
+- **Endgame.** A Soul Ant Queen and a Nether Star, in a laboratory in the Nether, make a **Wither Ant** Queen (soul
+  sand, coal, bones, wither roses, skulls and, very rarely, a Nether Star). An Ender Ant Queen and dragon's breath, in a
+  laboratory in the End, make a **Dragon Ant** Queen (pearls, purpur, shulker shells, dragon's breath, a rare dragon
+  head). Their Queens are reared with Infernal and Void Chitin.
+
+## Genetic research
+
+Explore, discover, scan, research, analyse, mutate: the mineral and endgame species are not fed into being, they are
+found out and then made.
+
+**The scanner is part of the Genetic Laboratory.** Its slot and its Scan button are on the laboratory's Research page;
+a scan takes 1,000 FE and needs no Queen in the lab.
+
+- **A material in the scanner slot:** press Scan to research it. The right material reveals a species mutation (an iron
+  ingot: the Iron Ant mutation) or a gene (an iron block: Iron Jaws), for good. The material stays in the slot and
+  nothing is handed out: research is knowledge. Scanning the same thing again gains nothing. Some research waits for
+  earlier research (netherite for the Diamond Ant mutation), and the laboratory says so.
+- **Ants in a Test Tube** (or eggs, larvae, a Genetic Sample): the scan records their species.
+- **A Queen** is analysed on the Analysis page, in the laboratory's Queen slot: her species, and whether she herself is
+  ready for each change.
+
+Catching ants with Tweezers and opening a Formicarium record the species too, so a world from before this version fills
+its book in as you look at your colonies.
+
+**Research is permanent and it is yours.** It is saved with the world under your player id, and survives death, lost
+Queens and restarts. With [FTB Teams](compatibility.md#ftb-teams), a party shares: what a member discovers while in the
+party belongs to the party, every member can use it at once, and a player who leaves keeps only what they discovered on
+their own. The laboratory's Research page and the book mark each discovery as yours or the team's.
+
+**Three tiers.** Basic Research (iron, copper, coal, deepslate): the material and 40,000 FE. Advanced Research (gold,
+redstone, lapis, amethyst, diamond, emerald, the Soul Ant): one Evolution Catalyst and 120,000 FE on top of the
+material. Experimental Research (netherite, Ender, Dragon and Wither Ants): two Evolution Catalysts and 400,000 FE.
+A mutation takes a handful of its material (eight ingots, six gems, four blocks, one Nether Star) and always works.
+
+**The Genetic Laboratory** has a page for each step, named on the tabs across its top. The Queen in her Test Tube sits
+in the slot on the left on every page; each page has its own material and output slots. The laboratory lists only what
+you have discovered: what is still unknown is in the Ant Identification Book, with its hints. Hovering a tab, or the
+"?" at the end of the line under the panels, explains its page step by step.
+
+| Page | What it does |
+|---|---|
+| Research | The scanner, and the list of what you have researched. Each entry shows what it was scanned from, the Queens it works on, and what it takes. |
+| Analysis | Her genes: the Queen's growth and each of her mutations with what it does (Iron Jaws: +25% hunting; Sluggish: -10% worker finds). Under that, what her species can become from your research: ready, still waiting (for her to grow, or for the right dimension), or natural (evolved by feeding, not a mutation). Looking at her here records the analysis in the book. |
+| Mutation | Choose a researched mutation, put its materials in, press Mutate. The Queen comes out as the new species with her traits, mutations, name and lineage unchanged. |
+| Editing | The laboratory's older work, unchanged: Upgrade a trait, Reroll, Mutate (a catalyst's mutation), Purge a flaw, Copy genes. None of it needs research. |
+| Hybrids | The crosses whose two species you have both met. Each shows its two parents, the chance and the trait level it is for, the traits of the Queen in the lab, and what to do next. Copy genes turns an empty Test Tube into her Genetic Sample. |
+| Stability | For breeding, and optional: what you stabilize passes to the Queen's daughters unchanged, and nothing changes in her own colony. Lock a trait (two Royal Jelly, 30,000 FE) or protect a beneficial mutation (four Royal Jelly, 60,000 FE). See [Genetics](#genetics). |
+
+**Making a hybrid.** A hybrid is the daughter of two species and is raised in a Queen Chamber, as before. Put a Queen
+of one species in the laboratory with an empty Test Tube, open Hybrids and press Copy genes. Put the Genetic Sample in
+one of the four sample slots of a Queen Chamber in a colony of the other species: each daughter raised there may be
+the hybrid, and each new Queen uses up one sample, the left-most first. No trait level is required: any two Queens of
+the right species can cross. The listed chance (30% for Mechanical Miner Ants) is for two Queens whose traits average
+the cross's level (2.5), and the two Queens' traits move it. Each level their average is above it adds 15% of the listed
+chance, so two Queens at 6.5 turn the 30% into 48%. Below it the chance falls steeply, to a tenth of the listed chance
+with every trait of both Queens at level 1 (3% in place of 30%). The two Queens' Mutation trait multiplies the
+result: the average of the two, so it counts the same in the colony's Queen and in the sample's. The chamber says under its slots what the next sample will do: the hybrid and its chance, that the
+traits are low for this cross, or that the two species make no hybrid (the daughter then only mixes the two Queens'
+traits).
+
+**What a mutation needs:** the research; a Queen of the right species who has grown with a colony of the stage the
+change asks for (a Stone Ant Queen grown to stage 2 for Iron, a Gold Ant Queen grown to stage 3 for Diamond, stage 4 for
+the endgame: her tooltip shows how far she has grown); the laboratory in the right dimension; the materials and the
+power. Nothing is left to chance and nothing can destroy the Queen; cancelling uses nothing.
+
+**Taking a colony through it.** An empty Test Tube in the Formicarium's Queen slot takes the Queen out; her ants stay.
+Mutate her and put her back: the colony keeps its ants, food, upgrades and history, becomes the new species at once,
+and its adults turn over to it as they are replaced. A colony cannot be fed into a laboratory species any more: the
+Formicarium keeps the material and says so (`feedingMakesLabSpecies` in the server config brings the old way back, for
+packs that want both).
+
+**The Ant Identification Book** has five sections. *How to Play*; *Species* (an unmet species is a question mark with
+its kind and where to look; a researched mutation names its species and how it is made; the full page comes once you
+have met or made the ant); *Genetic Research* (scanned materials, what they unlock, catalysts and power);
+*Ant Compatibility* (what the Queens of each species you have met can become, and, once one has been analysed, what she
+needs); *Production* (what each species brings in, its unique finds and its Species Upgrades). JEI and EMI show
+everything from the start, in a new Species Mutation category.
 
 ## Genetics
 
@@ -580,6 +660,12 @@ one), for example Industrious (redstone block), Keen Senses (spyglass), Fertile 
 Gluttony, Weak Mandibles, Infertile...) that only come at random; the lab's Purge removes them. A Queen carries at most
 3 beneficial mutations (flaws don't count; `maxBeneficialMutations` in the config). A Reroll never lowers a trait and
 never takes it above level 6: the top levels have to be upgraded.
+
+**Stabilization** is for breeding, and nothing needs it. A daughter takes each trait from her mother or from the Genetic
+Sample crossed in, sometimes a level off; a sample's mutations pass on half the time. A **locked** trait passes on
+exactly as it is (the mother's lock first, else the sample's), and a **protected** mutation always passes on when the
+Queen's genes are crossed in. A Queen's stability is the share of her traits and mutations that are stabilized, and her
+daughters shed new flaws that often. Daughters start with nothing stabilized; releasing a gene is free.
 
 ## Configuration
 

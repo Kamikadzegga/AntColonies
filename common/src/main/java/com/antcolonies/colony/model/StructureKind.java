@@ -30,7 +30,7 @@ public enum StructureKind implements StringRepresentable {
     /** More room for what the colony finds, and food room. */
     STORAGE("storage", Job.NONE, 162, 2, EnumSet.of(UpgradeType.STORAGE, UpgradeType.AUTOMATION)),
     /** Raises new Queens, and hybrids when a Genetic Sample is crossed in. */
-    QUEEN_CHAMBER("queen_chamber", Job.NONE, 7, 2, EnumSet.of(UpgradeType.BREEDING, UpgradeType.GENETIC, UpgradeType.SPEED)),
+    QUEEN_CHAMBER("queen_chamber", Job.NONE, 10, 2, EnumSet.of(UpgradeType.BREEDING, UpgradeType.GENETIC, UpgradeType.SPEED)),
     /** Nether-adapted ants go on simulated expeditions from here; other ants leave it alone. */
     NETHER_FORAGING_SITE("nether_foraging_site", Job.FORAGING, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY,
             UpgradeType.POPULATION)),
@@ -43,11 +43,18 @@ public enum StructureKind implements StringRepresentable {
 
     public static final Codec<StructureKind> CODEC = StringRepresentable.fromEnum(StructureKind::values);
 
-    /** Queen Chamber slots: the rearing materials, an empty Test Tube, a Genetic Sample to cross in, and the new Queen. */
+    /** Queen Chamber slots: the rearing materials, an empty Test Tube, Genetic Samples to cross in, and the new Queen. */
     public static final int QUEEN_CHAMBER_MATERIALS = 4;
     public static final int QUEEN_CHAMBER_TUBE = 4;
+    /** The first sample slot. */
     public static final int QUEEN_CHAMBER_SAMPLE = 5;
     public static final int QUEEN_CHAMBER_OUTPUT = 6;
+    /** Every sample slot, in the order they are used. The later ones come after the output: older chambers had one. */
+    public static final int[] QUEEN_CHAMBER_SAMPLES = {QUEEN_CHAMBER_SAMPLE, 7, 8, 9};
+
+    public static boolean isQueenChamberSample(int slot) {
+        return slot == QUEEN_CHAMBER_SAMPLE || slot > QUEEN_CHAMBER_OUTPUT && slot <= QUEEN_CHAMBER_SAMPLES[QUEEN_CHAMBER_SAMPLES.length - 1];
+    }
 
     public enum Job {
         NONE, FORAGING, FARMERS, HUNTING, LIQUID;

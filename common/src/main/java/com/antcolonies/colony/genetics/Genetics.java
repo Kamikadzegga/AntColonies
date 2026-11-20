@@ -72,12 +72,19 @@ public final class Genetics {
             if (random.nextDouble() < variation) {
                 level += random.nextBoolean() ? 1 : -1;
             }
+            // A stabilized trait passes on exactly as it is: the mother's first, else the sample's.
+            if (mother.locked(trait)) {
+                level = mother.level(trait);
+            } else if (mate != null && mate.locked(trait)) {
+                level = mate.level(trait);
+            }
             levels.add(Mth.clamp(level, Trait.MIN_LEVEL, Trait.maxLevel()));
         }
         List<Identifier> mutations = new ArrayList<>(mother.mutations());
         if (mate != null) {
             for (Identifier inherited : mate.mutations()) {
-                if (!mutations.contains(inherited) && random.nextBoolean()
+                // A protected mutation always passes on (the coin is still tossed, so other Queens roll as before).
+                if (!mutations.contains(inherited) && (random.nextBoolean() | mate.protects(inherited))
                         && (isFlaw(inherited, registries) || roomForBeneficial(mutations, registries))) {
                     mutations.add(inherited);
                 }
@@ -86,7 +93,11 @@ public final class Genetics {
         double chance = AntConfig.get(AntConfig.BASE_MUTATION_CHANCE) * mother.multiplier(Trait.MUTATION_PROBABILITY) * mutationBonus;
         if (random.nextDouble() < chance) {
             Identifier mutation = randomMutation(registries, category, mother.level(Trait.MUTATION_PROBABILITY), random);
-            if (mutation != null && !mutations.contains(mutation) && (isFlaw(mutation, registries) || roomForBeneficial(mutations, registries))) {
+            // A stable line throws fewer flaws: a new flaw is shed with a chance equal to the mother's stability.
+            boolean shed = mutation != null && mother.stability() > 0 && isFlaw(mutation, registries)
+                    && random.nextDouble() < mother.stability();
+            if (mutation != null && !shed && !mutations.contains(mutation)
+                    && (isFlaw(mutation, registries) || roomForBeneficial(mutations, registries))) {
                 mutations.add(mutation);
             }
         }

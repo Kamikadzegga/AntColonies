@@ -1,0 +1,17 @@
+{
+  "material": [
+    "minecraft:netherite_ingot",
+    "minecraft:netherite_scrap"
+  ],
+  "species": "antcolonies:netherite",
+  "tier": "experimental",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 2
+    }
+  ],
+  "requires": [
+    "antcolonies:diamond"
+  ]
+}

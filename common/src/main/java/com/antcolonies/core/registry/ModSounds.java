@@ -25,6 +25,8 @@ public final class ModSounds {
     public static final Supplier<SoundEvent> LAB_HUM = register("block.genetic_lab.hum");
     public static final Supplier<SoundEvent> LAB_COMPLETE = register("block.genetic_lab.complete");
     public static final Supplier<SoundEvent> CAPTURE = register("item.tweezers.capture");
+    public static final Supplier<SoundEvent> LAB_SCAN = register("block.genetic_lab.scan");
+    public static final Supplier<SoundEvent> LAB_DISCOVERY = register("block.genetic_lab.discovery");
 
     private static Supplier<SoundEvent> register(String name) {
         return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(AntColonies.id(name)));

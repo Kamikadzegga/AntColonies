@@ -124,5 +124,6 @@ public final class AntColoniesClient {
         });
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event)
                 -> CentrifugingRecipe.setClientRecipes(List.of()));
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> ClientResearch.clear());
     }
 }

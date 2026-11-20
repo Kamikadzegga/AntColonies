@@ -9,6 +9,7 @@ import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.content.entity.WildAnt;
 import com.antcolonies.colony.genetics.Genetics;
 import com.antcolonies.colony.genetics.QueenData;
+import com.antcolonies.colony.research.Discovery;
 import com.antcolonies.core.registry.ModDataComponents;
 import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModSounds;
@@ -196,6 +197,12 @@ public class TweezersItem extends Item {
     /** Caught workers top up a tube of the same ants first. */
     private static void give(Player player, ItemStack caught) {
         AntSample sample = caught.get(ModDataComponents.ANTS.get());
+        // Whoever catches an ant has met its species (read now: the stack is empty once it is in the inventory).
+        QueenData queen = caught.get(ModDataComponents.QUEEN.get());
+        Identifier species = queen != null ? queen.species() : sample != null ? sample.species() : caught.get(ModDataComponents.SPECIES.get());
+        if (species != null) {
+            Discovery.species(player, species);
+        }
         if (sample != null) {
             Inventory inventory = player.getInventory();
             for (int slot = 0; slot < inventory.getContainerSize(); slot++) {

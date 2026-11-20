@@ -1,0 +1,11 @@
+{
+  "material": "minecraft:ender_eye",
+  "species": "antcolonies:ender",
+  "tier": "experimental",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 2
+    }
+  ]
+}

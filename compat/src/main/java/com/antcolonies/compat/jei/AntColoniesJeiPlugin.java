@@ -41,6 +41,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
     public static final IRecipeType<AntRecipe> SPECIES = AntCategory.type("species");
     public static final IRecipeType<AntRecipe> BREEDING = AntCategory.type("breeding");
     public static final IRecipeType<AntRecipe> EVOLUTION = AntCategory.type("evolution");
+    public static final IRecipeType<AntRecipe> SPECIES_MUTATION = AntCategory.type("species_mutation");
     public static final IRecipeType<AntRecipe> MUTATION = AntCategory.type("mutation");
     public static final IRecipeType<AntRecipe> HYBRID = AntCategory.type("hybrid");
     public static final IRecipeType<AntRecipe> EGGS = AntCategory.type("eggs");
@@ -118,6 +119,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
                 new AntCategory(SPECIES, "species", ModItems.ANT_IDENTIFICATION_BOOK.get(), gui, 2, 5),
                 new AntCategory(BREEDING, "breeding", structure(StructureKind.QUEEN_CHAMBER), gui, 2, 2),
                 new AntCategory(EVOLUTION, "evolution", ModItems.TERRARIUM.get(), gui, 1, 3),
+                new AntCategory(SPECIES_MUTATION, "species_mutation", ModItems.EVOLUTION_CATALYST.get(), gui, 2, 4),
                 new AntCategory(MUTATION, "mutation", ModItems.GENETIC_LAB.get(), gui, 1, 4),
                 new AntCategory(HYBRID, "hybrid", ModItems.GENETIC_SAMPLE.get(), gui, 1, 4),
                 new AntCategory(EGGS, "eggs", structure(StructureKind.NEST_CHAMBER), gui, 1, 3),
@@ -129,7 +131,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
                 new AntCategory(LIQUID, "liquid", structure(StructureKind.LIQUID_CHAMBER), gui, 1, 3),
                 new AntCategory(CENTRIFUGING, "centrifuging", ModItems.CENTRIFUGE.get(), gui, 1, 2),
                 new AntCategory(LAB, "lab", ModItems.GENETIC_LAB.get(), gui, 1, 4),
-                new AntCategory(TRAIT, "trait", ModItems.GENETIC_ANALYZER.get(), gui, 1, 3),
+                new AntCategory(TRAIT, "trait", ModItems.GENETIC_CIRCUIT.get(), gui, 1, 3),
                 new AntCategory(SPECIES_UPGRADE, "species_upgrade", ModItems.UPGRADE_STATION.get(), gui, 1, 2),
                 new AntCategory(COLONY_UPGRADE, "colony_upgrade", ModItems.upgrade(UpgradeType.SPEED, 1), gui, 2, 9));
     }
@@ -145,6 +147,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
         registration.addRecipes(SPECIES, recipes.species());
         registration.addRecipes(BREEDING, recipes.rearing());
         registration.addRecipes(EVOLUTION, recipes.evolution());
+        registration.addRecipes(SPECIES_MUTATION, recipes.speciesMutations());
         registration.addRecipes(MUTATION, recipes.mutations());
         registration.addRecipes(HYBRID, recipes.hybrids());
         registration.addRecipes(EGGS, recipes.eggs());
@@ -166,6 +169,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
         registration.addCraftingStation(SPECIES, ModItems.ANT_IDENTIFICATION_BOOK.get(), ModItems.TWEEZERS.get());
         registration.addCraftingStation(BREEDING, structure(StructureKind.QUEEN_CHAMBER));
         registration.addCraftingStation(EVOLUTION, ModItems.TERRARIUM.get(), ModItems.EVOLUTION_CATALYST.get());
+        registration.addCraftingStation(SPECIES_MUTATION, ModItems.GENETIC_LAB.get());
         registration.addCraftingStation(MUTATION, ModItems.GENETIC_LAB.get(), structure(StructureKind.QUEEN_CHAMBER));
         registration.addCraftingStation(HYBRID, structure(StructureKind.QUEEN_CHAMBER));
         registration.addCraftingStation(EGGS, ModItems.TERRARIUM.get(), structure(StructureKind.NEST_CHAMBER));
@@ -177,7 +181,7 @@ public class AntColoniesJeiPlugin implements IModPlugin {
         registration.addCraftingStation(LIQUID, structure(StructureKind.LIQUID_CHAMBER), structure(StructureKind.STORAGE));
         registration.addCraftingStation(CENTRIFUGING, ModItems.CENTRIFUGE.get());
         registration.addCraftingStation(LAB, ModItems.GENETIC_LAB.get());
-        registration.addCraftingStation(TRAIT, ModItems.GENETIC_LAB.get(), ModItems.GENETIC_ANALYZER.get());
+        registration.addCraftingStation(TRAIT, ModItems.GENETIC_LAB.get());
         registration.addCraftingStation(SPECIES_UPGRADE, ModItems.UPGRADE_STATION.get());
     }
 }

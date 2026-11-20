@@ -8,7 +8,8 @@ import net.minecraft.resources.Identifier;
 /**
  * A hybrid species: a Queen Chamber crossing the two parent species may raise a Queen of {@code result} instead.
  *
- * @param minAverageLevel the average trait level both parents need
+ * @param chance          of the hybrid when the parents average {@code minAverageLevel}; better parents raise it, weaker cut it
+ * @param minAverageLevel the average trait level the chance is for (no longer a requirement)
  */
 public record Hybrid(Identifier first, Identifier second, Identifier result, double chance, double minAverageLevel) {
     public static final Codec<Hybrid> CODEC = RecordCodecBuilder.create(i -> i.group(

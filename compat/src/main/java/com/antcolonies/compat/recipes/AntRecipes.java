@@ -14,6 +14,8 @@ import com.antcolonies.colony.breeding.Hybrid;
 import com.antcolonies.content.recipe.CentrifugingRecipe;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.colony.evolution.Evolution;
+import com.antcolonies.colony.evolution.SpeciesMutation;
+import com.antcolonies.colony.research.Researches;
 import com.antcolonies.colony.genetics.Genetics;
 import com.antcolonies.colony.genetics.Mutation;
 import com.antcolonies.colony.genetics.Trait;
@@ -205,10 +207,37 @@ public final class AntRecipes {
         return list;
     }
 
+    /** Species mutations: the evolutions the Genetic Laboratory makes, each with its material, its catalysts and what it asks for. */
+    public List<AntRecipe> speciesMutations() {
+        List<AntRecipe> list = new ArrayList<>();
+        registries.lookup(ModRegistries.EVOLUTION).ifPresent(lookup -> lookup.listElements().forEach(entry -> {
+            Evolution evolution = entry.value();
+            Researches.Entry research = Researches.forSpecies(registries, evolution.to());
+            if (research == null) {
+                return;
+            }
+            List<List<ItemStack>> inputs = new ArrayList<>();
+            inputs.add(List.of(queen(evolution.from())));
+            inputs.add(evolution.item().items().map(item -> new ItemStack(item, evolution.labAmount())).toList());
+            research.research().catalysts().forEach(cost -> inputs.add(stacks(cost)));
+            ItemStack scanned = research.research().material().items().findFirst().map(ItemStack::new).orElse(ItemStack.EMPTY);
+            List<Component> lines = new ArrayList<>(List.of(line("research", scanned.getHoverName()),
+                    line("queen_stage", evolution.minStage()),
+                    line("energy", String.format(Locale.ROOT, "%,d", research.research().energyCost()))));
+            evolution.dimension().ifPresent(dimension -> lines.add(line("lab_dimension", Tooltips.dimension(dimension)).withStyle(ChatFormatting.RED)));
+            list.add(new AntRecipe(id("species_mutation", entry.key().identifier()), inputs, List.of(AntRecipe.Output.of(queen(evolution.to()))), lines));
+        }));
+        return list;
+    }
+
+    /** Evolutions by feeding the Formicarium: the ones the laboratory has not taken over. */
     public List<AntRecipe> evolution() {
         List<AntRecipe> list = new ArrayList<>();
         registries.lookup(ModRegistries.EVOLUTION).ifPresent(lookup -> lookup.listElements().forEach(entry -> {
             Evolution evolution = entry.value();
+            if (SpeciesMutation.laboratoryOnly(registries, evolution)) {
+                return;
+            }
             List<ItemStack> items = evolution.item().items().map(ItemStack::new).toList();
             double chance = Math.min(1, evolution.chance() * AntConfig.get(AntConfig.EVOLUTION_CHANCE_MULTIPLIER));
             list.add(new AntRecipe(id("evolution", entry.key().identifier()), List.of(List.of(queen(evolution.from())), items),
@@ -231,7 +260,7 @@ public final class AntRecipes {
                     List.of(AntRecipe.Output.of(queen(hybrid.result()))),
                     List.of(Component.translatable("jei.antcolonies.hybrid_of", Tooltips.species(hybrid.first()), Tooltips.species(hybrid.second()),
                                     Tooltips.species(hybrid.result()).withStyle(ChatFormatting.DARK_GREEN)),
-                            line("hybrid_chance", percent(hybrid.chance()), hybrid.minAverageLevel()))));
+                            line("hybrid_chance", percent(hybrid.chance()), hybrid.minAverageLevel()), line("hybrid_quality"))));
         }));
         return list;
     }

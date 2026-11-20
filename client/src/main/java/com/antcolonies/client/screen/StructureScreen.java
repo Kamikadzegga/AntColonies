@@ -2,8 +2,12 @@ package com.antcolonies.client.screen;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import com.antcolonies.colony.breeding.Hybrid;
+import com.antcolonies.colony.breeding.QueenRearing;
 import com.antcolonies.colony.expedition.Expedition;
+import com.antcolonies.colony.genetics.QueenData;
 import com.antcolonies.colony.model.ForagingMode;
 import com.antcolonies.colony.upgrade.UpgradeType;
 import com.antcolonies.content.blockentity.ConnectorSettings;
@@ -25,6 +29,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.DyeColor;
@@ -37,6 +42,8 @@ public class StructureScreen extends AntScreen<StructureMenu> {
     /** A Storage's scrollbar: right of its slots, as tall as the six rows shown. */
     private static final int SCROLL_X = 172;
     private static final int SCROLL_Y = 18;
+    /** Where a Queen Chamber says what its Genetic Sample will do: three lines under its slots. */
+    private static final int CROSS_Y = StructureMenu.SAMPLE_Y + 21;
     private static final int SCROLL_H = StorageWindow.ROWS * 18 - 2;
     private boolean draggingScrollbar;
 
@@ -430,7 +437,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         }
         int index = slot.getContainerSlot();
         return index < StructureKind.QUEEN_CHAMBER_MATERIALS ? "qc_materials" : index == StructureKind.QUEEN_CHAMBER_TUBE ? "qc_tube"
-                : index == StructureKind.QUEEN_CHAMBER_SAMPLE ? "qc_sample" : "qc_output";
+                : StructureKind.isQueenChamberSample(index) ? "qc_sample" : "qc_output";
     }
 
     @Override
@@ -442,8 +449,10 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         String role = chamberSlot(slot);
         if (slot.container == menu.structure().upgrades()) {
             drawGlyph(graphics, "upgrade", x, y);
-        } else if ("qc_tube".equals(role) || "qc_sample".equals(role)) {
+        } else if ("qc_tube".equals(role)) {
             drawGlyph(graphics, "queen", x, y);
+        } else if ("qc_sample".equals(role)) {
+            drawGlyph(graphics, "sample", x, y);
         } else if ("qc_output".equals(role)) {
             drawGlyph(graphics, "output", x, y);
         } else if ("qc_materials".equals(role)) {
@@ -503,6 +512,56 @@ public class StructureScreen extends AntScreen<StructureMenu> {
             graphics.fill(ax + i, ay - half, ax + i + 1, ay + half + 1, color);
         }
         label(graphics, fit(Component.translatable("gui.antcolonies.queen_chamber.slots").getString(), 170), x, 40, DIM);
+        // Beside the row of sample slots: what they are for.
+        int samplesX = x + StructureKind.QUEEN_CHAMBER_SAMPLES.length * 18 + 4;
+        label(graphics, fit(Component.translatable("gui.antcolonies.queen_chamber.samples").getString(), 170 - (samplesX - x)), samplesX,
+                StructureMenu.SAMPLE_Y + 4, DIM);
+        crossLines(graphics, x);
+    }
+
+    /** Under the slots: what the next Genetic Sample (the first in the sample slots) will do to the next Queen. */
+    private void crossLines(GuiGraphicsExtractor graphics, int x) {
+        QueenRearing.CrossState[] states = QueenRearing.CrossState.values();
+        QueenRearing.CrossState state = states[Math.clamp(menu.data(StructureBlockEntity.DATA_CROSS), 0, states.length - 1)];
+        int sampleSlot = QueenRearing.nextSampleSlot(menu.structure());
+        QueenData sample = sampleSlot < 0 ? null : QueenRearing.sampleOf(menu.structure().getItem(sampleSlot));
+        Identifier colony = colonyId();
+        if (sample == null || colony == null || minecraft.level == null) {
+            state = QueenRearing.CrossState.NO_SAMPLE;
+        }
+        String key = "gui.antcolonies.queen_chamber.cross.";
+        Component text;
+        int color = BAD;
+        if (state == QueenRearing.CrossState.NO_SAMPLE) {
+            text = Component.translatable(key + "none");
+            color = DIM;
+        } else if (state == QueenRearing.CrossState.NO_PAIR) {
+            text = colony.equals(sample.species()) ? Component.translatable(key + "same")
+                    : Component.translatable(key + "no_pair", Tooltips.species(colony), Tooltips.species(sample.species()));
+            color = WARN;
+        } else {
+            Hybrid hybrid = QueenRearing.findHybrid(minecraft.level.registryAccess(), colony, sample.species());
+            Component result = hybrid == null ? Component.literal("?") : Tooltips.species(hybrid.result());
+            // A small chance keeps its decimal: 2.4%, not 2%.
+            double percent = menu.data(StructureBlockEntity.DATA_CROSS_CHANCE) / 10.0;
+            String chance = percent < 10 ? String.format(Locale.ROOT, "%.1f", percent) : String.valueOf(Math.round(percent));
+            if (state == QueenRearing.CrossState.READY) {
+                text = Component.translatable(key + "ready", result, chance);
+                color = GOOD;
+            } else {
+                String has = String.format(Locale.ROOT, "%.1f", menu.data(StructureBlockEntity.DATA_CROSS_LEVEL) / 10.0);
+                String full = hybrid == null ? "?" : String.format(Locale.ROOT, "%.1f", hybrid.minAverageLevel());
+                text = Component.translatable(key + "weak", result, chance, has, full);
+                color = WARN;
+            }
+        }
+        lines(graphics, text.getString(), x, CROSS_Y, CROSS_Y + 27, color);
+    }
+
+    private @Nullable Identifier colonyId() {
+        BlockPos terrarium = menu.structure().terrarium();
+        return terrarium != null && minecraft.level != null && minecraft.level.getBlockEntity(terrarium) instanceof TerrariumBlockEntity be
+                ? be.colony().species() : null;
     }
 
     private List<Component> rearingNeeds() {

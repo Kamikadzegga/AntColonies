@@ -17,10 +17,14 @@ import net.minecraft.world.level.Level;
  * @param guaranteedAfter the attempt that always succeeds, whatever the chance
  * @param minStage        the colony stage needed (1-4)
  * @param minPopulation   the adults needed
- * @param dimension       if set, the Terrarium must be in this dimension
+ * @param dimension       if set, the Terrarium (or the Genetic Laboratory) must be in this dimension
+ * @param labAmount       how many of {@code item} one Genetic Laboratory mutation takes (species with a research entry)
  */
 public record Evolution(Identifier from, Identifier to, Ingredient item, double chance, int guaranteedAfter, int minStage, long minPopulation,
-                        Optional<ResourceKey<Level>> dimension) {
+                        Optional<ResourceKey<Level>> dimension, int labAmount) {
+    /** What a laboratory mutation takes of the material when the data file doesn't say. */
+    public static final int DEFAULT_LAB_AMOUNT = 4;
+
     public static final Codec<Evolution> CODEC = RecordCodecBuilder.create(i -> i.group(
             Identifier.CODEC.fieldOf("from").forGetter(Evolution::from),
             Identifier.CODEC.fieldOf("to").forGetter(Evolution::to),
@@ -29,7 +33,8 @@ public record Evolution(Identifier from, Identifier to, Ingredient item, double 
             Codec.intRange(1, 100000).optionalFieldOf("guaranteed_after", 32).forGetter(Evolution::guaranteedAfter),
             Codec.intRange(1, 4).optionalFieldOf("min_stage", 1).forGetter(Evolution::minStage),
             Codec.LONG.optionalFieldOf("min_population", 0L).forGetter(Evolution::minPopulation),
-            ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension").forGetter(Evolution::dimension)
+            ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension").forGetter(Evolution::dimension),
+            Codec.intRange(1, 64).optionalFieldOf("lab_amount", DEFAULT_LAB_AMOUNT).forGetter(Evolution::labAmount)
     ).apply(i, Evolution::new));
 
     public boolean allowedIn(ResourceKey<Level> level) {

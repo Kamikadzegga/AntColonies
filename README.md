@@ -24,8 +24,10 @@ that mine, farm, hunt and evolve.
 
 - **Living colonies.** A Formicarium holds a Queen, her brood and thousands of workers you can watch digging behind the
   glass. Chambers placed against it join the colony, and a colony built upward becomes one tall nest.
-- **48 species.** Catch 16 wild ones, evolve them into iron, diamond, netherite and other mineral ants, breed hybrids,
+- **48 species.** Catch 16 wild ones, mutate them into iron, diamond, netherite and other mineral ants, breed hybrids,
   and reach the endgame Wither and Dragon Ants.
+- **Genetic research.** Scan materials in the Genetic Laboratory. Discoveries are permanent, fill in the Ant
+  Identification Book and unlock species mutations.
 - **Genetics.** Every Queen has ten traits and can carry any of 31 mutations. The Genetic Laboratory upgrades, rerolls
   and copies them.
 - **Liquid Ants.** Ants that carry water, lava and other mods' fluids, and a Droplet Centrifuge that turns their

@@ -4,6 +4,7 @@ import com.antcolonies.AntColonies;
 import com.antcolonies.client.ClientHooks;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.content.blockentity.HomeNestBlockEntity;
+import com.antcolonies.content.blockentity.WildNestBlockEntity;
 import com.antcolonies.content.entity.WildAnt;
 import com.antcolonies.core.registry.ModBlockEntities;
 import com.antcolonies.core.registry.ModEntities;
@@ -30,7 +31,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import org.jspecify.annotations.Nullable;
 
-/** An ant nest: a wild anthill to raid with Tweezers, or, placed by a player, a home nest (see {@link HomeNestBlockEntity}). */
+/**
+ * An ant nest: a wild anthill to raid with Tweezers, or, placed by a player, a home nest (see {@link HomeNestBlockEntity}).
+ * A wild one has a {@link WildNestBlockEntity}, which holds nothing.
+ */
 public class WildNestBlock extends Block implements EntityBlock {
     public static final BooleanProperty RECOVERING = BooleanProperty.create("recovering");
     /** Placed by a player: ants live in it and forage around it. World generation places nests without it. */
@@ -60,8 +64,8 @@ public class WildNestBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return state.getValue(HOME) ? new HomeNestBlockEntity(pos, state) : null;
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return state.getValue(HOME) ? new HomeNestBlockEntity(pos, state) : new WildNestBlockEntity(pos, state);
     }
 
     @Override

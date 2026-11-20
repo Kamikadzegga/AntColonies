@@ -8,6 +8,7 @@ import com.antcolonies.colony.evolution.Evolution;
 import com.antcolonies.colony.expedition.Expedition;
 import com.antcolonies.colony.genetics.Mutation;
 import com.antcolonies.colony.genetics.TraitUpgrade;
+import com.antcolonies.colony.research.Research;
 import com.antcolonies.colony.species.AntSpecies;
 
 import net.minecraft.core.Holder;
@@ -27,6 +28,7 @@ public final class ModRegistries {
     public static final ResourceKey<Registry<TraitUpgrade>> TRAIT_UPGRADE = ResourceKey.createRegistryKey(AntColonies.id("trait_upgrade"));
     public static final ResourceKey<Registry<Expedition>> EXPEDITION =
             ResourceKey.createRegistryKey(AntColonies.id("expedition"));
+    public static final ResourceKey<Registry<Research>> RESEARCH = ResourceKey.createRegistryKey(AntColonies.id("research"));
 
     /** The species every new player starts with, and the fallback of unknown ids. */
     public static final Identifier COMMON = AntColonies.id("common");
@@ -38,6 +40,7 @@ public final class ModRegistries {
         event.worldRegistry(MUTATION, Mutation.CODEC, Mutation.CODEC);
         event.worldRegistry(TRAIT_UPGRADE, TraitUpgrade.CODEC, TraitUpgrade.CODEC);
         event.worldRegistry(EXPEDITION, Expedition.CODEC, Expedition.CODEC);
+        event.worldRegistry(RESEARCH, Research.CODEC, Research.CODEC);
     }
 
     public static @Nullable AntSpecies species(HolderLookup.@Nullable Provider registries, @Nullable Identifier id) {

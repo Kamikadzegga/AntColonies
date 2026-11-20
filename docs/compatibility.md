@@ -52,6 +52,31 @@ Mekanism only unofficial ports). Everything goes through NeoForge's shared syste
   Ender IO and Refined Storage add no ores of their own; the vanilla materials they use (quartz, redstone, gold, ender
   pearls) come from Fire, Redstone, Gold and Ender Ants.
 
+### FTB Teams
+
+Optional. With FTB Teams installed, the players of a **party** share their genetic research (see
+[Genetic research](gameplay.md#genetic-research)):
+
+- A discovery made while in a party is the party's: every member can use it at once, it is saved under the party's id
+  and survives restarts, and a player who joins later gets all of it.
+- What a player discovered on their own stays their own. Leaving a party takes the party's research away again and
+  leaves the personal part; joining another party adds that party's research to it. Nothing of a party's ever becomes
+  personal by itself.
+- A player in no party (FTB Teams gives everyone a personal team) researches for themselves, exactly as without the mod.
+- Without FTB Teams nothing changes and nothing is missing: research is each player's own.
+
+The bridge is one small class (`compat/ftbteams/FtbTeamsResearch`), loaded only when the mod `ftbteams` is present, and
+written against the API of FTB Teams 26.1.2.5: `FTBTeamsAPI.api().getManager().getTeamForPlayerID(uuid)`, the team's
+`isPartyTeam()` and `getId()`, and the `FTBTeamsEvent.PlayerChangedTeam` event. Besides that event, every online
+player's party is looked at again every two seconds, so a change is never missed.
+
+**Not run in this version.** FTB Teams has no release for Minecraft 26.3 (its newest, 26.1.2.5, is for 26.1 to
+26.1.2), so the bridge here is compiled against the real API but has never been run with the mod on 26.3. The same bridge is
+tested with the real FTB Teams 26.1.2.5 in the Minecraft 26.1.2 version of Ant Colonies, and the sharing rules
+themselves are tested here with a stand-in for the team mod. The mod also gives FTB Library a face icon for its two
+mobs (`assets/ftblibrary/textures/faces/antcolonies/`): the ant head, shown where FTB mods draw a mob's face. What is left for a 26.3 build of FTB Teams: install it, check
+that its `api` package still has the three calls above, and play through joining and leaving a party.
+
 ### Liquid Ants for other mods' fluids
 
 Ant Colonies alone has two Liquid Ants, Water and Lava. Each row below adds one more, and only when **both** hold: the

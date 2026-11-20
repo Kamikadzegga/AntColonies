@@ -1,0 +1,14 @@
+{
+  "material": "minecraft:emerald",
+  "species": "antcolonies:emerald",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "requires": [
+    "antcolonies:diamond"
+  ]
+}

@@ -39,6 +39,11 @@ repositories {
         url = 'https://api.modrinth.com/maven'
         content { includeGroup 'maven.modrinth' }
     }
+    maven {
+        name = 'FTB (FTB Teams)'
+        url = 'https://maven.ftb.dev/releases'
+        content { includeGroup 'dev.ftb.mods' }
+    }
 }
 
 base {
@@ -90,6 +95,10 @@ dependencies {
     // EMI: compiled against PF-EMI 1.1 ("EMI - Port Forward", the 26.3 port of EMI; Modrinth version xwDayqWe = 1.1+26.3+neoforge).
     // Optional at runtime.
     compileOnly "maven.modrinth:pf-emi:xwDayqWe"
+    // FTB Teams (shared research for parties): optional. Compiled against its API as of 26.1.2.5, the newest release;
+    // FTB Teams has no build for Minecraft 26.3 yet, so on 26.3 the bridge waits for one.
+    compileOnly("dev.ftb.mods:ftb-teams-neoforge:${ftb_teams_version}") { transitive = false }
+    compileOnly("dev.ftb.mods:ftb-library-neoforge:${ftb_library_version}") { transitive = false }
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

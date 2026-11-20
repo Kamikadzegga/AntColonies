@@ -39,7 +39,13 @@ public enum ColonyStatus {
     /** The job site is turned off (its screen or the Terrarium's Jobs page): it takes no ants. */
     DISABLED(false),
     /** A Liquid Chamber whose ants' fluid or droplet is not in this game: they make nothing. */
-    NO_DROPLET(true);
+    NO_DROPLET(true),
+    /** The feed slot holds a species mutation's material: that mutation is made in the Genetic Laboratory. */
+    NEEDS_LABORATORY(true),
+    /** The Genetic Laboratory: the chosen mutation has not been researched by this player or their team. */
+    NOT_RESEARCHED(true),
+    /** The Genetic Laboratory: the Queen has not grown with a colony big enough for the chosen mutation. */
+    QUEEN_NOT_GROWN(true);
 
     private final boolean problem;
 

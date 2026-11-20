@@ -42,6 +42,7 @@ public class AntColoniesEmiPlugin implements EmiPlugin {
                 new Kind("breeding", structure(StructureKind.QUEEN_CHAMBER), 2, 2, AntRecipes::rearing, structure(StructureKind.QUEEN_CHAMBER)),
                 new Kind("evolution", ModItems.TERRARIUM.get(), 1, 3, AntRecipes::evolution, ModItems.TERRARIUM.get(),
                         ModItems.EVOLUTION_CATALYST.get()),
+                new Kind("species_mutation", ModItems.EVOLUTION_CATALYST.get(), 2, 4, AntRecipes::speciesMutations, lab),
                 new Kind("mutation", lab, 1, 4, AntRecipes::mutations, lab, structure(StructureKind.QUEEN_CHAMBER)),
                 new Kind("hybrid", ModItems.GENETIC_SAMPLE.get(), 1, 4, AntRecipes::hybrids, structure(StructureKind.QUEEN_CHAMBER)),
                 new Kind("eggs", structure(StructureKind.NEST_CHAMBER), 1, 3, AntRecipes::eggs, ModItems.TERRARIUM.get(),
@@ -58,8 +59,7 @@ public class AntColoniesEmiPlugin implements EmiPlugin {
                         structure(StructureKind.STORAGE)),
                 new Kind("centrifuging", ModItems.CENTRIFUGE.get(), 1, 2, AntRecipes::centrifuging, ModItems.CENTRIFUGE.get()),
                 new Kind("lab", ModItems.GENETIC_LAB.get(), 1, 4, AntRecipes::lab, lab),
-                new Kind("trait", ModItems.GENETIC_ANALYZER.get(), 1, 3, AntRecipes::traits, ModItems.GENETIC_LAB.get(),
-                        ModItems.GENETIC_ANALYZER.get()),
+                new Kind("trait", ModItems.GENETIC_CIRCUIT.get(), 1, 3, AntRecipes::traits, ModItems.GENETIC_LAB.get()),
                 new Kind("species_upgrade", ModItems.UPGRADE_STATION.get(), 1, 2, AntRecipes::speciesUpgrades, ModItems.UPGRADE_STATION.get()),
                 new Kind("colony_upgrade", ModItems.upgrade(UpgradeType.SPEED, 1), 2, 9, AntRecipes::colonyUpgrades));
     }

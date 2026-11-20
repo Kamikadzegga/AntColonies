@@ -1,0 +1,24 @@
+{
+  "material": "#c:ingots/tin",
+  "species": "antcolonies:tin",
+  "tier": "basic",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mekanism"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "thermal"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "machinaopus"
+        }
+      ]
+    }
+  ]
+}

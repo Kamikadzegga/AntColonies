@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import com.antcolonies.content.blockentity.UpgradeStationBlockEntity;
 import com.antcolonies.core.registry.ModBlocks;
-import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModMenus;
 import com.antcolonies.colony.upgrade.SpeciesUpgradeKind;
 
@@ -31,12 +30,22 @@ public class UpgradeStationMenu extends BaseMenu {
         this.player = inventory.player;
         addSlot(new Slot(station, UpgradeStationBlockEntity.SLOT_BASE, 27, 47) {
             @Override
+            public boolean mayPlace(ItemStack stack) {
+                return station.canPlaceItem(UpgradeStationBlockEntity.SLOT_BASE, stack);
+            }
+
+            @Override
             public void setChanged() {
                 super.setChanged();
                 slotsChanged(station);
             }
         });
         addSlot(new Slot(station, UpgradeStationBlockEntity.SLOT_MATERIAL, 76, 47) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return station.canPlaceItem(UpgradeStationBlockEntity.SLOT_MATERIAL, stack);
+            }
+
             @Override
             public void setChanged() {
                 super.setChanged();
@@ -83,12 +92,6 @@ public class UpgradeStationMenu extends BaseMenu {
         slotsChanged(station);
     }
 
-    /** Shift-clicking puts an Upgrade Base in the base slot and anything else in the material slot. */
-    @Override
-    protected boolean quickMovesInto(int slot, ItemStack stack) {
-        boolean base = stack.is(ModItems.UPGRADE_BASE.get());
-        return slot == 0 ? base : slot != 1 || !base;
-    }
 
     public static UpgradeStationMenu fromNetwork(int containerId, Inventory inventory, RegistryFriendlyByteBuf buffer) {
         BlockPos pos = buffer.readBlockPos();

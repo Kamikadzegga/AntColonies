@@ -6,5 +6,6 @@
   "guaranteed_after": 3,
   "min_stage": 4,
   "min_population": 4000,
-  "dimension": "minecraft:the_nether"
+  "dimension": "minecraft:the_nether",
+  "lab_amount": 1
 }

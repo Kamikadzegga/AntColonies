@@ -1,0 +1,11 @@
+{
+  "material": "minecraft:diamond",
+  "species": "antcolonies:diamond",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ]
+}

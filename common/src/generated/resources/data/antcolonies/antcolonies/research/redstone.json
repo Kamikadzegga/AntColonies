@@ -1,0 +1,11 @@
+{
+  "material": "minecraft:redstone",
+  "species": "antcolonies:redstone",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ]
+}

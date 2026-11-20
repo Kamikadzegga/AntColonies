@@ -6,5 +6,6 @@
   "guaranteed_after": 24,
   "min_stage": 4,
   "min_population": 4000,
-  "dimension": "minecraft:the_end"
+  "dimension": "minecraft:the_end",
+  "lab_amount": 4
 }

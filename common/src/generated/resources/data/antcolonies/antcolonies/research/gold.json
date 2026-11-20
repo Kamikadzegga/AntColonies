@@ -1,0 +1,11 @@
+{
+  "material": "minecraft:gold_ingot",
+  "species": "antcolonies:gold",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ]
+}

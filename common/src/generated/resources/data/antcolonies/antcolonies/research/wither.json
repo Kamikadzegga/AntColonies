@@ -1,0 +1,14 @@
+{
+  "material": "minecraft:nether_star",
+  "species": "antcolonies:wither",
+  "tier": "experimental",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 2
+    }
+  ],
+  "requires": [
+    "antcolonies:soul"
+  ]
+}
