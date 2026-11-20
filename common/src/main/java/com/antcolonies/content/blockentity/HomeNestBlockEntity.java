@@ -25,6 +25,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
@@ -77,6 +79,86 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
         }
         if (foragingWeather(level) && nest.inside > 0 && nest.out < maxOut() && level.getRandom().nextInt(8) == 0) {
             nest.release(server);
+        }
+    }
+
+    // --- The land around the nest ---
+
+    /** What the nest's ants can work on, as last looked for: crops to harvest and plants to tend. */
+    public record Land(List<BlockPos> ripe, List<BlockPos> growing) {}
+
+    /** How long (ticks) one look at the land serves all the nest's ants. */
+    public static final int LAND_SEARCH_INTERVAL = 100;
+    private final Land land = new Land(new ArrayList<>(), new ArrayList<>());
+    // "Long ago", not Long.MIN_VALUE: "now - then" would overflow.
+    private long landSearched = Long.MIN_VALUE / 2;
+    private int landSearches;
+
+    /** The land around the nest: one search for all its ants, made again when the last is five seconds old. */
+    public Land land(ServerLevel level) {
+        if (level.getGameTime() - landSearched >= LAND_SEARCH_INTERVAL) {
+            landSearched = level.getGameTime();
+            searchLand(level);
+        }
+        return land;
+    }
+
+    /** An ant has taken this spot: the nest's other ants leave it alone until the next search. */
+    public void claim(BlockPos pos) {
+        land.ripe().remove(pos);
+        land.growing().remove(pos);
+    }
+
+    /** How many times this nest has searched its land. */
+    public int landSearches() {
+        return landSearches;
+    }
+
+    /**
+     * Looks at the blocks within {@link WildAnt#NEST_RANGE} of the nest, two up and two down. Only chunks that are loaded
+     * (none is loaded for it), and a chunk section that holds no crop or sapling at all is passed over whole.
+     */
+    private void searchLand(ServerLevel level) {
+        landSearches++;
+        land.ripe().clear();
+        land.growing().clear();
+        int range = WildAnt.NEST_RANGE;
+        int minX = worldPosition.getX() - range;
+        int maxX = worldPosition.getX() + range;
+        int minZ = worldPosition.getZ() - range;
+        int maxZ = worldPosition.getZ() + range;
+        int minY = Math.max(level.getMinY(), worldPosition.getY() - 2);
+        int maxY = Math.min(level.getMaxY(), worldPosition.getY() + 2);
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int chunkX = minX >> 4; chunkX <= maxX >> 4; chunkX++) {
+            for (int chunkZ = minZ >> 4; chunkZ <= maxZ >> 4; chunkZ++) {
+                LevelChunk chunk = level.getChunkSource().getChunkNow(chunkX, chunkZ);
+                if (chunk == null) {
+                    continue;
+                }
+                for (int sectionY = minY >> 4; sectionY <= maxY >> 4; sectionY++) {
+                    LevelChunkSection section = chunk.getSection(chunk.getSectionIndexFromSectionY(sectionY));
+                    if (section.hasOnlyAir() || !section.maybeHas(WildAnt::farmed)) {
+                        continue;
+                    }
+                    for (int y = Math.max(minY, sectionY << 4); y <= Math.min(maxY, (sectionY << 4) + 15); y++) {
+                        for (int x = Math.max(minX, chunkX << 4); x <= Math.min(maxX, (chunkX << 4) + 15); x++) {
+                            for (int z = Math.max(minZ, chunkZ << 4); z <= Math.min(maxZ, (chunkZ << 4) + 15); z++) {
+                                BlockState state = section.getBlockState(x & 15, y & 15, z & 15);
+                                if (!WildAnt.farmed(state)) {
+                                    continue;
+                                }
+                                pos.set(x, y, z);
+                                if (WildAnt.ripe(level, pos, state)) {
+                                    land.ripe().add(pos.immutable());
+                                } else if (WildAnt.growable(level, pos, state)) {
+                                    land.growing().add(pos.immutable());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
