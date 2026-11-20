@@ -660,8 +660,18 @@ public class WildAnt extends PathfinderMob implements AntLike {
         discard();
     }
 
+    /** Whether a block could be work for a home nest's ants at all: a quick test before the closer look. */
+    public static boolean farmed(BlockState state) {
+        return state.getBlock() instanceof CropBlock || state.is(Blocks.SWEET_BERRY_BUSH) || state.is(Blocks.NETHER_WART) || state.is(Blocks.PUMPKIN)
+                || state.is(Blocks.MELON) || state.is(BlockTags.SAPLINGS) || state.is(BlockTags.BEE_GROWABLES);
+    }
+
     public static boolean ripe(Level level, BlockPos pos) {
-        BlockState state = level.getBlockState(pos);
+        return ripe(level, pos, level.getBlockState(pos));
+    }
+
+    /** The same for a state already in hand. */
+    public static boolean ripe(Level level, BlockPos pos, BlockState state) {
         if (state.getBlock() instanceof CropBlock crop) {
             return crop.isMaxAge(state);
         }
@@ -673,6 +683,10 @@ public class WildAnt extends PathfinderMob implements AntLike {
         }
         if (state.is(Blocks.PUMPKIN) || state.is(Blocks.MELON)) {
             for (Direction side : Direction.Plane.HORIZONTAL) {
+                // A stem in a chunk that isn't loaded is left there: asking for its block would load the chunk.
+                if (!level.isLoaded(pos.relative(side))) {
+                    continue;
+                }
                 BlockState stem = level.getBlockState(pos.relative(side));
                 if (stem.getBlock() instanceof AttachedStemBlock && stem.getValue(AttachedStemBlock.FACING) == side.getOpposite()) {
                     return true;
@@ -683,8 +697,12 @@ public class WildAnt extends PathfinderMob implements AntLike {
     }
 
     public static boolean growable(Level level, BlockPos pos) {
-        BlockState state = level.getBlockState(pos);
-        return state.is(BlockTags.SAPLINGS) || state.is(BlockTags.BEE_GROWABLES) && !ripe(level, pos)
+        return growable(level, pos, level.getBlockState(pos));
+    }
+
+    /** The same for a state already in hand. */
+    public static boolean growable(Level level, BlockPos pos, BlockState state) {
+        return state.is(BlockTags.SAPLINGS) || state.is(BlockTags.BEE_GROWABLES) && !ripe(level, pos, state)
                 && !(state.getBlock() instanceof CropBlock crop && crop.isMaxAge(state));
     }
 
@@ -882,7 +900,8 @@ public class WildAnt extends PathfinderMob implements AntLike {
             Vec3 spot = Vec3.atBottomCenterOf(target);
             // Beside the target is close enough: a path can end there, and an ant waiting to stand on it could wait for ever.
             if (distanceToSqr(spot) > 2.8) {
-                if (--retry <= 0) {
+                // A new path only once the last one has ended (or failed), not every second on the way.
+                if (--retry <= 0 && getNavigation().isDone()) {
                     retry = 20;
                     var path = getNavigation().createPath(target, 0);
                     if (path != null) {
@@ -906,20 +925,16 @@ public class WildAnt extends PathfinderMob implements AntLike {
             }
         }
 
+        /** A spot from the nest's own look at its land (one search for all its ants), or null: nothing to do. */
         private @Nullable BlockPos findWork() {
-            List<BlockPos> ripe = new ArrayList<>();
-            List<BlockPos> growing = new ArrayList<>();
+            if (!(level() instanceof ServerLevel server) || !server.isLoaded(nest) || !(server.getBlockEntity(nest) instanceof HomeNestBlockEntity home)) {
+                return null;
+            }
             boolean harvest = AntConfig.get(AntConfig.NEST_HARVEST) && carried.isEmpty();
             boolean grow = tended < TENDS_PER_TRIP && AntConfig.get(AntConfig.NEST_CROP_GROWTH) > 0;
-            for (BlockPos pos : BlockPos.betweenClosed(nest.offset(-NEST_RANGE, -2, -NEST_RANGE), nest.offset(NEST_RANGE, 2, NEST_RANGE))) {
-                if (harvest && ripe(level(), pos)) {
-                    ripe.add(pos.immutable());
-                } else if (grow && growable(level(), pos)) {
-                    growing.add(pos.immutable());
-                }
-            }
-            harvesting = !ripe.isEmpty();
-            List<BlockPos> choices = harvesting ? ripe : growing;
+            HomeNestBlockEntity.Land land = home.land(server);
+            harvesting = harvest && !land.ripe().isEmpty();
+            List<BlockPos> choices = harvesting ? land.ripe() : grow ? land.growing() : List.of();
             if (choices.isEmpty()) {
                 return null;
             }
@@ -931,6 +946,8 @@ public class WildAnt extends PathfinderMob implements AntLike {
                     best = pick;
                 }
             }
+            // Hers now: the nest's other ants pick something else.
+            home.claim(best);
             return best;
         }
     }
