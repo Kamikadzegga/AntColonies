@@ -69,8 +69,8 @@ You are reading the **26.1.2** branch.
 
 | Minecraft | Branch | Latest release |
 |---|---|---|
-| 26.3 | [`main`](https://github.com/Kamikadzegga/AntColonies/tree/main) | [0.5.0](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.5.0) |
-| 26.1.2 | [`26.1.2`](https://github.com/Kamikadzegga/AntColonies/tree/26.1.2) | [0.4.0](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.4.0-26.1.2) (the same content as 0.5.0) |
+| 26.3 | [`main`](https://github.com/Kamikadzegga/AntColonies/tree/main) | [0.6.0](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.6.0) |
+| 26.1.2 | [`26.1.2`](https://github.com/Kamikadzegga/AntColonies/tree/26.1.2) | [0.5.0](https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.5.0-26.1.2) (the same content as 0.6.0) |
 
 Optional companions: [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) or
 [EMI](https://modrinth.com/mod/pf-emi) for recipes, and [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) to
