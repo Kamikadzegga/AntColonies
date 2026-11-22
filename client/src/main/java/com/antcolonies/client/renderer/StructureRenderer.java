@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.antcolonies.client.ClientHooks;
 import com.antcolonies.client.nest.NestVisuals;
+import com.antcolonies.client.terrarium.SiteVisuals;
 import com.antcolonies.colony.species.Climate;
 import com.antcolonies.content.block.ColonyEntityBlock;
 import com.antcolonies.content.block.ColonyPartBlock;
@@ -61,6 +62,11 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         long seed;
         boolean near;
         int carry;
+        /** Degrees the site's model is turned to its facing: its ants' spots turn with it. */
+        float turn;
+        /** The site's working ants (ClientHooks ticks them), and how far this frame is into the tick. */
+        @Nullable SiteVisuals site;
+        float partialTicks;
         final List<ItemStackRenderState> heap = new ArrayList<>();
         final List<Integer> heapCounts = new ArrayList<>();
         /** In a stack: drawn as an upright nest, from {@link #nest}. */
@@ -102,6 +108,9 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         state.time = structure.getLevel() == null ? 0
                 : ClientHooks.animationTime(structure.getLevel().getGameTime(), partialTicks);
         state.seed = structure.getBlockPos().asLong();
+        state.turn = (structure.getBlockState().getValue(ColonyEntityBlock.FACING).toYRot() + 180) % 360;
+        state.site = structure.clientVisuals instanceof SiteVisuals site ? site : null;
+        state.partialTicks = partialTicks;
         double distance = AntConfig.client(AntConfig.VISUAL_DISTANCE);
         state.near = Vec3.atCenterOf(structure.getBlockPos()).distanceToSqr(camera) < distance * distance;
         state.ants = 0;
@@ -126,11 +135,11 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         if (detailed && structure.kind().job().any() && structure.clientLinked() && structure.assigned() > 0
                 && AntConfig.client(AntConfig.STRUCTURE_ANTS)) {
             int shown = (int) Math.min(6, 1 + Math.floor(Math.log(structure.assigned()) / Math.log(2.5)));
-            // Hunters face off in pairs, lunging (the look of the hunt); everyone else walks loops.
+            // Hunters face off in pairs, lunging (the look of the hunt); everyone else goes about its site's work (SiteVisuals).
             if (structure.kind() == StructureKind.HUNTING_GROUND) {
                 state.soldiers = Math.max(2, shown / 2 * 2);
             } else {
-                state.ants = shown;
+                state.ants = state.site == null ? 0 : state.site.ants.size();
             }
             BlockPos terrarium = structure.terrarium() != null ? structure.terrarium() : null;
             AntSpecies species = null;
@@ -189,6 +198,11 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             return;
         }
         float top = FLOOR;
+        // The ants' spots are laid out on the site's model, which the block turns to its facing.
+        poseStack.pushPose();
+        poseStack.translate(0.5F, 0, 0.5F);
+        poseStack.rotate(Axis.YP.rotationDegrees(-state.turn));
+        poseStack.translate(-0.5F, 0, -0.5F);
         for (int i = 0; i < state.ants + state.soldiers; i++) {
             boolean soldier = i >= state.ants;
             pose.reset();
@@ -212,16 +226,23 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
                 pose.mandibleOpen = 0.5F + lunge * 0.5F;
                 pose.alert = 1;
             } else {
-                // Workers walk loops over the site, carrying their finds.
-                float speed = 0.03F + i * 0.004F;
-                float angle = state.time * speed + i * Mth.TWO_PI / Math.max(1, state.ants) + (state.seed & 7);
-                float radius = 3.2F + (i % 3) * 1.1F;
-                x = 8 + Mth.cos(angle) * radius;
-                z = 8 + Mth.sin(angle) * radius * 0.8F;
-                yaw = (float) Math.atan2(Mth.sin(angle), -Mth.cos(angle) * 0.8F);
-                pose.walkPhase = state.time * 0.5F + i;
-                pose.walkAmount = 1;
-                carry = (Mth.sin(angle * 0.5F) > 0) ? state.carry : 0;
+                // Workers go about their site's work, each in its own time: gather and pile, tend, the portal, fill and carry.
+                if (state.site == null || i >= state.site.ants.size() || state.site.ants.get(i).away()) {
+                    continue;
+                }
+                SiteVisuals.Ant ant = state.site.ants.get(i);
+                float pt = state.partialTicks;
+                x = Mth.lerp(pt, ant.prevX, ant.x);
+                z = Mth.lerp(pt, ant.prevZ, ant.z);
+                yaw = Mth.rotLerpRad(pt, ant.prevYaw, ant.yaw);
+                pose.seed = ant.seed;
+                if (ant.moving) {
+                    pose.walkPhase = Mth.lerp(pt, ant.prevPhase, ant.phase);
+                    pose.walkAmount = 1;
+                } else {
+                    workPose(ant, pose, state.time);
+                }
+                carry = ant.loaded ? state.carry : 0;
             }
             poseStack.pushPose();
             poseStack.translate(x / 16, top / 16, z / 16);
@@ -230,6 +251,34 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             drawer.draw(collector, poseStack, caste, state.look, pose, LENGTH * AntDrawer.casteScale(caste), state.lightCoords,
                     OverlayTexture.NO_OVERLAY, carry, 0);
             poseStack.popPose();
+        }
+        poseStack.popPose();
+    }
+
+    /** Poses an ant that has stopped at its work. */
+    private static void workPose(SiteVisuals.Ant ant, AntPose pose, float time) {
+        float beat = Mth.sin(time * 0.6F + ant.seed);
+        float progress = ant.stay <= 0 ? 0 : 1 - ant.pause / (float) ant.stay;
+        switch (ant.work) {
+            case GATHER -> {
+                pose.headPitch = 0.45F + beat * 0.12F;
+                pose.mandibleOpen = 0.5F + beat * 0.5F;
+            }
+            case DROP -> {
+                pose.headPitch = 0.5F * Mth.sin(progress * Mth.PI);
+                pose.mandibleOpen = progress < 0.5F ? 0.2F : 0.9F;
+            }
+            case TEND -> {
+                pose.headPitch = 0.2F + beat * 0.1F;
+                pose.mandibleOpen = 0.5F + Mth.sin(time * 0.9F + ant.seed) * 0.5F;
+                pose.groom = 0.6F;
+            }
+            case FILL -> {
+                pose.headPitch = 0.55F;
+                pose.gasterPulse = 0.5F + beat * 0.5F;
+            }
+            case REST -> pose.groom = 0.8F + beat * 0.2F;
+            default -> { }
         }
     }
 

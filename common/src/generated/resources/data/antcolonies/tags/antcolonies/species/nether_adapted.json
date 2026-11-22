@@ -6,6 +6,10 @@
     "antcolonies:soul",
     "antcolonies:netherite",
     "antcolonies:wither",
-    "antcolonies:crimson"
+    "antcolonies:crimson",
+    {
+      "id": "antcolonies:vibranium",
+      "required": false
+    }
   ]
 }

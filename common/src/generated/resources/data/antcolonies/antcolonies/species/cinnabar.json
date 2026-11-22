@@ -1,0 +1,68 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#4A1410",
+    "gaster": "#C8341E",
+    "accent": "#FF8A5A",
+    "pattern": "speckled",
+    "crystal": "#E84A2A"
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.45,
+    "outputs": [
+      {
+        "tag": "c:gems/cinnabar",
+        "weight": 36
+      },
+      {
+        "tag": "c:dusts/cinnabar",
+        "weight": 10
+      },
+      {
+        "tag": "c:dusts/sulfur",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:redstone",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 12
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 4800
+  },
+  "breeding": {
+    "eggs": 0.85,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "alltheores"
+    }
+  ]
+}

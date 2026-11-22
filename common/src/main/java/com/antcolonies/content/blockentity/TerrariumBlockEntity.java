@@ -139,6 +139,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
     private @Nullable Climate floor;
     private boolean underground;
     private boolean nether;
+    private boolean end;
     private long climateAt = Long.MIN_VALUE / 2;
     /** Whether the colony is built upright (see {@link #updateStance}); saved, since a build half one way keeps what it was. */
     private boolean upright;
@@ -185,6 +186,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         climateAt = level.getGameTime();
         temperature = level.getBiome(worldPosition).value().getBaseTemperature();
         underground = !level.canSeeSky(worldPosition.above());
+        end = level.dimension() == Level.END;
         nether = level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, worldPosition);
     }
 
@@ -204,7 +206,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         if (floor == climate) {
             return 0;
         }
-        return climate.mismatch(temperature, underground, nether);
+        return climate.mismatch(temperature, underground, nether, end);
     }
 
     public boolean tooCold(Climate climate) {

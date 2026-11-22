@@ -61,6 +61,15 @@
       "species": [
         "antcolonies:dragon"
       ]
+    },
+    {
+      "tag": "c:nuggets/unobtainium",
+      "weight": 0.06,
+      "min_stage": 3,
+      "special": true,
+      "species": [
+        "antcolonies:unobtainium"
+      ]
     }
   ]
 }

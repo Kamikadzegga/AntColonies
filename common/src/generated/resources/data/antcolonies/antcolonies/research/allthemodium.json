@@ -1,0 +1,20 @@
+{
+  "material": "#c:ingots/allthemodium",
+  "species": "antcolonies:allthemodium",
+  "tier": "experimental",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 2
+    }
+  ],
+  "requires": [
+    "antcolonies:netherite"
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "allthemodium"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "material": "#c:ingots/unobtainium",
+  "species": "antcolonies:unobtainium",
+  "tier": "experimental",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 2
+    }
+  ],
+  "requires": [
+    "antcolonies:vibranium"
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "allthemodium"
+    }
+  ]
+}

@@ -46,7 +46,7 @@ Carved into it is the block's own chamber: the Queen's chamber in the Formicariu
 with the Storage's items, the fungus garden of a Harvesting Site, a portal, full Liquid Ants hanging over their pool.
 Tunnels are dug to the colony's blocks beside, above and below it, so a tower or a wall of them is one nest in one
 frame, the same from both sides, and the ants walk from chamber to chamber, out to the sites and back with their finds.
-The nest is the earth of the species' climate (loam, frozen earth, sand, stone or netherrack), and the Formicarium's
+The nest is the earth of the species' climate (loam, frozen earth, sand, stone, netherrack or end stone), and the Formicarium's
 grows with the colony: a brood chamber at first, a food store from stage 2, a bigger chamber for the Queen and a midden
 from stage 3. The blocks of a wall must face the same way or the opposite way for their tunnels to join.
 
@@ -180,7 +180,7 @@ upgrade and tier. Upgrades of a kind in one block add up their tiers.
 
 ### Climate
 
-Each species likes a climate: temperate, cold, hot, underground or nether. In the wrong one a colony loses health
+Each species likes a climate: temperate, cold, hot, underground, nether or end. In the wrong one a colony loses health
 (less with good Environmental Resistance). A block under the Formicarium gives it a climate, whatever the biome. Every variant of a block counts (any
 terracotta colour, glazed too; any sandstone; any ice), and the Info page shows one icon per family, cycling through them:
 
@@ -191,6 +191,9 @@ terracotta colour, glazed too; any sandstone; any ice), and the Info page shows 
 | Temperate | Grass block, podzol, mycelium, every dirt, mud and moss block |
 | Underground | Stone, granite, diorite, andesite, tuff and deepslate (polished too), cobblestone, calcite, dripstone |
 | Nether | Netherrack, magma, soul sand and soil, nylium, blackstone and basalt (polished and smooth too) |
+| End | End stone and end stone bricks |
+
+The nether climate also suits any Formicarium in the Nether, and the end climate any Formicarium in the End.
 
 ### Redstone and comparators
 
@@ -233,7 +236,7 @@ Two chambers of their own, each with a little portal standing on its floor:
 
 | | Nether Foraging Site | End Foraging Site |
 |---|---|---|
-| Ants that go | Nether-adapted: Warped, Fire, Inferno, Soul, Netherite, Wither, Crimson (species tag `antcolonies:nether_adapted`) | End-adapted: Chorus, Ender, Dragon (`antcolonies:end_adapted`) |
+| Ants that go | Nether-adapted: Warped, Fire, Inferno, Soul, Netherite, Wither, Crimson, and Vibranium with Allthemodium (species tag `antcolonies:nether_adapted`) | End-adapted: Chorus, Ender, Dragon, and Unobtainium with Allthemodium (`antcolonies:end_adapted`) |
 | Finds | Quartz, glowstone dust, nether wart, blackstone, soul sand and soil, basalt, magma cream, fungi; from stage 2 blaze powder, shroomlights, gold; from stage 3 blaze rods and, rarely, gilded blackstone, ghast tears and Infernal Chitin; Netherite and Wither Ants rarely ancient debris, Wither and Soul Ants wither roses | End stone, chorus fruit, obsidian; from stage 2 purpur, ender pearls and, rarely, chorus flowers; from stage 3 end rods and, rarely, shulker shells and Void Chitin; Dragon Ants rarely dragon's breath |
 | Made from | A Foraging Site, 4 obsidian, 2 Infernal Chitin, 2 **Nether Trail Pheromones** | A Foraging Site, 3 end stone bricks, 2 Void Chitin, an eye of ender, 2 **End Trail Pheromones** |
 

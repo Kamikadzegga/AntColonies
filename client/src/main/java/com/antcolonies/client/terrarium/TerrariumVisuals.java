@@ -65,7 +65,18 @@ public final class TerrariumVisuals {
         public float prevPhase;
         public float seed;
         public boolean moving;
+        // On the surface: the corner a patrol walks to next.
+        int corner;
     }
+
+    /** One walking pace for every ant on the surface, px a tick. */
+    private static final float SURFACE_SPEED = 0.11F;
+    /** How near another ant has to be for a walking ant to lean away from it, px: closer than this they may brush. */
+    private static final float SURFACE_GAP = 2.2F;
+    /** The most it leans aside in a tick, px: it goes round the other, it is not pushed. */
+    private static final float SURFACE_YIELD = 0.05F;
+    private static final float SURFACE_MIN = 2.2F;
+    private static final float SURFACE_MAX = 13.8F;
 
     /** A brood or store item lying in a chamber: u, v on the front or a side face. */
     public record Item(int face, float u, float v, float size, int kind) {}
@@ -80,6 +91,10 @@ public final class TerrariumVisuals {
     public final List<Actor> actors = new ArrayList<>();
     public final List<Item> items = new ArrayList<>();
     public int frontFace;
+    /** What stands on the surface: the entrance mounds (x, z) and a farming species' mushrooms (x, z, height). */
+    public final List<float[]> mounds = new ArrayList<>();
+    public final List<float[]> mushrooms = new ArrayList<>();
+    private boolean garden;
     public int stage = -1;
     public int carryColor = 0xFFD9B26A;
     public float queenPhase;
@@ -124,6 +139,7 @@ public final class TerrariumVisuals {
             }
             Arrays.fill(distances, null);
             actors.clear();
+            mounds.clear();
             int chamber = faces[frontFace].find(TunnelLayout.ChamberType.QUEEN);
             // Her chamber's floor is about 0.7 of its width; she is 3.7 px long.
             queenRange = chamber < 0 ? 0 : Math.max(0, faces[frontFace].nodes.get(chamber).radiusU() * 0.7F - 1.85F);
@@ -161,7 +177,24 @@ public final class TerrariumVisuals {
                 tickFace(actor, hunger);
             }
         }
+        giveWay();
         meet();
+    }
+
+    /** Lays out the surface: the entrance mounds, and from stage 2 the fungus garden of a species that farms. */
+    private void layoutSurface(boolean farmers) {
+        garden = farmers;
+        mounds.clear();
+        mushrooms.clear();
+        RandomSource placement = RandomSource.create(seed);
+        for (int i = 0; i < 2 + Math.min(2, stage); i++) {
+            mounds.add(new float[] {4 + placement.nextFloat() * 8, 4 + placement.nextFloat() * 8});
+        }
+        if (farmers && stage >= 2) {
+            for (int i = 0; i < 2 + stage; i++) {
+                mushrooms.add(new float[] {3 + placement.nextFloat() * 10, 3 + placement.nextFloat() * 10, 0.8F + placement.nextFloat() * 0.8F});
+            }
+        }
     }
 
     private void updateComposition(Colony colony) {
@@ -172,6 +205,10 @@ public final class TerrariumVisuals {
         // Hunter species: a third of the ants drawn with the big-jawed look; colonies have no soldiers otherwise.
         AntSpecies kind = ClientSpecies.get(colony.species());
         int soldiers = kind != null && kind.canHunt() ? count / 3 : 0;
+        boolean farming = kind != null && kind.canFarm();
+        if (mounds.isEmpty() || farming != garden) {
+            layoutSurface(farming);
+        }
         Colony.Activity activity = colony.activity();
         float conversion = (float) colony.conversion();
         int hash = count * 31 + soldiers;
@@ -237,10 +274,14 @@ public final class TerrariumVisuals {
     private void place(Actor actor, int face) {
         actor.face = face;
         if (face == SURFACE) {
-            actor.x = 3 + random.nextFloat() * 10;
-            actor.z = 3 + random.nextFloat() * 10;
+            // Up out of an entrance: it starts beside a mound.
+            float[] mound = mounds.isEmpty() ? new float[] {8, 8} : mounds.get(random.nextInt(mounds.size()));
+            actor.x = Math.clamp(mound[0] + (random.nextFloat() - 0.5F) * 3.6F, SURFACE_MIN, SURFACE_MAX);
+            actor.z = Math.clamp(mound[1] + (random.nextFloat() - 0.5F) * 3.6F, SURFACE_MIN, SURFACE_MAX);
             actor.prevX = actor.x;
             actor.prevZ = actor.z;
+            actor.carry = 0;
+            actor.corner = random.nextInt(4);
             pickSurfaceTarget(actor);
             return;
         }
@@ -483,41 +524,122 @@ public final class TerrariumVisuals {
         float dx = actor.targetX - actor.x;
         float dz = actor.targetZ - actor.z;
         float distance = Mth.sqrt(dx * dx + dz * dz);
-        float speed = actor.speed * hunger * (actor.task == Task.PATROL ? 0.8F : 1);
+        float speed = SURFACE_SPEED * hunger;
         if (distance < speed * 1.5F) {
-            if (actor.task == Task.CARRY || actor.task == Task.FARM) {
-                actor.carry = actor.carry == 0 ? (actor.task == Task.FARM ? 0xFF5DAA3C : carryColor) : 0;
-            }
-            if (random.nextFloat() < 0.35F) {
-                pause(actor, 15 + random.nextInt(35), actor.task == Task.PATROL ? Action.NONE : Action.GROOM);
-            }
-            pickSurfaceTarget(actor);
+            arrive(actor);
             return;
         }
         float targetYaw = (float) Math.atan2(-dx, -dz);
         actor.yaw = Mth.rotLerpRad(0.25F, actor.yaw, targetYaw);
         actor.x += -Mth.sin(actor.yaw) * speed;
         actor.z += -Mth.cos(actor.yaw) * speed;
-        actor.x = Math.clamp(actor.x, 2.2F, 13.8F);
-        actor.z = Math.clamp(actor.z, 2.2F, 13.8F);
+        actor.x = Math.clamp(actor.x, SURFACE_MIN, SURFACE_MAX);
+        actor.z = Math.clamp(actor.z, SURFACE_MIN, SURFACE_MAX);
         actor.moving = true;
         actor.phase += speed * 6.5F;
     }
 
+    /** An ant reached its spot on the surface: it does there what its task is, and gets the next spot to go to. */
+    private void arrive(Actor actor) {
+        switch (actor.task) {
+            case CARRY, FARM -> {
+                if (actor.carry != 0) {
+                    // Home with its load: put down at the entrance, or worked into a mushroom's bed.
+                    actor.carry = 0;
+                    pause(actor, actor.task == Task.FARM && !mushrooms.isEmpty() ? 50 : 16, actor.task == Task.FARM ? Action.TEND : Action.FEED);
+                } else {
+                    // At the edge: it picks up what it came for.
+                    actor.carry = actor.task == Task.FARM ? 0xFF5DAA3C : carryColor;
+                    pause(actor, 24, Action.TEND);
+                }
+            }
+            case PATROL -> {
+                actor.corner = (actor.corner + 1) % 4;
+                pause(actor, 24 + random.nextInt(30), Action.NONE);
+            }
+            default -> pause(actor, 70 + random.nextInt(90), Action.GROOM);
+        }
+        pickSurfaceTarget(actor);
+    }
+
+    /**
+     * Where a surface ant goes next. Foragers go out to the edge and come home to an entrance mound with their find;
+     * farmers bring leaves to their mushrooms; soldiers walk the edge corner by corner; the rest rest beside a mound.
+     */
     private void pickSurfaceTarget(Actor actor) {
         if (actor.task == Task.PATROL) {
-            // Soldiers walk the edge of the surface.
-            float angle = random.nextFloat() * Mth.TWO_PI;
-            actor.targetX = 8 + Mth.cos(angle) * 5.2F;
-            actor.targetZ = 8 + Mth.sin(angle) * 5.2F;
-        } else if ((actor.task == Task.CARRY || actor.task == Task.FARM) && actor.carry != 0) {
-            // Home: the middle, where the entrances are.
-            actor.targetX = 7 + random.nextFloat() * 2;
-            actor.targetZ = 7 + random.nextFloat() * 2;
+            // Two lanes, by the ant, so two soldiers on the round do not walk in each other's steps.
+            float inset = actor.seed % 2 < 1 ? 2.8F : 4.4F;
+            actor.targetX = actor.corner == 1 || actor.corner == 2 ? 16 - inset : inset;
+            actor.targetZ = actor.corner >= 2 ? 16 - inset : inset;
+        } else if ((actor.task == Task.CARRY || actor.task == Task.FARM) && actor.carry == 0) {
+            float along = 3 + random.nextFloat() * 10;
+            boolean far = random.nextBoolean();
+            if (random.nextBoolean()) {
+                actor.targetX = far ? SURFACE_MAX - 0.2F : SURFACE_MIN + 0.2F;
+                actor.targetZ = along;
+            } else {
+                actor.targetX = along;
+                actor.targetZ = far ? SURFACE_MAX - 0.2F : SURFACE_MIN + 0.2F;
+            }
         } else {
-            actor.targetX = 2.6F + random.nextFloat() * 10.8F;
-            actor.targetZ = 2.6F + random.nextFloat() * 10.8F;
+            List<float[]> spots = actor.task == Task.FARM && !mushrooms.isEmpty() ? mushrooms : mounds;
+            // Beside a mound or a mushroom, on any side; one where no other ant stands or is headed, if it finds one.
+            for (int attempt = 0; attempt < 6; attempt++) {
+                float[] spot = spots.isEmpty() ? new float[] {8, 8} : spots.get(random.nextInt(spots.size()));
+                float angle = random.nextFloat() * Mth.TWO_PI;
+                actor.targetX = Math.clamp(spot[0] + Mth.cos(angle) * 1.7F, SURFACE_MIN, SURFACE_MAX);
+                actor.targetZ = Math.clamp(spot[1] + Mth.sin(angle) * 1.7F, SURFACE_MIN, SURFACE_MAX);
+                if (!taken(actor.targetX, actor.targetZ, actor)) {
+                    break;
+                }
+            }
         }
+    }
+
+    /**
+     * A walking ant on the surface leans away from any ant close by, to the side, and keeps walking: they go round each
+     * other, brushing at most. An ant that has stopped stays where it is; nobody is pushed.
+     */
+    private void giveWay() {
+        for (Actor actor : actors) {
+            if (actor.face != SURFACE || !actor.moving) {
+                continue;
+            }
+            float rightX = Mth.cos(actor.yaw);
+            float rightZ = -Mth.sin(actor.yaw);
+            for (Actor other : actors) {
+                if (other == actor || other.face != SURFACE) {
+                    continue;
+                }
+                float dx = other.x - actor.x;
+                float dz = other.z - actor.z;
+                float distance = Mth.sqrt(dx * dx + dz * dz);
+                if (distance >= SURFACE_GAP) {
+                    continue;
+                }
+                // To the right when the other is on its left or dead ahead, to the left otherwise.
+                float side = dx * rightX + dz * rightZ > 0.05F ? -1 : 1;
+                float lean = SURFACE_YIELD * (1 - distance / SURFACE_GAP) * side;
+                actor.x = Math.clamp(actor.x + rightX * lean, SURFACE_MIN, SURFACE_MAX);
+                actor.z = Math.clamp(actor.z + rightZ * lean, SURFACE_MIN, SURFACE_MAX);
+            }
+        }
+    }
+
+    /** Whether another surface ant stands on a spot or is on its way to it. */
+    private boolean taken(float x, float z, Actor asking) {
+        for (Actor other : actors) {
+            if (other == asking || other.face != SURFACE) {
+                continue;
+            }
+            float atX = other.pause > 0 ? other.x : other.targetX;
+            float atZ = other.pause > 0 ? other.z : other.targetZ;
+            if (Mth.square(atX - x) + Mth.square(atZ - z) < 1.8F * 1.8F) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void evolved() {

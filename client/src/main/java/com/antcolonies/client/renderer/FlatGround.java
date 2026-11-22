@@ -205,6 +205,7 @@ public final class FlatGround {
             case HOT -> 0xFFD6BA7A;
             case UNDERGROUND -> 0xFF75716B;
             case NETHER -> 0xFF6E2E2A;
+            case END -> 0xFFD3D69A;
             default -> 0xFF8A6240;
         };
     }
@@ -215,6 +216,7 @@ public final class FlatGround {
             case HOT -> 0xFFE3CD8E;
             case UNDERGROUND -> 0xFF8A857E;
             case NETHER -> 0xFF8C2E26;
+            case END -> 0xFFE2E4AA;
             default -> 0xFF6DA544;
         };
     }

@@ -1,0 +1,11 @@
+{
+  "material": "#c:dusts/salt",
+  "species": "antcolonies:salt",
+  "tier": "basic",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "alltheores"
+    }
+  ]
+}

@@ -17,6 +17,7 @@ public enum Climate implements StringRepresentable {
     HOT("hot"),
     UNDERGROUND("underground"),
     NETHER("nether"),
+    END("end"),
     ANY("any");
 
     public static final Codec<Climate> CODEC = StringRepresentable.fromEnum(Climate::values);
@@ -52,8 +53,9 @@ public enum Climate implements StringRepresentable {
      * @param temperature the biome's base temperature
      * @param underground whether the Terrarium has no sky above it
      * @param nether      whether it stands in an ultra-warm dimension
+     * @param end         whether it stands in the End
      */
-    public double mismatch(float temperature, boolean underground, boolean nether) {
+    public double mismatch(float temperature, boolean underground, boolean nether, boolean end) {
         return switch (this) {
             case ANY -> 0;
             case TEMPERATE -> nether ? 1 : temperature < 0.15F || temperature > 1.5F ? 0.6 : 0;
@@ -61,6 +63,7 @@ public enum Climate implements StringRepresentable {
             case HOT -> temperature > 1.4F || nether ? 0 : temperature > 0.8F ? 0.3 : 0.7;
             case UNDERGROUND -> underground ? 0 : 0.5;
             case NETHER -> nether ? 0 : temperature > 1.4F ? 0.4 : 1;
+            case END -> end ? 0 : 1;
         };
     }
 
@@ -68,7 +71,8 @@ public enum Climate implements StringRepresentable {
     public boolean tooCold(float temperature, boolean nether) {
         return switch (this) {
             case HOT, NETHER -> !nether;
-            case COLD -> false;
+            // End ants are at home in a cold void: anywhere else is too warm for them.
+            case COLD, END -> false;
             default -> !nether && temperature < 0.5F;
         };
     }

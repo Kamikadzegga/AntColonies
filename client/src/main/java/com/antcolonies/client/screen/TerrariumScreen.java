@@ -90,6 +90,15 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     private int geneticsScroll = startScroll;
     private final ScrollBar geneticsBar = new ScrollBar();
     private int productionCardsY = CONTENT_Y + 26;
+    /** How far the Production page is scrolled, in rows (of cards, or of the table in Detailed Mode). */
+    private static int startProductionScroll;
+    private int productionScroll = startProductionScroll;
+    private final ScrollBar productionBar = new ScrollBar();
+    private static final int CARDS_PER_ROW = 7;
+    private static final int CARD_ROW_H = 33;
+    /** The cards as they were last drawn, for the hover: how many rows fit, and how far apart the cards stand. */
+    private int productionRows = 2;
+    private int productionPitch = 27;
     private final InfoPanel info = new InfoPanel();
     /** Network nodes drawn this frame, for their tooltips: x, y, radius, index into the colony's network list. */
     private final List<int[]> nodes = new ArrayList<>();
@@ -117,6 +126,11 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     /** Scrolls the Genetics page of screens opened from now on (for the in-game showcase). */
     public static void showScroll(int pixels) {
         startScroll = pixels;
+    }
+
+    /** Scrolls the Production page of screens opened from now on (for the in-game showcase). */
+    public static void showProductionScroll(int rows) {
+        startProductionScroll = rows;
     }
 
     /** Opens a page (for the in-game showcase). */
@@ -549,6 +563,10 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             geneticsScroll = geneticsBar.offsetAt(mouseY);
             return true;
         }
+        if (page == 3 && productionBar.press(mouseX, mouseY)) {
+            productionScroll = productionBar.offsetAt(mouseY);
+            return true;
+        }
         if (page == 1) {
             for (int i = 0; i < 5; i++) {
                 if (over(mouseX, mouseY, cardX(i), CONTENT_Y + 5, 36, 44)) {
@@ -882,6 +900,10 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             geneticsScroll = geneticsBar.offsetAt(event.y());
             return true;
         }
+        if (productionBar.dragging()) {
+            productionScroll = productionBar.offsetAt(event.y());
+            return true;
+        }
         return page == 7 && info.drag(event.y()) || super.mouseDragged(event, dx, dy);
     }
 
@@ -890,6 +912,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         info.release();
         jobBar.release();
         geneticsBar.release();
+        productionBar.release();
         return super.mouseReleased(event);
     }
 
@@ -897,6 +920,10 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
         if (page == 2 && over(x, y, CONTENT_X, CONTENT_Y, CONTENT_W, CONTENT_H)) {
             jobScroll -= (int) Math.signum(scrollY);
+            return true;
+        }
+        if (page == 3 && over(x, y, CONTENT_X, CONTENT_Y, CONTENT_W, CONTENT_H)) {
+            productionScroll -= (int) Math.signum(scrollY);
             return true;
         }
         if (page == 4 && over(x, y, CONTENT_X, CONTENT_Y, CONTENT_W, CONTENT_H)) {
@@ -965,22 +992,28 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         if (liquidSpecies != null && liquidSpecies.makesLiquid()) {
             y = liquidLine(graphics, colony, liquidSpecies, x, y);
         }
+        productionBar.hide();
         if (finds.isEmpty()) {
             label(graphics, Component.translatable("gui.antcolonies.production.none"), x, y, DIM);
             return;
         }
+        int barX = leftPos + CONTENT_X + CONTENT_W - 1 - ScrollBar.WIDTH;
         if (detailed()) {
             // A table: item, stored, finds per minute, share. A name too long for its column is cut, whole on hover.
             double total = finds.stream().mapToDouble(Find::perMinute).sum();
+            // Every item has a row: the wheel and the bar scroll them, and the share column makes room for the bar.
+            int rows = (CONTENT_Y + CONTENT_H - 12 - (y + 9)) / 9 + 1;
+            int overflow = Math.max(0, finds.size() - rows);
+            productionScroll = Math.clamp(productionScroll, 0, overflow);
+            int right = x + 190 - (overflow > 0 ? ScrollBar.WIDTH + 1 : 0);
             label(graphics, Component.translatable("gui.antcolonies.production.col.item"), x + 10, y, FAINT);
             label(graphics, Component.translatable("gui.antcolonies.production.col.stored"), x + 104, y, FAINT);
             label(graphics, Component.translatable("gui.antcolonies.per_minute"), x + 138, y, FAINT);
-            label(graphics, "%", x + 190 - font.width("%"), y, FAINT);
+            label(graphics, "%", right - font.width("%"), y, FAINT);
             y += 9;
-            for (Find find : finds) {
-                if (y > CONTENT_Y + CONTENT_H - 12) {
-                    break;
-                }
+            productionBar.draw(graphics, barX, topPos + y - 1, rows * 9, productionScroll, overflow, rows / (double) finds.size(), -1, -1);
+            for (int row = 0; row < rows && productionScroll + row < finds.size(); row++) {
+                Find find = finds.get(productionScroll + row);
                 graphics.pose().pushMatrix();
                 graphics.pose().translate(leftPos + x, topPos + y);
                 graphics.pose().scale(0.5F, 0.5F);
@@ -990,18 +1023,25 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                 label(graphics, number(find.stored()), x + 104, y, INFO);
                 label(graphics, rate(find.perMinute()), x + 138, y, GOOD);
                 String share = percent(total <= 0 ? 0 : find.perMinute() / total);
-                label(graphics, share, x + 190 - font.width(share), y, DIM); // right-aligned: clear of the rate
+                label(graphics, share, right - font.width(share), y, DIM); // right-aligned: clear of the rate
                 y += 9;
             }
         } else {
             // Icons: the item, how many are stored, a green bar for how fast it comes in.
             double most = finds.stream().mapToDouble(Find::perMinute).max().orElse(1);
-            int perRow = 7;
             productionCardsY = y; // the hover looks here too (a Liquid Ant colony's liquid line pushes the cards down)
-            for (int i = 0; i < finds.size() && i < perRow * 2; i++) {
+            // Every item has a card: the wheel and the bar scroll them a row at a time, and the cards stand closer for the bar.
+            productionRows = Math.max(1, (CONTENT_Y + CONTENT_H - y) / CARD_ROW_H);
+            int overflow = Math.max(0, (finds.size() + CARDS_PER_ROW - 1) / CARDS_PER_ROW - productionRows);
+            productionScroll = Math.clamp(productionScroll, 0, overflow);
+            productionPitch = overflow > 0 ? 26 : 27;
+            productionBar.draw(graphics, barX, topPos + y, productionRows * CARD_ROW_H - 2, productionScroll, overflow,
+                    productionRows / (double) (productionRows + overflow), -1, -1);
+            int first = productionScroll * CARDS_PER_ROW;
+            for (int i = first; i < finds.size() && i < first + productionRows * CARDS_PER_ROW; i++) {
                 Find find = finds.get(i);
-                int cx = x + (i % perRow) * 27;
-                int cy = y + (i / perRow) * 33;
+                int cx = x + (i % CARDS_PER_ROW) * productionPitch;
+                int cy = y + ((i - first) / CARDS_PER_ROW) * CARD_ROW_H;
                 card(graphics, cx, cy, 25, 31, ACCENTS[3], false);
                 graphics.item(find.item(), leftPos + cx + 4, topPos + cy + 2);
                 // How many are stored, under the icon; a green bar for how fast it comes in.
@@ -1009,10 +1049,6 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                 value(graphics, stored, cx + (26 - font.width(stored)) / 2, cy + 19, find.stored() > 0 ? LABEL : FAINT);
                 // How fast it comes in: a bar of its own under the number, never behind it.
                 drawBar(graphics, leftPos + cx + 3, topPos + cy + 28, 19, 2, find.perMinute() / Math.max(0.0001, most), GOOD);
-            }
-            if (finds.size() > perRow * 2) {
-                String more = Component.translatable("gui.antcolonies.production.more", finds.size() - perRow * 2).getString();
-                label(graphics, more, CONTENT_X + CONTENT_W - 4 - font.width(more), y + 67, DIM);
             }
         }
     }
@@ -1604,9 +1640,10 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         if (page == 3) {
             List<Find> finds = finds(menu.colony());
             if (!detailed()) {
-                for (int i = 0; i < finds.size() && i < 14; i++) {
-                    int cx = CONTENT_X + 4 + (i % 7) * 27;
-                    int cy = productionCardsY + (i / 7) * 33;
+                int first = productionScroll * CARDS_PER_ROW;
+                for (int i = first; i < finds.size() && i < first + productionRows * CARDS_PER_ROW; i++) {
+                    int cx = CONTENT_X + 4 + (i % CARDS_PER_ROW) * productionPitch;
+                    int cy = productionCardsY + ((i - first) / CARDS_PER_ROW) * CARD_ROW_H;
                     if (over(mouseX, mouseY, cx, cy, 25, 31)) {
                         Find find = finds.get(i);
                         double window = productionWindow(menu.colony());
