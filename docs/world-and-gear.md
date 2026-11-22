@@ -1,0 +1,173 @@
+# World and gear
+
+What the mod adds to the world, and what you can make from its ants: giant anthills, home nests, Chitin gear, Guard
+Ants and building blocks.
+
+Back to the [gameplay guide](gameplay.md).
+
+## Contents
+
+- [Giant anthills](#giant-anthills)
+- [Home nests](#home-nests)
+- [Chitin](#chitin)
+- [Chitin gear](#chitin-gear)
+- [Guard Ants](#guard-ants)
+- [Building blocks](#building-blocks)
+- [Advancements](#advancements)
+
+## Giant anthills
+
+A structure of the Overworld, the Nether and the End: a mound with a shaft down into a nest of rooms and tunnels.
+
+| Anthill | Where | Its ants | Find one |
+|---|---|---|---|
+| Giant anthill | Plains, meadows, forests, taigas, snowy plains and groves, savannas, jungles, swamps, deserts, badlands, mushroom fields and cherry groves | The local wild species | `/locate structure antcolonies:giant_anthill` |
+| Nether anthill | Nether wastes, crimson and warped forests, soul sand valleys | Fire Ants (Warped Ants in the fungus forests) | `/locate structure antcolonies:nether_anthill` |
+| End anthill | The End's outer islands | Chorus Ants | `/locate structure antcolonies:end_anthill` |
+
+- **The look follows the biome**: a soil cone in plains and forests, a needle-thatched dome in taigas, a snow-capped
+  cone, a sand crater in deserts, termite spires in badlands and savannas, a moss mound in jungles, a mud mound in
+  swamps, a mycelium cone in mushroom fields. The Nether anthill is soul soil and blackstone, the End anthill end stone
+  and purpur.
+- **No two are dug alike.** A nest is small (6 to 8 rooms), medium (9 to 12) or large (13 to 17, up to some 40 blocks
+  down). One or two side entrances slope down from the ground beside the mound. One anthill in ten is abandoned: a
+  small nest with only its old Queen.
+- **Overworld anthills stand on dry, fairly flat ground**, never next to a village, about one per 20 x 20 chunks.
+
+### The great Queen
+
+Every anthill has exactly one Queen, twice the size of any other, in the deepest chamber. She can't be hurt and never
+despawns, so the only way she leaves is in a Test Tube, caught with Tweezers. The way to her leads through the
+antechamber of her Royal Guard Ants.
+
+A Nether anthill's Queen is a way to Fire Ants without evolving them.
+
+### Rooms and loot
+
+| Room | What is in it |
+|---|---|
+| Queen's chamber | The great Queen, six Royal Guard Ants, eggs and larvae, a barrel of loot |
+| Antechamber | Four more Royal Guard Ants |
+| Nurseries, egg stores, larval chambers | Live Ant Egg Clusters and Larva Clusters |
+| Food stores | A barrel of food |
+| Middens | Suspicious gravel or sand to work with a Brush: chitin, resin, nuggets, sometimes fragments, Royal Jelly or an emerald |
+| Chitin stores | Chitin blocks and a chest |
+| Treasure chambers | A guarded chest: gold, fragments, Royal Jelly, sometimes a Chitin Shield or a Crystal Core |
+| Rare-find chambers | Ore, crystal or amber the ants dug into |
+| Fungus gardens, aphid farms, barracks, galleries | Decoration, and soldiers in the barracks |
+
+The walls are packed anthill soil in most biomes, so anthills are also where you first find the
+[building blocks](#building-blocks).
+
+### Ants and the alarm
+
+- **Soldiers** attack players who come close. Workers keep to their rooms.
+- **Royal Guard Ants** are a third bigger, with 18 health, armor and a harder bite. Each stands at its post near the
+  Queen. It attacks a player who comes within 4 blocks or strikes it, and never follows anyone more than 10 blocks.
+- **A full set of Chitin armor** makes you smell like the colony: the ants let you walk through their nest.
+- **The alarm** ends that. You raise it by opening or breaking a chest or barrel that still holds its loot, by stepping
+  into the Queen's chamber, or by striking one of the anthill's ants. For five minutes every ant of that anthill comes
+  after you, Chitin or not. Players in creative or spectator mode never raise it.
+
+### Brood clusters
+
+The **Ant Egg Clusters** and **Larva Clusters** on an anthill's floors are alive. In about 10 minutes an egg cluster
+becomes a larva cluster, and a larva cluster becomes 1 to 3 workers of the anthill. They only grow while a player is
+near, and they wait while the anthill is crowded.
+
+- Broken by hand, a live cluster is lost. With **Silk Touch** you keep it.
+- Put into the feed slot of a working colony of the same species, an Ant Egg Cluster adds 3 eggs and a Larva Cluster
+  3 larvae.
+- Placed in the world, a cluster is only a decoration and never hatches.
+
+## Home nests
+
+Pick up a wild Ant Nest with **Silk Touch** and place it anywhere. Three worker ants of its species move in, like bees
+in a beehive, and never attack you. In daylight and dry weather they come out and work the land within 10 blocks:
+
+- **Tending.** An ant standing by a growing crop, stem, berry bush, nether wart or sapling now and then grows it a
+  stage.
+- **Harvesting.** An ant harvests ripe wheat, carrots, potatoes, beetroot, nether wart, sweet berries, pumpkins and
+  melons, replants the crop and carries the rest home.
+
+The harvest goes into the nest's store of 9 stacks. Hoppers and pipes take it out on any side. An ant that dies is
+replaced after a few minutes. Breaking the nest drops the store, and its ants go wild.
+
+## Chitin
+
+Chitin is never crafted. It comes only from ants, and each kind opens the next part of the mod.
+
+| Chitin | Comes from | Needed for |
+|---|---|---|
+| Chitin Plates | Wild ants (about one in three drops one) and every foraging colony (4% of its finds) | Chitin gear, building blocks |
+| Hardened Chitin | Wild ants (5%) and colonies from stage 2 | Tier II upgrades, the Genetic Laboratory, Hardened gear |
+| Infernal Chitin | Only ants of the Nether: wild ants there (15%), colonies living there, and now and then Nether expeditions | Tier III upgrades, trait level 8, Infernal gear, Colony Connectors |
+| Void Chitin | Only ants of the End, the same way (wild ants 12%) | Tier IV upgrades, trait level 9, Void gear |
+
+Looting raises a wild ant's chance, and anthill chests hold some chitin too.
+
+## Chitin gear
+
+A sword, pickaxe, axe, shovel, hoe and a set of armor in four tiers. **Any four chitin armor pieces are a full set**:
+wild ants never attack you, anthill defenders included, until you raise an anthill's
+[alarm](#ants-and-the-alarm).
+
+| Tier | How it is made | Armor (head/chest/legs/feet), toughness | Tools: uses, speed, damage bonus | Mines like | Full set |
+|---|---|---|---|---|---|
+| Chitin | Crafted from Chitin Plates | 2/6/5/2, 0.5 | 300, 6.5, +2 | Iron | Dig 20% faster |
+| Hardened | Crafted from Hardened Chitin | 2/7/5/2, 1 | 900, 7, +2.5 | Iron | Dig 25% faster |
+| Infernal | Smithing table: Infernal Reinforcement, a Hardened piece, Infernal Chitin | 3/8/6/3, 2.5 | 1800, 8.5, +3.5 | Diamond | Dig 30% faster, Fire Resistance |
+| Void | Smithing table: Void Reinforcement, an Infernal piece, a netherite ingot | 3/8/7/3, 3.5, knockback resistance 0.15 | 2400, 9.5, +4.5 | Netherite | Dig 40% faster, Fire Resistance |
+
+- **Mixed sets** take the bonus of the lowest tier worn.
+- **Reinforcements** are the smithing templates, crafted two at a time. Each upgrade uses one, and enchantments stay.
+  The Infernal Reinforcement takes 4 Infernal Chitin, 2 blaze rods, 2 magma cream and a ghast tear; the Void
+  Reinforcement 4 Void Chitin, 2 shulker shells, 2 popped chorus fruit and an eye of ender.
+- **Repairs** use the tier's own chitin. Infernal and Void gear doesn't burn in fire or lava.
+- **Looks.** Every helmet is an ant's head with antennae and jaws. Hardened and Infernal chestplates have two spines on
+  the back, and the Void chestplate a Queen's folded wings.
+
+The **Chitin Shield** (five Chitin Plates around a plank) is a lighter shield: it comes up in 0.15 seconds, not 0.25,
+an axe knocks it down for three quarters as long, and it lasts 450 blocks, not 336.
+
+## Guard Ants
+
+A hunter colony can give up some of its ants for a Guard Ant that follows you and fights for you.
+
+1. Craft a **Rally Pheromone** (Test Tube, Chitin Plate, sugar, redstone).
+2. Use it on the Formicarium of a hunter colony with a Queen and at least 50 ants. The colony loses the ants and you
+   get a **Guard Ant** in a tube.
+3. Use the tube on a block to let the ant out. It is tamed to you.
+
+| Stat | Comes from | Range |
+|---|---|---|
+| Health | The Queen's Hunting Strength level | 24 to 60 |
+| Bite | The Queen's Hunting Strength level | 3.6 to 9 damage |
+| Armor | The species' tier | 2 per tier, up to 10 |
+
+It fights whatever attacks you, whatever you attack, and hostile mobs near it (not creepers). It follows you and
+teleports to you when it falls far behind.
+
+- **Right-click** it to make it stay or follow.
+- **Feed it ant food** to heal it.
+- **Sneak-right-click** with an empty hand to put it back in its tube. It keeps its health and name.
+
+## Building blocks
+
+| Family | Blocks | Made from |
+|---|---|---|
+| Anthill | Anthill Soil, Packed Anthill Soil, Anthill Bricks, Polished Anthill Bricks, Nest Pillar | Coarse dirt and packed mud, then wheat to pack it |
+| Chitin | Chitin Block, Polished Chitin, Chitin Bricks, Chitin Tiles | Chitin Plates |
+| Amber | Amber Block, Amber Bricks, Amber Glass, Reinforced Amber | Ant Resin, which Wood Ants find; Hardened Chitin to reinforce it |
+| Fungal | Fungal Block, Fungal Bricks, Glowing Fungal Block (light 13) | Mushrooms and leaves; glow berries and glowstone dust to glow |
+| Royal | Royal Chitin Block, Bricks and Pillar, Chiseled Royal Chitin | Chitin Blocks, gold nuggets and Royal Jelly |
+
+Bricks, polished blocks and tiles have stairs and slabs, also from the stonecutter, and the bricks have walls. There
+are also a **Nest Door** and **Nest Trapdoor**, the **Pheromone Lamp** (light 15), decorative Ant Egg Clusters and Larva
+Clusters, and **Formicarium Glass**.
+
+## Advancements
+
+The mod has its own advancement tab. One path follows a colony from the first caught ant to a stage 4 colony, a hybrid
+and a Queen with a level 10 trait. A second path leads through the Nether and the End to the Wither Ant and the Dragon
+Ant.

@@ -1,55 +1,50 @@
 # Tools
 
-Single-file Java programs that generate the mod's resources. Run them from the project root with JDK 25; each one
-overwrites its output, so change the program rather than the files it writes.
+Single-file Java programs that generate the mod's resources. Run them from the project root with JDK 25. Each one
+overwrites its output, so change the program, not the files it writes.
 
 | Program | Writes | Run |
 |---|---|---|
-| `DataGen.java` | Every JSON file in `common/src/generated/resources`: species, evolutions, hybrids, mutations, lab costs, recipes, loot tables, tags, world generation, advancements, models, blockstates, sounds and `en_us.json` | `java tools/DataGen.java` |
-| `TexGen.java` | Every texture in `common/src/generated/resources`: blocks, items, the ant model's skins, worn armor, particles and GUI sprites | `java tools/TexGen.java` |
-| `BrandGen.java` | `common/src/main/resources/icon.png` and `logo.png` (the mod list), and `docs/images/icon.png`, `logo.png`, `banner.png` and `social-preview.png` | `java tools/BrandGen.java` |
+| `DataGen.java` | Every JSON file in `common/src/generated/resources`: species, evolutions, recipes, loot, tags, world generation, advancements, models and `en_us.json` | `java tools/DataGen.java` |
+| `TexGen.java` | Every texture in `common/src/generated/resources`: blocks, items, ant skins, armor, particles and GUI sprites | `java tools/TexGen.java` |
+| `BrandGen.java` | The mod icon and logo, and the banner and social preview in `docs/images` | `java tools/BrandGen.java` |
 
-All art is pixel art painted in code: shapes, palettes and shading are in the programs, so it can be changed, rescaled or
-recolored and regenerated at any time.
-
-## The nest behind the glass
-
-A colony built flat is glass cases; one built upward (more of its blocks stacked than flat, decided by its Formicarium
-and kept in the blocks' `upright` state) is an upright nest between two glasses. What is carved into an upright block is
-worked out in the game, by
-`client/src/main/java/com/antcolonies/client/nest/NestLayout.java`: each kind's chamber is drawn there by hand, as rows
-of text (`TEMPLATES`), and the tunnels are dug by rule. That class is plain Java on purpose: `TexGen.java` compiles it
-and asks it for a layout of each kind to paint the blocks' nest pictures (`block/<block>_front.png`, shown by upright
-blocks too far away for their renderer), so the pictures always match the game. After changing a template, run
-`TexGen.java` again. A new kind of colony block needs a row in `NestLayout.Kind` and `TEMPLATES`, the same row in
-TexGen's `NEST_BLOCKS`, its features drawn in `NestRenderer.drawFeatures`, and a `colonyPart` call in `DataGen.java`
-(which writes its upright model too), besides its glass-case model.
+All art is pixel art painted in code, so it can be changed, rescaled or recoloured and generated again at any time.
 
 ## Adding a fluid for Liquid Ants
 
-One row in each of three tables, with the same name:
+One row in each of three places, with the same name. Then run `DataGen` and `TexGen`.
 
-1. `tools/DataGen.java`, `LIQUIDS`: the ant's name, the mod and fluid id, the fluid's English name (the droplet is named
-   "<fluid> Droplet"), what it evolves from and is fed, its colours, its rate and its Centrifuge recipe. This writes the
-   species, the evolution, the feed tag, the recipe, the item model and the names.
-2. `tools/TexGen.java`, `LIQUIDS`: the droplet's colour (the fluid's own: its still texture times its tint) and finish (clear, glass, thick, oil, slime or molten). This paints
-   `item/<name>_droplet.png` from the shared droplet shape.
-3. A `LiquidKinds.offer(LiquidKind.of(name, modId, fluidId))` call in the mod: a class in
-   `compat/src/main/java/com/antcolonies/compat/liquid/` listed in `LiquidIntegrations` (or, from another mod, its own
-   constructor).
+| Where | What the row holds | What it writes |
+|---|---|---|
+| `DataGen.java`, `LIQUIDS` | The ant's name, the mod and fluid id, the fluid's English name, what it evolves from and is fed, its colours, rate and Centrifuge recipe | The species, evolution, feed tag, recipe, item model and names |
+| `TexGen.java`, `LIQUIDS` | The droplet's colour and finish (clear, glass, thick, oil, slime or molten) | `item/<name>_droplet.png` |
+| `compat/.../compat/liquid/`, listed in `LiquidIntegrations` | A `LiquidKinds.offer(LiquidKind.of(name, modId, fluidId))` call | Registers the droplet item |
 
-Then run both programs. The droplet item is registered, and the data files load, only when that mod is installed and the
-fluid is in the fluid registry.
+The droplet item is registered, and its data files load, only when that mod is installed and the fluid exists.
+Another mod can offer a fluid from its own constructor with the same call.
 
 ## Adding genetic research
 
-A species is made in the Genetic Laboratory, and no longer by feeding, when it has a research entry. In
-`tools/DataGen.java`:
+A species is made in the Genetic Laboratory, and not by feeding, when it has a research entry. In `DataGen.java`:
 
-1. `research()`: one row with the species, the material the laboratory's scanner reads, the tier, how many Evolution
-   Catalysts a mutation takes, the research it waits for (or `null`) and its hint. This writes the research file and the
-   hint's line in `en_us.json`.
+1. `research()`: a row with the species, the material the scanner reads, the tier, the Evolution Catalysts a mutation
+   takes, the research it waits for (or `null`) and its hint.
 2. `LAB_AMOUNTS`: a row for each evolution into that species, with how many of its material one mutation takes.
 
-A gene (a mutation the laboratory gives by a catalyst) gets its research from its row in `mutations()` and its tier and
-hint from `GENE_RESEARCH`; DataGen stops if a catalyst mutation has no row there. Then run `java tools/DataGen.java`.
+A gene gets its research from its row in `mutations()`, and its tier and hint from `GENE_RESEARCH`. DataGen stops when
+a catalyst mutation has no row there.
+
+## The nest behind the glass
+
+What is carved into a block of an upright colony is worked out in the game by
+`client/src/main/java/com/antcolonies/client/nest/NestLayout.java`. Each chamber is drawn there by hand as rows of
+text (`TEMPLATES`), and the tunnels are dug by rule. `TexGen` compiles that class to paint the blocks' nest pictures
+(`block/<block>_front.png`), so the pictures always match the game. Run `TexGen` again after changing a template.
+
+A new kind of colony block needs:
+
+1. a row in `NestLayout.Kind` and in `TEMPLATES`;
+2. the same row in TexGen's `NEST_BLOCKS`;
+3. its features drawn in `NestRenderer.drawFeatures`;
+4. a `colonyPart` call in `DataGen.java`, which writes its upright model.

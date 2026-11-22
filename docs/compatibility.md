@@ -1,195 +1,158 @@
 # Compatibility
 
-Ant Colonies needs nothing but NeoForge. Everything below is optional.
+Ant Colonies needs nothing but NeoForge. Everything on this page is optional, and nothing is missing without it.
 
-## Recipe viewers and look-at tooltips
+## Contents
 
-- **JEI** (31.17+): fifteen categories, from species and evolutions to production rates, expeditions and lab costs.
-- **EMI**: the same fifteen categories, with the same layout and workstations. EMI itself has no official 26.3 build; the
-  plugin was made against **PF-EMI** 1.1 ("EMI - Port Forward", an unofficial port on Modrinth). Tested in game with it
-  (and with JEI installed alongside: EMI takes over and nothing shows twice).
-- **Jade** (26.3.5+): look at a Formicarium for its species, stage, adults, food and problems; at a job site for its ants,
-  output per minute and status (and a Foraging Site's mode, whether an expedition site's portal is active); at a Colony Connector
-  for its channel, settings and what it moved; at a Generator or the Genetic Laboratory for what it is doing (Jade draws the FE bar).
-  Each part can be turned off in Jade's plugin settings. **WTHIT** has no NeoForge build for 26.x, so there is no WTHIT
-  plugin.
+- [Recipe viewers and Jade](#recipe-viewers-and-jade)
+- [Pipes, cables and tanks](#pipes-cables-and-tanks)
+- [FTB Teams](#ftb-teams)
+- [Ants for other mods' materials](#ants-for-other-mods-materials)
+- [Liquid Ants](#liquid-ants)
+- [What was tested](#what-was-tested)
 
-## Other mods
+## Recipe viewers and Jade
 
-Nothing here needs another mod. Only MachinaOpus (below) was tested with Ant Colonies: none of the other mods had a
-build for Minecraft 26.3 when this was written (AE2, Refined Storage 3 and Ender IO had 26.1.2 builds; Create and
-Mekanism only unofficial ports). Everything goes through NeoForge's shared systems, which those mods use:
+| Mod | What you get |
+|---|---|
+| **JEI** (31.17+) | A category for every part of the mod: species, evolutions, species mutations, hybrids, production, expeditions, lab costs and upgrades |
+| **EMI** | The same categories. EMI has no official 26.3 build; the plugin is made for **PF-EMI** 1.1, an unofficial port on Modrinth. With JEI installed too, EMI takes over and nothing shows twice. |
+| **Jade** (26.3.5+) | Look at a Formicarium for its species, stage, adults, food and problems; at a job site for its ants, output and status; at a Colony Connector for its channel and settings; at a Generator or the Genetic Laboratory for what it is doing. Each part can be turned off in Jade's settings. |
 
-- **Items** (Create funnels, chutes and arms; Mekanism transporters; Ender IO conduits; AE2 and Refined Storage
-  import, export and storage buses; hoppers): Storage chambers can be emptied, Queen Chamber Queens taken out, and the
-  Formicarium, Storage, Queen Chamber, Genetic Laboratory and Generator filled, from any side.
-- **Energy** (Mekanism cables, Ender IO conduits, any FE network): the Genetic Laboratory takes FE from any side; the
-  Generator gives FE out.
-- **Fluids** (any tank or fluid pipe): the Droplet Centrifuge's tank is an ordinary fluid handler on every side. Fluid
-  can be taken from it, never put in, and it hands its fluid to whatever next to it accepts fluid.
-- **Tags**: Diamond and Emerald Fragments are in `c:nuggets/diamond` and `c:nuggets/emerald`; every droplet is in
-  `antcolonies:droplets`.
-- **Species for other mods' materials**, which only load when a mod that adds the material is installed, and find it
-  through the common `c:` tags (whichever mod provides it):
+WTHIT has no NeoForge build for 26.x, so there is no WTHIT plugin.
 
-| Species | Comes from | Loads with |
+## Pipes, cables and tanks
+
+The mod's blocks use NeoForge's shared item, energy and fluid systems, so any mod's pipes, cables and tanks work with
+them, from any side.
+
+| | What works |
+|---|---|
+| **Items** | Hoppers and item pipes empty Storages and take Queens out of Queen Chambers. They fill the Formicarium, Storage, Queen Chamber, Genetic Laboratory, Generator and Droplet Centrifuge. |
+| **Energy** | The Genetic Laboratory and the Droplet Centrifuge take FE. The Generator gives FE out. |
+| **Fluids** | The Droplet Centrifuge's tank can be emptied by any tank or fluid pipe, never filled. It also pushes its fluid into whatever next to it takes fluid. |
+
+## FTB Teams
+
+With FTB Teams installed, the players of a **party** share their
+[genetic research](species-and-genetics.md#genetic-research):
+
+- A discovery made while in a party belongs to the party. Every member can use it at once, and a player who joins
+  later gets all of it.
+- What a player discovered alone stays their own. Leaving a party takes the party's research away again and leaves the
+  personal part.
+- A player in no party researches for themselves, exactly as without the mod.
+
+The mod also gives FTB Library an ant head as the face icon of Wild Ants and Guard Ants.
+
+## Ants for other mods' materials
+
+These species load only when a mod that adds their material is installed. They are researched and made in the Genetic
+Laboratory like the built-in mineral ants: scan the ingot, gem or dust once, then mutate a Queen with it. Their finds
+go through the common `c:` tags, so they work with whichever mod provides the material.
+
+| Species | Made from | Loads with |
 |---|---|---|
-| Osmium Ant | Stone (osmium ingot) | Mekanism, All The Ores |
-| Tin Ant | Copper (tin ingot) | Mekanism, Thermal, MachinaOpus, All The Ores |
-| Zinc Ant | Copper (zinc ingot) | Create, All The Ores |
-| Lead Ant | Iron (lead ingot) | Mekanism, Thermal, Immersive Engineering, MachinaOpus, All The Ores |
-| Nickel Ant | Iron (nickel ingot) | Thermal, Immersive Engineering, All The Ores |
-| Aluminum Ant | Iron (aluminum ingot) | Immersive Engineering, All The Ores |
-| Silver Ant | Lead (silver ingot) | Thermal, Immersive Engineering, MachinaOpus, All The Ores |
-| Uranium Ant | Lead (raw uranium) | Mekanism, Immersive Engineering, MachinaOpus, All The Ores |
-| Fluorite Ant | Amethyst (fluorite) | Mekanism, MachinaOpus, All The Ores |
-| Certus Ant | Amethyst (certus quartz) | Applied Energistics 2 |
-| Molybdenum Ant | Iron (molybdenum ingot) | MachinaOpus |
-| Sulfur Ant | Fire (sulfur) | MachinaOpus |
-| Rubber Ant | Wood (rubber sheet) | MachinaOpus |
-| Platinum Ant | Gold (platinum ingot) | All The Ores |
-| Iridium Ant | Platinum (iridium ingot) | All The Ores |
-| Ruby Ant | Amethyst (ruby) | All The Ores |
-| Sapphire Ant | Lapis (sapphire) | All The Ores |
-| Peridot Ant | Amethyst (peridot) | All The Ores |
-| Cinnabar Ant | Redstone (cinnabar) | All The Ores |
-| Salt Ant | Desert (salt) | All The Ores |
-| Allthemodium Ant | Netherite (allthemodium ingot) | Allthemodium |
-| Vibranium Ant | Allthemodium (vibranium ingot) | Allthemodium |
-| Unobtainium Ant | Vibranium (unobtainium ingot) | Allthemodium |
+| Osmium | Stone, osmium ingots | Mekanism, All The Ores |
+| Tin | Copper, tin ingots | Mekanism, Thermal, MachinaOpus, All The Ores |
+| Zinc | Copper, zinc ingots | Create, All The Ores |
+| Lead | Iron, lead ingots | Mekanism, Thermal, Immersive Engineering, MachinaOpus, All The Ores |
+| Nickel | Iron, nickel ingots | Thermal, Immersive Engineering, All The Ores |
+| Aluminum | Iron, aluminum ingots | Immersive Engineering, All The Ores |
+| Silver | Lead, silver ingots | Thermal, Immersive Engineering, MachinaOpus, All The Ores |
+| Uranium | Lead, raw uranium | Mekanism, Immersive Engineering, MachinaOpus, All The Ores |
+| Fluorite | Amethyst, fluorite | Mekanism, MachinaOpus, All The Ores |
+| Certus | Amethyst, certus quartz | Applied Energistics 2 |
+| Molybdenum | Iron, molybdenum ingots | MachinaOpus |
+| Sulfur | Fire, sulfur | MachinaOpus |
+| Rubber | Wood, rubber sheets | MachinaOpus |
+| Platinum | Gold, platinum ingots | All The Ores |
+| Iridium | Platinum, iridium ingots | All The Ores |
+| Ruby | Amethyst, rubies | All The Ores |
+| Sapphire | Lapis, sapphires | All The Ores |
+| Peridot | Amethyst, peridots | All The Ores |
+| Cinnabar | Redstone, cinnabar | All The Ores |
+| Salt | Desert, salt | All The Ores |
+| Allthemodium | Netherite, allthemodium ingots | Allthemodium |
+| Vibranium | Allthemodium, vibranium ingots | Allthemodium |
+| Unobtainium | Vibranium, unobtainium ingots | Allthemodium |
 
-  The Mechanical Miner Ant also turns up raw tin, osmium, zinc, lead and molybdenum at stage 3 when a mod adds them.
-  Ender IO and Refined Storage add no ores of their own; the vanilla materials they use (quartz, redstone, gold, ender
-  pearls) come from Fire, Redstone, Gold and Ender Ants.
+The Mechanical Miner Ant also turns up raw tin, osmium, zinc, lead and molybdenum at stage 3 when a mod adds them.
 
-### FTB Teams
+### All The Ores
 
-Optional. With FTB Teams installed, the players of a **party** share their genetic research (see
-[Genetic research](gameplay.md#genetic-research)):
+Ants bring every ore the mod adds. Platinum and Iridium Ants are slow, like Uranium Ants: they find nuggets and raw ore
+from the start, and ingots as rare finds at stage 3. Ruby, Sapphire and Peridot Ants find the gem and its dust.
+Cinnabar and Salt Ants want a hot climate.
 
-- A discovery made while in a party is the party's: every member can use it at once, it is saved under the party's id
-  and survives restarts, and a player who joins later gets all of it.
-- What a player discovered on their own stays their own. Leaving a party takes the party's research away again and
-  leaves the personal part; joining another party adds that party's research to it. Nothing of a party's ever becomes
-  personal by itself.
-- A player in no party (FTB Teams gives everyone a personal team) researches for themselves, exactly as without the mod.
-- Without FTB Teams nothing changes and nothing is missing: research is each player's own.
+### Allthemodium
 
-The bridge is one small class (`compat/ftbteams/FtbTeamsResearch`), loaded only when the mod `ftbteams` is present, and
-written against the API of FTB Teams 26.1.2.5: `FTBTeamsAPI.api().getManager().getTeamForPlayerID(uuid)`, the team's
-`isPartyTeam()` and `getId()`, and the `FTBTeamsEvent.PlayerChangedTeam` event. Besides that event, every online
-player's party is looked at again every two seconds, so a change is never missed.
+Three species follow the Netherite Ant, each made from the one before. They are the very end of the game.
 
-**Not run in this version.** FTB Teams has no release for Minecraft 26.3 (its newest, 26.1.2.5, is for 26.1 to
-26.1.2), so the bridge here is compiled against the real API but has never been run with the mod on 26.3. The same bridge is
-tested with the real FTB Teams 26.1.2.5 in the Minecraft 26.1.2 version of Ant Colonies, and the sharing rules
-themselves are tested here with a stand-in for the team mod. The mod also gives FTB Library a face icon for its two
-mobs (`assets/ftblibrary/textures/faces/antcolonies/`): the ant head, shown where FTB mods draw a mob's face. What is left for a 26.3 build of FTB Teams: install it, check
-that its `api` package still has the three calls above, and play through joining and leaving a party.
+| Ant | Climate | Finds its metal |
+|---|---|---|
+| Allthemodium | Underground | At ordinary Foraging Sites: nuggets from stage 3, raw ore at stage 4 |
+| Vibranium | Nether | Only on Nether expeditions, from stage 3 |
+| Unobtainium | End | Only on End expeditions, from stage 3 |
 
-### Liquid Ants for other mods' fluids
-
-Ant Colonies alone has two Liquid Ants, Water and Lava. Each row below adds one more, and only when **both** hold: the
-mod is installed, and that fluid is in the game's fluid registry. Then its droplet item is registered and its species,
-its evolution and its Centrifuge recipe load. Otherwise none of it exists: no item, no species in the book, the creative
-tab, JEI or EMI, and no error. A mod that is installed but has no such fluid in its version gives nothing.
-
-| Ant | Fluid | Mod (id) | Comes from, fed | Droplet gives |
-|---|---|---|---|---|
-| Oil Ant | `machinaopus:crude_oil` | MachinaOpus (`machinaopus`) | Water Ant, Crude Oil Bucket | 50 mB, 2,400 FE |
-| Blaze Ant | `machinaopus:liquid_blaze` | MachinaOpus | Lava Ant, Liquid Blaze Bucket | 25 mB, 4,000 FE |
-| Brine Ant | `mekanism:brine` | Mekanism (`mekanism`) | Water Ant, Brine Bucket | 50 mB, 800 FE |
-| Heavy Water Ant | `mekanism:heavy_water` | Mekanism | Water Ant, Heavy Water Bucket | 25 mB, 3,200 FE |
-| Honey Ant | `create:honey` | Create (`create`) | Honeypot Ant, Honey Bucket | 50 mB, 800 FE |
-| Chocolate Ant | `create:chocolate` | Create | Water Ant, Chocolate Bucket | 50 mB, 800 FE |
-| Tea Ant | `create:tea` | Create | Water Ant, Builder's Tea | 50 mB, 800 FE |
-| Pink Slime Ant | `industrialforegoing:pink_slime` | Industrial Foregoing (`industrialforegoing`) | Water Ant, Pink Slime Bucket | 25 mB, 2,400 FE |
-| Latex Ant | `industrialforegoing:latex` | Industrial Foregoing | Water Ant, Latex Bucket | 50 mB, 1,200 FE |
-| Nutrient Ant | `enderio:fluid_nutrient_distillation_still` | Ender IO (`enderio`) | Water Ant, Nutrient Distillation Bucket | 50 mB, 1,600 FE |
-| Hootch Ant | `enderio:fluid_hootch_still` | Ender IO | Water Ant, Hootch Bucket | 50 mB, 2,000 FE |
-| Resin Ant | `thermal:resin` | Thermal Series (`thermal`) | Water Ant, Resin Bucket | 50 mB, 1,200 FE |
-| Sap Ant | `thermal:sap` | Thermal Series | Water Ant, Sap Bucket | 50 mB, 800 FE |
-| Creosote Ant | `immersiveengineering:creosote` | Immersive Engineering (`immersiveengineering`) | Lava Ant, Creosote Bucket | 50 mB, 1,200 FE |
-| Plant Oil Ant | `immersiveengineering:plantoil` | Immersive Engineering | Water Ant, Plant Oil Bucket | 50 mB, 1,200 FE |
-
-What is and isn't checked:
-
-- **MachinaOpus** was run with Ant Colonies in the game: with it, Oil and Blaze Ants exist and their droplets spin into
-  its fluids, and a Centrifuge fills a MachinaOpus Fluid Tank next to it and one behind two fluid pipes; without it,
-  only Water and Lava Ants exist. Both cases are tested.
-- **The other mods were not run**: none had a NeoForge build for Minecraft 26.3 to try. Their mod ids and fluid ids were
-  read from their source (Mekanism and Ender IO from their 26.3 branches, Create, Industrial Foregoing and Immersive
-  Engineering from 1.21.1, Thermal from 1.20.x, its newest). If an id differs in a later version, that ant simply does
-  not appear. The item each Queen is fed is the fluid's bucket by the mods' naming (for Tea, which has no bucket,
-  Create's Builder's Tea item, an id that was not confirmed): if a mod names it differently, add the right item to the
-  tag `antcolonies:liquid_feed/<kind>`.
-- **Mekanism's gases and other chemicals** live in Mekanism's own chemical registry, not the fluid registry, and get no
-  ants. Brine and heavy water are ordinary fluids.
-- **Applied Energistics 2** stores and moves fluids but registers none of its own, so it has no Liquid Ant.
-- Thermal's crude oil and latex are left out: MachinaOpus and Industrial Foregoing already give ants of those names.
-- Removing a mod from a world keeps colonies of its Liquid Ants as they were: the Formicarium says *These ants need*
-  and the mod's name, and they work again when it is back.
-
-### All The Ores and Allthemodium
-
-Neither mod has a build for Minecraft 26.3 yet. The same species were tested on the 26.1.2 version of Ant Colonies, with
-All The Ores 4.0.4 and Allthemodium 4.3.0; here they load when the mods do.
-
-With **All The Ores** (`alltheores`), ants bring every ore it adds:
-
-- **Tin, Lead, Silver, Nickel, Aluminum, Zinc, Osmium, Uranium and Fluorite Ants**, the same ants other mods' metals
-  already had, now also load with All The Ores alone.
-- **Platinum Ant** (Gold Ants fed a platinum ingot) and **Iridium Ant** (Platinum Ants fed an iridium ingot): slow, like
-  Uranium Ants. Nuggets and raw ore from the start, ingots as rare finds at stage 3.
-- **Ruby, Sapphire and Peridot Ants** (Amethyst, Lapis and Amethyst Ants fed the gem): the gem and its dust.
-- **Cinnabar Ant** (Redstone Ants fed cinnabar; hot climate): cinnabar, its dust, redstone, and All The Ores' sulfur dust.
-- **Salt Ant** (Desert Ants fed salt; hot climate): salt, with sand and gravel.
-
-With **Allthemodium** (`allthemodium`), three more species follow the Netherite Ant, each from the one before:
-
-| Ant | Made from | Climate block | Finds its metal |
-|---|---|---|---|
-| Allthemodium Ant | Netherite Queen and allthemodium ingots | underground: stone, deepslate | at ordinary Foraging Sites |
-| Vibranium Ant | Allthemodium Queen and vibranium ingots | nether: netherrack and the other Nether blocks | on Nether expeditions |
-| Unobtainium Ant | Vibranium Queen and unobtainium ingots | end: end stone, end stone bricks | on End expeditions |
-
-- **Made anywhere.** They are the very end of the game, so unlike the Netherite, Ender and Dragon Ants the Genetic
-  Laboratory makes them in any dimension.
-- **Climate.** Each wants a block of the dimension its ore is in under the Formicarium (or to stand in that dimension).
-  The end climate is new with this: end stone under a Formicarium, and the nest is drawn in end stone.
-- **Slow and long-lived.** Their Queens lay half as many eggs as a Netherite Queen and the brood grows more slowly, but an
-  adult lives three times as long (twelve hours on average, not four).
-- **Allthemodium Ants** work at the Netherite Ant's pace and mostly bring rock. The metal is a rare find: nuggets from
-  stage 3 and raw ore at stage 4, about 18 nuggets and 3 raw ore in every 1,000 finds (netherite scrap is 24).
-- **Vibranium and Unobtainium Ants** bring only rock at an ordinary Foraging Site. Their metal comes from the **Nether
-  Foraging Site** and the **End Foraging Site**: they go on those expeditions like the Nether's and the End's own ants,
-  and from stage 3 about 2 in every 1,000 finds there are vibranium nuggets, and about 1 in 1,000 unobtainium nuggets.
-  A colony of 6,000 with three sites brought 9 or 10 vibranium nuggets an hour in the test.
-
-All of these are made in the Genetic Laboratory like the built-in mineral ants: scan the ingot, gem or dust once, then
-mutate a Queen with it (8 of the material, 4 for Allthemodium's three). Their finds go through the common `c:` tags, so
-another mod that fills the same tag works too. Left out: Allthemodium's alloys and molten metals (no Liquid Ants for
-them), and Piglich Hearts.
+- **Made anywhere.** Unlike the Netherite, Ender and Dragon Ants, the laboratory makes them in any dimension.
+- **Slow and long-lived.** Their Queens lay half as many eggs as a Netherite Queen, and an adult lives three times as
+  long.
+- **The metal is rare.** About 18 allthemodium nuggets and 3 raw ore in every 1,000 finds, about 2 vibranium nuggets in
+  1,000 and 1 unobtainium nugget in 1,000. A colony of 6,000 with three sites brought 9 or 10 vibranium nuggets an
+  hour.
+- Left out: Allthemodium's alloys, molten metals and Piglich Hearts.
 
 ### MachinaOpus
 
-Tested together (MachinaOpus 0.0.6). With MachinaOpus installed, eight species bring its materials:
+- **Tin, Lead and Silver Ants** find its nuggets from the start, raw ore from stage 2 and ingots at stage 3.
+- **Uranium Ants** find its raw uranium. **Fluorite Ants** find fluorite.
+- **Molybdenum Ants** find molybdenum nuggets, raw molybdenum from stage 2 and ingots at stage 3.
+- **Sulfur Ants** (hot climate) find sulfur without an Oil Refinery, with netherrack, magma, basalt, gunpowder from
+  stage 2 and the odd petroleum coke at stage 3.
+- **Rubber Ants** are farmers. They forage rubber logs, leaves and saplings, and tap rubber sheets at a Harvesting
+  Site.
 
-- **Tin, Lead and Silver Ants**: its nuggets from the start, raw ore from stage 2, ingots as rare finds at stage 3.
-- **Uranium Ant**: MachinaOpus's raw uranium from the start (it has no uranium nuggets or ingots). Lead Ants evolve into
-  it when fed raw uranium.
-- **Fluorite Ant**: fluorite, for hydrofluoric acid and uranium enrichment.
-- **Molybdenum Ant** (Iron Ants fed a molybdenum ingot): molybdenum nuggets (a Processing upgrade turns them into
-  ingots), raw molybdenum from stage 2, ingots at stage 3.
-- **Sulfur Ant** (Fire Ants fed sulfur; hot climate): sulfur without an Oil Refinery, plus netherrack, magma, basalt,
-  gunpowder from stage 2 and the odd petroleum coke at stage 3.
-- **Rubber Ant** (Wood Ants fed a rubber sheet; a farmer): forages rubber logs, leaves and saplings, and at a Harvesting
-  Site taps rubber sheets (and slime balls from stage 2).
+Its pipes and cables work with the mod's blocks: an item pipe set to pull empties a Storage or feeds a Formicarium, and
+an energy cable carries a Generator's FE into a Genetic Laboratory.
 
-Molybdenum, Sulfur and Rubber Ants name MachinaOpus's items directly, so they have species upgrades made from a
-molybdenum ingot, sulfur and a rubber sheet.
+## Liquid Ants
 
-MachinaOpus's pipes and cables work with Ant Colonies' blocks (tested): an item pipe set to
-pull ("output" on the side touching it) empties a Storage; a pipe delivers Ant Food into a Formicarium, which feeds the
-colony; an energy cable carries a Generator's FE into a Genetic Laboratory (the Generator pushes it, so the cable needs
-no setting).
+Ant Colonies alone has Water and Lava Ants. Each row below adds one more, and only when the mod is installed **and**
+its fluid is in the game. Otherwise none of it exists: no item, no species, no error.
+
+| Ant | Fluid | Mod | Comes from, fed | One droplet gives |
+|---|---|---|---|---|
+| Oil | `machinaopus:crude_oil` | MachinaOpus | Water Ant, Crude Oil Bucket | 50 mB, 2,400 FE |
+| Blaze | `machinaopus:liquid_blaze` | MachinaOpus | Lava Ant, Liquid Blaze Bucket | 25 mB, 4,000 FE |
+| Brine | `mekanism:brine` | Mekanism | Water Ant, Brine Bucket | 50 mB, 800 FE |
+| Heavy Water | `mekanism:heavy_water` | Mekanism | Water Ant, Heavy Water Bucket | 25 mB, 3,200 FE |
+| Honey | `create:honey` | Create | Honeypot Ant, Honey Bucket | 50 mB, 800 FE |
+| Chocolate | `create:chocolate` | Create | Water Ant, Chocolate Bucket | 50 mB, 800 FE |
+| Tea | `create:tea` | Create | Water Ant, Builder's Tea | 50 mB, 800 FE |
+| Pink Slime | `industrialforegoing:pink_slime` | Industrial Foregoing | Water Ant, Pink Slime Bucket | 25 mB, 2,400 FE |
+| Latex | `industrialforegoing:latex` | Industrial Foregoing | Water Ant, Latex Bucket | 50 mB, 1,200 FE |
+| Nutrient | `enderio:fluid_nutrient_distillation_still` | Ender IO | Water Ant, Nutrient Distillation Bucket | 50 mB, 1,600 FE |
+| Hootch | `enderio:fluid_hootch_still` | Ender IO | Water Ant, Hootch Bucket | 50 mB, 2,000 FE |
+| Resin | `thermal:resin` | Thermal Series | Water Ant, Resin Bucket | 50 mB, 1,200 FE |
+| Sap | `thermal:sap` | Thermal Series | Water Ant, Sap Bucket | 50 mB, 800 FE |
+| Creosote | `immersiveengineering:creosote` | Immersive Engineering | Lava Ant, Creosote Bucket | 50 mB, 1,200 FE |
+| Plant Oil | `immersiveengineering:plantoil` | Immersive Engineering | Water Ant, Plant Oil Bucket | 50 mB, 1,200 FE |
+
+- **A different bucket.** If a mod names its bucket differently, add the right item to the item tag
+  `antcolonies:liquid_feed/<kind>`. Tea has no bucket, so Tea Ants are fed Create's Builder's Tea.
+- **Removing a mod** keeps the colonies of its Liquid Ants. The Formicarium says *These ants need* and the mod's name,
+  and they work again when it is back.
+- **No ants for:** Mekanism's gases and other chemicals (they are not fluids), Applied Energistics 2 (it adds no fluid
+  of its own), and Thermal's crude oil and latex (MachinaOpus and Industrial Foregoing already give ants of those
+  names).
+- A pack can add a Liquid Ant for any other fluid: see the [modpack guide](modpack-guide.md#liquid-ants).
+
+## What was tested
+
+| Mod | Status on Minecraft 26.3 |
+|---|---|
+| JEI, PF-EMI, Jade | Tested in game |
+| MachinaOpus 0.0.6 | Tested in game: its ants, Oil and Blaze Ants, pipes, cables and fluid tanks |
+| FTB Teams, All The Ores, Allthemodium | No 26.3 build yet. Tested on the 26.1.2 version of Ant Colonies (FTB Teams 26.1.2.5, All The Ores 4.0.4, Allthemodium 4.3.0). |
+| Mekanism, Create, Thermal, Immersive Engineering, Industrial Foregoing, Ender IO, Applied Energistics 2 | Not run: none had a 26.3 build to try. Their mod and fluid ids were read from their source. If an id differs in a later version, that ant simply does not appear. |

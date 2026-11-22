@@ -9,7 +9,7 @@ body:
     id: version
     attributes:
       label: Ant Colonies version
-      description: The jar's name, for example `antcolonies-26.3.0.1.0.jar`.
+      description: The jar's name, for example `antcolonies-26.3.0.6.0.jar`.
     validations:
       required: true
   - type: input
@@ -31,7 +31,7 @@ body:
     attributes:
       label: Steps to reproduce
       placeholder: |
-        1. Place a Terrarium
+        1. Place a Formicarium
         2. ...
   - type: textarea
     id: logs
