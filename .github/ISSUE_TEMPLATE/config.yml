@@ -2,7 +2,7 @@ blank_issues_enabled: true
 contact_links:
   - name: Gameplay guide
     url: https://github.com/Kamikadzegga/AntColonies/blob/main/docs/gameplay.md
-    about: How colonies, structures, species and genetics work.
-  - name: Modpack and KubeJS guide
+    about: How colonies work. It links to the pages on species, genetics, anthills and gear.
+  - name: Modpack guide
     url: https://github.com/Kamikadzegga/AntColonies/blob/main/docs/modpack-guide.md
     about: Changing species, recipes, food, spawns and the config for a modpack.

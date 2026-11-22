@@ -22,27 +22,20 @@ that mine, farm, hunt and evolve.
 
 ## Features
 
-- **Living colonies.** A Formicarium holds a Queen, her brood and thousands of workers you can watch digging behind the
-  glass. Chambers placed against it join the colony, and a colony built upward becomes one tall nest.
-- **48 species.** Catch 16 wild ones, mutate them into iron, diamond, netherite and other mineral ants, breed hybrids,
-  and reach the endgame Wither and Dragon Ants.
-- **Genetic research.** Scan materials in the Genetic Laboratory. Discoveries are permanent, fill in the Ant
-  Identification Book and unlock species mutations.
-- **Genetics.** Every Queen has ten traits and can carry any of 31 mutations, and the game says what each one does. The
-  Genetic Laboratory has a page for every step: Research, Analysis, Mutation, Editing, Hybrids and Stability.
-- **Hybrids.** Copy a Queen's genes into a Genetic Sample and raise her daughters in another species' Queen Chamber.
-  Better Queens make a hybrid more likely, and the chamber shows the chance.
-- **Liquid Ants.** Ants that carry water, lava and other mods' fluids, and a Droplet Centrifuge that turns their
-  droplets into the real fluid.
-- **The Nether and the End.** Expeditions through little portals at home, Colony Connectors that share food and items,
-  and species that evolve only there.
-- **Giant anthills.** Structures in all three dimensions, shaped by their biome, with loot, soldiers and a great Queen.
-- **Chitin gear and Guard Ants.** Four tiers of armor and tools: in a full set, wild ants leave you alone. A Guard Ant
-  follows you and fights for you.
-- **Made for modpacks.** Species, evolutions, mutations, food and loot are data packs, a server config sets every
-  number, and items, fluids and FE move through any mod's pipes and cables. JEI, EMI and Jade are supported.
-
-The [gameplay guide](docs/gameplay.md) explains all of it.
+- **Living colonies.** A Formicarium holds a Queen, her brood and thousands of workers you can watch behind the glass.
+  Chambers placed against it join the colony.
+- **48 species.** Catch 16 wild ones, mutate them into iron, diamond and netherite ants, breed hybrids, and reach the
+  endgame Wither and Dragon Ants.
+- **Genetic research.** Scan materials in the Genetic Laboratory to discover species mutations and genes for good.
+- **Genetics.** Every Queen has ten traits and can carry any of 31 mutations. Edit, cross and stabilize her genes in
+  the laboratory.
+- **Liquid Ants.** Ants that carry water, lava and other mods' fluids, and a Droplet Centrifuge for their droplets.
+- **The Nether and the End.** Expeditions through little portals at home, and Colony Connectors that share food and
+  items.
+- **Giant anthills.** Structures in all three dimensions, with loot, soldiers and a great Queen to catch.
+- **Chitin gear and Guard Ants.** Four tiers of armor and tools, and an ant that follows you and fights for you.
+- **Made for modpacks.** Species, evolutions, mutations, food and loot are data packs, and a server config sets the
+  numbers. JEI, EMI and Jade are supported, and any mod's pipes and cables work.
 
 ## Screenshots
 
@@ -81,11 +74,15 @@ The [gameplay guide](docs/gameplay.md#getting-started) takes it from there.
 
 ## Documentation
 
-| Guide | For |
+| Page | What is in it |
 |---|---|
-| [Gameplay guide](docs/gameplay.md) | Players: colonies, structures, species, genetics, anthills, gear and settings |
-| [Modpack and KubeJS guide](docs/modpack-guide.md) | Pack makers: every data file and field, recipes, food, spawns, config, KubeJS and KubeGroovy scripts |
-| [Compatibility](docs/compatibility.md) | Recipe viewers, Jade, and other mods' pipes, cables and ores |
+| [Gameplay guide](docs/gameplay.md) | Starting a colony, food, chambers, upgrades, expeditions, Liquid Ants |
+| [Species and genetics](docs/species-and-genetics.md) | Every species, research, the Genetic Laboratory, hybrids, traits |
+| [World and gear](docs/world-and-gear.md) | Giant anthills, home nests, Chitin gear, Guard Ants, building blocks |
+| [Modpack guide](docs/modpack-guide.md) | Data packs: species, recipes, food, spawns, the server config |
+| [Scripting](docs/scripting.md) | KubeJS and KubeGroovy examples |
+| [Compatibility](docs/compatibility.md) | Recipe viewers, Jade, pipes and cables, ants for other mods' ores and fluids |
+| [Gallery](docs/gallery.md) | All the screenshots |
 | [Changelog](CHANGELOG.md) | What changed in each version |
 
 ## Building from source

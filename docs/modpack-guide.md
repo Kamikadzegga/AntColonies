@@ -1,55 +1,59 @@
-# Modpack and KubeJS guide
+# Modpack guide
 
-How to change Ant Colonies for a modpack: recipes, ant food, species, evolutions, hybrids, mutations, Genetic Laboratory
-costs, wild ant spawns and the server config. Everything here is plain JSON (a data pack) or a config file; KubeJS and
-KubeGroovy are optional.
-
-> **KubeJS status (November 2026):** every KubeJS example in this guide was tested in game with KubeJS 8.0.8 (Rhino
-> 2101.2.8) on Minecraft 26.1.2, on a dedicated server with a player, before and after `/reload`. One KubeJS limit to know:
-> scripts can **add** to biome tags but can't **remove** from them (see section 11). Everything done with plain JSON files
-> works with any data pack.
->
-> **KubeGroovy status (November 2026):** the same examples, written in Groovy, are in [section 18](#18-kubegroovy). They
-> were tested in game with KubeGroovy 1.0.3 on Minecraft 26.1.2, on a dedicated server with a player, before and after
-> `/reload`. It has the same limit on biome tags.
+How to change Ant Colonies for a modpack. Everything on this page is a plain JSON file in a data pack, or the config
+file. For KubeJS and KubeGroovy scripts see [Scripting](scripting.md).
 
 ## Contents
 
-1. [Where files go](#1-where-files-go)
-2. [What reloads and what needs a restart](#2-what-reloads-and-what-needs-a-restart)
-3. [Recipes](#3-recipes)
-4. [Ant food](#4-ant-food)
-5. [Species](#5-species)
-6. [Evolutions](#6-evolutions) and [genetic research](#genetic-research)
-7. [Hybrids](#7-hybrids)
-8. [Mutations](#8-mutations)
-9. [Genetic Laboratory costs](#9-genetic-laboratory-costs)
-10. [Powering the Genetic Laboratory (FE)](#10-powering-the-genetic-laboratory-fe)
-11. [Wild ants, nests and spawns](#11-wild-ants-nests-and-spawns)
-12. [Names (language files)](#12-names-language-files)
-13. [Server config](#13-server-config)
-14. [Worked example: a Copper Ant](#14-worked-example-a-copper-ant)
-15. [Advancements and the colony trigger](#15-advancements-and-the-colony-trigger)
-16. [What cannot be changed with data](#16-what-cannot-be-changed-with-data)
-17. [Checking your changes](#17-checking-your-changes)
-18. [KubeGroovy](#18-kubegroovy)
+- [Quick start: a Copper Ant](#quick-start-a-copper-ant)
+- [Where files go](#where-files-go)
+- [What reloads and what needs a restart](#what-reloads-and-what-needs-a-restart)
+- [Recipes](#recipes)
+- [Ant food](#ant-food)
+- [Species](#species)
+- [Evolutions](#evolutions)
+- [Genetic research](#genetic-research)
+- [Hybrids](#hybrids)
+- [Mutations](#mutations)
+- [Genetic Laboratory costs](#genetic-laboratory-costs)
+- [Wild ants and nests](#wild-ants-and-nests)
+- [Giant anthills](#giant-anthills)
+- [Expeditions](#expeditions)
+- [Tags](#tags)
+- [Names](#names)
+- [Server config](#server-config)
+- [Advancements and quests](#advancements-and-quests)
+- [What data can't change](#what-data-cant-change)
+- [Checking your changes](#checking-your-changes)
 
----
+## Quick start: a Copper Ant
 
-## 1. Where files go
+A new species that is made from Stone Ants with copper blocks and finds raw copper. The examples on this page build
+it step by step, in the namespace `mypack`:
 
-All paths below start with `data/`. Put that `data/` folder in one of these:
-
-| Method | Folder | Notes |
+| File | What it is | Section |
 |---|---|---|
-| World data pack | `<world>/datapacks/<your_pack>/data/...` | Needs a `pack.mcmeta` in `<your_pack>/`. |
-| Global data pack mod | e.g. a "global packs" mod's folder | Same layout, applies to every world. |
-| KubeJS | `kubejs/data/...` | KubeJS loads this folder as a data pack; no `pack.mcmeta` needed. |
-| Language files (names) | `assets/<namespace>/lang/en_us.json` | In a resource pack, or `kubejs/assets/...` with KubeJS. |
-| KubeJS startup scripts | `kubejs/startup_scripts/` | For new items and fluids (the Liquid Ant example in section 5). Read when the game starts: needs a restart, and the same script on the server and every client. |
-| KubeGroovy | `kubegroovy/data/...`, `kubegroovy/assets/...`, `kubegroovy/startup_scripts/` | The same three folders under `kubegroovy/`; its scripts are in section 18. |
+| `data/mypack/antcolonies/species/copper.json` | The species | [Species](#species) |
+| `data/mypack/antcolonies/evolution/stone_to_copper.json` | Stone Ants become Copper Ants | [Evolutions](#evolutions) |
+| `data/mypack/antcolonies/research/copper.json` | Optional: makes it a laboratory species | [Genetic research](#genetic-research) |
+| `assets/mypack/lang/en_us.json` | Its name | [Names](#names) |
+| Two biome tags | Optional: makes it wild | [Wild ants and nests](#wild-ants-and-nests) |
 
-A world data pack's `pack.mcmeta` for Minecraft 26.1.2 (data pack format 101):
+Restart the server or reopen the world, and the Copper Ant is in JEI, EMI and the Ant Identification Book. The mod has
+its own `antcolonies:copper`; yours lives next to it as `mypack:copper`.
+
+## Where files go
+
+All data paths start with `data/`. Put that folder in one of these:
+
+| Method | Folder |
+|---|---|
+| World data pack | `<world>/datapacks/<your_pack>/data/...`, with a `pack.mcmeta` in `<your_pack>/` |
+| A global data pack mod | The same layout, in that mod's folder |
+| KubeJS | `kubejs/data/...` and `kubejs/assets/...` (no `pack.mcmeta` needed) |
+| KubeGroovy | `kubegroovy/data/...` and `kubegroovy/assets/...` |
+
+A `pack.mcmeta` for Minecraft 26.1.2 (data pack format 101):
 
 ```json
 {
@@ -61,42 +65,38 @@ A world data pack's `pack.mcmeta` for Minecraft 26.1.2 (data pack format 101):
 }
 ```
 
-Use **your own namespace** (e.g. `mypack`) for new things, and the `antcolonies` namespace only when you replace a
-built-in file. A file with the same path as a built-in one replaces it; a new path adds something.
+- Use **your own namespace** (`mypack`) for new things. Use `antcolonies` only to replace a built-in file: a file with
+  the same path replaces it.
+- **The mod's own files are the best reference.** They are in the jar under `data/antcolonies/`, and in the source
+  under `common/src/generated/resources/data/antcolonies/`.
 
-The mod's own files are the best reference. They live in the mod jar under `data/antcolonies/` and in the source under
-`common/src/generated/resources/data/antcolonies/`.
+## What reloads and what needs a restart
 
-## 2. What reloads and what needs a restart
+| Content | Folder | `/reload` is enough |
+|---|---|---|
+| Recipes | `data/<ns>/recipe/` | Yes |
+| Item tags | `data/<ns>/tags/item/` | Yes |
+| Ant food | `data/antcolonies/data_maps/item/ant_food.json` | Yes |
+| Loot tables | `data/<ns>/loot_table/` | Yes |
+| Species, evolutions, research, hybrids, mutations, lab costs, expeditions | `data/<ns>/antcolonies/...` | **No, restart** |
+| Wild ant spawns and nests | Biome tags and `data/<ns>/neoforge/biome_modifier/` | No, restart (nests: new chunks only) |
+| Server config | `config/antcolonies/server.toml` | Restart to be safe |
 
-| Content | Folder | `/reload` | Restart needed |
-|---|---|---|---|
-| Recipes | `data/<ns>/recipe/` | yes | no |
-| Item and biome tags | `data/<ns>/tags/...` | yes (see the spawn note) | for spawn changes |
-| Ant food values | `data/antcolonies/data_maps/item/ant_food.json` | yes | no |
-| Block loot (what a broken block drops) | `data/<ns>/loot_table/blocks/` | yes | no |
-| Species, evolutions, hybrids, mutations, lab costs | `data/<ns>/antcolonies/...` | **no** | **yes** |
-| Wild ant spawns and nest generation | `data/<ns>/neoforge/biome_modifier/` | no | yes (nests: new chunks only) |
-| Server config | `config/antcolonies/server.toml` | — | restart to be safe |
+Species and the other files in `data/<ns>/antcolonies/` are synced registries. Minecraft reads them once, when the
+world loads, and sends them to every player who joins. `/reload` does not touch them.
 
-**Species, evolutions, hybrids, mutations and lab costs are synced registries.** Minecraft reads them once, when the
-world is loaded (singleplayer: when you open the world; server: at startup), and sends them to every player who joins.
-`/reload` does not touch them. This is a Minecraft rule for this kind of data, not something the mod or KubeJS controls.
+## Recipes
 
-## 3. Recipes
+Crafted items use ordinary vanilla recipe types, in `data/antcolonies/recipe/`. Change them like any vanilla recipe:
+replace the file of the same name. The recipe ids are the file names, such as `antcolonies:terrarium` (the Formicarium)
+or `antcolonies:speed_upgrade_2`.
 
-Every crafted item (Formicarium, chambers, upgrades, tools, foods, the lab) uses ordinary vanilla recipe types
-(`minecraft:crafting_shaped`, `crafting_shapeless`), 72 recipes in all, in `data/antcolonies/recipe/`. Change them like
-any vanilla recipe: replace the file with the same name, or remove and add recipes with KubeJS.
-
-The mod has **one recipe type of its own**, the Droplet Centrifuge's (below). The lab, Queen rearing, evolution and the
-Colony Upgrade Station read their costs from the files in sections 5 to 9, not from recipes. JEI shows those costs in
-its own categories.
+The laboratory, Queen rearing, evolution and the Colony Upgrade Station don't use recipes. Their costs come from the
+species, evolution, research and lab cost files below.
 
 ### Droplet Centrifuge recipes
 
-`antcolonies:centrifuging`: one item spun into a fluid for FE. Files go in `data/<ns>/recipe/` like any recipe, and
-`neoforge:conditions` work on them as on any other. A KubeJS script adds, removes and replaces them (example below).
+The mod's one recipe type of its own, `antcolonies:centrifuging`, spins one item into a fluid for FE:
 
 ```json
 {
@@ -110,104 +110,18 @@ its own categories.
 
 | Field | Default | Meaning |
 |---|---|---|
-| `ingredient` | required | The item (or `#tag`) that goes in, one per run. Any item works, not only droplets. |
-| `result` | required | The fluid's id and how many millibuckets one item gives. |
-| `energy` | `400` | FE one run takes in all, spread over its time. |
-| `time` | `40` | Ticks one run takes. |
+| `ingredient` | required | The item or `#tag` that goes in, one per run. Any item works, not only droplets. |
+| `result` | required | The fluid's id, and how many millibuckets one item gives |
+| `energy` | `400` | FE one run takes |
+| `time` | `40` | Ticks one run takes |
 
-The built-in ones are in `data/antcolonies/recipe/centrifuging/`. The server config's `centrifugeEnergyMultiplier` and
-`centrifugeTimeMultiplier` scale them all at once. Also there: `centrifugeEnergy` (FE it stores, 50,000),
-`centrifugeTank` (mB its tank holds, 8,000) and `centrifugePushRate` (the most mB a tick it hands to the tanks and pipes
-next to it, 1,000; what a pipe takes out by itself has no limit).
+The built-in ones are in `data/antcolonies/recipe/centrifuging/`. `neoforge:conditions` work on them as on any recipe.
 
-With KubeJS (tested, see the note at the top): the type has no shortcut of its own in KubeJS, so a recipe is written out whole with
-`event.custom`; `.id(...)` names it, and `event.remove({ id: ... })` takes a built-in one out.
+## Ant food
 
-```js
-// kubejs/server_scripts/antcolonies_centrifuge.js
-ServerEvents.recipes(event => {
-  // Lava Droplets give half as much for twice the power: replace the built-in recipe.
-  event.remove({ id: 'antcolonies:centrifuging/lava' })
-  event.custom({
-    type: 'antcolonies:centrifuging',
-    ingredient: 'antcolonies:lava_droplet',
-    result: { id: 'minecraft:lava', amount: 25 },
-    energy: 4000,
-    time: 200
-  }).id('mypack:centrifuging/lava')
+What colonies can eat is the data map `antcolonies:ant_food`. Items that are not in it can't be fed to a Formicarium.
 
-  // Any item can be spun: snowballs melt into water.
-  event.custom({
-    type: 'antcolonies:centrifuging',
-    ingredient: 'minecraft:snowball',
-    result: { id: 'minecraft:water', amount: 250 },
-    energy: 200
-  }).id('mypack:centrifuging/snowball')
-
-  // The Syrup Droplets of the pack's own Liquid Ant (section 5).
-  event.custom({
-    type: 'antcolonies:centrifuging',
-    ingredient: 'mypack:syrup_droplet',
-    result: { id: 'mypack:syrup', amount: 50 },
-    energy: 1200,
-    time: 60
-  }).id('mypack:centrifuging/syrup')
-})
-```
-
-Script recipes are sent to the players like the built-in ones: JEI's Droplet Centrifuge category lists them, and they
-are read again on `/reload`.
-
-KubeJS (tested, see the note at the top):
-
-```js
-// kubejs/server_scripts/antcolonies_recipes.js
-ServerEvents.recipes(event => {
-  // A harder Formicarium: replace the built-in recipe.
-  event.remove({ output: 'antcolonies:terrarium' })
-  event.shaped('antcolonies:terrarium', [
-    'GGG',
-    'G G',
-    'III'
-  ], {
-    G: 'minecraft:glass',
-    I: 'minecraft:iron_ingot'
-  })
-
-  // No Royal Jelly crafting: it must come from the colony instead.
-  event.remove({ output: 'antcolonies:royal_jelly' })
-})
-```
-
-The recipe ids are the file names, e.g. `antcolonies:terrarium`, `antcolonies:speed_upgrade_2`. To remove by id use
-`event.remove({ id: 'antcolonies:speed_upgrade_2' })`. Other changes that work the same way (also tested):
-
-```js
-ServerEvents.recipes(event => {
-  // A new recipe that makes a mod item.
-  event.shapeless(Item.of('antcolonies:ant_food', 2), ['minecraft:sugar', 'minecraft:wheat_seeds', 'minecraft:bone_meal'])
-    .id('mypack:cheap_ant_food')
-  // Change an ingredient inside one of the mod's recipes.
-  event.replaceInput({ id: 'antcolonies:tweezers' }, 'minecraft:iron_ingot', 'minecraft:copper_ingot')
-})
-
-ServerEvents.tags('item', event => {
-  // Mineral Gathering also favours amethyst shards (section 11).
-  event.add('antcolonies:foraging/mineral', 'minecraft:amethyst_shard')
-})
-```
-
-**JEI on a server:** since Minecraft 26.1 the server no longer sends recipes to players, so JEI on a player's game shows
-the *default* recipes (with a red notice) unless JEI is installed **on the server too**. With JEI on both sides it shows
-the recipes as KubeJS changed them.
-
-## 4. Ant food
-
-What colonies can eat, and how much food each item is worth, is the data map `antcolonies:ant_food`. Items that are not
-in it can't be fed to a Formicarium.
-
-File: `data/antcolonies/data_maps/item/ant_food.json`. Data maps from several packs **merge**, so your file adds to and
-overrides single entries of the built-in one; it doesn't have to repeat them.
+`data/antcolonies/data_maps/item/ant_food.json`:
 
 ```json
 {
@@ -222,110 +136,138 @@ overrides single entries of the built-in one; it doesn't have to repeat them.
 
 | Field | Meaning |
 |---|---|
-| `food` | Food points the colony gets per item. For scale: Ant Food 200, Royal Jelly 400, sugar 20, bread 80. |
-| `special_kind` | Optional. A special food kind it also gives: the built-in kinds are `mineral`, `crystal` and `nether`. Any word works, as long as a species' `diet.special_food` uses the same word. |
-| `special` | Special food points per item. |
+| `food` | Food points per item. For scale: Ant Food 200, Royal Jelly 400, sugar 20, bread 80. |
+| `special_kind` | Optional. A special food it also gives. The built-in kinds are `mineral`, `crystal` and `nether`; any word works when a species' `diet.special_food` uses the same word. |
+| `special` | Special food points per item |
 
-A species with `"diet": {"special_food": "crystal", "special_per_egg": 1.0}` needs 1 point of crystal food for every
-egg, on top of normal food. Keys can be item ids or `#tags`. `"replace": true` at the top of the file throws away the
-built-in values first.
+Data maps **merge**: your file adds to the built-in one and overrides single entries. `"replace": true` at the top
+throws the built-in values away first.
 
-## 5. Species
+## Species
 
-File: `data/<ns>/antcolonies/species/<id>.json`. The species id is `<ns>:<id>`. Only `look` (with `body` and `gaster`) is
-required; every other field has a default.
+`data/<ns>/antcolonies/species/<id>.json`. The species id is `<ns>:<id>`. Only `look` with `body` and `gaster` is
+required.
 
 ```json
 {
-  "tier": 2,
+  "tier": 1,
   "category": "mineral",
-  "look": { "body": "#5A3A2A", "gaster": "#C8743A", "accent": "#F0A060", "pattern": "metallic", "size": 1.0 },
+  "look": { "body": "#4A2E22", "gaster": "#C8743A", "accent": "#F0A060", "pattern": "metallic" },
   "climate": "underground",
-  "spawn_biomes": "mypack:spawns/copper",
-  "diet": { "consumption": 1.2, "special_food": "mineral", "special_per_egg": 0.5 },
+  "diet": { "consumption": 1.2 },
   "production": {
-    "rate": 0.4,
+    "rate": 0.5,
     "outputs": [
-      { "item": "minecraft:raw_copper", "weight": 60, "processed": "minecraft:copper_ingot", "ratio": 1 },
+      { "item": "minecraft:raw_copper", "weight": 70, "processed": "minecraft:copper_ingot", "ratio": 1 },
       { "tag": "c:raw_materials/tin", "weight": 15 },
-      { "item": "minecraft:copper_block", "weight": 2, "min_stage": 3, "special": true }
+      { "item": "minecraft:copper_block", "weight": 3, "min_stage": 3, "special": true }
     ]
   },
-  "combat": { "strength": 1.1 },
   "rearing": {
     "cost": [
       { "ingredient": "antcolonies:royal_jelly", "count": 2 },
       { "ingredient": "minecraft:copper_ingot", "count": 8 }
     ],
-    "time": 4800
+    "time": 3600
   },
-  "breeding": { "eggs": 0.9, "growth": 1.0 },
   "signature_item": "minecraft:copper_ingot"
 }
 ```
 
 | Field | Default | Meaning |
 |---|---|---|
-| `tier` | `0` | 0–10, shown in JEI and the book. A tier 0 species reaches colony stage 4 only with average genetics 5 or more; tier 1+ reaches it with population alone. |
-| `category` | `base` | `base`, `farmer`, `mineral`, `hybrid` or `endgame`. Mutations can be limited to some categories. |
-| `look.body`, `look.gaster` | required | Colors `"#RRGGBB"`. No textures are needed: ants are tinted from these. |
-| `look.accent` | black | Legs, mandibles. |
-| `look.pattern` | `plain` | `plain`, `striped`, `banded`, `speckled`, `faceted` or `metallic`. |
-| `look.crystal` | none | A color adds crystal spikes. |
-| `look.glow` | `false` | Crystals glow in the dark. |
-| `look.size` | `1.0` | 0.25–4. |
-| `climate` | `temperate` | `temperate`, `cold`, `hot`, `underground`, `nether`, `end` or `any`. A Formicarium in the wrong climate loses health, unless it stands on a block of the block tag `antcolonies:climate/<climate>` (add your own blocks to those tags; snow and ice for cold, sand for hot...). |
-| `spawn_biomes` | none | A biome tag where wild ants of this species appear (section 11). Without it the species is never wild. |
-| `diet.consumption` | `1.0` | Food use multiplier. |
-| `diet.special_food`, `diet.special_per_egg` | none, `0` | Special food the eggs need (section 4). |
-| `production.rate` | `1.0` | Finds per worker multiplier at job sites. |
-| `production.outputs` | none | What workers find (output fields below). |
-| `farming.food`, `farming.harvest` | `0`, none | A `food` above 0 lets the species tend Harvesting Sites: food per minute per farmer, plus `harvest` outputs. |
-| `combat.strength` | `1.0` | Hunting strength at a Hunting Ground (hunter species only: `"category": "hunter"`). |
-| `combat.targets` | zombie, skeleton, spider, creeper, slime | List of `{"entity": "minecraft:blaze", "weight": 10}`. Hunters roll that mob's own loot table (no mob is spawned). |
-| `rearing.cost` | none | What a Queen Chamber uses to rear a new Queen of this species. |
-| `rearing.time` | `2400` | Rearing time in ticks (20 ticks = 1 second). |
-| `breeding.eggs`, `breeding.growth` | `1.0` | Egg laying and larvae growth speed. |
-| `breeding.lifespan` | `1.0` | How long its adults live, as a multiple of the config's `adultLifespanMinutes` (240): `3.0` is twelve hours. |
-| `signature_item` | none | The item the Colony Upgrade Station combines into species upgrades (4, 8 or 16 of it). Without one, the species has no species upgrades. |
-| `look.crop` | none | Liquid Ants: the colour of the liquid in their crop. With it the ants are drawn with a swollen, full crop instead of a gaster (always full: it is a look, not a gauge). `look.glow` makes it glow. |
-| `liquid.fluid`, `liquid.droplet`, `liquid.rate` | none, none, `1.0` | For `"category": "liquid"`: the fluid's id (shown in the screens), the item its workers give at a Liquid Chamber, and droplets per minute compared to Water Ants. |
+| `tier` | `0` | 0 to 10, shown in JEI and the book. A tier 0 species reaches colony stage 4 only with traits averaging 5 or more. |
+| `category` | `base` | `base`, `farmer`, `hunter`, `mineral`, `liquid`, `hybrid` or `endgame` |
+| `look.body`, `look.gaster` | required | Colours as `"#RRGGBB"`. Ants are tinted from these; no textures are needed. |
+| `look.accent` | black | Legs and mandibles |
+| `look.pattern` | `plain` | `plain`, `striped`, `banded`, `speckled`, `faceted` or `metallic` |
+| `look.crystal` | none | A colour adds crystal spikes |
+| `look.glow` | `false` | Crystals (or a Liquid Ant's crop) glow in the dark |
+| `look.size` | `1.0` | 0.25 to 4 |
+| `look.crop` | none | Liquid Ants: the colour of the fluid in their crop |
+| `climate` | `temperate` | `temperate`, `cold`, `hot`, `underground`, `nether`, `end` or `any` |
+| `spawn_biomes` | none | A biome tag where the species is wild. See [Wild ants and nests](#wild-ants-and-nests). |
+| `diet.consumption` | `1.0` | Food use multiplier |
+| `diet.special_food`, `diet.special_per_egg` | none, `0` | A special food each egg needs on top of normal food. See [Ant food](#ant-food). |
+| `production.rate` | `1.0` | Finds per worker, as a multiplier |
+| `production.outputs` | none | What workers find (fields below) |
+| `farming.food`, `farming.harvest` | `0`, none | A `food` above 0 lets the species work at Harvesting Sites: food per minute per farmer, plus `harvest` outputs |
+| `combat.strength` | `1.0` | Hunting strength, for `"category": "hunter"` |
+| `combat.targets` | zombie, skeleton, spider, creeper, slime | A list of `{"entity": "minecraft:blaze", "weight": 10}`. Hunters roll that mob's own loot table. |
+| `liquid.fluid`, `liquid.droplet`, `liquid.rate` | none, none, `1.0` | For `"category": "liquid"`: the fluid's id, the item its workers give, and droplets per minute compared to Water Ants |
+| `rearing.cost` | none | What a Queen Chamber uses to rear a Queen of this species |
+| `rearing.time` | `2400` | Rearing time in ticks |
+| `breeding.eggs`, `breeding.growth` | `1.0` | Egg laying and larvae growth speed |
+| `breeding.lifespan` | `1.0` | How long adults live, as a multiple of the config's `adultLifespanMinutes` (240) |
+| `signature_item` | none | The item the Colony Upgrade Station turns into species upgrades. Without one the species has none. |
 
-**Liquid Ants** (`"category": "liquid"`) work only at Liquid Chambers and make only their `liquid.droplet`: their
-`production` and `farming` are ignored. A pack can add one for any fluid with three files: the species (its `droplet`
-can be any item that exists, one of the mod's droplets or a pack's own), an evolution into it (section 6), and a
-Centrifuge recipe from that item into the fluid (section 3). Guard the files with `neoforge:conditions` if the fluid or
-item comes from a mod that may be missing, as the built-in ones do:
+### Outputs
+
+Used in `outputs`, `harvest` and expedition tables. Each has either `item` or `tag`, plus:
+
+| Field | Default | Meaning |
+|---|---|---|
+| `count` | `1` | Items per find |
+| `weight` | `10` | How often it is picked compared to the others. Rare finds use small weights: the Diamond Ant's whole diamonds are 3 against 85. |
+| `min_stage` | `1` | Colony stage needed, 1 to 4 |
+| `special` | `false` | A rare find: the Specialization trait makes it more likely, and the Gathering trait doesn't multiply it |
+| `processed` | none | What Processing species upgrades turn it into |
+| `ratio` | `9` | How many of it make one `processed` item |
+
+A `tag` output gives the first item in the tag and is skipped while the tag is empty. **Use tags for other mods'
+materials** (`c:nuggets/...`, `c:raw_materials/...`, `c:gems/...`): they work with whichever mod provides the item.
+
+### Costs
+
+`rearing.cost`, lab `cost` and mutation `catalyst` entries are `{"ingredient": ..., "count": n}`. The ingredient is an
+item id (`"minecraft:diamond"`), a tag (`"#c:gems/diamond"`) or a list of either.
+
+### Getting a species into the game
+
+A new species needs a way in: wild ants in some biome (`spawn_biomes`), an [evolution](#evolutions) from another
+species, or a [hybrid](#hybrids).
+
+### Taking a built-in species out
+
+A data pack can't delete a built-in file, so take away the ways in:
+
+- override its evolutions with `"chance": 0` and a very large `guaranteed_after`;
+- override the hybrids that produce it the same way;
+- if it is wild, empty its spawn tag with `{"replace": true, "values": []}`.
+
+Colonies that already have the species keep working. A species file of your own you can simply delete: its colonies
+stop and show *Unknown species (missing data)* until the file is back. Nothing is lost.
+
+### Species that need another mod
+
+Any species, evolution, hybrid, mutation or research file can carry NeoForge conditions, so it loads only when a mod is
+installed:
 
 ```json
-"neoforge:conditions": [
-  { "type": "neoforge:mod_loaded", "modid": "create" },
-  { "type": "neoforge:registered", "registry": "minecraft:fluid", "value": "create:chocolate" },
-  { "type": "neoforge:registered", "registry": "minecraft:item", "value": "antcolonies:chocolate_droplet" }
-]
+{
+  "look": { "body": "#5A6E80", "gaster": "#A8C0D0" },
+  "production": { "outputs": [{ "tag": "c:nuggets/osmium", "weight": 40 }] },
+  "neoforge:conditions": [
+    { "type": "neoforge:or", "values": [
+      { "type": "neoforge:mod_loaded", "modid": "mekanism" },
+      { "type": "neoforge:mod_loaded", "modid": "some_other_mod" }
+    ] }
+  ]
+}
 ```
 
-**A Liquid Ant for a pack's own fluid, with KubeJS (tested, see the note at the top).** Syrup Ants evolve from Water Ants fed a Syrup
-Bucket and give Syrup Droplets, which a Centrifuge spins into syrup. A startup script makes the fluid (with its bucket)
-and the droplet item. Startup scripts run when the game starts, so they need a restart, and the same script has to be
-on the server and on every client.
+Give the evolution or hybrid that leads to such a species the same conditions, or it points at a species that isn't
+there. The mod's own [ants for other mods](compatibility.md#ants-for-other-mods-materials) work this way. To support a
+mod they don't list, replace the species file and its evolution with your own conditions.
 
-`kubejs/startup_scripts/mypack_syrup.js`:
+### Liquid Ants
 
-```js
-// kubejs/startup_scripts/mypack_syrup.js
-StartupEvents.registry('fluid', event => {
-  // The fluid mypack:syrup; its bucket is mypack:syrup_bucket.
-  event.create('mypack:syrup').tint(0xC98A2B).noBlock()
-})
+A species with `"category": "liquid"` works only at Liquid Chambers and gives only its `liquid.droplet`. Its
+`production` and `farming` are ignored. A Liquid Ant for any fluid takes three files:
 
-StartupEvents.registry('item', event => {
-  // What Syrup Ants give. It borrows the picture of the mod's Honey Droplet.
-  event.create('mypack:syrup_droplet').texture('antcolonies:item/honey_droplet')
-})
-```
-
-`kubejs/data/mypack/antcolonies/species/syrup.json`:
+1. the species, whose `droplet` can be any item that exists;
+2. an [evolution](#evolutions) into it;
+3. a [Centrifuge recipe](#droplet-centrifuge-recipes) from that item into the fluid.
 
 ```json
 {
@@ -341,87 +283,31 @@ StartupEvents.registry('item', event => {
 }
 ```
 
-`kubejs/data/mypack/antcolonies/evolution/water_to_syrup.json`:
+If the fluid or the item comes from a mod that may be missing, guard the files as the built-in ones do:
 
 ```json
-{ "from": "antcolonies:water", "to": "mypack:syrup", "item": "mypack:syrup_bucket", "chance": 0.08, "guaranteed_after": 24, "min_stage": 2 }
+"neoforge:conditions": [
+  { "type": "neoforge:mod_loaded", "modid": "create" },
+  { "type": "neoforge:registered", "registry": "minecraft:fluid", "value": "create:chocolate" },
+  { "type": "neoforge:registered", "registry": "minecraft:item", "value": "antcolonies:chocolate_droplet" }
+]
 ```
 
-The Centrifuge recipe from the droplet into the fluid is the last one of the script in section 3, and the ant's name
-is `"species.mypack.syrup": "Syrup Ant"` in the language file (section 12). KubeJS names the fluid and the items
-itself ("Syrup", "Syrup Bucket", "Syrup Droplet"). The Syrup Ant then shows in the Ant Identification Book and in JEI's
-Liquid Ants category, its colony fills a Liquid Chamber with Syrup Droplets, and the Centrifuge's tank and screen draw
-the syrup in the fluid's own colour.
+[Scripting](scripting.md#a-liquid-ant-for-a-packs-own-fluid) shows how a script makes the fluid and the droplet item
+for this Syrup Ant.
 
-What a Queen is fed to become a built-in Liquid Ant is an item tag, `antcolonies:liquid_feed/<kind>` (the fluid's bucket
-by default): add items to it to give players another way.
+## Evolutions
 
-**Output fields** (in `outputs` and `harvest`): either `item` or `tag`, plus
-
-| Field | Default | Meaning |
-|---|---|---|
-| `count` | `1` | Items per find. |
-| `weight` | `10` | How often it is picked compared to the other outputs. Any positive number: rare finds use small ones (the built-in Diamond Ant's whole diamonds are 3 against 85; a sniffer egg is 0.006). |
-| `min_stage` | `1` | Colony stage (1–4) needed. |
-| `special` | `false` | A rare signature find: Specialization genetics make it more likely, and it always comes as `count` items (Gathering genetics don't multiply it). |
-| `processed` | none | What Processing species upgrades turn it into. |
-| `ratio` | `9` | How many of it make one `processed` item. |
-
-A `tag` output uses the first item in the tag and is skipped while the tag is empty, so materials from other mods only
-appear when a mod provides them. This is the safe way to reference modded items.
-
-**Costs** (`rearing.cost`, lab `cost`, mutation `catalyst`): `{"ingredient": ..., "count": n}`. The ingredient is an item
-id (`"minecraft:diamond"`), a tag (`"#c:gems/diamond"`) or a list of either.
-
-**Getting the species in game.** A new species needs a way in: wild ants in some biome (`spawn_biomes`), an evolution
-from another species (section 6) or a hybrid (section 7). Without any of these, players can't get it except through
-commands.
-
-**Taking a built-in species out of play.** A data pack can replace a built-in file but can't delete it, so take away
-the ways in instead:
-
-- override its evolutions with `"chance": 0` and a very large `guaranteed_after` (section 6);
-- override hybrids that produce it the same way (section 7);
-- if it is wild, empty its spawn tag with `{"replace": true, "values": []}` (section 11).
-
-Colonies that already have it keep working. A species of your own you can simply delete: colonies of a species that no
-longer exists stop and show *Unknown species (missing data)* until it is back; nothing is lost.
-
-**Species that need another mod.** Any species, evolution, hybrid or mutation file can carry NeoForge conditions, so it
-only loads when a mod is installed. The built-in Osmium, Tin, Zinc, Lead, Nickel, Aluminum, Silver, Uranium, Fluorite
-and Certus Ants work this way (`data/antcolonies/antcolonies/species/<id>.json`, and their evolutions):
-
-```json
-{
-  "look": { "body": "#5A6E80", "gaster": "#A8C0D0" },
-  "production": { "outputs": [{ "tag": "c:nuggets/osmium", "weight": 40 }] },
-  "neoforge:conditions": [
-    { "type": "neoforge:or", "values": [
-      { "type": "neoforge:mod_loaded", "modid": "mekanism" },
-      { "type": "neoforge:mod_loaded", "modid": "some_other_mod" }
-    ] }
-  ]
-}
-```
-
-Give the evolution (or hybrid) that leads to such a species the same conditions, or it points at a species that isn't
-there. Use `tag` outputs (`c:nuggets/...`, `c:raw_materials/...`, `c:gems/...`) rather than item ids from the other mod:
-they work with whichever mod provides the material, and an empty tag is simply skipped. To support a mod the built-in
-species don't list (another mod with tin, say), replace the species file and its evolution with your own conditions.
-
-## 6. Evolutions
-
-File: `data/<ns>/antcolonies/evolution/<id>.json`. Feeding `item` to a Formicarium of species `from` gives a chance per
-attempt to turn the colony into `to`. If the species `to` has a research file (below), the evolution is a species
-mutation instead: it is made in the Genetic Laboratory, always works, and the Formicarium no longer makes it.
+`data/<ns>/antcolonies/evolution/<id>.json`. Feeding `item` to a Formicarium of species `from` gives a chance per
+attempt to turn the colony into `to`.
 
 ```json
 {
   "from": "antcolonies:stone",
   "to": "mypack:copper",
   "item": "minecraft:copper_block",
-  "chance": 0.08,
-  "guaranteed_after": 24,
+  "chance": 0.1,
+  "guaranteed_after": 20,
   "min_stage": 2,
   "min_population": 200
 }
@@ -429,28 +315,28 @@ mutation instead: it is made in the Genetic Laboratory, always works, and the Fo
 
 | Field | Default | Meaning |
 |---|---|---|
-| `from`, `to` | required | Species ids. |
-| `item` | required | The ingredient fed to the Formicarium. |
-| `chance` | required | 0–1 per attempt (multiplied by the config's evolution chance multiplier). |
-| `guaranteed_after` | `32` | Attempts after which it always works. |
-| `min_stage` | `1` | Colony stage needed. |
-| `min_population` | `0` | Adults needed. |
-| `dimension` | none | If set (e.g. `"minecraft:the_nether"`), the Formicarium (or the laboratory) must be in that dimension. |
-| `lab_amount` | `4` | Species mutations only: how many of `item` one laboratory mutation takes (1-64). |
+| `from`, `to` | required | Species ids |
+| `item` | required | The ingredient fed to the Formicarium |
+| `chance` | required | 0 to 1 per attempt, multiplied by the config's `chanceMultiplier` |
+| `guaranteed_after` | `32` | Attempts after which it always works |
+| `min_stage` | `1` | Colony stage needed |
+| `min_population` | `0` | Adults needed |
+| `dimension` | none | If set (such as `"minecraft:the_nether"`), the Formicarium or the laboratory must stand in that dimension |
+| `lab_amount` | `4` | Species mutations only: how many of `item` one laboratory mutation takes, 1 to 64 |
 
-For a species mutation, `min_stage` is the stage the Queen must have grown to (her colony's stage, which she grows into
-in time); `chance`, `guaranteed_after` and `min_population` are not used.
+**When the species `to` has a [research file](#genetic-research), the evolution is a species mutation instead.** It is
+made in the Genetic Laboratory, always works, and feeding no longer makes it. Then `min_stage` is the stage the Queen
+must have grown to, and `chance`, `guaranteed_after` and `min_population` are not used.
 
-To remove a built-in evolution by feeding, replace its file (for example
-`data/antcolonies/antcolonies/evolution/common_to_farmer.json`) with one whose `chance` is `0` and `guaranteed_after` is
-very large (`100000`). To remove a species mutation, replace its evolution file with one whose `from` is a species that
-does not exist (the file must still load).
+To remove a built-in evolution, replace its file:
 
-### Genetic research
+- an evolution by feeding: `"chance": 0` and a very large `guaranteed_after` (`100000`);
+- a species mutation: a `from` species that does not exist (the file must still load).
 
-File: `data/<ns>/antcolonies/research/<id>.json`. One discovery: scanning `material` in the Genetic Laboratory reveals
-either a species (every evolution into it becomes a laboratory mutation) or a Queen mutation (knowledge only: the
-laboratory's Mutate works with or without it).
+## Genetic research
+
+`data/<ns>/antcolonies/research/<id>.json`. One discovery: scanning `material` in the Genetic Laboratory reveals a
+species or a Queen mutation.
 
 ```json
 {
@@ -466,29 +352,29 @@ laboratory's Mutate works with or without it).
 
 | Field | Default | Meaning |
 |---|---|---|
-| `material` | required | What the scanner reads: an item, a `#tag`, or a list of items. |
-| `species` | one of the two | The species it unlocks in the laboratory. |
-| `mutation` | one of the two | The Queen mutation it reveals. |
-| `tier` | `basic` | `basic`, `advanced` or `experimental`: where it is listed, and the default cost. |
-| `energy` | by tier | FE one species mutation takes (40,000 / 120,000 / 400,000). |
-| `time` | by tier | Ticks one species mutation takes (600 / 1200 / 2400). |
-| `catalysts` | none | What a species mutation takes on top of the evolution's own `item` (the laboratory has two material slots, so at most one kind). |
-| `requires` | none | Research ids that must be discovered first. |
+| `material` | required | What the scanner reads: an item, a `#tag` or a list of items |
+| `species` | one of the two | The species it unlocks. Every evolution into it becomes a laboratory mutation. |
+| `mutation` | one of the two | The Queen mutation it reveals. Knowledge only: the laboratory's Mutate works without it. |
+| `tier` | `basic` | `basic`, `advanced` or `experimental`: where it is listed, and the default cost |
+| `energy` | by tier | FE one species mutation takes: 40,000 / 120,000 / 400,000 |
+| `time` | by tier | Ticks one species mutation takes: 600 / 1200 / 2400 |
+| `catalysts` | none | What a species mutation takes on top of the evolution's `item`. One kind at most. |
+| `requires` | none | Research ids that must be discovered first |
 
-- **Which route a species takes** is decided by this file alone. Add one for a species and its evolutions move to the
-  laboratory; remove the built-in one (a data pack file with a `neoforge:conditions` that never holds, such as
-  `[{ "type": "neoforge:mod_loaded", "modid": "none" }]`) and they go back to feeding.
-- **Hints.** An undiscovered entry shows the line `research.<ns>.<id>.hint` from the language file, or its tier's
-  general hint when there is none.
+- **This file alone decides the route.** Add one and the species' evolutions move to the laboratory. To send a built-in
+  species back to feeding, override its research file with a condition that never holds, such as
+  `"neoforge:conditions": [{ "type": "neoforge:mod_loaded", "modid": "none" }]`.
 - **Both routes at once:** `feedingMakesLabSpecies = true` in the server config lets feeding make laboratory species
-  as before, next to the laboratory.
-- Research is saved per player (and per FTB Teams party) in the world, in the Overworld's `data/antcolonies/genetic_research.dat`.
+  too.
+- **Hints.** An undiscovered entry shows the line `research.<ns>.<id>.hint` from the language file, or its tier's
+  general hint.
+- Research is saved per player (and per FTB Teams party) in the Overworld's `data/antcolonies/genetic_research.dat`.
 
-## 7. Hybrids
+## Hybrids
 
-File: `data/<ns>/antcolonies/hybrid/<id>.json`. When a Queen Chamber rears a Queen with a Genetic Sample of another
-species in its sample slot, a listed pair can produce `result`. The order of `first` and `second` doesn't matter. Pairs
-not listed never cross.
+`data/<ns>/antcolonies/hybrid/<id>.json`. A listed pair can produce `result` when a Queen Chamber rears a Queen with a
+Genetic Sample of the other species. The order of `first` and `second` doesn't matter. Pairs that are not listed never
+cross.
 
 ```json
 {
@@ -500,16 +386,19 @@ not listed never cross.
 }
 ```
 
-`chance` (0–1) is the chance for two parents whose traits average `min_average_level` (1–10, default 1). The level is
-not a requirement, whatever its name says: any two Queens of the pair can cross. Each level the two parents average
-above it adds `hybridQualityBonus` (server config, default 0.15) of the chance. Below it the chance falls in a straight
-line to `hybridWeakChance` (default 0.1) of itself with every trait at level 1. The result is multiplied by the average of
-the two parents' Mutation Probability genetics and by the config's `hybridChanceMultiplier`, and capped at 1.
+`chance` (0 to 1) is the chance for two parents whose traits average `min_average_level` (1 to 10, default 1). Despite
+its name the level is not a requirement: any two Queens of the pair can cross.
 
-## 8. Mutations
+- Each level the parents average above it adds `hybridQualityBonus` (default 0.15) of the chance.
+- Below it the chance falls in a straight line, to `hybridWeakChance` (default 0.1) of itself with every trait at
+  level 1.
+- The result is multiplied by the average of the parents' Mutation Probability and by `hybridChanceMultiplier`, and
+  capped at 1.
 
-File: `data/<ns>/antcolonies/mutation/<id>.json`. A Queen gets a random mutation when she is reared, or a chosen one
-in the Genetic Laboratory by feeding its `catalyst`.
+## Mutations
+
+`data/<ns>/antcolonies/mutation/<id>.json`. A Queen gets a random mutation when she is reared, or a chosen one in the
+Genetic Laboratory from its `catalyst`.
 
 ```json
 {
@@ -524,27 +413,20 @@ in the Genetic Laboratory by feeding its `catalyst`.
 
 | Field | Default | Meaning |
 |---|---|---|
-| `effects` | required | Multipliers (1 = unchanged): `production`, `gathering`, `food`, `eggs`, `growth`, `soldiers`, `farming`, `special`; and `cold_resistant`, `heat_resistant` (true/false). |
-| `random_weight` | `10` | How often it is rolled at random; `0` = never at random. |
-| `negative` | `false` | A harmful one: the lab can't give it on purpose, and the lab's Purge removes it. |
-| `rare` | `false` | Shown as rare; never rolled at random below Mutation Probability 5. |
-| `catalyst` | none | What the lab needs to give it on purpose. Without one, it is random only. |
-| `categories` | all | Species categories it can appear in. |
+| `effects` | required | Multipliers, 1 = unchanged: `production`, `gathering`, `food`, `eggs`, `growth`, `soldiers`, `farming`, `special`; and `cold_resistant`, `heat_resistant` (true or false) |
+| `random_weight` | `10` | How often it is rolled at random. `0` = never. |
+| `negative` | `false` | A flaw: the lab can't give it on purpose, and Purge removes it |
+| `rare` | `false` | Shown as rare; never rolled at random below Mutation Probability 5 |
+| `catalyst` | none | What the lab needs to give it on purpose. Without one it is random only. |
+| `categories` | all | Species categories it can appear in |
 
-The mutation's name in game is `mutation.<ns>.<id>` in the language file.
+A Queen carries at most 3 beneficial mutations (`maxBeneficialMutations`), because their effects multiply. Keep single
+multipliers modest: the built-in ones are 0.8 to 1.5.
 
-A Queen carries at most 3 beneficial mutations (`maxBeneficialMutations` in the server config; flaws don't count),
-because their effects multiply. The lab won't add a fourth, and daughters don't inherit or roll more than
-the cap. Effects also pass through the production formula's softening (`bonusExponent`), so keep single multipliers
-modest: the built-in ones are 0.8 to 1.5.
+## Genetic Laboratory costs
 
-## 9. Genetic Laboratory costs
-
-File: `data/<ns>/antcolonies/trait_upgrade/<trait>.json`, one per trait. To change a built-in trait, replace the file in
-the `antcolonies` namespace, e.g. `data/antcolonies/antcolonies/trait_upgrade/worker_productivity.json`.
-
-The traits are `worker_productivity`, `gathering_efficiency`, `food_efficiency`, `egg_production`, `larvae_growth`,
-`soldier_strength`, `farmer_productivity`, `mutation_probability`, `environmental_resistance` and `specialization`.
+`data/<ns>/antcolonies/trait_upgrade/<trait>.json`, one per trait. To change a built-in one, replace its file, such as
+`data/antcolonies/antcolonies/trait_upgrade/worker_productivity.json`.
 
 ```json
 {
@@ -556,120 +438,58 @@ The traits are `worker_productivity`, `gathering_efficiency`, `food_efficiency`,
 }
 ```
 
-`steps` are the upgrades in order: the first raises level 1 to 2, the ninth raises 9 to 10. Each has `cost`, `energy`
-(FE, default 0; the lab holds 1,000,000) and `time` (ticks, default 200). With fewer than 9 steps, the last step is used again for
-every higher level, so give all 9 to control the whole range. Copy a built-in file as a starting point.
+- **Traits:** `worker_productivity`, `gathering_efficiency`, `food_efficiency`, `egg_production`, `larvae_growth`,
+  `soldier_strength`, `farmer_productivity`, `mutation_probability`, `environmental_resistance`, `specialization`.
+- **`steps`** are the upgrades in order: the first raises level 1 to 2, the ninth 9 to 10. Each has `cost`, `energy`
+  (FE, default 0) and `time` (ticks, default 200). With fewer than 9 steps the last one is used for every higher level.
+- **Keep exactly one file per trait.** With none, its upgrades cost nothing. With two, which one wins is not defined.
 
-Keep exactly one file per trait. If no file names a trait, its upgrades cost nothing. If two files name the same trait
-(for example one in `antcolonies` and one in `mypack`), which one is used is not defined, so replace the built-in file
-rather than adding a second one.
+The laboratory's other work has fixed FE costs: Reroll 40,000, Purge 60,000, Mutate 80,000, Copy genes 10,000. The
+config's `labCostMultiplier` and `labTimeMultiplier` scale the laboratory's material costs and times as a whole.
 
-## 10. Powering the Genetic Laboratory (FE)
+## Wild ants and nests
 
-The Genetic Laboratory runs on **Forge Energy (FE)**, the energy most NeoForge tech mods use (often called RF). It holds
-1,000,000 FE and takes up to 4,000 FE per transfer. Energy goes in at any side of the lab, which is a single block.
-The lab never gives energy out.
+Two separate things:
 
-Any mod's cables, batteries or generators can power it. Ant Colonies adds one simple source, the **Generator**:
+- **Wild ants**, the walking mobs, spawn in every biome of the tag `#antcolonies:has_wild_ants`. Each takes a species
+  whose `spawn_biomes` tag contains that biome, or Common Ants if none does.
+- **Nests**, the blocks, exist for the 13 built-in wild species of the Overworld. They generate in the biomes of
+  `#antcolonies:spawns/<species>`.
 
-- It burns anything a furnace burns, for as long as a furnace would (one coal: 1,600 ticks; a lava bucket leaves its
-  bucket behind).
-- It makes 40 FE per tick while burning (one coal = 64,000 FE) and stores up to 100,000 FE.
-- Every tick it gives up to 1,000 FE to the blocks next to it that take FE, so put it against the lab, or connect it with another mod's cables (they can also pull from it).
-- It only starts a new item when it has room, and pauses when full, so no fuel is wasted. Hoppers can fill it.
-- Recipe: iron ingots around a furnace, copper ingots and redstone underneath (`antcolonies:generator`; change it like
-  any recipe, section 3).
+To make a new species wild:
 
-The Generator numbers are in the server config (section 13), under `[power]`: `generatorOutput` (FE per tick,
-default 40), `generatorPush` (most FE given out per tick, default 1000) and `generatorCapacity` (FE stored, default 100,000).
-The Genetic Laboratory's are next to them: `labEnergy` (FE stored, default 1,000,000) and `labEnergyInput` (most FE taken in per
-tick, default 4,000).
-
-What lab work costs, in FE:
-
-| Work | FE |
-|---|---|
-| Trait upgrades | per step, from the trait's file (section 9); built in: 10,000 for level 1→2 up to 400,000 for 9→10 |
-| Reroll | 40,000 |
-| Purge | 60,000 |
-| Mutate | 80,000 |
-| Copy (genetic sample) | 10,000 |
-
-Energy is only used when the work finishes; cancelling costs nothing.
-
-## 11. Wild ants, nests and spawns
-
-There are two separate things:
-
-- **Wild ants** (the walking mobs) spawn in every biome of the tag `#antcolonies:has_wild_ants`. Each one takes a species
-  whose `spawn_biomes` tag contains the biome it spawned in (a random one if several match), or Common Ants if none
-  does.
-- **Nests** (the anthill blocks) exist for the 13 built-in wild species: common, wood, stone, snow, desert, farmer, jungle,
-  swamp, savanna, shore, blossom, pale and badlands.
-  They are placed by the biome modifiers in `data/antcolonies/neoforge/biome_modifier/add_<species>_ant_nests.json`,
-  in the biomes of `#antcolonies:spawns/<species>`.
-
-So, to make a new species wild:
-
-1. Make a biome tag, e.g. `data/mypack/tags/worldgen/biome/spawns/copper.json`:
+1. Make a biome tag, `data/mypack/tags/worldgen/biome/spawns/copper.json`:
    ```json
    { "values": ["minecraft:dripstone_caves", "minecraft:stony_peaks"] }
    ```
 2. Point the species at it: `"spawn_biomes": "mypack:spawns/copper"`.
-3. Make sure those biomes spawn wild ants at all: add the tag to `has_wild_ants` with
-   `data/antcolonies/tags/worldgen/biome/has_wild_ants.json`:
+3. Add the tag to `data/antcolonies/tags/worldgen/biome/has_wild_ants.json`, so those biomes spawn wild ants at all:
    ```json
    { "values": ["#mypack:spawns/copper"] }
    ```
-   (Tags merge; this adds to the built-in list.)
 
-Players catch wild ants with Tweezers into empty Test Tubes; some are Queens (the chance is in the config).
+To move or stop built-in nests, change `data/antcolonies/tags/worldgen/biome/spawns/<species>.json`. With
+`"replace": true` the built-in biomes are dropped, so `{ "replace": true, "values": [] }` removes that species' nests
+and wild ants. Nest changes only show in newly generated chunks.
 
-To move or stop built-in nests, add biomes to or replace `data/antcolonies/tags/worldgen/biome/spawns/<species>.json`
-(with `"replace": true` to drop the built-in biomes). Nest changes only affect newly generated chunks.
+## Giant anthills
 
-With KubeJS (tested), adding biomes:
+The anthills are ordinary world-generation data:
 
-```js
-ServerEvents.tags('worldgen/biome', event => {
-  event.add('mypack:spawns/copper', ['minecraft:dripstone_caves', 'minecraft:stony_peaks'])
-  event.add('antcolonies:has_wild_ants', '#mypack:spawns/copper')
-})
-```
-
-Removing biomes does **not** work from a KubeJS script: in KubeJS 8.0.8 `remove`, `removeAll` and `replace` in a
-`worldgen/biome` tag event change nothing (no error either), while the same calls work on item tags. Use a tag file
-instead, which KubeJS loads from `kubejs/data/` like any data pack. No Desert Ant nests or wild Desert Ants:
-`kubejs/data/antcolonies/tags/worldgen/biome/spawns/desert.json`
-
-```json
-{ "replace": true, "values": [] }
-```
-
-To keep some biomes, list them in `values` (with `"replace": true` the built-in ones are dropped).
-
-
-### Giant anthills
-
-The giant anthill structure is ordinary world-generation data, so a data pack can change all of it:
-
-| File | What it sets |
+| File in `data/antcolonies/` | What it sets |
 |---|---|
-| `data/antcolonies/worldgen/structure_set/giant_anthills.json` | How often: `spacing` 32 and `separation` 10 (in chunks). Raise `spacing` for fewer anthills. |
-| `data/antcolonies/tags/worldgen/biome/has_structure/giant_anthill.json` | Which biomes. An empty tag (`"replace": true, "values": []`) turns them off. |
-| `data/antcolonies/loot_table/chests/giant_anthill.json` | What its chest and barrel hold. |
+| `worldgen/structure_set/giant_anthills.json` | How often: `spacing` 32 and `separation` 10, in chunks |
+| `tags/worldgen/biome/has_structure/giant_anthill.json` | Which biomes. An empty tag with `"replace": true` turns them off. |
+| `loot_table/chests/giant_anthill.json` | What its chests and barrels hold |
+| `loot_table/chests/anthill_treasure.json`, `anthill_food.json` | The treasure chambers and food stores |
 
-The ants in an anthill are the local wild species (the same `spawns/...` biome tags as above), and the nest block in the
-Queen's chamber is that species' nest when it has one. The layouts (seven styles of rooms and tunnels, picked from the
-world seed) are built in code and can't be changed with data; the Nether anthill (`nether_anthills`, `has_structure/nether_anthill`,
-`chests/nether_anthill`) and the End anthill (`end_anthills`, `has_structure/end_anthill`, `chests/end_anthill`) work the same way.
-Their rooms also use `chests/anthill_treasure` and `chests/anthill_food`.
+The Nether and End anthills have the same three files, named `nether_anthill(s)` and `end_anthill(s)`. An anthill's
+ants are the local wild species. The room layouts are built in code and can't be changed with data.
 
-### Expeditions (Nether and End Foraging Sites)
+## Expeditions
 
-The Nether and End Foraging Sites take their finds from **expedition tables**, a datapack registry like species:
-`data/<namespace>/antcolonies/expedition/<name>.json`. The mod ships `nether.json` and `end.json`; replace them at the
-same path to change their finds.
+The Nether and End Foraging Sites take their finds from `data/<ns>/antcolonies/expedition/<name>.json`. The mod ships
+`nether.json` and `end.json`; replace them at the same path to change their finds.
 
 ```json
 {
@@ -690,139 +510,92 @@ same path to change their finds.
 | Field | Meaning |
 |---|---|
 | `site` | `nether_foraging_site` or `end_foraging_site`: the chamber that runs it |
-| `adapted` | A **species tag** (`data/<namespace>/tags/antcolonies/species/<name>.json`): only these species go |
+| `adapted` | A species tag: only these species go |
 | `rate` | Finds compared to an ordinary Foraging Site (times `expeditionRolls` in the config) |
-| `home` | The dimension: an ordinary Foraging Site of a colony **living** there finds the `trail` item |
-| `trail` | The trail pheromone and its chance per find (leave it out for none) |
-| `outputs` | Finds, with the same fields as species outputs (`item` or `tag`, `count`, `weight`, `min_stage`, `special`), and an optional `species` list: only those species find it |
+| `home` | The dimension. An ordinary Foraging Site of a colony living there finds the `trail` item. |
+| `trail` | The trail pheromone and its chance per find. Leave it out for none. |
+| `outputs` | [Outputs](#outputs), with an optional `species` list: only those species find it |
 
-To let your own species go on the Nether's expeditions, add it to the tag:
+To let your own species go on the Nether's expeditions, add it to the tag
+`data/antcolonies/tags/antcolonies/species/nether_adapted.json`:
 
 ```json
-// data/antcolonies/tags/antcolonies/species/nether_adapted.json
 { "values": ["mypack:copper"] }
 ```
 
-### Foraging Site modes
+## Tags
 
-Mineral Gathering favours the finds in the item tag **`antcolonies:foraging/mineral`** (it includes `#c:ores`,
-`#c:raw_materials`, `#c:ingots`, `#c:nuggets`, `#c:gems`, `#c:dusts` and stone-like items); Organic Gathering favours
-everything else. Add your modded finds to the tag if they don't fall under those common tags. How strongly a mode
-favours its kind is `focusedForagingBoost` and `focusedForagingPenalty` in the server config.
+| Tag | Kind | What it does |
+|---|---|---|
+| `antcolonies:climate/<climate>` | Block | Blocks that give a Formicarium standing on them that climate |
+| `antcolonies:foraging/mineral` | Item | What Mineral Gathering favours. It includes `#c:ores`, `#c:raw_materials`, `#c:ingots`, `#c:nuggets`, `#c:gems`, `#c:dusts` and stone. Organic Gathering favours everything else. |
+| `antcolonies:liquid_feed/<kind>` | Item | What a Queen is fed to become that built-in Liquid Ant: the fluid's bucket by default |
+| `antcolonies:droplets` | Item | Every droplet |
+| `antcolonies:nether_adapted`, `antcolonies:end_adapted` | Species | Who goes on [expeditions](#expeditions) |
+| `antcolonies:has_wild_ants`, `antcolonies:spawns/<species>` | Biome | [Wild ants and nests](#wild-ants-and-nests) |
 
-## 12. Names (language files)
+Diamond and Emerald Fragments are in `c:nuggets/diamond` and `c:nuggets/emerald`.
 
-New species and mutations need names in a language file, or they show as raw keys. File
-`assets/mypack/lang/en_us.json` (in a resource pack, or `kubejs/assets/mypack/lang/en_us.json`):
+## Names
+
+New species and mutations need names, or they show as raw keys. `assets/mypack/lang/en_us.json`, in a resource pack or
+under `kubejs/assets/`:
 
 ```json
 {
   "species.mypack.copper": "Copper Ant",
   "species.mypack.bronze": "Bronze Ant",
-  "mutation.mypack.oxidized": "Oxidized"
+  "mutation.mypack.oxidized": "Oxidized",
+  "research.mypack.copper.hint": "Something green grows on old roofs."
 }
 ```
 
-The key is `species.<namespace>.<id>` and `mutation.<namespace>.<id>`, matching the file's id.
+## Server config
 
-## 13. Server config
+`config/antcolonies/server.toml` is made on first launch and synced to players. Every option has a comment in the
+file. For a modpack, ship the edited file in the pack; it is one file for all worlds.
 
-`config/antcolonies/server.toml` is created on first launch and synced to players. It holds the numbers that are not
-per species: simulation interval and offline catch-up, capacities, egg and growth times, food use and starvation,
-production rates, upgrade strengths, trait multipliers and starting weights, mutation, evolution and hybrid chance
-multipliers, Queen growth (`queenGrowthCap`, `queenGrowthTraits`), wild Queen and soldier chances, home nests (`homeNestAnts`,
-`homeNestRefillMinutes`), Royal Guard Ants (`royalGuardReach`, `royalGuardLeash`), brood clusters (`clusterBrood`,
-`anthillCrowdRange`), Tweezers (`tweezersAnts`), the machines' energy and tanks (`[power]`), the ants a Guard Ant
-costs (`[guards] antCost`), Queen-only founding (`[founding]`), how low food slows a colony (`lowFoodMinutes`, `lowFoodFactor`,
-`hungryFoodWorkFactor`), the Foraging Site modes and expeditions (`focusedForagingBoost`, `focusedForagingPenalty`,
-`expeditionRolls`) and Colony Connectors (`[connectors]`: `transferInterval`, `maxFoodPerMinute`, `maxItemsPerMinute`, `connectorRange`). To make every rare
-find (outputs marked `special`) rarer or more common at once, change `rareFindMultiplier` under `[production]` (default
-1.0; 0.5 halves them, 0 turns them off) instead of editing each species. Every option has a comment in the file. For a modpack,
-ship the edited file as `config/antcolonies/server.toml` in your pack. It is a global file (not per world).
+| Section | What it holds | Options worth knowing |
+|---|---|---|
+| `[simulation]` | Step length, offline catch-up, colony size | `interval`, `offlineCatchUpMinutes`, `maxChambers` |
+| `[population]` | Housing, egg and growth times, lifespan, stages | `stagePopulations`, `adultLifespanMinutes`, `tweezersAnts`, `clusterBrood` |
+| `[food]` | Food use, food room, starvation | `lowFoodMinutes`, `lowFoodFactor`, `starvedFactor`, `hungryFoodWorkFactor` |
+| `[founding]` | Queen-only founding | `foundingFoodShare`, `foundingWorkers` |
+| `[production]` | Rates, diminishing returns, upgrade strengths | `rareFindMultiplier`, `bonusExponent`, `chitinFindChance`, `focusedForagingBoost`, `focusedForagingPenalty`, `expeditionRolls`, `liquidFoodChance` |
+| `[connectors]` | Colony Connectors | `transferInterval`, `maxFoodPerMinute`, `maxItemsPerMinute`, `connectorRange` |
+| `[genetics]` | Trait multipliers, Queen growth, mutations, lab scaling | `queenGrowthMinutes`, `queenGrowthCap`, `queenGrowthTraits`, `maxBeneficialMutations`, `labCostMultiplier` |
+| `[evolution]` | Evolution and hybrid chances | `chanceMultiplier`, `hybridChanceMultiplier`, `hybridQualityBonus`, `hybridWeakChance`, `feedingMakesLabSpecies` |
+| `[wild]` | Wild ants, home nests, anthills | `queenChance`, `nestQueenChance`, `homeNestAnts`, `nestCropGrowth`, `nestHarvest`, `anthillAlarmSeconds`, `broodClusterMinutes`, `royalGuardReach` |
+| `[guards]` | Guard Ants | `antCost` |
+| `[power]` | Generator, laboratory and Centrifuge energy and tanks | `generatorOutput`, `generatorCapacity`, `labEnergy`, `labEnergyInput`, `centrifugeEnergyMultiplier`, `centrifugeTimeMultiplier` |
 
-`config/antcolonies/client.toml` is per player (how many ants are drawn, particles, sounds); leave it to players.
+**`rareFindMultiplier`** scales the chance of every rare find (outputs marked `special`) at once: 0.5 halves diamonds,
+netherite scrap and the like, 0 turns them off. Use it in place of editing each species.
 
-## 14. Worked example: a Copper Ant
+`config/antcolonies/client.toml` is per player (how ants are drawn, particles, sounds). Leave it to the players.
 
-The mod has its own Copper Ant (`antcolonies:copper`) since this example was written; the example still works because it
-lives in your namespace (`mypack:copper`), next to it. Use it as a pattern for your own species.
+## Advancements and quests
 
-A new species that Stone Ants become with copper blocks and that finds raw copper. Five files:
+The mod's advancements are ordinary files in `data/antcolonies/advancement/`. Replace one at the same path to change
+it.
 
-`kubejs/data/mypack/antcolonies/species/copper.json` (or the same path in a data pack):
-
-```json
-{
-  "tier": 1,
-  "category": "mineral",
-  "look": { "body": "#4A2E22", "gaster": "#C8743A", "accent": "#F0A060", "pattern": "metallic" },
-  "climate": "underground",
-  "diet": { "consumption": 1.2 },
-  "production": {
-    "rate": 0.5,
-    "outputs": [
-      { "item": "minecraft:raw_copper", "weight": 70, "processed": "minecraft:copper_ingot", "ratio": 1 },
-      { "item": "minecraft:cobblestone", "weight": 25 },
-      { "item": "minecraft:copper_block", "weight": 3, "min_stage": 3, "special": true }
-    ]
-  },
-  "rearing": {
-    "cost": [{ "ingredient": "antcolonies:royal_jelly", "count": 2 }, { "ingredient": "minecraft:copper_ingot", "count": 8 }],
-    "time": 3600
-  },
-  "signature_item": "minecraft:copper_ingot"
-}
-```
-
-`kubejs/data/mypack/antcolonies/evolution/stone_to_copper.json`:
-
-```json
-{ "from": "antcolonies:stone", "to": "mypack:copper", "item": "minecraft:copper_block", "chance": 0.1, "guaranteed_after": 20, "min_stage": 2 }
-```
-
-`kubejs/data/mypack/antcolonies/research/copper.json` is the research file of [section 6](#genetic-research): with it
-the Copper Ant is researched by scanning a copper block and made in the laboratory from four copper blocks and a Royal
-Jelly. Leave it out and the evolution above runs by feeding instead.
-
-`kubejs/assets/mypack/lang/en_us.json`:
-
-```json
-{ "species.mypack.copper": "Copper Ant" }
-```
-
-To make it wild too, add `"spawn_biomes": "mypack:spawns/copper"` and the two tag files from section 11.
-
-These files, the food example from section 4, the spawn tags from section 11 and two conditional species (one whose
-condition holds, one that needs Mekanism) are tested with each version: loaded as a separate data pack, they must all
-load, merge or stay out as described here.
-
-Then restart the server (or reopen the world). The Copper Ant appears in JEI's *Ant Species*, *Species Mutation*,
-*Resource Production*, *Queen Rearing*, *Egg Production* and *Species Upgrades* categories. The Ant Identification Book
-lists it as "???" until the player meets it, like every species.
-
-## 15. Advancements and the colony trigger
-
-The mod's 35 advancements are ordinary data files in `data/antcolonies/advancement/`. Replace one with a data pack
-file at the same path to change it.
-
-For your own advancements, and for quest mods that complete quests from advancements (FTB Quests, Heracles), use the
-mod's trigger **`antcolonies:colony`**. It fires when a player opens a Formicarium, and every few seconds for players
-within 16 blocks of one. It checks that Formicarium's colony. All conditions are optional; leave them all out and any
-colony counts.
+For your own advancements, and for quest mods that complete quests from advancements, use the trigger
+**`antcolonies:colony`**. It fires when a player opens a Formicarium, and every few seconds for players within 16
+blocks of one, and checks that Formicarium's colony. Every condition is optional.
 
 | Condition | Type | Meaning |
 |---|---|---|
 | `has_queen` | true / false | The colony has a Queen |
 | `stage` | number or `{"min": .., "max": ..}` | Colony stage, 1 to 4 |
 | `adults` | number or `{"min": .., "max": ..}` | Adult ants |
-| `species` | species id | The colony's species, e.g. `"antcolonies:diamond"` or one of yours |
-| `category` | string | The species' category: `"base"`, `"farmer"`, `"mineral"`, `"hybrid"` or `"endgame"` |
-| `best_trait` | number or `{"min": .., "max": ..}` | The Queen's highest trait level, 1 to 10 |
-| `queen_founded` | true / false | The colony grew from a single Queen through Queen-only founding |
+| `species` | species id | The colony's species |
+| `category` | string | The species' category |
+| `best_trait` | number or `{"min": .., "max": ..}` | The Queen's highest trait level |
+| `queen_founded` | true / false | The colony was founded by a Queen alone |
 | `linked` | true / false | Another colony is online on one of its Colony Connector channels |
 | `player` | predicate | The usual player conditions of any trigger |
 
-A pack's "1,000 Diamond Ants" goal (`data/mypack/advancement/diamond_thousand.json`):
+A "1,000 Diamond Ants" goal, `data/mypack/advancement/diamond_thousand.json`:
 
 ```json
 {
@@ -842,169 +615,19 @@ A pack's "1,000 Diamond Ants" goal (`data/mypack/advancement/diamond_thousand.js
 }
 ```
 
-Redstone and comparators work the same in every pack (see the [gameplay guide](gameplay.md#structures)): a redstone signal pauses a job site or a
-Generator, and comparators read a Formicarium's food, a job site's ants, storage fullness and stored FE.
+## What data can't change
 
-## 16. What cannot be changed with data
+- **Colony Upgrade Station amounts.** Species upgrades always take 4, 8 or 16 of the signature item for tiers 1 to 3.
+- **Droplet items.** The mod registers droplets only for the fluids it knows. A pack's Liquid Ant gives an existing
+  item or one a [script](scripting.md#a-liquid-ant-for-a-packs-own-fluid) registers.
+- **Nest blocks.** Only the 13 built-in species have them. A data pack species can be wild but has no nest.
+- **What each chamber and upgrade does.** Their numbers are in the config.
+- **Colonies from scripts.** KubeJS and KubeGroovy can't read or change a colony's population, food or genetics.
 
-These are fixed in the mod's code today:
+## Checking your changes
 
-- **Colony Upgrade Station amounts**: species upgrades always take 4, 8 or 16 of the signature item for tiers 1 to 3.
-- **Droplet items**: the mod registers a droplet item only for the fluids it knows (water, lava, and those of the mods
-  in docs/compatibility.md that are installed). A pack's Liquid Ants for other fluids give an existing item, or one a
-  script registers (section 5 has an example). Another mod can offer a fluid from its constructor with
-  `LiquidKinds.offer`.
-- **Nest blocks**: only the 13 built-in wild species have nest blocks; species added by a data pack can be wild ants but
-  can't have nests.
-- **Structures, upgrades and their effects**: what each structure and upgrade does (the numbers are in the config).
-- **No KubeJS or KubeGroovy bindings**: scripts can't read or change a colony's population, food or genetics directly;
-  there is no plugin for either yet.
-
-## 17. Checking your changes
-
-- **JEI** shows every species, evolution, hybrid, mutation, lab cost, food and output after a restart: the fastest way
-  to see that a file was read.
-- **The game log** (`logs/latest.log`) names any file that failed to load and why (a misspelled field, a wrong value
-  range, an unknown item). A species, evolution or other registry file with an error stops that world from loading,
-  with the error on screen; fix the file and try again.
-- **In game**: the Ant Identification Book lists every species with its diet and finds; the Colony Scanner reports a
-  colony's state in chat.
-
-## 18. KubeGroovy
-
-[KubeGroovy](https://www.curseforge.com/minecraft/mc-mods/kubegroovy) is a fork of KubeJS that runs Groovy scripts
-instead of JavaScript. Everything this guide does with KubeJS can be done with it: the JSON files are the same, and the
-scripts below are the guide's scripts written in Groovy. It exists for NeoForge 26.1.2 only, and it can't be installed
-together with KubeJS.
-
-| | KubeJS | KubeGroovy |
-|---|---|---|
-| Folder | `kubejs/` | `kubegroovy/` |
-| Data files and names | `kubejs/data/...`, `kubejs/assets/...` | `kubegroovy/data/...`, `kubegroovy/assets/...` (the same files) |
-| Scripts | `server_scripts/*.js`, `startup_scripts/*.js` | `server_scripts/*.groovy`, `startup_scripts/*.groovy` |
-| An event | `ServerEvents.recipes(event => { ... })` | `$ServerEvents.recipes { event -> ... }` |
-| A filter or a JSON object | `{ id: '...' }` | `[id: '...']` |
-| Script names such as `Item` | `Item.of(...)` | `$Item.of(...)`: a `$` in front (`console` has none) |
-| Id of a recipe the script did not name | `minecraft:kjs/...` | `minecraft:kgy/...` |
-
-What reloads and what needs a restart is the same as in section 2: server scripts on `/reload`, startup scripts and
-the species, evolution and research files on a restart.
-
-### Recipes
-
-The Droplet Centrifuge recipes of section 3:
-
-```groovy
-// kubegroovy/server_scripts/antcolonies_centrifuge.groovy
-$ServerEvents.recipes { event ->
-  // Lava Droplets give half as much for twice the power: replace the built-in recipe.
-  event.remove([id: 'antcolonies:centrifuging/lava'])
-  event.custom([
-    type: 'antcolonies:centrifuging',
-    ingredient: 'antcolonies:lava_droplet',
-    result: [id: 'minecraft:lava', amount: 25],
-    energy: 4000,
-    time: 200
-  ]).id('mypack:centrifuging/lava')
-
-  // Any item can be spun: snowballs melt into water.
-  event.custom([
-    type: 'antcolonies:centrifuging',
-    ingredient: 'minecraft:snowball',
-    result: [id: 'minecraft:water', amount: 250],
-    energy: 200
-  ]).id('mypack:centrifuging/snowball')
-
-  // The Syrup Droplets of the pack's own Liquid Ant (section 5).
-  event.custom([
-    type: 'antcolonies:centrifuging',
-    ingredient: 'mypack:syrup_droplet',
-    result: [id: 'mypack:syrup', amount: 50],
-    energy: 1200,
-    time: 60
-  ]).id('mypack:centrifuging/syrup')
-}
-```
-
-Crafting recipes:
-
-```groovy
-// kubegroovy/server_scripts/antcolonies_recipes.groovy
-$ServerEvents.recipes { event ->
-  // A harder Formicarium: replace the built-in recipe.
-  event.remove([output: 'antcolonies:terrarium'])
-  event.shaped('antcolonies:terrarium', [
-    'GGG',
-    'G G',
-    'III'
-  ], [
-    G: 'minecraft:glass',
-    I: 'minecraft:iron_ingot'
-  ])
-
-  // No Royal Jelly crafting: it must come from the colony instead.
-  event.remove([output: 'antcolonies:royal_jelly'])
-}
-```
-
-A new recipe, a changed ingredient and an item tag:
-
-```groovy
-$ServerEvents.recipes { event ->
-  // A new recipe that makes a mod item.
-  event.shapeless($Item.of('antcolonies:ant_food', 2), ['minecraft:sugar', 'minecraft:wheat_seeds', 'minecraft:bone_meal'])
-    .id('mypack:cheap_ant_food')
-  // Change an ingredient inside one of the mod's recipes.
-  event.replaceInput([id: 'antcolonies:tweezers'], 'minecraft:iron_ingot', 'minecraft:copper_ingot')
-}
-
-$ServerEvents.tags('item') { event ->
-  // Mineral Gathering also favours amethyst shards (section 11).
-  event.add('antcolonies:foraging/mineral', 'minecraft:amethyst_shard')
-}
-```
-
-As with KubeJS, JEI shows the changed recipes only when it is on the server too (section 3).
-
-### A pack's own Liquid Ant
-
-The Syrup Ant of section 5. The startup script makes the fluid, its bucket and the droplet item; like every startup
-script it needs a restart and has to be on the server and on every client.
-
-```groovy
-// kubegroovy/startup_scripts/mypack_syrup.groovy
-$StartupEvents.registry('fluid') { event ->
-  // The fluid mypack:syrup; its bucket is mypack:syrup_bucket.
-  event.create('mypack:syrup').tint(0xC98A2B).noBlock()
-}
-
-$StartupEvents.registry('item') { event ->
-  // What Syrup Ants give. It borrows the picture of the mod's Honey Droplet.
-  event.create('mypack:syrup_droplet').texture('antcolonies:item/honey_droplet')
-}
-```
-
-The species and evolution files of section 5 go in `kubegroovy/data/mypack/antcolonies/species/syrup.json` and
-`kubegroovy/data/mypack/antcolonies/evolution/water_to_syrup.json`, unchanged. KubeGroovy names the fluid and the droplet
-itself ("Syrup", "Syrup Droplet").
-
-### Wild ant biomes
-
-Adding biomes to a spawn tag (section 11):
-
-```groovy
-$ServerEvents.tags('worldgen/biome') { event ->
-  event.add('mypack:spawns/copper', ['minecraft:dripstone_caves', 'minecraft:stony_peaks'])
-  event.add('antcolonies:has_wild_ants', '#mypack:spawns/copper')
-}
-```
-
-To take biomes out, use the tag file of section 11 here too, in
-`kubegroovy/data/antcolonies/tags/worldgen/biome/spawns/desert.json`. In KubeGroovy 1.0.3 a script's `event.remove` on
-a `worldgen/biome` tag changes nothing when the server starts and only shows after a `/reload`.
-
-### Everything else
-
-The other files of this guide need no script and are read from `kubegroovy/data/` and `kubegroovy/assets/` as they
-are: the ant food data map (section 4), species, evolutions and research (sections 5, 6 and 14), advancements
-(section 15) and the language file (section 12).
+- **JEI or EMI** shows every species, evolution, hybrid, mutation, lab cost, food and output after a restart. It is
+  the fastest way to see that a file was read.
+- **The game log** (`logs/latest.log`) names any file that failed to load and why. A broken species, evolution or other
+  registry file stops the world from loading, with the error on screen.
+- **In game**, the Ant Identification Book lists every species with its diet and finds.
