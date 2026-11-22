@@ -2,6 +2,10 @@
   "values": [
     "antcolonies:chorus",
     "antcolonies:ender",
-    "antcolonies:dragon"
+    "antcolonies:dragon",
+    {
+      "id": "antcolonies:unobtainium",
+      "required": false
+    }
   ]
 }

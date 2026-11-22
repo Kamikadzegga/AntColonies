@@ -147,11 +147,13 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
     }
 
     /** Egg laying and larvae growth compared to Common Ants. */
-    public record Breeding(double eggs, double growth) {
-        public static final Breeding DEFAULT = new Breeding(1.0, 1.0);
+    /** @param lifespan how long its adults live, compared to the config's adultLifespanMinutes */
+    public record Breeding(double eggs, double growth, double lifespan) {
+        public static final Breeding DEFAULT = new Breeding(1.0, 1.0, 1.0);
         public static final Codec<Breeding> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.doubleRange(0, 1000).optionalFieldOf("eggs", 1.0).forGetter(Breeding::eggs),
-                Codec.doubleRange(0, 1000).optionalFieldOf("growth", 1.0).forGetter(Breeding::growth)
+                Codec.doubleRange(0, 1000).optionalFieldOf("growth", 1.0).forGetter(Breeding::growth),
+                Codec.doubleRange(0.01, 1000).optionalFieldOf("lifespan", 1.0).forGetter(Breeding::lifespan)
         ).apply(i, Breeding::new));
     }
 }

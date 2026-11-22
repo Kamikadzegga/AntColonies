@@ -3782,20 +3782,22 @@ public class TexGen {
     //
     // Every colony block is a slab of nest material behind glass: per climate, a face and a darker floor for what is carved.
 
-    /** The slab's face by climate, in NestRenderer's row order: temperate, cold, hot, underground, nether. */
+    /** The slab's face by climate, in NestRenderer's row order: temperate, cold, hot, underground, nether, end. */
     static final int[][] NEST_FACE = {
             ramp(0x644329, 0x765233, 0x8A6240, 0x9B724D, 0xAC825A),
             ramp(0x584E45, 0x696055, 0x7C7065, 0x8D8176, 0xB4BDC6),
             ramp(0xB09058, 0xC2A368, 0xD6BA7A, 0xE2C98A, 0xECD79C),
             ramp(0x4F4C47, 0x615E58, 0x74716B, 0x86837D, 0x97948E),
-            ramp(0x461A18, 0x5A2422, 0x6E2E2A, 0x80383A, 0x91453F)};
+            ramp(0x461A18, 0x5A2422, 0x6E2E2A, 0x80383A, 0x91453F),
+            ramp(0xA9AE7C, 0xBDC289, 0xD3D69A, 0xE2E4AA, 0xEEEFC0)};
     /** The floor of what is carved, by climate: the same earth, deeper and in shadow (about half as bright as the face). */
     static final int[][] NEST_FLOOR = {
             ramp(0x2C1D13, 0x362419, 0x402B1F),
             ramp(0x25201B, 0x2E2722, 0x372F29),
             ramp(0x514027, 0x5D4A2E, 0x695536),
             ramp(0x201F1E, 0x282725, 0x31302D),
-            ramp(0x1D0A09, 0x260E0D, 0x301312)};
+            ramp(0x1D0A09, 0x260E0D, 0x301312),
+            ramp(0x4E4B36, 0x5A573F, 0x666347)};
 
     /** The tone map of a climate's slab face (tones 0 to 4 of its ramp). */
     static int[][] nestFace(int climate) {
@@ -3836,6 +3838,18 @@ public class TexGen {
                     }
                 }
             }
+            case 5 -> {
+                // Pebbles: a pale knob two wide, a shadow tucked under it and round its right end.
+                for (int i = 0; i < 7; i++) {
+                    int x = random.nextInt(16);
+                    int y = random.nextInt(16);
+                    t[y][x] = 4;
+                    t[y][(x + 1) % 16] = 4;
+                    t[(y + 1) % 16][x] = 1;
+                    t[(y + 1) % 16][(x + 1) % 16] = 0;
+                    t[y][(x + 2) % 16] = 1;
+                }
+            }
             default -> {
                 // Pits: a dark hollow two wide, its lower lip lit.
                 for (int i = 0; i < 5; i++) {
@@ -3853,9 +3867,9 @@ public class TexGen {
 
     static void nest() {
         Img atlas = new Img(128, 128);
-        int[][][] face = new int[5][][];
-        int[][][] floor = new int[5][][];
-        for (int climate = 0; climate < 5; climate++) {
+        int[][][] face = new int[NEST_FACE.length][][];
+        int[][][] floor = new int[NEST_FACE.length][][];
+        for (int climate = 0; climate < NEST_FACE.length; climate++) {
             face[climate] = nestFace(climate);
             floor[climate] = clusters(800 + climate * 17, 3, 0.15, 0);
             for (int y = 0; y < 16; y++) {

@@ -16,7 +16,8 @@ Ant Colonies needs nothing but NeoForge. Everything below is optional.
 
 ## Other mods
 
-Nothing here needs another mod. FTB Teams (below) was tested with this version; MachinaOpus (below) only with the 26.3 version.
+Nothing here needs another mod. FTB Teams, All The Ores and Allthemodium (below) were tested with this version; MachinaOpus
+(below) only with the 26.3 version.
 Everything goes through NeoForge's shared systems, which those mods use:
 
 - **Items** (Create funnels, chutes and arms; Mekanism transporters; Ender IO conduits; AE2 and Refined Storage
@@ -33,19 +34,29 @@ Everything goes through NeoForge's shared systems, which those mods use:
 
 | Species | Comes from | Loads with |
 |---|---|---|
-| Osmium Ant | Stone (osmium ingot) | Mekanism |
-| Tin Ant | Copper (tin ingot) | Mekanism, Thermal, MachinaOpus |
-| Zinc Ant | Copper (zinc ingot) | Create |
-| Lead Ant | Iron (lead ingot) | Mekanism, Thermal, Immersive Engineering, MachinaOpus |
-| Nickel Ant | Iron (nickel ingot) | Thermal, Immersive Engineering |
-| Aluminum Ant | Iron (aluminum ingot) | Immersive Engineering |
-| Silver Ant | Lead (silver ingot) | Thermal, Immersive Engineering, MachinaOpus |
-| Uranium Ant | Lead (raw uranium) | Mekanism, Immersive Engineering, MachinaOpus |
-| Fluorite Ant | Amethyst (fluorite) | Mekanism, MachinaOpus |
+| Osmium Ant | Stone (osmium ingot) | Mekanism, All The Ores |
+| Tin Ant | Copper (tin ingot) | Mekanism, Thermal, MachinaOpus, All The Ores |
+| Zinc Ant | Copper (zinc ingot) | Create, All The Ores |
+| Lead Ant | Iron (lead ingot) | Mekanism, Thermal, Immersive Engineering, MachinaOpus, All The Ores |
+| Nickel Ant | Iron (nickel ingot) | Thermal, Immersive Engineering, All The Ores |
+| Aluminum Ant | Iron (aluminum ingot) | Immersive Engineering, All The Ores |
+| Silver Ant | Lead (silver ingot) | Thermal, Immersive Engineering, MachinaOpus, All The Ores |
+| Uranium Ant | Lead (raw uranium) | Mekanism, Immersive Engineering, MachinaOpus, All The Ores |
+| Fluorite Ant | Amethyst (fluorite) | Mekanism, MachinaOpus, All The Ores |
 | Certus Ant | Amethyst (certus quartz) | Applied Energistics 2 |
 | Molybdenum Ant | Iron (molybdenum ingot) | MachinaOpus |
 | Sulfur Ant | Fire (sulfur) | MachinaOpus |
 | Rubber Ant | Wood (rubber sheet) | MachinaOpus |
+| Platinum Ant | Gold (platinum ingot) | All The Ores |
+| Iridium Ant | Platinum (iridium ingot) | All The Ores |
+| Ruby Ant | Amethyst (ruby) | All The Ores |
+| Sapphire Ant | Lapis (sapphire) | All The Ores |
+| Peridot Ant | Amethyst (peridot) | All The Ores |
+| Cinnabar Ant | Redstone (cinnabar) | All The Ores |
+| Salt Ant | Desert (salt) | All The Ores |
+| Allthemodium Ant | Netherite (allthemodium ingot) | Allthemodium |
+| Vibranium Ant | Allthemodium (vibranium ingot) | Allthemodium |
+| Unobtainium Ant | Vibranium (unobtainium ingot) | Allthemodium |
 
   The Mechanical Miner Ant also turns up raw tin, osmium, zinc, lead and molybdenum at stage 3 when a mod adds them.
   Ender IO and Refined Storage add no ores of their own; the vanilla materials they use (quartz, redstone, gold, ender
@@ -118,6 +129,46 @@ What is and isn't checked:
 - Thermal's crude oil and latex are left out: MachinaOpus and Industrial Foregoing already give ants of those names.
 - Removing a mod from a world keeps colonies of its Liquid Ants as they were: the Formicarium says *These ants need*
   and the mod's name, and they work again when it is back.
+
+### All The Ores and Allthemodium
+
+Tested together on this version, with All The Ores 4.0.4, Allthemodium 4.3.0 and GeckoLib 5.5.2 (which Allthemodium needs).
+
+With **All The Ores** (`alltheores`), ants bring every ore it adds:
+
+- **Tin, Lead, Silver, Nickel, Aluminum, Zinc, Osmium, Uranium and Fluorite Ants**, the same ants other mods' metals
+  already had, now also load with All The Ores alone.
+- **Platinum Ant** (Gold Ants fed a platinum ingot) and **Iridium Ant** (Platinum Ants fed an iridium ingot): slow, like
+  Uranium Ants. Nuggets and raw ore from the start, ingots as rare finds at stage 3.
+- **Ruby, Sapphire and Peridot Ants** (Amethyst, Lapis and Amethyst Ants fed the gem): the gem and its dust.
+- **Cinnabar Ant** (Redstone Ants fed cinnabar; hot climate): cinnabar, its dust, redstone, and All The Ores' sulfur dust.
+- **Salt Ant** (Desert Ants fed salt; hot climate): salt, with sand and gravel.
+
+With **Allthemodium** (`allthemodium`), three more species follow the Netherite Ant, each from the one before:
+
+| Ant | Made from | Climate block | Finds its metal |
+|---|---|---|---|
+| Allthemodium Ant | Netherite Queen and allthemodium ingots | underground: stone, deepslate | at ordinary Foraging Sites |
+| Vibranium Ant | Allthemodium Queen and vibranium ingots | nether: netherrack and the other Nether blocks | on Nether expeditions |
+| Unobtainium Ant | Vibranium Queen and unobtainium ingots | end: end stone, end stone bricks | on End expeditions |
+
+- **Made anywhere.** They are the very end of the game, so unlike the Netherite, Ender and Dragon Ants the Genetic
+  Laboratory makes them in any dimension.
+- **Climate.** Each wants a block of the dimension its ore is in under the Formicarium (or to stand in that dimension).
+  The end climate is new with this: end stone under a Formicarium, and the nest is drawn in end stone.
+- **Slow and long-lived.** Their Queens lay half as many eggs as a Netherite Queen and the brood grows more slowly, but an
+  adult lives three times as long (twelve hours on average, not four).
+- **Allthemodium Ants** work at the Netherite Ant's pace and mostly bring rock. The metal is a rare find: nuggets from
+  stage 3 and raw ore at stage 4, about 18 nuggets and 3 raw ore in every 1,000 finds (netherite scrap is 24).
+- **Vibranium and Unobtainium Ants** bring only rock at an ordinary Foraging Site. Their metal comes from the **Nether
+  Foraging Site** and the **End Foraging Site**: they go on those expeditions like the Nether's and the End's own ants,
+  and from stage 3 about 2 in every 1,000 finds there are vibranium nuggets, and about 1 in 1,000 unobtainium nuggets.
+  A colony of 6,000 with three sites brought 9 or 10 vibranium nuggets an hour in the test.
+
+All of these are made in the Genetic Laboratory like the built-in mineral ants: scan the ingot, gem or dust once, then
+mutate a Queen with it (8 of the material, 4 for Allthemodium's three). Their finds go through the common `c:` tags, so
+another mod that fills the same tag works too. Left out: Allthemodium's alloys and molten metals (no Liquid Ants for
+them), and Piglich Hearts.
 
 ### MachinaOpus
 

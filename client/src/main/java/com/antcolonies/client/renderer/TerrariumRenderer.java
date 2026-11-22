@@ -308,25 +308,21 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
 
     private static void drawSurface(Geometry g, TerrariumVisuals visuals, State state) {
         AntSpecies species = state.species;
-        long seed = visuals.seed();
-        RandomSource random = RandomSource.create(seed);
-        // Entrance mounds.
-        for (int i = 0; i < 2 + Math.min(2, visuals.stage); i++) {
-            float x = 4 + random.nextFloat() * 8;
-            float z = 4 + random.nextFloat() * 8;
+        // Entrance mounds, where TerrariumVisuals has them: its ants come and go by them.
+        for (float[] mound : visuals.mounds) {
+            float x = mound[0];
+            float z = mound[1];
             g.box(x - 0.9F, TOP, z - 0.9F, x + 0.9F, TOP + 0.35F, z + 0.9F, Geometry.shade(soilColor(species == null ? Climate.TEMPERATE : species.climate()), 0.7F),
                     17, 1, 23, 7);
             g.box(x - 0.35F, TOP + 0.01F, z - 0.35F, x + 0.35F, TOP + 0.37F, z + 0.35F, 0xFF1E140C, 17, 1, 19, 3);
         }
-        if (species != null && species.canFarm() && visuals.stage >= 2) {
-            // The fungus garden of Farmer Ants.
-            for (int i = 0; i < 2 + visuals.stage; i++) {
-                float x = 3 + random.nextFloat() * 10;
-                float z = 3 + random.nextFloat() * 10;
-                float h = 0.8F + random.nextFloat() * 0.8F;
-                g.box(x - 0.2F, TOP, z - 0.2F, x + 0.2F, TOP + h, z + 0.2F, 0xFFE8DDC8, 49, 1, 55, 7);
-                g.box(x - 0.7F, TOP + h, z - 0.7F, x + 0.7F, TOP + h + 0.5F, z + 0.7F, i % 2 == 0 ? 0xFFB5462E : 0xFFC9A57A, 57, 1, 63, 7);
-            }
+        // The fungus garden of Farmer Ants.
+        for (int i = 0; i < visuals.mushrooms.size(); i++) {
+            float x = visuals.mushrooms.get(i)[0];
+            float z = visuals.mushrooms.get(i)[1];
+            float h = visuals.mushrooms.get(i)[2];
+            g.box(x - 0.2F, TOP, z - 0.2F, x + 0.2F, TOP + h, z + 0.2F, 0xFFE8DDC8, 49, 1, 55, 7);
+            g.box(x - 0.7F, TOP + h, z - 0.7F, x + 0.7F, TOP + h + 0.5F, z + 0.7F, i % 2 == 0 ? 0xFFB5462E : 0xFFC9A57A, 57, 1, 63, 7);
         }
         if (visuals.stage >= 4 && species != null && species.look().crystal().isPresent()) {
             drawCrystals(g, visuals, 0xFF000000 | species.look().crystal().get());

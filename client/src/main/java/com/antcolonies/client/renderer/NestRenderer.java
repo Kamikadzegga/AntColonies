@@ -186,6 +186,7 @@ public final class NestRenderer {
             case HOT -> 2;
             case UNDERGROUND -> 3;
             case NETHER -> 4;
+            case END -> 5;
             default -> 0;
         };
     }

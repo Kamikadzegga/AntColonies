@@ -437,6 +437,41 @@ public class DataGen {
         NEEDS_MODS.put(id, mods);
     }
 
+    /** A crystal species for another mod's gem: the gem and its dust through the c: tags, like the Fluorite Ant. */
+    static void gem(String id, String name, String body, String gaster, String accent, String crystal, List<String> mods, String description) {
+        SPECIES.add(new Species(id, name, 2, "mineral", "underground", null, body, gaster, accent, "faceted", crystal, true,
+                1.0, 1.4, "crystal", 0.5, 0.45,
+                List.of(Out.of("c:gems/" + id, 40).asTag(), Out.of("c:dusts/" + id, 12).asTag(), Out.of("cobblestone", 12), Out.of("calcite", 6).atStage(2)),
+                0, List.of(), 1.0, List.of(), List.of(new String[] {ac("royal_jelly"), "3"}, new String[] {ac("crystal_ant_food"), "6"}), 4800, 0.85, 0.9, null,
+                title(id) + " Extraction", "Gem Cutting", title(id) + " Efficiency", description));
+        NEEDS_MODS.put(id, mods);
+    }
+
+    /**
+     * One of Allthemodium's metals: rock at the Netherite Ant's pace, with nuggets from stage 3 and raw ore at stage 4 as rare
+     * finds (weight 0: none here, the metal comes from an expedition). Half the Netherite Ant's brood, three times its years.
+     * The weights are per 80 of rock: 1 is about 20 an hour for a full colony, as netherite scrap's 2 is about 40.
+     */
+    static void modium(String id, String name, String climate, String body, String gaster, String accent, String crystal, String food, List<Out> rock,
+                       double nuggets, double raw, String description) {
+        List<Out> outputs = new ArrayList<>(rock);
+        if (nuggets > 0) {
+            outputs.add(Out.of("c:nuggets/" + id, nuggets).atStage(3).asSpecial().asTag());
+        }
+        if (raw > 0) {
+            outputs.add(Out.of("c:raw_materials/" + id, raw).atStage(4).asSpecial().asTag());
+        }
+        SPECIES.add(new Species(id, name, 4, "endgame", climate, null, body, gaster, accent, "metallic", crystal, true,
+                1.2, 2.8, food, 2.0, 0.0025, outputs, 0, List.of(), 2.0, List.of(),
+                List.of(new String[] {ac("royal_jelly"), "6"}, new String[] {ac(food + "_ant_food"), "12"}, new String[] {ac("nuptial_pheromone"), "4"}),
+                12000, 0.3, 0.4, null, title(id) + " Extraction", "Rare Metal Smelting", title(id) + " Efficiency", description));
+        NEEDS_MODS.put(id, List.of("allthemodium"));
+        LIFESPANS.put(id, 3.0);
+    }
+
+    /** Species whose adults live this many times the usual lifespan. */
+    static final Map<String, Double> LIFESPANS = new LinkedHashMap<>();
+
     static void species() {
         List<String[]> baseRearing = List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"#minecraft:flowers", "4"});
         SPECIES.add(new Species("common", "Common Ant", 0, "base", "temperate", "spawns/common", "3A2A20", "2B1F18", "6B4A30", "banded", null, false,
@@ -817,22 +852,22 @@ public class DataGen {
                         + "and skulls, and very rarely a Nether Star of their own."));
 
         // --- Species for other mods' metals and crystals: loaded only with such a mod, finds through c: tags, no signature item ---
-        compat("osmium", "Osmium Ant", 2, "any", "5A6E80", "A8C0D0", "D8E8F0", "metallic", "B0D0E8", false, "osmium", List.of("mekanism"),
+        compat("osmium", "Osmium Ant", 2, "any", "5A6E80", "A8C0D0", "D8E8F0", "metallic", "B0D0E8", false, "osmium", List.of("mekanism", "alltheores"),
                 "Stone Ants fed osmium. Bring osmium for Mekanism's machines.");
-        compat("tin", "Tin Ant", 1, "any", "6A6A70", "C8C8D0", "E8E8F0", "metallic", null, false, "tin", List.of("mekanism", "thermal", "machinaopus"),
+        compat("tin", "Tin Ant", 1, "any", "6A6A70", "C8C8D0", "E8E8F0", "metallic", null, false, "tin", List.of("mekanism", "thermal", "machinaopus", "alltheores"),
                 "Copper Ants fed tin: together they make bronze. Bring tin.");
         compat("lead", "Lead Ant", 2, "underground", "2E2E3A", "5A5A78", "8A8AA8", "metallic", null, false, "lead",
-                List.of("mekanism", "thermal", "immersiveengineering", "machinaopus"), "Heavy, slow Iron Ants fed lead. Bring lead.");
+                List.of("mekanism", "thermal", "immersiveengineering", "machinaopus", "alltheores"), "Heavy, slow Iron Ants fed lead. Bring lead.");
         compat("silver", "Silver Ant", 2, "any", "6A7078", "D8E0E8", "FFFFFF", "metallic", "E0E8F0", false, "silver",
-                List.of("thermal", "immersiveengineering", "machinaopus"), "Lead Ants fed silver; they shine like mirrors. Bring silver.");
+                List.of("thermal", "immersiveengineering", "machinaopus", "alltheores"), "Lead Ants fed silver; they shine like mirrors. Bring silver.");
         compat("nickel", "Nickel Ant", 2, "any", "6A6A50", "C8C8A0", "E8E8C8", "metallic", null, false, "nickel",
-                List.of("thermal", "immersiveengineering"), "Iron Ants fed nickel. Bring nickel.");
+                List.of("thermal", "immersiveengineering", "alltheores"), "Iron Ants fed nickel. Bring nickel.");
         compat("aluminum", "Aluminum Ant", 1, "any", "8A8A90", "D8DCE0", "F0F4F8", "metallic", null, false, "aluminum",
-                List.of("immersiveengineering"), "Light, quick Iron Ants fed aluminum. Bring aluminum.");
-        compat("zinc", "Zinc Ant", 1, "any", "5A6A60", "A8C0B0", "D0E8D8", "metallic", null, false, "zinc", List.of("create"),
+                List.of("immersiveengineering", "alltheores"), "Light, quick Iron Ants fed aluminum. Bring aluminum.");
+        compat("zinc", "Zinc Ant", 1, "any", "5A6A60", "A8C0B0", "D0E8D8", "metallic", null, false, "zinc", List.of("create", "alltheores"),
                 "Copper Ants fed zinc, ready for Create's brass. Bring zinc.");
         compat("uranium", "Uranium Ant", 3, "underground", "2A3A1A", "5AE02A", "C8FF8A", "faceted", "7AFF3A", true, "uranium",
-                List.of("mekanism", "immersiveengineering", "machinaopus"), "Lead Ants fed raw uranium. They glow green in the dark; bring uranium.");
+                List.of("mekanism", "immersiveengineering", "machinaopus", "alltheores"), "Lead Ants fed raw uranium. They glow green in the dark; bring uranium.");
         // Crystals rather than metals: their own outputs.
         SPECIES.add(new Species("fluorite", "Fluorite Ant", 2, "mineral", "underground", null, "3A2A60", "8A6AE8", "D0C0FF", "faceted", "A890FF", true,
                 1.0, 1.4, "crystal", 0.5, 0.45,
@@ -841,7 +876,7 @@ public class DataGen {
                 0, List.of(), 1.0, List.of(), List.of(new String[] {ac("royal_jelly"), "3"}, new String[] {ac("crystal_ant_food"), "6"}), 4800, 0.85, 0.9, null,
                 "Fluorite Extraction", "Crystal Purification", "Lattice Efficiency",
                 "Amethyst Ants fed fluorite. Bring fluorite for Mekanism's or MachinaOpus's chemistry."));
-        NEEDS_MODS.put("fluorite", List.of("mekanism", "machinaopus"));
+        NEEDS_MODS.put("fluorite", List.of("mekanism", "machinaopus", "alltheores"));
         SPECIES.add(new Species("certus", "Certus Ant", 2, "mineral", "underground", null, "2A3A5A", "8AB8F0", "E0F0FF", "faceted", "A0D0FF", true,
                 1.0, 1.4, "crystal", 0.5, 0.45,
                 List.of(Out.of("c:gems/certus_quartz", 40).asTag(), Out.of("c:dusts/certus_quartz", 12).asTag(), Out.of("quartz", 10),
@@ -850,6 +885,47 @@ public class DataGen {
                 "Certus Extraction", "Crystal Charging", "Resonance Efficiency",
                 "Amethyst Ants fed certus quartz. Bring certus quartz for Applied Energistics, and fluix at stage 3."));
         NEEDS_MODS.put("certus", List.of("ae2"));
+
+        // All The Ores' other ores: two rare metals, three gems, cinnabar (with the sulfur found beside it) and salt.
+        compat("platinum", "Platinum Ant", 3, "underground", "56626E", "C4D4E0", "F2F8FF", "metallic", "D4E8F8", false, "platinum",
+                List.of("alltheores"), "Gold Ants fed platinum, a rare white metal. Slow and choosy; bring platinum.");
+        compat("iridium", "Iridium Ant", 3, "underground", "4A465A", "B4ACD0", "ECE8FF", "metallic", "C8C0F0", true, "iridium",
+                List.of("alltheores"), "Platinum Ants fed iridium, the hardest of the white metals. Bring iridium.");
+        gem("ruby", "Ruby Ant", "5A0E1E", "D8203E", "FF9AA8", "FF3A5A", List.of("alltheores"), "Amethyst Ants fed rubies. Deep red; bring rubies.");
+        gem("sapphire", "Sapphire Ant", "0E2A6A", "2A6AE8", "A0C8FF", "4A8AFF", List.of("alltheores"),
+                "Lapis Ants fed sapphires. Clear blue; bring sapphires.");
+        gem("peridot", "Peridot Ant", "2E4A0E", "8AD82A", "D8FF9A", "A8F04A", List.of("alltheores"),
+                "Amethyst Ants fed peridot. Lime green; bring peridot.");
+        SPECIES.add(new Species("cinnabar", "Cinnabar Ant", 2, "mineral", "hot", null, "4A1410", "C8341E", "FF8A5A", "speckled", "E84A2A", false,
+                1.0, 1.4, "mineral", 0.6, 0.45,
+                List.of(Out.of("c:gems/cinnabar", 36).asTag(), Out.of("c:dusts/cinnabar", 10).asTag(), Out.of("c:dusts/sulfur", 10).asTag(),
+                        Out.of("redstone", 8), Out.of("cobblestone", 12)),
+                0, List.of(), 1.0, List.of(), mineralRearing, 4800, 0.85, 0.9, null,
+                "Cinnabar Extraction", "Ore Roasting", "Vermilion Efficiency",
+                "Redstone Ants fed cinnabar, the red ore of quicksilver. Bring cinnabar and the sulfur found beside it."));
+        NEEDS_MODS.put("cinnabar", List.of("alltheores"));
+        SPECIES.add(new Species("salt", "Salt Ant", 1, "mineral", "hot", null, "8A8078", "F0E8E0", "FFFFFF", "speckled", null, false,
+                1.0, 1.35, "mineral", 0.45, 0.6,
+                List.of(Out.of("c:dusts/salt", 40).asTag(), Out.of("sand", 20), Out.of("gravel", 8), Out.of("clay_ball", 4).atStage(2)),
+                0, List.of(), 1.0, List.of(), mineralRearing, 3600, 0.9, 0.9, null,
+                "Salt Extraction", "Brine Drying", "Salt Pan Efficiency",
+                "Desert Ants fed salt that work dry salt pans. Pale as the crust they dig; bring salt."));
+        NEEDS_MODS.put("salt", List.of("alltheores"));
+
+        // Allthemodium's three metals, past netherite and as slow, each from the one before. The first digs its metal in the
+        // Overworld; the other two find theirs only on Nether and End expeditions (see expeditions()).
+        modium("allthemodium", "Allthemodium Ant", "underground", "5A4208", "F0C020", "FFF0A0", "FFD840", "mineral",
+                List.of(Out.of("cobbled_deepslate", 30), Out.of("gold_nugget", 30), Out.of("tuff", 20)), 1.5, 0.25,
+                "Netherite Ants fed allthemodium, the gold-bright metal under the deepest stone. They breed slowly and live long; "
+                        + "very slowly, they bring allthemodium.");
+        modium("vibranium", "Vibranium Ant", "nether", "0A3A34", "20C8A8", "A0FFE8", "40F0C8", "nether",
+                List.of(Out.of("netherrack", 30), Out.of("quartz", 30), Out.of("blackstone", 20)), 0, 0,
+                "Allthemodium Ants fed vibranium, the humming teal metal of the Nether. They breed slowly and live long; only a "
+                        + "Nether Foraging Site brings them to their metal.");
+        modium("unobtainium", "Unobtainium Ant", "end", "3A0A5A", "B040E8", "F0B0FF", "D060FF", "crystal",
+                List.of(Out.of("end_stone", 40), Out.of("obsidian", 20), Out.of("chorus_fruit", 20)), 0, 0,
+                "Vibranium Ants fed unobtainium, the violet metal of the End. They breed slowly and live long; only an End "
+                        + "Foraging Site brings them to what cannot be obtained.");
 
         // MachinaOpus's own materials: these name its items directly and have signature items.
         SPECIES.add(new Species("molybdenum", "Molybdenum Ant", 2, "mineral", "underground", null, "3A4048", "8A98A8", "C0CCD8", "metallic", "A8B8D0", false,
@@ -896,7 +972,7 @@ public class DataGen {
                     "farming", s.farmFood() > 0 ? obj("food", s.farmFood(), "harvest", harvest) : null,
                     "combat", obj("strength", s.strength(), "targets", targets.isEmpty() ? null : targets),
                     "rearing", obj("cost", cost, "time", s.rearingTime()),
-                    "breeding", obj("eggs", s.eggs(), "growth", s.growth()),
+                    "breeding", obj("eggs", s.eggs(), "growth", s.growth(), "lifespan", LIFESPANS.get(s.id())),
                     "signature_item", s.signature() == null ? null : s.signature().contains(":") ? s.signature() : mc(s.signature()));
             if (NEEDS_MODS.containsKey(s.id())) {
                 json.put("neoforge:conditions", conditions(NEEDS_MODS.get(s.id())));
@@ -958,6 +1034,18 @@ public class DataGen {
                 {"iron_to_molybdenum", "iron", "molybdenum", "#c:ingots/molybdenum", 0.07, 24, 2, 400},
                 {"fire_to_sulfur", "fire", "sulfur", "#c:dusts/sulfur", 0.06, 24, 2, 400},
                 {"wood_to_rubber", "wood", "rubber", "#c:rubber", 0.08, 24, 1, 100},
+                // All The Ores' other ores.
+                {"gold_to_platinum", "gold", "platinum", "#c:ingots/platinum", 0.05, 32, 3, 1000},
+                {"platinum_to_iridium", "platinum", "iridium", "#c:ingots/iridium", 0.04, 32, 3, 1500},
+                {"amethyst_to_ruby", "amethyst", "ruby", "#c:gems/ruby", 0.06, 24, 2, 400},
+                {"lapis_to_sapphire", "lapis", "sapphire", "#c:gems/sapphire", 0.06, 24, 2, 400},
+                {"amethyst_to_peridot", "amethyst", "peridot", "#c:gems/peridot", 0.06, 24, 2, 400},
+                {"redstone_to_cinnabar", "redstone", "cinnabar", "#c:gems/cinnabar", 0.06, 24, 2, 400},
+                {"desert_to_salt", "desert", "salt", "#c:dusts/salt", 0.08, 24, 2, 200},
+                // Allthemodium's metals, past netherite: the very end of the game, so made in any dimension.
+                {"netherite_to_allthemodium", "netherite", "allthemodium", "#c:ingots/allthemodium", 0.02, 48, 4, 5000},
+                {"allthemodium_to_vibranium", "allthemodium", "vibranium", "#c:ingots/vibranium", 0.02, 48, 4, 6000},
+                {"vibranium_to_unobtainium", "vibranium", "unobtainium", "#c:ingots/unobtainium", 0.02, 48, 4, 8000},
         };
         for (Object[] e : list) {
             Map<String, Object> json = obj("from", ac((String) e[1]), "to", ac((String) e[2]),
@@ -985,7 +1073,10 @@ public class DataGen {
                 {"fire_to_soul", "2"}, {"amethyst_to_ender", "4"}, {"chorus_to_ender", "4"}, {"ender_to_dragon", "4"}, {"soul_to_wither", "1"},
                 {"stone_to_osmium", "8"}, {"copper_to_tin", "8"}, {"copper_to_zinc", "8"}, {"iron_to_lead", "8"}, {"iron_to_nickel", "8"},
                 {"iron_to_aluminum", "8"}, {"lead_to_silver", "8"}, {"lead_to_uranium", "8"}, {"amethyst_to_fluorite", "8"},
-                {"amethyst_to_certus", "8"}, {"iron_to_molybdenum", "8"}, {"fire_to_sulfur", "8"}};
+                {"amethyst_to_certus", "8"}, {"iron_to_molybdenum", "8"}, {"fire_to_sulfur", "8"},
+                {"gold_to_platinum", "8"}, {"platinum_to_iridium", "8"}, {"amethyst_to_ruby", "8"}, {"lapis_to_sapphire", "8"},
+                {"amethyst_to_peridot", "8"}, {"redstone_to_cinnabar", "8"}, {"desert_to_salt", "8"},
+                {"netherite_to_allthemodium", "4"}, {"allthemodium_to_vibranium", "4"}, {"vibranium_to_unobtainium", "4"}};
         for (String[] amount : amounts) {
             LAB_AMOUNTS.put(amount[0], Integer.parseInt(amount[1]));
         }
@@ -1027,6 +1118,16 @@ public class DataGen {
                 {"ender", "ender_eye", "experimental", 2, null, "An eye that looks for strongholds."},
                 {"dragon", "dragon_breath", "experimental", 2, "ender", "The breath of the End's ruler, caught in a bottle."},
                 {"wither", "nether_star", "experimental", 2, "soul", "What the Wither leaves behind."},
+                {"salt", "#c:dusts/salt", "basic", 0, null, "White dust from dry salt pans."},
+                {"ruby", "#c:gems/ruby", "advanced", 1, null, "A deep red gem."},
+                {"sapphire", "#c:gems/sapphire", "advanced", 1, null, "A clear blue gem."},
+                {"peridot", "#c:gems/peridot", "advanced", 1, null, "A lime green gem."},
+                {"cinnabar", "#c:gems/cinnabar", "advanced", 1, null, "The red ore of quicksilver."},
+                {"platinum", "#c:ingots/platinum", "advanced", 1, "gold", "A rare white metal, heavier than gold."},
+                {"iridium", "#c:ingots/iridium", "advanced", 1, "platinum", "The hardest of the white metals."},
+                {"allthemodium", "#c:ingots/allthemodium", "experimental", 2, "netherite", "A gold-bright metal from under the deepest stone."},
+                {"vibranium", "#c:ingots/vibranium", "experimental", 2, "allthemodium", "A teal metal that hums, from the Nether."},
+                {"unobtainium", "#c:ingots/unobtainium", "experimental", 2, "vibranium", "A violet metal from the End that should not exist."},
         };
         for (Object[] r : list) {
             String id = (String) r[0];
@@ -1506,6 +1607,7 @@ public class DataGen {
                 "minecraft:dripstone_block"));
         floors.put("nether", arr("#minecraft:base_stone_nether", "minecraft:polished_basalt", "minecraft:smooth_basalt",
                 "minecraft:polished_blackstone", "#minecraft:nylium", "minecraft:magma_block", "minecraft:soul_sand", "minecraft:soul_soil"));
+        floors.put("end", arr("minecraft:end_stone", "minecraft:end_stone_bricks"));
         for (Map.Entry<String, List<Object>> floor : floors.entrySet()) {
             write(DATA.resolve("tags/block/climate/" + floor.getKey() + ".json"), obj("values", floor.getValue()));
         }
@@ -2731,7 +2833,7 @@ public class DataGen {
         for (String c : new String[] {"base", "farmer", "mineral", "hybrid", "endgame", "hunter"}) {
             l.put("category." + NS + "." + c, title(c));
         }
-        for (String c : new String[] {"temperate", "cold", "hot", "underground", "nether", "any"}) {
+        for (String c : new String[] {"temperate", "cold", "hot", "underground", "nether", "end", "any"}) {
             l.put("climate." + NS + "." + c, title(c));
         }
         String[] rarity = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Perfect"};
@@ -3328,11 +3430,16 @@ public class DataGen {
                 "P", ac("nether_trail_pheromone"), "B", "blaze_rod", "M", "magma_block", "T", ac("test_tube"));
     }
 
+    /** Weights of the nuggets Vibranium and Unobtainium Ants bring from expeditions, among about 120 and 60 of other finds. */
+    static final double VIBRANIUM_NUGGETS = 0.2;
+    static final double UNOBTAINIUM_NUGGETS = 0.06;
+
     /** The Nether and End expedition tables, the species that can go on them, and the Foraging Site modes' mineral tag. */
     static void expeditions() {
         write(DATA.resolve("tags/antcolonies/species/nether_adapted.json"), obj("values", arr(ac("warped"), ac("fire"), ac("inferno"), ac("soul"),
-                ac("netherite"), ac("wither"), ac("crimson"))));
-        write(DATA.resolve("tags/antcolonies/species/end_adapted.json"), obj("values", arr(ac("chorus"), ac("ender"), ac("dragon"))));
+                ac("netherite"), ac("wither"), ac("crimson"), obj("id", ac("vibranium"), "required", false))));
+        write(DATA.resolve("tags/antcolonies/species/end_adapted.json"), obj("values", arr(ac("chorus"), ac("ender"), ac("dragon"),
+                obj("id", ac("unobtainium"), "required", false))));
         List<Object> nether = arr(
                 Out.of("quartz", 20).json(), Out.of("glowstone_dust", 15).json(), Out.of("nether_wart", 14).json(), Out.of("blackstone", 10).json(),
                 Out.of("soul_sand", 10).json(), Out.of("basalt", 8).json(), Out.of("magma_cream", 8).json(), Out.of("soul_soil", 6).json(),
@@ -3346,6 +3453,10 @@ public class DataGen {
         Map<String, Object> rose = Out.of("wither_rose", 0.3).atStage(3).asSpecial().json();
         rose.put("species", arr(ac("wither"), ac("soul")));
         nether.add(rose);
+        // Allthemodium's Nether metal, for its own ants only (a tag: nothing while that mod is away).
+        Map<String, Object> vibranium = Out.of("c:nuggets/vibranium", VIBRANIUM_NUGGETS).atStage(3).asSpecial().asTag().json();
+        vibranium.put("species", arr(ac("vibranium")));
+        nether.add(vibranium);
         write(DATA.resolve("antcolonies/expedition/nether.json"), obj("site", "nether_foraging_site", "adapted", ac("nether_adapted"), "rate", 0.8,
                 "home", "minecraft:the_nether", "trail", obj("item", ac("nether_trail_pheromone"), "chance", 0.02), "outputs", nether));
         List<Object> end = arr(
@@ -3356,6 +3467,9 @@ public class DataGen {
         Map<String, Object> breath = Out.of("dragon_breath", 0.15).atStage(4).asSpecial().json();
         breath.put("species", arr(ac("dragon")));
         end.add(breath);
+        Map<String, Object> unobtainium = Out.of("c:nuggets/unobtainium", UNOBTAINIUM_NUGGETS).atStage(3).asSpecial().asTag().json();
+        unobtainium.put("species", arr(ac("unobtainium")));
+        end.add(unobtainium);
         write(DATA.resolve("antcolonies/expedition/end.json"), obj("site", "end_foraging_site", "adapted", ac("end_adapted"), "rate", 0.7,
                 "home", "minecraft:the_end", "trail", obj("item", ac("end_trail_pheromone"), "chance", 0.02), "outputs", end));
         // What Mineral Gathering looks for; everything else counts as organic.
@@ -3612,7 +3726,6 @@ public class DataGen {
         l.put(g + "network.offline", "Unloaded");
         l.put(g + "network.count", "%s other colonies");
         l.put(g + "network.channel", "Channel: %s");
-        l.put(g + "production.more", "+%s more");
         l.put(g + "network.food", "Food: %s / %s");
         l.put(g + "network.keeps", "Keeps %s for itself");
         l.put(g + "network.asks", "Asks for food up to %s");

@@ -6,6 +6,24 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
+### Added
+
+- **End climate.** A new `end` climate: at home in the End, or anywhere on end stone.
+- **For modpacks.** `breeding.lifespan` in a species file sets how long its adults live.
+- **Support for All The Ores.** Ants for every ore it adds, seven of them new species.
+- **Support for Allthemodium.** Allthemodium, Vibranium and Unobtainium Ants, made after the Netherite Ant.
+- **Support for KubeGroovy.** The modpack guide's script examples, in Groovy too.
+
+### Changed
+
+- **Better ant animations.** In a colony built flat, the ants at a job site and on top of the Formicarium do that
+  place's work at one walking pace, where they used to walk in circles.
+
+### Fixed
+
+- **Production page.** The Formicarium's Production page shows every item now: it scrolls with the mouse wheel and a
+  scroll bar, as cards and as a table.
+
 ## [0.4.0] - 2026-11-20
 
 ### Added

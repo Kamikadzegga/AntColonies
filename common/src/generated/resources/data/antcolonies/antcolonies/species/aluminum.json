@@ -60,8 +60,17 @@
   },
   "neoforge:conditions": [
     {
-      "type": "neoforge:mod_loaded",
-      "modid": "immersiveengineering"
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "immersiveengineering"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "alltheores"
+        }
+      ]
     }
   ]
 }

@@ -7,6 +7,7 @@ import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.client.screen.IdentificationBookScreen;
 import com.antcolonies.client.nest.NestLayout;
 import com.antcolonies.client.nest.NestVisuals;
+import com.antcolonies.client.terrarium.SiteVisuals;
 import com.antcolonies.client.terrarium.TerrariumVisuals;
 import com.antcolonies.colony.species.AntSpecies;
 import com.antcolonies.content.block.ColonyPartBlock;
@@ -113,7 +114,7 @@ public final class ClientHooks {
             return;
         }
         if (!ColonyPartBlock.upright(structure.getBlockState())) {
-            structure.clientVisuals = null;
+            flatSiteTick(structure);
             return;
         }
         BlockPos pos = structure.getBlockPos();
@@ -142,6 +143,27 @@ public final class ClientHooks {
             structure.clientVisuals = visuals;
         }
         visuals.tick(brief, host(level, pos, facing, home), near(pos, AntConfig.client(AntConfig.VISUAL_DISTANCE) + 8));
+    }
+
+    /** A job site in a flat colony: its working ants go about their work while someone is near enough to see them. */
+    private static void flatSiteTick(StructureBlockEntity structure) {
+        StructureKind kind = structure.kind();
+        boolean shown = kind.job().any() && kind != StructureKind.HUNTING_GROUND && structure.clientLinked() && structure.assigned() > 0
+                && AntConfig.client(AntConfig.STRUCTURE_ANTS) && AntConfig.client(AntConfig.ANT_3D_MODELS)
+                && near(structure.getBlockPos(), AntConfig.client(AntConfig.ANT_DETAIL_DISTANCE) + 4);
+        if (!shown) {
+            structure.clientVisuals = null;
+            return;
+        }
+        SiteVisuals visuals;
+        if (structure.clientVisuals instanceof SiteVisuals site) {
+            visuals = site;
+        } else {
+            visuals = new SiteVisuals(structure.getBlockPos().asLong());
+            structure.clientVisuals = visuals;
+        }
+        // More ants at the site, more of them shown: one for a handful, six for hundreds.
+        visuals.tick(kind, (int) Math.min(6, 1 + Math.floor(Math.log(structure.assigned()) / Math.log(2.5))));
     }
 
     private static Direction facing(BlockState state) {

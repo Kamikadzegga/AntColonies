@@ -1,0 +1,79 @@
+{
+  "tier": 4,
+  "category": "endgame",
+  "look": {
+    "body": "#5A4208",
+    "gaster": "#F0C020",
+    "accent": "#FFF0A0",
+    "pattern": "metallic",
+    "crystal": "#FFD840",
+    "glow": true,
+    "size": 1.2
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 2.8,
+    "special_food": "mineral",
+    "special_per_egg": 2.0
+  },
+  "production": {
+    "rate": 0.0025,
+    "outputs": [
+      {
+        "item": "minecraft:cobbled_deepslate",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:gold_nugget",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:tuff",
+        "weight": 20
+      },
+      {
+        "tag": "c:nuggets/allthemodium",
+        "weight": 1.5,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "tag": "c:raw_materials/allthemodium",
+        "weight": 0.25,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 2.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 6
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 12
+      },
+      {
+        "ingredient": "antcolonies:nuptial_pheromone",
+        "count": 4
+      }
+    ],
+    "time": 12000
+  },
+  "breeding": {
+    "eggs": 0.3,
+    "growth": 0.4,
+    "lifespan": 3.0
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "allthemodium"
+    }
+  ]
+}

@@ -1,13 +1,17 @@
 # Modpack and KubeJS guide
 
 How to change Ant Colonies for a modpack: recipes, ant food, species, evolutions, hybrids, mutations, Genetic Laboratory
-costs, wild ant spawns and the server config. Everything here is plain JSON (a data pack) or a config file; KubeJS is
-optional.
+costs, wild ant spawns and the server config. Everything here is plain JSON (a data pack) or a config file; KubeJS and
+KubeGroovy are optional.
 
 > **KubeJS status (November 2026):** every KubeJS example in this guide was tested in game with KubeJS 8.0.8 (Rhino
 > 2101.2.8) on Minecraft 26.1.2, on a dedicated server with a player, before and after `/reload`. One KubeJS limit to know:
 > scripts can **add** to biome tags but can't **remove** from them (see section 11). Everything done with plain JSON files
 > works with any data pack.
+>
+> **KubeGroovy status (November 2026):** the same examples, written in Groovy, are in [section 18](#18-kubegroovy). They
+> were tested in game with KubeGroovy 1.0.3 on Minecraft 26.1.2, on a dedicated server with a player, before and after
+> `/reload`. It has the same limit on biome tags.
 
 ## Contents
 
@@ -28,6 +32,7 @@ optional.
 15. [Advancements and the colony trigger](#15-advancements-and-the-colony-trigger)
 16. [What cannot be changed with data](#16-what-cannot-be-changed-with-data)
 17. [Checking your changes](#17-checking-your-changes)
+18. [KubeGroovy](#18-kubegroovy)
 
 ---
 
@@ -42,6 +47,7 @@ All paths below start with `data/`. Put that `data/` folder in one of these:
 | KubeJS | `kubejs/data/...` | KubeJS loads this folder as a data pack; no `pack.mcmeta` needed. |
 | Language files (names) | `assets/<namespace>/lang/en_us.json` | In a resource pack, or `kubejs/assets/...` with KubeJS. |
 | KubeJS startup scripts | `kubejs/startup_scripts/` | For new items and fluids (the Liquid Ant example in section 5). Read when the game starts: needs a restart, and the same script on the server and every client. |
+| KubeGroovy | `kubegroovy/data/...`, `kubegroovy/assets/...`, `kubegroovy/startup_scripts/` | The same three folders under `kubegroovy/`; its scripts are in section 18. |
 
 A world data pack's `pack.mcmeta` for Minecraft 26.1.2 (data pack format 101):
 
@@ -268,7 +274,7 @@ required; every other field has a default.
 | `look.crystal` | none | A color adds crystal spikes. |
 | `look.glow` | `false` | Crystals glow in the dark. |
 | `look.size` | `1.0` | 0.25–4. |
-| `climate` | `temperate` | `temperate`, `cold`, `hot`, `underground`, `nether` or `any`. A Formicarium in the wrong climate loses health, unless it stands on a block of the block tag `antcolonies:climate/<climate>` (add your own blocks to those tags; snow and ice for cold, sand for hot...). |
+| `climate` | `temperate` | `temperate`, `cold`, `hot`, `underground`, `nether`, `end` or `any`. A Formicarium in the wrong climate loses health, unless it stands on a block of the block tag `antcolonies:climate/<climate>` (add your own blocks to those tags; snow and ice for cold, sand for hot...). |
 | `spawn_biomes` | none | A biome tag where wild ants of this species appear (section 11). Without it the species is never wild. |
 | `diet.consumption` | `1.0` | Food use multiplier. |
 | `diet.special_food`, `diet.special_per_egg` | none, `0` | Special food the eggs need (section 4). |
@@ -280,6 +286,7 @@ required; every other field has a default.
 | `rearing.cost` | none | What a Queen Chamber uses to rear a new Queen of this species. |
 | `rearing.time` | `2400` | Rearing time in ticks (20 ticks = 1 second). |
 | `breeding.eggs`, `breeding.growth` | `1.0` | Egg laying and larvae growth speed. |
+| `breeding.lifespan` | `1.0` | How long its adults live, as a multiple of the config's `adultLifespanMinutes` (240): `3.0` is twelve hours. |
 | `signature_item` | none | The item the Colony Upgrade Station combines into species upgrades (4, 8 or 16 of it). Without one, the species has no species upgrades. |
 | `look.crop` | none | Liquid Ants: the colour of the liquid in their crop. With it the ants are drawn with a swollen, full crop instead of a gaster (always full: it is a look, not a gauge). `look.glow` makes it glow. |
 | `liquid.fluid`, `liquid.droplet`, `liquid.rate` | none, none, `1.0` | For `"category": "liquid"`: the fluid's id (shown in the screens), the item its workers give at a Liquid Chamber, and droplets per minute compared to Water Ants. |
@@ -850,8 +857,8 @@ These are fixed in the mod's code today:
 - **Nest blocks**: only the 13 built-in wild species have nest blocks; species added by a data pack can be wild ants but
   can't have nests.
 - **Structures, upgrades and their effects**: what each structure and upgrade does (the numbers are in the config).
-- **No KubeJS bindings**: scripts can't read or change a colony's population, food or genetics directly; there is no
-  KubeJS plugin yet.
+- **No KubeJS or KubeGroovy bindings**: scripts can't read or change a colony's population, food or genetics directly;
+  there is no plugin for either yet.
 
 ## 17. Checking your changes
 
@@ -862,3 +869,142 @@ These are fixed in the mod's code today:
   with the error on screen; fix the file and try again.
 - **In game**: the Ant Identification Book lists every species with its diet and finds; the Colony Scanner reports a
   colony's state in chat.
+
+## 18. KubeGroovy
+
+[KubeGroovy](https://www.curseforge.com/minecraft/mc-mods/kubegroovy) is a fork of KubeJS that runs Groovy scripts
+instead of JavaScript. Everything this guide does with KubeJS can be done with it: the JSON files are the same, and the
+scripts below are the guide's scripts written in Groovy. It exists for NeoForge 26.1.2 only, and it can't be installed
+together with KubeJS.
+
+| | KubeJS | KubeGroovy |
+|---|---|---|
+| Folder | `kubejs/` | `kubegroovy/` |
+| Data files and names | `kubejs/data/...`, `kubejs/assets/...` | `kubegroovy/data/...`, `kubegroovy/assets/...` (the same files) |
+| Scripts | `server_scripts/*.js`, `startup_scripts/*.js` | `server_scripts/*.groovy`, `startup_scripts/*.groovy` |
+| An event | `ServerEvents.recipes(event => { ... })` | `$ServerEvents.recipes { event -> ... }` |
+| A filter or a JSON object | `{ id: '...' }` | `[id: '...']` |
+| Script names such as `Item` | `Item.of(...)` | `$Item.of(...)`: a `$` in front (`console` has none) |
+| Id of a recipe the script did not name | `minecraft:kjs/...` | `minecraft:kgy/...` |
+
+What reloads and what needs a restart is the same as in section 2: server scripts on `/reload`, startup scripts and
+the species, evolution and research files on a restart.
+
+### Recipes
+
+The Droplet Centrifuge recipes of section 3:
+
+```groovy
+// kubegroovy/server_scripts/antcolonies_centrifuge.groovy
+$ServerEvents.recipes { event ->
+  // Lava Droplets give half as much for twice the power: replace the built-in recipe.
+  event.remove([id: 'antcolonies:centrifuging/lava'])
+  event.custom([
+    type: 'antcolonies:centrifuging',
+    ingredient: 'antcolonies:lava_droplet',
+    result: [id: 'minecraft:lava', amount: 25],
+    energy: 4000,
+    time: 200
+  ]).id('mypack:centrifuging/lava')
+
+  // Any item can be spun: snowballs melt into water.
+  event.custom([
+    type: 'antcolonies:centrifuging',
+    ingredient: 'minecraft:snowball',
+    result: [id: 'minecraft:water', amount: 250],
+    energy: 200
+  ]).id('mypack:centrifuging/snowball')
+
+  // The Syrup Droplets of the pack's own Liquid Ant (section 5).
+  event.custom([
+    type: 'antcolonies:centrifuging',
+    ingredient: 'mypack:syrup_droplet',
+    result: [id: 'mypack:syrup', amount: 50],
+    energy: 1200,
+    time: 60
+  ]).id('mypack:centrifuging/syrup')
+}
+```
+
+Crafting recipes:
+
+```groovy
+// kubegroovy/server_scripts/antcolonies_recipes.groovy
+$ServerEvents.recipes { event ->
+  // A harder Formicarium: replace the built-in recipe.
+  event.remove([output: 'antcolonies:terrarium'])
+  event.shaped('antcolonies:terrarium', [
+    'GGG',
+    'G G',
+    'III'
+  ], [
+    G: 'minecraft:glass',
+    I: 'minecraft:iron_ingot'
+  ])
+
+  // No Royal Jelly crafting: it must come from the colony instead.
+  event.remove([output: 'antcolonies:royal_jelly'])
+}
+```
+
+A new recipe, a changed ingredient and an item tag:
+
+```groovy
+$ServerEvents.recipes { event ->
+  // A new recipe that makes a mod item.
+  event.shapeless($Item.of('antcolonies:ant_food', 2), ['minecraft:sugar', 'minecraft:wheat_seeds', 'minecraft:bone_meal'])
+    .id('mypack:cheap_ant_food')
+  // Change an ingredient inside one of the mod's recipes.
+  event.replaceInput([id: 'antcolonies:tweezers'], 'minecraft:iron_ingot', 'minecraft:copper_ingot')
+}
+
+$ServerEvents.tags('item') { event ->
+  // Mineral Gathering also favours amethyst shards (section 11).
+  event.add('antcolonies:foraging/mineral', 'minecraft:amethyst_shard')
+}
+```
+
+As with KubeJS, JEI shows the changed recipes only when it is on the server too (section 3).
+
+### A pack's own Liquid Ant
+
+The Syrup Ant of section 5. The startup script makes the fluid, its bucket and the droplet item; like every startup
+script it needs a restart and has to be on the server and on every client.
+
+```groovy
+// kubegroovy/startup_scripts/mypack_syrup.groovy
+$StartupEvents.registry('fluid') { event ->
+  // The fluid mypack:syrup; its bucket is mypack:syrup_bucket.
+  event.create('mypack:syrup').tint(0xC98A2B).noBlock()
+}
+
+$StartupEvents.registry('item') { event ->
+  // What Syrup Ants give. It borrows the picture of the mod's Honey Droplet.
+  event.create('mypack:syrup_droplet').texture('antcolonies:item/honey_droplet')
+}
+```
+
+The species and evolution files of section 5 go in `kubegroovy/data/mypack/antcolonies/species/syrup.json` and
+`kubegroovy/data/mypack/antcolonies/evolution/water_to_syrup.json`, unchanged. KubeGroovy names the fluid and the droplet
+itself ("Syrup", "Syrup Droplet").
+
+### Wild ant biomes
+
+Adding biomes to a spawn tag (section 11):
+
+```groovy
+$ServerEvents.tags('worldgen/biome') { event ->
+  event.add('mypack:spawns/copper', ['minecraft:dripstone_caves', 'minecraft:stony_peaks'])
+  event.add('antcolonies:has_wild_ants', '#mypack:spawns/copper')
+}
+```
+
+To take biomes out, use the tag file of section 11 here too, in
+`kubegroovy/data/antcolonies/tags/worldgen/biome/spawns/desert.json`. In KubeGroovy 1.0.3 a script's `event.remove` on
+a `worldgen/biome` tag changes nothing when the server starts and only shows after a `/reload`.
+
+### Everything else
+
+The other files of this guide need no script and are read from `kubegroovy/data/` and `kubegroovy/assets/` as they
+are: the ant food data map (section 4), species, evolutions and research (sections 5, 6 and 14), advancements
+(section 15) and the language file (section 12).

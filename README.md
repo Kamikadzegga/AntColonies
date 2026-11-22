@@ -84,7 +84,7 @@ The [gameplay guide](docs/gameplay.md#getting-started) takes it from there.
 | Guide | For |
 |---|---|
 | [Gameplay guide](docs/gameplay.md) | Players: colonies, structures, species, genetics, anthills, gear and settings |
-| [Modpack and KubeJS guide](docs/modpack-guide.md) | Pack makers: every data file and field, recipes, food, spawns, config |
+| [Modpack and KubeJS guide](docs/modpack-guide.md) | Pack makers: every data file and field, recipes, food, spawns, config, KubeJS and KubeGroovy scripts |
 | [Compatibility](docs/compatibility.md) | Recipe viewers, Jade, and other mods' pipes, cables and ores |
 | [Changelog](CHANGELOG.md) | What changed in each version |
 

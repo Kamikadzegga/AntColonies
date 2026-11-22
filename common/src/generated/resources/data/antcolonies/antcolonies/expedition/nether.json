@@ -106,6 +106,15 @@
         "antcolonies:wither",
         "antcolonies:soul"
       ]
+    },
+    {
+      "tag": "c:nuggets/vibranium",
+      "weight": 0.2,
+      "min_stage": 3,
+      "special": true,
+      "species": [
+        "antcolonies:vibranium"
+      ]
     }
   ]
 }

@@ -1,0 +1,64 @@
+{
+  "tier": 1,
+  "category": "mineral",
+  "look": {
+    "body": "#8A8078",
+    "gaster": "#F0E8E0",
+    "accent": "#FFFFFF",
+    "pattern": "speckled"
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.35,
+    "special_food": "mineral",
+    "special_per_egg": 0.45
+  },
+  "production": {
+    "rate": 0.6,
+    "outputs": [
+      {
+        "tag": "c:dusts/salt",
+        "weight": 40
+      },
+      {
+        "item": "minecraft:sand",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:gravel",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:clay_ball",
+        "weight": 4,
+        "min_stage": 2
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "alltheores"
+    }
+  ]
+}

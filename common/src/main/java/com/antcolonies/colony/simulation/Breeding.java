@@ -87,7 +87,7 @@ final class Breeding {
         double larvae = ColonyAccess.larvae(colony);
         double workers = ColonyAccess.workers(colony);
         double before = eggs + larvae + workers;
-        double age = 1 - Math.exp(-step.dt / AntConfig.get(AntConfig.ADULT_LIFESPAN_MINUTES));
+        double age = 1 - Math.exp(-step.dt / (AntConfig.get(AntConfig.ADULT_LIFESPAN_MINUTES) * step.species.breeding().lifespan()));
         workers -= workers * age;
         double starved = ColonyAccess.starvedMinutes(colony) - AntConfig.get(AntConfig.STARVATION_GRACE_MINUTES);
         if (starved > 0) {
