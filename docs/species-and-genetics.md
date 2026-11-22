@@ -29,7 +29,7 @@ Identification Book show what each one finds.
 | Wild | Common, Wood, Stone, Snow, Desert, Farmer, Jungle, Swamp, Savanna, Shore, Blossom, Pale, Badlands, Army; Warped in the Nether, Chorus in the End | Catch them with Tweezers in their biomes |
 | Evolved | Farmer, Fire, the hunters, the Liquid Ants | [Feed](#evolving-by-feeding) the Formicarium |
 | Mineral | Iron, Copper, Coal, Deepslate, Lapis, Amethyst, Redstone, Gold, Diamond, Emerald, Netherite, Soul, Ender | [Research](#genetic-research) them, then [mutate](#species-mutation) a Queen |
-| Endgame | Wither, Dragon | Researched and mutated like the mineral species, from a boss drop: a Nether Star for Wither, dragon's breath for Dragon |
+| Endgame | Wither, Dragon | [Research](#genetic-research) them, then [mutate](#species-mutation) a Queen |
 | Hybrid | Eleven crosses | Raise them in a [Queen Chamber](#hybrids) |
 
 **Wild species** live where their name says. Shore Ants live on beaches, Blossom Ants in cherry groves and flower
