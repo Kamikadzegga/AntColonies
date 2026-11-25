@@ -1,5 +1,6 @@
 package com.antcolonies.content.blockentity;
 
+import com.antcolonies.colony.upgrade.UpgradeEffects;
 import com.antcolonies.colony.upgrade.UpgradeType;
 import com.antcolonies.content.block.CentrifugeBlock;
 import com.antcolonies.content.block.ComparatorSource;
@@ -99,7 +100,7 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
     private final SimpleContainer upgrades = new SimpleContainer(UPGRADE_SLOTS) {
         @Override
         public boolean canPlaceItem(int slot, ItemStack stack) {
-            return stack.getItem() instanceof UpgradeItem upgrade && upgrade.type() == UpgradeType.SPEED;
+            return UpgradeEffects.Host.CENTRIFUGE.takes(stack);
         }
 
         @Override

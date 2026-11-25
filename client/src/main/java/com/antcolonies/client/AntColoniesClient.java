@@ -3,6 +3,7 @@ package com.antcolonies.client;
 import com.antcolonies.AntColonies;
 import com.antcolonies.client.model.AntModel;
 import com.antcolonies.client.model.CarryModel;
+import com.antcolonies.client.model.CartModel;
 import com.antcolonies.client.model.ChitinHelmetModel;
 import com.antcolonies.client.renderer.CentrifugeRenderer;
 import com.antcolonies.client.renderer.GeneticLabRenderer;
@@ -10,6 +11,8 @@ import com.antcolonies.client.renderer.StructureRenderer;
 import com.antcolonies.client.renderer.TerrariumRenderer;
 import com.antcolonies.client.renderer.WildAntRenderer;
 import com.antcolonies.client.screen.CentrifugeScreen;
+import com.antcolonies.client.screen.CompanionCartScreen;
+import com.antcolonies.client.screen.CompanionScreen;
 import com.antcolonies.client.screen.GeneratorScreen;
 import com.antcolonies.client.screen.GeneticLabScreen;
 import com.antcolonies.client.screen.StructureScreen;
@@ -55,6 +58,7 @@ public final class AntColoniesClient {
         event.registerLayerDefinition(AntModel.SOLDIER, () -> AntModel.create(Caste.SOLDIER));
         event.registerLayerDefinition(AntModel.QUEEN, () -> AntModel.create(Caste.QUEEN));
         event.registerLayerDefinition(CarryModel.LAYER, CarryModel::create);
+        event.registerLayerDefinition(CartModel.LAYER, CartModel::create);
         event.registerLayerDefinition(ChitinHelmetModel.LAYER, ChitinHelmetModel::create);
         event.registerLayerDefinition(ChitinHelmetModel.SPINES, ChitinHelmetModel::createSpines);
         event.registerLayerDefinition(ChitinHelmetModel.WINGS, ChitinHelmetModel::createWings);
@@ -97,6 +101,8 @@ public final class AntColoniesClient {
         event.register(ModMenus.UPGRADE_STATION.get(), UpgradeStationScreen::new);
         event.register(ModMenus.GENERATOR.get(), GeneratorScreen::new);
         event.register(ModMenus.CENTRIFUGE.get(), CentrifugeScreen::new);
+        event.register(ModMenus.COMPANION.get(), CompanionScreen::new);
+        event.register(ModMenus.COMPANION_CART.get(), CompanionCartScreen::new);
     }
 
     @SubscribeEvent

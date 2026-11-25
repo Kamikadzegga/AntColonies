@@ -18,7 +18,10 @@ public enum Costume implements StringRepresentable {
     PIRATE("pirate"),
     PIG("pig"),
     RABBIT("rabbit"),
-    FISHER("fisher");
+    FISHER("fisher"),
+    CARPENTER("carpenter"),
+    LEAFCUTTER("leafcutter"),
+    WEAVER("weaver");
 
     public static final Codec<Costume> CODEC = StringRepresentable.fromEnum(Costume::values);
 
@@ -26,6 +29,11 @@ public enum Costume implements StringRepresentable {
 
     Costume(String name) {
         this.name = name;
+    }
+
+    /** Whether it is a hat: what a companion wears on its head takes its place. */
+    public boolean hat() {
+        return this == BAKER || this == PARTY || this == PIRATE || this == FISHER || this == CARPENTER || this == LEAFCUTTER || this == WEAVER;
     }
 
     @Override

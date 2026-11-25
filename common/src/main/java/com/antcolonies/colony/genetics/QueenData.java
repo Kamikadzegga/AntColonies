@@ -65,6 +65,18 @@ public record QueenData(Identifier species, Genome genome, int grown, float grow
         return Math.max(0, minutesFor(grown + 1) - growth);
     }
 
+    /** Minutes until she has grown into a stage while her colony stays that big: 0 once she is there. */
+    public double minutesTo(int stage) {
+        if (grown == 0) {
+            return 0;
+        }
+        double minutes = -growth;
+        for (int next = grown + 1; next <= Math.min(stage, 4); next++) {
+            minutes += minutesFor(next);
+        }
+        return Math.max(0, minutes);
+    }
+
     /**
      * Counts {@code minutes} towards her next stage; once enough have passed she grows into it and random traits (added
      * to {@code raised}) go up by one. Returns this Queen when nothing changes.

@@ -29,6 +29,7 @@ import com.antcolonies.colony.species.AntLook;
 import com.antcolonies.colony.species.AntSpecies;
 import com.antcolonies.colony.species.Caste;
 import com.antcolonies.colony.species.SpeciesOutput;
+import com.antcolonies.content.block.WildNestBlock;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.content.item.AntSample;
 import com.antcolonies.content.item.Tooltips;
@@ -40,6 +41,7 @@ import com.antcolonies.core.registry.ModBlocks;
 import com.antcolonies.core.registry.ModDataComponents;
 import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModRegistries;
+import com.antcolonies.colony.upgrade.UpgradeEffects;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -67,6 +69,8 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
     private static final int CONTENT_Y = 20;
     private static final int CONTENT_W = 196;
     private static final int CONTENT_H = 116;
+    /** The Queen's card on the Overview: wide enough for "Colony stage 4". */
+    private static final int QUEEN_CARD_W = 80;
     private static final int JOB_ROWS = 3;
     private static final int JOB_ROW_H = 33;
     /** Pixels the Genetics page moves per notch of the mouse wheel: a line of text. */
@@ -352,23 +356,28 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         int x = CONTENT_X + 4;
         int y = CONTENT_Y + 5;
         AntLook look = ClientSpecies.look(colony.species());
-        // The Queen's card: her portrait on terrarium soil (dark ants read on it as well as pale ones), her stage under it.
-        card(graphics, x, y, 62, 56, ACCENTS[0], false);
-        graphics.fill(leftPos + x + 2, topPos + y + 3, leftPos + x + 60, topPos + y + 33, 0xFFB79A72);
-        graphics.fill(leftPos + x + 2, topPos + y + 27, leftPos + x + 60, topPos + y + 33, 0xFF9C7F5A);
-        if (colony.queen() != null) {
-            sideAnt(graphics, Caste.QUEEN, look, x + 7, y + 6, 2);
+        // The Queen's card: her portrait on terrarium soil (dark ants read on it as well as pale ones). Under it the colony's
+        // stage with its progress, and the Queen's own: a new Queen in a grown colony is behind it for a while.
+        card(graphics, x, y, QUEEN_CARD_W, 58, ACCENTS[0], false);
+        graphics.fill(leftPos + x + 2, topPos + y + 3, leftPos + x + QUEEN_CARD_W - 2, topPos + y + 31, 0xFFB79A72);
+        graphics.fill(leftPos + x + 2, topPos + y + 25, leftPos + x + QUEEN_CARD_W - 2, topPos + y + 31, 0xFF9C7F5A);
+        QueenData queen = colony.queen();
+        if (queen != null) {
+            sideAnt(graphics, Caste.QUEEN, look, x + 16, y + 4, 2);
         } else {
-            label(graphics, "?", x + 28, y + 14, 0xFF5A4630);
+            label(graphics, "?", x + QUEEN_CARD_W / 2 - 3, y + 12, 0xFF5A4630);
         }
-        Component stage = Component.translatable("gui.antcolonies.stage", colony.stage());
-        label(graphics, fit(stage.getString(), 58), x + 3, y + 36, INFO);
-        drawBar(graphics, leftPos + x + 3, topPos + y + 47, 56, 5, stageProgress(colony), INFO);
+        Component stage = Component.translatable("gui.antcolonies.stage.colony", colony.stage());
+        label(graphics, fit(stage.getString(), QUEEN_CARD_W - 4), x + 3, y + 33, INFO);
+        drawBar(graphics, leftPos + x + 3, topPos + y + 43, QUEEN_CARD_W - 6, 3, stageProgress(colony), INFO);
+        if (queen != null && queen.grown() > 0) {
+            label(graphics, fit(Component.translatable("gui.antcolonies.stage.queen", queen.grown()).getString(), QUEEN_CARD_W - 4), x + 3, y + 48,
+                    queen.grown() < colony.stage() ? WARN : DIM);
+        }
         // Name and Queen, to the right.
-        int rx = x + 68;
+        int rx = x + QUEEN_CARD_W + 6;
         int room = CONTENT_X + CONTENT_W - 4 - rx;
         label(graphics, fit(Tooltips.species(colony.species()).getString(), room), rx, y, speciesColor(colony));
-        QueenData queen = colony.queen();
         if (queen != null) {
             label(graphics, fit(Component.translatable("gui.antcolonies.queen", queen.genome().lineage().name()).getString() + " "
                     + Tooltips.rarity(queen.genome().rarity()).getString(), room), rx, y + 10, LABEL);
@@ -453,6 +462,16 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         List<ColonyStatus> statuses = new ArrayList<>(ColonyStatus.of(colony.status() | menu.terrarium().feedStatus()));
         statuses.sort((a, b) -> Boolean.compare(b.problem(), a.problem()));
         int cx = x;
+        // A Queen younger than her colony (a new one put into it) comes first: how long until her next stage.
+        QueenData queen = colony.queen();
+        growthChip = null;
+        if (queen != null && queen.grown() > 0 && queen.grown() < colony.stage()) {
+            String text = Component.translatable("gui.antcolonies.queen_growing", queen.grown() + 1,
+                    WildNestBlock.timer((int) Math.ceil(queen.minutesToNext() * 60))).getString();
+            int w = chip(graphics, text, cx, y, INFO);
+            growthChip = new int[] {page, cx, y, w};
+            cx += w + 3;
+        }
         int bottom = CONTENT_Y + CONTENT_H - 16;
         for (ColonyStatus status : statuses) {
             String key = status.translationKey() + (detailed() ? "" : ".short");
@@ -504,6 +523,9 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
         drawBar(graphics, leftPos + x + 4, topPos + y + 18, w - 12 - numbersW, 7, progress, feeding ? 0xFFE0B040 : GOOD);
         value(graphics, numbers, x + w - 3 - numbersW, y + 18, LABEL);
     }
+
+    /** The page, place and width of the Queen's growth chip as it was last drawn, for its tooltip; null without one. */
+    private int @Nullable [] growthChip;
 
     // --- Colony: the castes as cards; click one for its details ---
 
@@ -1613,12 +1635,33 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
 
     @Override
     protected void extractPageTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        Colony shown = menu.colony();
+        QueenData growing = shown.queen();
+        if (hoveredSlot == null && growthChip != null && growthChip[0] == page && growing != null
+                && over(mouseX, mouseY, growthChip[1], growthChip[2], growthChip[3], 10)) {
+            // Every stage she still has to grow into, each with its time.
+            List<Component> lines = new ArrayList<>();
+            lines.add(Component.translatable("gui.antcolonies.queen_growing.title"));
+            for (int stage = growing.grown() + 1; stage <= shown.stage(); stage++) {
+                lines.add(Component.translatable("gui.antcolonies.queen_growing", stage,
+                        WildNestBlock.timer((int) Math.ceil(growing.minutesTo(stage) * 60))).withStyle(ChatFormatting.AQUA));
+            }
+            lines.add(Component.translatable("gui.antcolonies.queen_growing.hint", AntConfig.get(AntConfig.QUEEN_GROWTH_TRAITS), QueenData.growthCap())
+                    .withStyle(ChatFormatting.GRAY));
+            lines.add(Component.translatable("gui.antcolonies.queen_growing.pause").withStyle(ChatFormatting.GRAY));
+            graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+            return;
+        }
         if (page == 7 && hoveredSlot == null) {
             List<Component> lines = info.hover(mouseX, mouseY);
             if (lines != null) {
                 graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
                 return;
             }
+        }
+        if (hoveredSlot != null && !hoveredSlot.hasItem() && "upgrade".equals(slotKind(hoveredSlot))) {
+            graphics.setComponentTooltipForNextFrame(font, UpgradeEffects.Host.TERRARIUM.slotLines(), mouseX, mouseY);
+            return;
         }
         if (hoveredSlot != null && !hoveredSlot.hasItem() && slotKind(hoveredSlot) != null) {
             String key = "gui.antcolonies.slot." + slotKind(hoveredSlot);

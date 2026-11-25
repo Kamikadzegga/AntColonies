@@ -6,6 +6,31 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
+Players need this version too: it adds items.
+
+### Added
+
+- **Any ant can be your companion.** A Rally Pheromone wins over a wild ant of any species, and any colony gives one.
+- **Orders.** Follow, stay or guard, and they go with you through portals and teleports.
+- **Levels.** A Guard Ant learns from its kills, grows a little stronger and wears marks.
+- **Ant Plates.** Armor for your ant in four tiers of chitin.
+- **Costumes.** Eight hats and packs, only for looks.
+- **Cart Ants.** An Ant Cart gives your ant nine slots.
+- **A screen for every Guard Ant.** Its name, stats, gear and orders.
+- **A list of your Guard Ants.** A Rally Pheromone used in the air shows where each one is and calls it to you.
+- **Two secrets.**
+- **Carpenter, Leafcutter and Weaver Ants.**
+- **A timer for a new Queen.** The Formicarium shows how long she takes to grow into her colony's stage.
+- **For modpacks.** Server settings for Guard Ants: how many a player may have out, levels and healing. See the
+  [modpack guide](docs/modpack-guide.md).
+
+### Changed
+
+- **Guard Ants keep their own kind.** Those you have, let out or in tubes, become companions with all they had.
+- **Right-click opens its screen.** Sneak and right-click gives the next order.
+- **Only its owner can let a Guard Ant out of its tube.** Craft the tube with a name tag to pass it on.
+- **Upgrade slots say what goes in.** Every empty upgrade slot lists its upgrades and what each does there.
+
 ## [0.7.0] - 2026-11-25
 
 Players need this version too: it adds items.

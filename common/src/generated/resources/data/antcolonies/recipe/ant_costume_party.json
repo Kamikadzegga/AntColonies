@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "Y": "minecraft:yellow_dye",
+    "P": "minecraft:paper",
+    "S": "minecraft:string"
+  },
+  "pattern": [" Y ", "PSP"],
+  "result": {
+    "id": "antcolonies:ant_costume_party"
+  }
+}

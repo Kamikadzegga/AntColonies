@@ -297,7 +297,7 @@ public class DataGen {
             "allthemodium:basalt_deltas", "allthemodium:desert", "allthemodium:desert_hills");
 
     static final Set<String> COSTUMED = Set.of("cow", "chicken", "sheep", "baker", "bookworm", "party", "pirate", "pig", "rabbit",
-            "fisher");
+            "fisher", "carpenter", "leafcutter", "weaver");
 
     static final Map<String, Object[]> SIDE_LIQUIDS = Map.of("cow", new Object[] {"minecraft:milk", "milk", 0.3, "F4EEDD"});
 
@@ -924,6 +924,7 @@ public class DataGen {
             }
             write(DATA.resolve(NS + "/species/" + s.id() + ".json"), json);
             LANG.put("species." + NS + "." + s.id(), s.name());
+            LANG.put("species." + NS + "." + s.id() + ".guard", guardName(s.name()));
             LANG.put("species." + NS + "." + s.id() + ".desc", s.description());
             LANG.put("upgrade." + NS + "." + s.id() + ".extraction", s.extraction());
             LANG.put("upgrade." + NS + "." + s.id() + ".processing", s.processing());
@@ -979,7 +980,30 @@ public class DataGen {
                 "Shelf Extraction", "Book Binding", "Reading Efficiency",
                 "Wood Ants fed books. They chew wood into paper and cannot stop reading. Paper, books and bookshelves come home, and "
                         + "now and then a Bottle o' Enchanting from something they learned."));
-        SPECIES.add(new Species("party", "Party Ant", 1, "base", "any", null, "D83A8A", "3AB8E8", "FFE040", "striped", null, true,
+        SPECIES.add(new Species("carpenter", "Carpenter Ant", 1, "base", "temperate", null, "2A1E18", "4A2E1C", "B87A3E", "banded", null, false,
+                1.2, 1.1, "", 0, 0.7,
+                List.of(Out.of("oak_planks", 26), Out.of("spruce_planks", 12), Out.of("birch_planks", 10), Out.of("stick", 20), Out.of("ladder", 5),
+                        Out.of("oak_stairs", 4).atStage(2), Out.of("barrel", 1).atStage(2), Out.of("scaffolding", 3).atStage(3).asSpecial()),
+                0, List.of(), 1.1, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"crafting_table", "4"}), 3600, 1.0, 1.0,
+                "oak_planks", "Plank Extraction", "Joinery", "Sawdust Saving",
+                "Wood Ants fed crafting tables. Big, dark and handy: they carry their work on their backs. Planks, sticks and ladders come home, "
+                        + "later barrels and scaffolding."));
+        SPECIES.add(new Species("leafcutter", "Leafcutter Ant", 1, "farmer", "hot", null, "8A3E1E", "A8522A", "D8864A", "plain", null, false,
+                1.05, 1.0, "", 0, 0.7,
+                List.of(Out.of("jungle_leaves", 16), Out.of("oak_leaves", 12), Out.of("azalea_leaves", 5), Out.of("moss_block", 8), Out.of("vine", 6),
+                        Out.of("bone_meal", 10), Out.of("flowering_azalea", 1).atStage(3).asSpecial()),
+                0.9, List.of(Out.of("brown_mushroom", 40), Out.of("red_mushroom", 25), Out.of("bone_meal", 10), Out.of("glow_lichen", 4).atStage(2)),
+                0.9, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"#minecraft:leaves", "8"}), 3600, 1.1, 1.0,
+                "jungle_leaves", "Leaf Extraction", "Fungus Pressing", "Compost Thrift",
+                "Farmer Ants fed shears. They hold cut leaves over their heads like sails and grow fungus on them at a Harvesting Site."));
+        SPECIES.add(new Species("weaver", "Weaver Ant", 1, "base", "hot", null, "B8662A", "8AB04A", "E8D8A0", "plain", null, false,
+                1.0, 1.0, "", 0, 0.6,
+                List.of(Out.of("string", 26), Out.of("jungle_leaves", 12), Out.of("vine", 6), Out.of("white_wool", 3).atStage(2),
+                        Out.of("cobweb", 1).atStage(3).asSpecial(), Out.of("lead", 0.5).atStage(3).asSpecial()),
+                0, List.of(), 1.1, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"string", "8"}), 3600, 1.0, 1.0,
+                "string", "Silk Extraction", "Silk Spinning", "Thread Saving",
+                "Jungle Ants fed string. They sew leaves together with silk: string and leaves come home, now and then a whole cobweb."));
+        SPECIES.add(new Species("party","Party Ant", 1, "base", "any", null, "D83A8A", "3AB8E8", "FFE040", "striped", null, true,
                 1.0, 1.1, "", 0, 0.6,
                 List.of(Out.of("firework_rocket", 22), Out.of("paper", 12), Out.of("gunpowder", 8), Out.of("sugar", 8),
                         Out.of("note_block", 3).atStage(2), Out.of("cake", 0.5).atStage(2), Out.of("music_disc_13", 0.02).atStage(3).asSpecial(),
@@ -1413,6 +1437,9 @@ public class DataGen {
                 {"army_to_sheep", "army", "sheep", "#minecraft:wool", 0.08, 24, 2, 300},
                 {"farmer_to_baker", "farmer", "baker", "cake", 0.15, 8, 2, 200},
                 {"wood_to_bookworm", "wood", "bookworm", "book", 0.08, 24, 2, 200},
+                {"wood_to_carpenter", "wood", "carpenter", "crafting_table", 0.08, 24, 2, 200},
+                {"farmer_to_leafcutter", "farmer", "leafcutter", "shears", 0.15, 8, 2, 200},
+                {"jungle_to_weaver", "jungle", "weaver", "string", 0.08, 24, 2, 200},
                 {"common_to_party", "common", "party", "firework_rocket", 0.08, 24, 2, 200},
                 {"shore_to_pirate", "shore", "pirate", "gold_ingot", 0.06, 24, 2, 300},
                 // Carrots on sticks and fishing rods come one at a time too. Carrots and raw rabbit are ant food: not those.
@@ -2688,7 +2715,135 @@ public class DataGen {
 
     // --- Language ---
 
+    // --- Companions ---
+
+    static final String[][] COMPANION_COSTUMES = {{"pirate", "Pirate Ant Hat"}, {"explorer", "Explorer Ant Hat"}, {"miner", "Miner Ant Helmet"},
+            {"crown", "Royal Ant Crown"}, {"chef", "Chef Ant Hat"}, {"flower", "Ant Flower Crown"}, {"backpack", "Ant Backpack"},
+            {"party", "Party Ant Hat"}};
+
+    /** "Iron Ant" as a companion: "Iron Guard Ant". */
+    static String guardName(String name) {
+        return name.endsWith(" Ant") ? name.substring(0, name.length() - 4) + " Guard Ant" : name + " Guard Ant";
+    }
+
+    static void companions() {
+        List<String> items = new ArrayList<>(List.of("chitin_ant_plates", "hardened_chitin_ant_plates", "infernal_chitin_ant_plates",
+                "void_chitin_ant_plates", "ant_cart"));
+        for (String[] costume : COMPANION_COSTUMES) {
+            items.add("ant_costume_" + costume[0]);
+            LANG.put("item." + NS + ".ant_costume_" + costume[0], costume[1]);
+        }
+        for (String item : items) {
+            write(ASSETS.resolve("models/item/" + item + ".json"), obj("parent", "minecraft:item/generated", "textures", obj("layer0", ac("item/" + item))));
+            write(ASSETS.resolve("items/" + item + ".json"), obj("model", obj("type", "minecraft:model", "model", ac("item/" + item))));
+        }
+        LANG.put("item." + NS + ".chitin_ant_plates", "Chitin Ant Plates");
+        LANG.put("item." + NS + ".hardened_chitin_ant_plates", "Hardened Chitin Ant Plates");
+        LANG.put("item." + NS + ".infernal_chitin_ant_plates", "Infernal Chitin Ant Plates");
+        LANG.put("item." + NS + ".void_chitin_ant_plates", "Void Chitin Ant Plates");
+        LANG.put("item." + NS + ".ant_cart", "Ant Cart");
+
+        // Recipes: each tier of plates is built on the one before.
+        shaped("chitin_ant_plates", ac("chitin_ant_plates"), 1, new String[] {"CCC", "CSC", "C C"}, "C", ac("chitin_plate"), "S", "string");
+        shaped("hardened_chitin_ant_plates", ac("hardened_chitin_ant_plates"), 1, new String[] {" C ", "CPC", " C "}, "C", ac("hardened_chitin"),
+                "P", ac("chitin_ant_plates"));
+        shaped("infernal_chitin_ant_plates", ac("infernal_chitin_ant_plates"), 1, new String[] {" C ", "CPC", " C "}, "C", ac("infernal_chitin"),
+                "P", ac("hardened_chitin_ant_plates"));
+        shaped("void_chitin_ant_plates", ac("void_chitin_ant_plates"), 1, new String[] {" C ", "CPC", " C "}, "C", ac("void_chitin"),
+                "P", ac("infernal_chitin_ant_plates"));
+        shaped("ant_cart", ac("ant_cart"), 1, new String[] {"P P", "PPP", "IBI"}, "P", "#minecraft:planks", "I", "iron_nugget", "B", "stick");
+        shaped("ant_costume_pirate", ac("ant_costume_pirate"), 1, new String[] {" B ", "WGW"}, "B", "bone_meal", "W", "black_wool", "G", "gold_nugget");
+        shaped("ant_costume_explorer", ac("ant_costume_explorer"), 1, new String[] {" W ", "WLW"}, "W", "yellow_wool", "L", "leather");
+        shaped("ant_costume_miner", ac("ant_costume_miner"), 1, new String[] {" T ", "INI"}, "T", "torch", "I", "iron_nugget", "N", "yellow_dye");
+        shaped("ant_costume_crown", ac("ant_costume_crown"), 1, new String[] {"GEG", "GRG"}, "G", "gold_ingot", "E", "emerald", "R", "red_wool");
+        shaped("ant_costume_chef", ac("ant_costume_chef"), 1, new String[] {"WW", "WP"}, "W", "white_wool", "P", "paper");
+        shaped("ant_costume_flower", ac("ant_costume_flower"), 1, new String[] {"FFF", "FVF"}, "F", "#minecraft:small_flowers", "V", "vine");
+        shaped("ant_costume_backpack", ac("ant_costume_backpack"), 1, new String[] {"LWL", "LSL"}, "L", "leather", "W", "green_wool", "S", "string");
+        shaped("ant_costume_party", ac("ant_costume_party"), 1, new String[] {" Y ", "PSP"}, "Y", "yellow_dye", "P", "paper", "S", "string");
+
+        // A name tag in the crafting grid takes the owner off a tube.
+        write(DATA.resolve("recipe/free_guard_ant.json"), obj("type", ac("free_guard_ant")));
+
+        write(DATA.resolve("tags/entity_type/no_companion_xp.json"), obj("values", arr()));
+        write(DATA.resolve("tags/damage_type/companion_lasting_damage.json"), obj("values", arr("minecraft:wither", "minecraft:magic",
+                "minecraft:indirect_magic", "minecraft:on_fire", "minecraft:in_fire", "minecraft:freeze")));
+        LANG.put("tag.entity_type." + NS + ".no_companion_xp", "No Companion Experience");
+
+        // Advancements; the transformations are secret.
+        advancement("companion", "guard_ant", "rally_pheromone", "task", "Come Along, Then", "Have an ant join you: a Rally Pheromone on a wild ant, or a Guard Ant let out of its tube",
+                companion("recruited"));
+        advancement("companion_level_10", "companion", "chitin_ant_plates", "task", "Seasoned", "Have a Guard Ant reach level 10", companion("level_10"));
+        advancement("companion_level_30", "companion_level_10", "void_chitin_ant_plates", "goal", "Old Soldier", "Have a Guard Ant reach level 30",
+                companion("level_30"));
+        secret("companion_sad", "companion", "minecraft:bundle", "All It Owns", "Show a Guard Ant a Bundle", companion("sad"));
+        secret("companion_jumping", "companion", "minecraft:rabbit_foot", "Eight Legs' Worth", "Give a Guard Ant a taste for leaping", companion("jumping"));
+
+        String c = "companion." + NS + ".";
+        String m = "message." + NS + ".companion.";
+        String g = "gui." + NS + ".companion.";
+        String t = "tooltip." + NS + ".";
+        String[][] lines = {
+                {c + "guard_name", "Guard %s"},
+                {c + "command.follow", "Follow"}, {c + "command.stay", "Stay"}, {c + "command.guard", "Guard"},
+                {c + "personality.curious", "Curious"}, {c + "personality.tidy", "Tidy"}, {c + "personality.calm", "Calm"},
+                {c + "personality.devoted", "Devoted"}, {c + "personality.playful", "Playful"},
+                {c + "form.none", "No change"}, {c + "form.bindle", "Sad"}, {c + "form.jumping", "Jumping"},
+                {m + "already", "This ant is a companion already"}, {m + "owned", "This ant belongs to someone else"},
+                {m + "queen", "A Queen will not leave her colony"}, {m + "angry", "It is too angry to listen"},
+                {m + "joined", "%s joins you"}, {m + "not_yours", "This Guard Ant belongs to %s"},
+                {m + "unknown", "Its kind is not in this world any more"}, {m + "tweezers", "Use an empty Test Tube to pick up a Guard Ant"},
+                {m + "cart_full", "Empty its cart first"}, {m + "form.already", "It is like that already"},
+                {m + "too_many", "You already have %s Guard Ants out"},
+                {m + "call.pheromone", "Calling a Guard Ant takes a Rally Pheromone"}, {m + "call.came", "%s comes to you"},
+                {m + "call.lost", "A Guard Ant you called could not be found"},
+                {"gui." + NS + ".roster.title", "Your Guard Ants"},
+                {"gui." + NS + ".roster.empty", "None out. Use a Rally Pheromone on a wild ant."},
+                {"gui." + NS + ".roster.count", "%s of %s out"}, {"gui." + NS + ".roster.count.any", "%s out"},
+                {"gui." + NS + ".roster.level", "Level %s"}, {"gui." + NS + ".roster.here", "With you"},
+                {"gui." + NS + ".roster.away", "%s blocks away"}, {"gui." + NS + ".roster.call", "Call"},
+                {"gui." + NS + ".roster.call.hint", "Brings it to you for one Rally Pheromone"},
+                {"gui." + NS + ".roster.called", "Coming"},
+                {m + "level_up", "%s reached level %s"},
+                {m + "command.follow", "%s follows you"}, {m + "command.stay", "%s stays here"}, {m + "command.guard", "%s guards this place"},
+                {g + "name", "Name"}, {g + "level", "Level %s of %s"}, {g + "health", "Health %s/%s"}, {g + "damage", "Bite %s"}, {g + "armor", "Armor %s"},
+                {g + "owner", "Belongs to %s"}, {g + "strength", "Hunting Strength %s"},
+                {g + "xp", "Experience %s / %s"}, {g + "xp.max", "The highest level"}, {g + "xp.hint", "Only the ant that lands the last blow gains it"},
+                {g + "command.follow", "It stays near you and fights what threatens you"},
+                {g + "command.stay", "It waits here and only defends itself and you"},
+                {g + "command.guard", "It keeps this place clear of hostile mobs"},
+                {g + "pick_up", "Pick up"}, {g + "pick_up.hint", "Puts it in a tube, with all it has"},
+                {g + "cart", "Cart"}, {g + "cart.hint", "Shows what its cart holds"}, {g + "ant", "Ant"}, {g + "ant.hint", "Shows the ant itself"},
+                {g + "slot.armor", "Armor"}, {g + "slot.armor.hint", "Ant Plates"}, {g + "slot.costume", "Costume"},
+                {g + "slot.costume.hint", "A hat or a backpack, only for looks"}, {g + "slot.cart", "Cart"},
+                {g + "slot.cart.hint", "An Ant Cart makes it a Cart Ant"},
+                {t + "companion_armor", "+%s Armor"}, {t + "companion_armor.toughness", "+%s Armor Toughness"},
+                {t + "companion_gear", "Use on your Guard Ant"}, {t + "companion_costume", "Dress up your Guard Ant"},
+                {t + "ant_cart", "%s slots, pulled by your Guard Ant"},
+                {t + "guard_ant.trade", "Craft it with a name tag to free it for a new owner"},
+                {t + "guard_ant.free", "Belongs to whoever lets it out"},
+                {t + "guard_ant.level", "Level %s · Strength %s"}, {t + "guard_ant.health", "Health %s/%s"},
+                {"jade." + NS + ".companion", "Level %s · %s"}};
+        for (String[] line : lines) {
+            LANG.put(line[0], line[1]);
+        }
+    }
+
+    static Map<String, Object> companion(String what) {
+        return obj("trigger", ac("companion"), "conditions", obj("what", what));
+    }
+
+    /** An advancement nobody sees before it is made. */
+    static void secret(String id, String parent, String icon, String title, String description, Map<String, Object> criterion) {
+        write(DATA.resolve("advancement/" + id + ".json"), obj("parent", ac(parent), "criteria", obj(id, criterion),
+                "display", obj("icon", obj("id", icon), "title", obj("translate", "advancements." + NS + "." + id + ".title"),
+                        "description", obj("translate", "advancements." + NS + "." + id + ".description"), "announce_to_chat", false, "hidden", true),
+                "requirements", arr(arr(id))));
+        LANG.put("advancements." + NS + "." + id + ".title", title);
+        LANG.put("advancements." + NS + "." + id + ".description", description);
+    }
+
     // --- Chitin gear, Guard Ants, giant anthills ---
+
 
     static final String[] CHITIN_ARMOR = {"chitin_helmet", "chitin_chestplate", "chitin_leggings", "chitin_boots"};
     static final String[] CHITIN_TOOLS = {"chitin_sword", "chitin_pickaxe", "chitin_axe", "chitin_shovel", "chitin_hoe"};
@@ -2760,7 +2915,7 @@ public class DataGen {
         LANG.put("tooltip." + NS + ".void_reinforcement",
                 "Smithing template: turns Infernal Chitin gear into Void with a netherite ingot.");
         LANG.put("tooltip." + NS + ".chitin_set.fire", " Fire Resistance");
-        LANG.put("message." + NS + ".queen_grew", "Your %s Queen grew with her colony (stage %s): %s +1");
+        LANG.put("message." + NS + ".queen_grew", "Your %s Queen grew with her colony (Queen stage %s): %s +1");
         LANG.put("gui." + NS + ".queen_grown", "Grown with her colony: stage %s");
         LANG.put("tooltip." + NS + ".queen_grown", "Grown with her colony to stage %s");
         LANG.put("tooltip." + NS + ".queen_grows", "Grows with her colony: %s minutes at a bigger stage (longer for each next one), then two traits +1 (up to level %s)");
@@ -2923,7 +3078,7 @@ public class DataGen {
                 "Own a full set of Chitin armor: wild ants will take you for one of their own",
                 obj("trigger", "minecraft:inventory_changed", "conditions", obj("items", arr(obj("items", ac("chitin_helmet")),
                         obj("items", ac("chitin_chestplate")), obj("items", ac("chitin_leggings")), obj("items", ac("chitin_boots"))))));
-        advancement("guard_ant", "first_colony", "guard_ant", "task", "Bodyguard", "Recruit a Guard Ant: a Rally Pheromone on a Formicarium",
+        advancement("guard_ant", "first_colony", "guard_ant", "task", "Bodyguard", "Get a Guard Ant in a tube: a Rally Pheromone on a Formicarium",
                 hasItem("guard_ant"));
 
         // Names and text.
@@ -2939,16 +3094,13 @@ public class DataGen {
         LANG.put("tooltip." + NS + ".chitin_set.ants", " Wild ants leave you alone (not if you raid their anthill)");
         LANG.put("tooltip." + NS + ".chitin_set.dig", " Dig %s%% faster");
         LANG.put("tooltip." + NS + ".chitin_shield", "Light: raised faster than a wooden shield, and an axe knocks it down for less time.");
-        LANG.put("tooltip." + NS + ".rally_pheromone","Use on a hunter colony's Formicarium: it gives up hunters for a Guard Ant.");
+        LANG.put("tooltip." + NS + ".rally_pheromone","On a wild ant: it becomes your Guard Ant. On a Formicarium: the colony gives one. In the air: lists your Guard Ants.");
         LANG.put("tooltip." + NS + ".guard_ant.empty", "An empty Guard Ant tube.");
         LANG.put("tooltip." + NS + ".guard_ant.stats", "Strength %s · Health %s/%s · Bite %s · Armor %s");
-        LANG.put("tooltip." + NS + ".guard_ant.use", "Use on a block to let it out. Right-click it to make it stay or follow; sneak-right-click to put it back. Ant food heals it.");
-        LANG.put("message." + NS + ".guard.stay", "Your Guard Ant stays here");
-        LANG.put("message." + NS + ".guard.follow", "Your Guard Ant follows you");
+        LANG.put("tooltip." + NS + ".guard_ant.use", "Use on a block to let it out. Right-click it for its screen; sneak-right-click to give the next order. Ant food heals it.");
         LANG.put("message." + NS + ".guard.no_queen", "This colony has no Queen to send a guard");
-        LANG.put("message." + NS + ".guard.ants", "A Guard Ant takes %s hunters; this colony has %s");
-        LANG.put("message." + NS + ".guard.not_hunters", "Only a hunter colony gives Guard Ants");
-        LANG.put("message." + NS + ".guard.recruited", "%s hunters answered the call: a Guard Ant joins you");
+        LANG.put("message." + NS + ".guard.ants", "A Guard Ant takes %s ants; this colony has %s");
+        LANG.put("message." + NS + ".guard.recruited", "%s ants answered the call: a Guard Ant joins you");
     }
 
     static Map<String, Object> lootItem(String item, int weight, int min, int max) {
@@ -3222,6 +3374,11 @@ public class DataGen {
                 {"upgrades", "Upgrades", String.join("\n",
                         "Upgrades go in a screen's upgrade slots; shift-clicking one puts it there. Each block takes the kinds it can use: the slot's tooltip, and JEI or EMI, tell which.",
                         "The Colony Upgrade Station makes species upgrades from an Upgrade Base and a species' signature material. They work only for that species, in Foraging Sites.")},
+                {"companions", "Guard Ants", String.join("\n",
+                        "A Rally Pheromone used on a wild ant makes it your Guard Ant; used on a Formicarium, the colony gives up ants for one of its species, as strong as its Queen's Hunting Strength. It keeps its species and looks, and grows.",
+                        "Right-click it for its screen: a name, its level, what it wears and its orders. Sneak and right-click gives the next order: follow, stay, guard. It learns from every kill it lands itself, mends when it rests, and ant food heals it at once.",
+                        "Ant Plates are its armor, a costume is only for looks, and an Ant Cart makes it carry nine stacks. An empty Test Tube picks it up with all it has. A tube opens only for its owner: craft it with a name tag to pass the ant on.",
+                        "Use the pheromone in the air to see your Guard Ants and where they are, and to call one to you for a pheromone. It can die, and then leaves what it had.")},
                 {"automation", "Automation", String.join("\n",
                         "Hoppers and pipes can feed the Formicarium and Queen Chambers, and empty Storage and Foraging Sites. A Storage with an Automation Upgrade pushes its finds into the container under it.",
                         "Comparators read a Formicarium's food, a site's workforce, or how full a store is. A redstone signal pauses a site: its ants go elsewhere.")}};
@@ -3485,7 +3642,8 @@ public class DataGen {
                 {"slot.feed", "Feed slot"}, {"slot.feed.hint", "Ants in Test Tubes, eggs, larvae, an Evolution Catalyst or evolution materials; empty Test Tubes fill with ants"},
                 {"slot.food", "Food slot"}, {"slot.food.hint", "Food for the colony: eaten as its food bar has room, and kept here while the bar is full"},
                 {"slot.output", "Output"}, {"slot.output.hint", "Empty Test Tubes and leftovers come out here"},
-                {"slot.upgrade", "Upgrade slot"}, {"slot.upgrade.hint", "Population, Simulation, Evolution, Food Efficiency or Breeding upgrades"}, {"slot.structure_upgrade.hint", "Upgrades this chamber accepts (see JEI or EMI, or the item tooltip)"},
+                {"slot.upgrade", "Upgrade slot"}, {"slot.upgrade.species", "Its species: more or better finds"},
+                {"slot.upgrade.more", "Higher tiers do more; they add up."},
                 {"transforming", "Transforming from %s: %s%%"}, {"genetics_of", "%s, generation %s"}, {"no_mutations", "No mutations"},
                 {"mutations", "Mutations:"}, {"jobs_header", "Working sites - %s ants home"}, {"job_workers", "%s / %s ants"},
                 {"no_jobs", "No Foraging Site, Harvesting Site or Hunting Ground"},
@@ -3540,7 +3698,6 @@ public class DataGen {
                 {"generator.push", "Gives its energy to the machines and cables next to it"},
                 {"generator.hint", "Place it next to the Genetic Laboratory"},
                 {"lab.catalyst_hint", "Catalyst: Reroll Serum, a mutation catalyst, or an empty Test Tube"},
-                {"lab.upgrade_slot_hint", "Speed or Genetic Upgrade"},
                 {"effect.nest_chamber", "Eggs at full speed and faster larvae. Room for 3,000 adults and 1,500 larvae."},
                 {"nest.adults", "Room for %s adults"}, {"nest.larvae", "Room for %s larvae"},
                 {"take", "Take out:"}, {"take.workers", "Take"},
@@ -4290,6 +4447,12 @@ public class DataGen {
         l.put(g + "founding", "Founding");
         l.put(g + "founding.feed", "fill her food bar");
         l.put(g + "founding.brood", "her first workers");
+        l.put(g + "stage.colony", "Colony stage %s");
+        l.put(g + "stage.queen", "Queen stage %s");
+        l.put(g + "queen_growing", "Queen stage %s in %s");
+        l.put(g + "queen_growing.title", "The colony is ahead of its Queen: she grows into its stage");
+        l.put(g + "queen_growing.hint", "Each stage raises %s of her traits by one, up to level %s.");
+        l.put(g + "queen_growing.pause", "The time stops while the colony is smaller.");
         // Statuses: the new ones, and short forms for Visual Mode's chips.
         l.put("status." + NS + ".founding", "Queen Founding: a single Queen starting a colony");
         l.put("status." + NS + ".low_food", "Food running low: the colony slows down");
@@ -4819,6 +4982,7 @@ public class DataGen {
         }
         write(DATA.resolve(NS + "/species/" + liquid.id() + ".json"), species);
         l.put("species." + NS + "." + liquid.id(), liquid.ant());
+        l.put("species." + NS + "." + liquid.id() + ".guard", guardName(liquid.ant()));
         l.put("species." + NS + "." + liquid.id() + ".desc", liquid.description());
         // --- How to get it: its parent species' Queen fed the fluid (what she is fed is a tag, so packs can add to it) ---
         boolean precious = PRECIOUS_LIQUIDS.contains(liquid.id());
@@ -4965,9 +5129,7 @@ public class DataGen {
                 {"centrifuge.energy", "Energy"}, {"centrifuge.energy.hint", "Takes FE on every side: a Generator next to it will do"},
                 {"centrifuge.slot", "Droplets"}, {"centrifuge.slot.hint", "From the Liquid Chambers of Liquid Ants"},
                 {"centrifuge.tank.hint", "Use a bucket on the block, or put a tank or a pipe next to it"},
-                {"centrifuge.run", "%s s of %s s"}, {"centrifuge.speed", "%s steps a tick (Speed Upgrades)"},
-                {"centrifuge.upgrade", "Speed Upgrade"},
-                {"centrifuge.upgrade.hint", "Each tier spins one more step a tick. A droplet takes the same FE."}};
+                {"centrifuge.run", "%s s of %s s"}, {"centrifuge.speed", "%s steps a tick (Speed Upgrades)"},};
         for (String[] g : gui) {
             l.put("gui." + NS + "." + g[0], g[1]);
         }
@@ -4995,6 +5157,7 @@ public class DataGen {
         research();
         hybrids();
         mutations();
+        companions();
         commonTags();
         advancements();
         traitUpgrades();

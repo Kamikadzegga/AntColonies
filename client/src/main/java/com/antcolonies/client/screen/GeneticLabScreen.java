@@ -31,6 +31,7 @@ import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.core.registry.ModDataComponents;
 import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModRegistries;
+import com.antcolonies.colony.upgrade.UpgradeEffects;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -1490,7 +1491,9 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
                     Component.translatable("gui.antcolonies.lab.power_hint").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
             return;
         }
-        if (hoveredSlot != null && !hoveredSlot.hasItem()) {
+        if (hoveredSlot != null && !hoveredSlot.hasItem() && hoveredSlot.container == menu.lab().upgrades()) {
+            graphics.setComponentTooltipForNextFrame(font, UpgradeEffects.Host.LAB.slotLines(), mouseX, mouseY);
+        } else if (hoveredSlot != null && !hoveredSlot.hasItem()) {
             String hint = slotHint(hoveredSlot);
             if (hint != null) {
                 graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.lab." + hint)), mouseX, mouseY);
@@ -1500,9 +1503,6 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
 
     /** What an empty slot is for. */
     private @Nullable String slotHint(Slot slot) {
-        if (slot.container == menu.lab().upgrades()) {
-            return "upgrade_slot_hint";
-        }
         if (slot.container != menu.lab()) {
             return null;
         }

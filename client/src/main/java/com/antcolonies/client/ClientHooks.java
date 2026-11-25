@@ -4,7 +4,9 @@ import com.antcolonies.content.block.ColonyEntityBlock;
 import com.antcolonies.content.blockentity.GeneticLabBlockEntity;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
+import com.antcolonies.client.screen.CompanionRosterScreen;
 import com.antcolonies.client.screen.IdentificationBookScreen;
+import com.antcolonies.companion.menu.RosterPayload;
 import com.antcolonies.client.nest.NestLayout;
 import com.antcolonies.client.nest.NestVisuals;
 import com.antcolonies.client.terrarium.SiteVisuals;
@@ -433,6 +435,16 @@ public final class ClientHooks {
 
     public static void knowledge(KnowledgePayload payload) {
         ClientResearch.accept(payload);
+    }
+
+    /** The server's list of this player's Guard Ants: shown, or put into the screen that is open. */
+    public static void roster(RosterPayload payload) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.gui.screen() instanceof CompanionRosterScreen screen) {
+            screen.update(payload);
+        } else {
+            minecraft.gui.setScreen(new CompanionRosterScreen(payload));
+        }
     }
 
     public static void openBook() {

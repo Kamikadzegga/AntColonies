@@ -21,14 +21,14 @@ Back to the [gameplay guide](gameplay.md).
 
 ## Species
 
-There are 56 species, and other mods add more (see [Compatibility](compatibility.md)). JEI, EMI and the Ant
+There are 59 species, and other mods add more (see [Compatibility](compatibility.md)). JEI, EMI and the Ant
 Identification Book show what each one finds.
 
 | Kind | Species | How you get them |
 |---|---|---|
 | Wild | Common, Wood, Stone, Snow, Desert, Farmer, Jungle, Swamp, Savanna, Shore, Blossom, Pale, Badlands, Army; Warped and Crimson in the Nether, Chorus in the End | Catch them with Tweezers in their biomes |
 | Evolved | Farmer, Fire, the hunters, the Liquid Ants | [Feed](#evolving-by-feeding) the Formicarium |
-| For fun | Cow, Chicken, Sheep, Pig, Rabbit, Baker, Bookworm, Party, Pirate, Fisher | [Feed](#ants-for-fun) the Formicarium |
+| For fun | Cow, Chicken, Sheep, Pig, Rabbit, Baker, Bookworm, Party, Pirate, Fisher, Carpenter, Leafcutter, Weaver | [Feed](#ants-for-fun) the Formicarium |
 | Mineral | Iron, Copper, Coal, Deepslate, Lapis, Amethyst, Redstone, Gold, Diamond, Emerald, Netherite, Soul, Ender | [Research](#genetic-research) them, then [mutate](#species-mutation) a Queen |
 | Endgame | Wither, Dragon | [Research](#genetic-research) them, then [mutate](#species-mutation) a Queen |
 | Hybrid | Nine crosses | Raise them in a [Queen Chamber](#hybrids) |
@@ -83,7 +83,7 @@ takes.
 
 ### Ants for fun
 
-Ten species that are not to be taken seriously. All are fed into being, and none is fed ant food, so feeding a colony
+Thirteen species that are not to be taken seriously. All are fed into being, and none is fed ant food, so feeding a colony
 never changes it by accident. Each wears a costume of its own, on every ant of the colony: horns, patches and a bell;
 a comb and tail feathers; a fleece; a snout, flop ears and a curly tail; long ears and a white tail; a chef's hat;
 glasses and a pile of books; a party hat; a pirate hat and a striped shirt; a yellow rain hat, a coat and a fishing rod.
@@ -97,6 +97,9 @@ glasses and a pile of books; a party hat; a pirate hat and a striped shirt; a ye
 | Rabbit | Army, rabbit hide | Forages carrots and dandelions. At a Hunting Ground it brings raw rabbit and hide, and from stage 3, rarely, a rabbit's foot (about two an hour). |
 | Baker | Farmer, cake | Forages wheat, sugar and eggs. At a Harvesting Site it bakes bread, cookies, pumpkin pie and, at stage 3, a cake now and then. |
 | Bookworm | Wood, books | Brings paper, books and bookshelves, and at stage 3 a Bottle o' Enchanting now and then. |
+| Carpenter | Wood, crafting tables | Brings planks, sticks and ladders, later barrels and scaffolding. |
+| Leafcutter | Farmer, shears | Brings leaves, moss and vines, and grows fungus at a Harvesting Site. |
+| Weaver | Jungle, string | Brings string, leaves and vines, at stage 3 the odd cobweb. |
 | Party | Common, firework rockets | Brings rockets, note blocks and cake, and at stage 3 the odd music disc. |
 | Pirate | Shore, gold ingots | Brings sand and gold nuggets, at stage 3 nautilus shells and a rare emerald and, very rarely at stage 4, a Heart of the Sea. |
 | Fisher | Shore, fishing rods | Brings cod and salmon, from stage 2 tropical fish and pufferfish, and now and then an old boot. |
@@ -226,6 +229,9 @@ past level 7. Higher levels are the laboratory's work.
 
 She remembers how far she has grown, in her Test Tube too, so moving her to another colony doesn't grow her again. Her
 tooltip and the Genetics tab show it.
+
+The Formicarium's Overview tab shows both: the colony's stage and the Queen's own. While a new Queen is behind her
+colony, a timer says how long until her next stage; hover it for the time of each stage on the way.
 
 ## Mutations
 

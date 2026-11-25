@@ -2,7 +2,7 @@
 
 How to start a colony, and what every part of it does. Two more pages cover the rest of the mod:
 
-- [Species and genetics](species-and-genetics.md): the 56 species, research, the Genetic Laboratory, hybrids and traits.
+- [Species and genetics](species-and-genetics.md): the 59 species, research, the Genetic Laboratory, hybrids and traits.
 - [World and gear](world-and-gear.md): giant anthills, home nests, Chitin gear, Guard Ants and building blocks.
 
 The numbers on these pages are the defaults. A server can change most of them in the [config](#configuration).

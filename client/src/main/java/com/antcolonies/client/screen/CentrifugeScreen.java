@@ -7,6 +7,7 @@ import com.antcolonies.client.FluidLook;
 import com.antcolonies.content.blockentity.CentrifugeBlockEntity;
 import com.antcolonies.content.blockentity.CentrifugeBlockEntity.Status;
 import com.antcolonies.content.menu.CentrifugeMenu;
+import com.antcolonies.colony.upgrade.UpgradeEffects;
 
 import java.util.Locale;
 import net.minecraft.ChatFormatting;
@@ -202,8 +203,7 @@ public class CentrifugeScreen extends AntScreen<CentrifugeMenu> {
             return;
         }
         if (hoveredSlot != null && hoveredSlot.container == menu.centrifuge().upgrades() && !hoveredSlot.hasItem()) {
-            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.centrifuge.upgrade"),
-                    Component.translatable("gui.antcolonies.centrifuge.upgrade.hint").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
+            graphics.setComponentTooltipForNextFrame(font, UpgradeEffects.Host.CENTRIFUGE.slotLines(), mouseX, mouseY);
             return;
         }
         if (over(mouseX, mouseY, TANK_X, TANK_Y, TANK_W, TANK_H)) {

@@ -1,0 +1,29 @@
+{
+  "parent": "antcolonies:companion",
+  "criteria": {
+    "companion_sad": {
+      "trigger": "antcolonies:companion",
+      "conditions": {
+        "what": "sad"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:bundle"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.companion_sad.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.companion_sad.description"
+    },
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "requirements": [
+    [
+      "companion_sad"
+    ]
+  ]
+}

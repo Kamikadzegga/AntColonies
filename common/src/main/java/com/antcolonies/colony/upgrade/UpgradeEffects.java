@@ -8,6 +8,7 @@ import java.util.Locale;
 import com.antcolonies.colony.model.StructureKind;
 import com.antcolonies.colony.simulation.ColonySimulator;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
+import com.antcolonies.content.item.UpgradeItem;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.core.registry.ModBlocks;
 import com.antcolonies.core.registry.ModItems;
@@ -111,6 +112,68 @@ public final class UpgradeEffects {
 
     private static String thousands(long value) {
         return String.format(Locale.ROOT, "%,d", value);
+    }
+
+    // --- Upgrade slots ---
+
+    /**
+     * A block with upgrade slots: the upgrades it takes, and which of their effects count in it. The slots' filters and
+     * their tooltips both read this, so a slot always says what really goes in.
+     */
+    public record Host(Set<UpgradeType> types, Set<String> places, boolean speciesUpgrades) {
+        public static final Host TERRARIUM = new Host(TerrariumAccepts.types(), Set.of("terrarium", "terrarium_or_site", "terrarium_and_nest"), false);
+        public static final Host LAB = new Host(EnumSet.of(UpgradeType.SPEED, UpgradeType.GENETIC), Set.of("lab"), false);
+        public static final Host CENTRIFUGE = new Host(EnumSet.of(UpgradeType.SPEED), Set.of("centrifuge"), false);
+
+        public static Host of(StructureKind kind) {
+            Set<UpgradeType> types = EnumSet.noneOf(UpgradeType.class);
+            for (UpgradeType type : UpgradeType.values()) {
+                if (kind.allows(type)) {
+                    types.add(type);
+                }
+            }
+            Set<String> places = switch (kind) {
+                case NEST_CHAMBER -> Set.of("nest", "terrarium_and_nest");
+                case QUEEN_CHAMBER -> Set.of("queen");
+                case STORAGE -> Set.of("storage");
+                case HUNTING_GROUND -> Set.of("sites", "terrarium_or_site", "hunting");
+                default -> Set.of("sites", "terrarium_or_site");
+            };
+            return new Host(types, places, kind.takesSpeciesUpgrades());
+        }
+
+        public boolean takes(ItemStack stack) {
+            return stack.getItem() instanceof UpgradeItem upgrade && types.contains(upgrade.type());
+        }
+
+        /** What one tier of an upgrade does in this block. */
+        public List<Component> effects(UpgradeType type) {
+            List<Component> values = new ArrayList<>();
+            for (Effect effect : UpgradeEffects.effects(type, 1)) {
+                if (places.contains(effect.place())) {
+                    values.addAll(effect.values());
+                }
+            }
+            return values;
+        }
+
+        /** An empty upgrade slot's tooltip: every upgrade that goes in, each with what its first tier does here. */
+        public List<Component> slotLines() {
+            List<Component> lines = new ArrayList<>();
+            lines.add(Component.translatable("gui.antcolonies.slot.upgrade"));
+            for (UpgradeType type : types) {
+                lines.add(new ItemStack(ModItems.upgrade(type, 1)).getHoverName().copy().withStyle(ChatFormatting.GRAY));
+                for (Component value : effects(type)) {
+                    lines.add(Component.literal(" ").append(value).withStyle(ChatFormatting.BLUE));
+                }
+            }
+            if (speciesUpgrades) {
+                lines.add(Component.translatable("item.antcolonies.species_upgrade").withStyle(ChatFormatting.GRAY));
+                lines.add(Component.literal(" ").append(Component.translatable("gui.antcolonies.slot.upgrade.species")).withStyle(ChatFormatting.BLUE));
+            }
+            lines.add(Component.translatable("gui.antcolonies.slot.upgrade.more").withStyle(ChatFormatting.DARK_GRAY));
+            return lines;
+        }
     }
 
     /** The upgrade types a Terrarium takes (kept beside TerrariumBlockEntity.acceptsUpgrade). */

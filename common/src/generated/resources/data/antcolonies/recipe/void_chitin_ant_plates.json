@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "antcolonies:void_chitin",
+    "P": "antcolonies:infernal_chitin_ant_plates"
+  },
+  "pattern": [" C ", "CPC", " C "],
+  "result": {
+    "id": "antcolonies:void_chitin_ant_plates"
+  }
+}

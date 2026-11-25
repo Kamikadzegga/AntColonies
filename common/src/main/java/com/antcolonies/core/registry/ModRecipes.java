@@ -3,6 +3,7 @@ package com.antcolonies.core.registry;
 import java.util.function.Supplier;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.companion.FreeGuardAntRecipe;
 import com.antcolonies.content.recipe.CentrifugingRecipe;
 
 import net.minecraft.core.registries.Registries;
@@ -24,6 +25,9 @@ public final class ModRecipes {
             () -> RecipeType.simple(AntColonies.id("centrifuging")));
     public static final Supplier<RecipeSerializer<CentrifugingRecipe>> CENTRIFUGING_SERIALIZER = RECIPE_SERIALIZERS.register("centrifuging",
             () -> new RecipeSerializer<>(CentrifugingRecipe.MAP_CODEC, CentrifugingRecipe.STREAM_CODEC));
+    /** A Guard Ant's tube with a name tag loses its owner. */
+    public static final Supplier<RecipeSerializer<FreeGuardAntRecipe>> FREE_GUARD_ANT = RECIPE_SERIALIZERS.register("free_guard_ant",
+            () -> new RecipeSerializer<>(FreeGuardAntRecipe.MAP_CODEC, FreeGuardAntRecipe.STREAM_CODEC));
     public static final Supplier<RecipeBookCategory> CENTRIFUGING_CATEGORY = RECIPE_BOOK_CATEGORIES.register("centrifuging", RecipeBookCategory::new);
 
     /** Clients get the Centrifuge's recipes (vanilla sends none), for its screen's slot check and for JEI and EMI. */

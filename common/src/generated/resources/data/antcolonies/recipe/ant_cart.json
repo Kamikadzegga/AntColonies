@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#minecraft:planks",
+    "I": "minecraft:iron_nugget",
+    "B": "minecraft:stick"
+  },
+  "pattern": ["P P", "PPP", "IBI"],
+  "result": {
+    "id": "antcolonies:ant_cart"
+  }
+}

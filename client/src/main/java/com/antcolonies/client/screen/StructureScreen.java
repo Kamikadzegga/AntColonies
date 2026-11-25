@@ -22,6 +22,7 @@ import com.antcolonies.content.menu.StorageWindow;
 import com.antcolonies.content.menu.StructureMenu;
 import com.antcolonies.colony.species.AntSpecies;
 import com.antcolonies.colony.species.Cost;
+import com.antcolonies.colony.upgrade.UpgradeEffects;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -482,8 +483,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
             return;
         }
         if (hoveredSlot != null && hoveredSlot.container == menu.structure().upgrades() && !hoveredSlot.hasItem()) {
-            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.slot.upgrade"),
-                    Component.translatable("gui.antcolonies.slot.structure_upgrade.hint").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
+            graphics.setComponentTooltipForNextFrame(font, UpgradeEffects.Host.of(kind).slotLines(), mouseX, mouseY);
             return;
         }
         String role = hoveredSlot == null || hoveredSlot.hasItem() ? null : chamberSlot(hoveredSlot);
