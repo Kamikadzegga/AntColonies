@@ -21,20 +21,22 @@ Back to the [gameplay guide](gameplay.md).
 
 ## Species
 
-There are 48 species, and other mods add more (see [Compatibility](compatibility.md)). JEI, EMI and the Ant
+There are 56 species, and other mods add more (see [Compatibility](compatibility.md)). JEI, EMI and the Ant
 Identification Book show what each one finds.
 
 | Kind | Species | How you get them |
 |---|---|---|
-| Wild | Common, Wood, Stone, Snow, Desert, Farmer, Jungle, Swamp, Savanna, Shore, Blossom, Pale, Badlands, Army; Warped in the Nether, Chorus in the End | Catch them with Tweezers in their biomes |
+| Wild | Common, Wood, Stone, Snow, Desert, Farmer, Jungle, Swamp, Savanna, Shore, Blossom, Pale, Badlands, Army; Warped and Crimson in the Nether, Chorus in the End | Catch them with Tweezers in their biomes |
 | Evolved | Farmer, Fire, the hunters, the Liquid Ants | [Feed](#evolving-by-feeding) the Formicarium |
+| For fun | Cow, Chicken, Sheep, Pig, Rabbit, Baker, Bookworm, Party, Pirate, Fisher | [Feed](#ants-for-fun) the Formicarium |
 | Mineral | Iron, Copper, Coal, Deepslate, Lapis, Amethyst, Redstone, Gold, Diamond, Emerald, Netherite, Soul, Ender | [Research](#genetic-research) them, then [mutate](#species-mutation) a Queen |
 | Endgame | Wither, Dragon | [Research](#genetic-research) them, then [mutate](#species-mutation) a Queen |
-| Hybrid | Eleven crosses | Raise them in a [Queen Chamber](#hybrids) |
+| Hybrid | Nine crosses | Raise them in a [Queen Chamber](#hybrids) |
 
 **Wild species** live where their name says. Shore Ants live on beaches, Blossom Ants in cherry groves and flower
-meadows, Pale Ants in the pale garden, Army Ants in plains and savannas, Warped Ants in the Nether's warped and crimson
-forests, and Chorus Ants on the End's outer islands. Fire Ants also live wild in Nether anthills.
+meadows, Pale Ants in the pale garden, Army Ants in plains and savannas, Warped Ants in the Nether's warped forests,
+Crimson Ants in its crimson forests (in nests of the Warped Ants' kind), and Chorus Ants on the End's outer islands.
+Fire Ants and Soul Ants also live wild in Nether anthills.
 
 **Hunters** are the only species that work at a Hunting Ground:
 
@@ -62,11 +64,9 @@ forests, and Chorus Ants on the End's outer islands. Fire Ants also live wild in
 
 | Hybrid | Parents | Known for |
 |---|---|---|
-| Crystal Wood | Wood x Diamond | |
-| Frost Emerald | Snow x Emerald | |
 | Mechanical Miner | Stone x Redstone | |
 | Obsidian | Stone x Fire | |
-| Crimson | Farmer x Fire | Farms Nether fungus |
+| Crimson | Farmer x Fire, or caught wild in a crimson forest | Farms Nether fungus |
 | Honeypot | Blossom x Farmer | Farms honey; the parent of the Liquid Ants |
 | Harvester | Farmer x Savanna | Farms crops |
 | Reef | Shore x Jungle | Corals |
@@ -80,6 +80,28 @@ Farmer Ants (from Common), Fire Ants (from Desert or Warped), the hunters and th
 is fed the right item. Put it in the Formicarium's feed slot. Each item is one attempt with a chance to work, and
 after enough attempts it always works. The Formicarium's Info tab lists what the species can become and what that
 takes.
+
+### Ants for fun
+
+Ten species that are not to be taken seriously. All are fed into being, and none is fed ant food, so feeding a colony
+never changes it by accident. Each wears a costume of its own, on every ant of the colony: horns, patches and a bell;
+a comb and tail feathers; a fleece; a snout, flop ears and a curly tail; long ears and a white tail; a chef's hat;
+glasses and a pile of books; a party hat; a pirate hat and a striped shirt; a yellow rain hat, a coat and a fishing rod.
+
+| Ant | Made from, fed | What it does |
+|---|---|---|
+| Cow | Army, milk buckets | Forages wheat. At a Hunting Ground it brings beef and leather. At a Liquid Chamber it gives Milk Droplets, which a Droplet Centrifuge spins into milk. |
+| Chicken | Army, feathers | Forages eggs and seeds. At a Hunting Ground it brings chicken and feathers. |
+| Sheep | Army, wool | Forages wool in the colours sheep come in. At a Hunting Ground it brings wool and mutton. |
+| Pig | Army, carrots on sticks | Forages carrots, potatoes and beetroot. At a Hunting Ground it brings porkchops. |
+| Rabbit | Army, rabbit hide | Forages carrots and dandelions. At a Hunting Ground it brings raw rabbit and hide, and from stage 3, rarely, a rabbit's foot (about two an hour). |
+| Baker | Farmer, cake | Forages wheat, sugar and eggs. At a Harvesting Site it bakes bread, cookies, pumpkin pie and, at stage 3, a cake now and then. |
+| Bookworm | Wood, books | Brings paper, books and bookshelves, and at stage 3 a Bottle o' Enchanting now and then. |
+| Party | Common, firework rockets | Brings rockets, note blocks and cake, and at stage 3 the odd music disc. |
+| Pirate | Shore, gold ingots | Brings sand and gold nuggets, at stage 3 nautilus shells and a rare emerald and, very rarely at stage 4, a Heart of the Sea. |
+| Fisher | Shore, fishing rods | Brings cod and salmon, from stage 2 tropical fish and pufferfish, and now and then an old boot. |
+
+The Cow Ant is the one species with three kinds of work. It is a hunter, so it does not farm.
 
 ## The Nether and the End
 

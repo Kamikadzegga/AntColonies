@@ -39,11 +39,15 @@ public record Expedition(StructureKind site, TagKey<AntSpecies> adapted, double 
             Find.CODEC.listOf().optionalFieldOf("outputs", List.of()).forGetter(Expedition::outputs)
     ).apply(i, Expedition::new));
 
-    /** The trail pheromone a colony living in the expedition's dimension finds while foraging there. */
-    public record Trail(Holder<Item> item, double chance) {
+    /**
+     * The trail pheromone a colony living in the expedition's dimension finds while foraging there, each find a chance.
+     * Ants adapted to that dimension find it anywhere else too, at {@code awayChance}: far smaller, 0 for never.
+     */
+    public record Trail(Holder<Item> item, double chance, double awayChance) {
         public static final Codec<Trail> CODEC = RecordCodecBuilder.create(i -> i.group(
                 BuiltInRegistries.ITEM.holderByNameCodec().fieldOf("item").forGetter(Trail::item),
-                Codec.doubleRange(0, 1).fieldOf("chance").forGetter(Trail::chance)
+                Codec.doubleRange(0, 1).fieldOf("chance").forGetter(Trail::chance),
+                Codec.doubleRange(0, 1).optionalFieldOf("away_chance", 0.0).forGetter(Trail::awayChance)
         ).apply(i, Trail::new));
     }
 

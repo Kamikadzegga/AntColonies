@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:liquid_sunshine_droplet",
+  "result": {
+    "id": "enderio:fluid_liquid_sunshine_still",
+    "amount": 50
+  },
+  "energy": 2000,
+  "time": 100,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "enderio"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "enderio:fluid_liquid_sunshine_still"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:liquid_sunshine_droplet"
+    }
+  ]
+}

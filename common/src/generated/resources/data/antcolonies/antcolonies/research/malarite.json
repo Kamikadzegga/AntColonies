@@ -1,0 +1,17 @@
+{
+  "material": "#c:gems/malarite",
+  "species": "antcolonies:malarite",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "eternal_starlight"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "from": "antcolonies:amethyst",
+  "to": "antcolonies:anglesite",
+  "item": "bigreactors:anglesite_crystal",
+  "chance": 0.05,
+  "guaranteed_after": 32,
+  "min_stage": 3,
+  "min_population": 1000,
+  "lab_amount": 8,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "bigreactors"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "bigreactors:anglesite_crystal"
+    }
+  ]
+}

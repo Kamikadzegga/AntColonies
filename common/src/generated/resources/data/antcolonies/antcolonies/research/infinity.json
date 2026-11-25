@@ -1,0 +1,11 @@
+{
+  "material": "#c:dusts/grains_of_infinity",
+  "species": "antcolonies:infinity",
+  "tier": "basic",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "enderio"
+    }
+  ]
+}

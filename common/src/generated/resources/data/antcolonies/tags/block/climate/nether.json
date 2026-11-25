@@ -1,10 +1,13 @@
 {
   "values": [
-    "#minecraft:base_stone_nether",
+    "minecraft:netherrack",
+    "minecraft:basalt",
+    "minecraft:blackstone",
     "minecraft:polished_basalt",
     "minecraft:smooth_basalt",
     "minecraft:polished_blackstone",
-    "#minecraft:nylium",
+    "minecraft:crimson_nylium",
+    "minecraft:warped_nylium",
     "minecraft:magma_block",
     "minecraft:soul_sand",
     "minecraft:soul_soil"

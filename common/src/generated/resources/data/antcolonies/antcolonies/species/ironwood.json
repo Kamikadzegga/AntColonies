@@ -1,0 +1,69 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#363324",
+    "gaster": "#8F875F",
+    "accent": "#CDC9B7",
+    "pattern": "banded",
+    "crystal": "#ABA587"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "mineral",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.45,
+    "outputs": [
+      {
+        "tag": "c:raw_materials/ironwood",
+        "weight": 8
+      },
+      {
+        "item": "twilightforest:liveroot",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:stick",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:moss_block",
+        "weight": 8
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "twilightforest"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "twilightforest:liveroot"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "material": "#c:ingots/froststeel",
+  "species": "antcolonies:froststeel",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "requires": [
+    "antcolonies:cloggrum"
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "undergarden"
+    }
+  ]
+}

@@ -201,6 +201,11 @@ public class CentrifugeScreen extends AntScreen<CentrifugeMenu> {
                     Component.translatable("gui.antcolonies.centrifuge.slot.hint").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
             return;
         }
+        if (hoveredSlot != null && hoveredSlot.container == menu.centrifuge().upgrades() && !hoveredSlot.hasItem()) {
+            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.centrifuge.upgrade"),
+                    Component.translatable("gui.antcolonies.centrifuge.upgrade.hint").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
+            return;
+        }
         if (over(mouseX, mouseY, TANK_X, TANK_Y, TANK_W, TANK_H)) {
             int held = menu.data(CentrifugeBlockEntity.DATA_AMOUNT);
             Fluid tank = tankFluid();
@@ -216,9 +221,17 @@ public class CentrifugeScreen extends AntScreen<CentrifugeMenu> {
         if (over(mouseX, mouseY, DRUM_X, DRUM_Y, DRUM_SIZE, DRUM_SIZE + 10)) {
             int duration = menu.data(CentrifugeBlockEntity.DATA_DURATION);
             if (duration > 0) {
-                graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.centrifuge.run",
-                        String.format(Locale.ROOT, "%.1f", menu.data(CentrifugeBlockEntity.DATA_PROGRESS) / 20.0),
-                        String.format(Locale.ROOT, "%.1f", duration / 20.0))), mouseX, mouseY);
+                // In seconds as it runs now: Speed Upgrades make several steps a tick.
+                double perSecond = 20.0 * Math.max(1, menu.data(CentrifugeBlockEntity.DATA_SPEED));
+                List<Component> lines = new ArrayList<>();
+                lines.add(Component.translatable("gui.antcolonies.centrifuge.run",
+                        String.format(Locale.ROOT, "%.1f", menu.data(CentrifugeBlockEntity.DATA_PROGRESS) / perSecond),
+                        String.format(Locale.ROOT, "%.1f", duration / perSecond)));
+                if (menu.data(CentrifugeBlockEntity.DATA_SPEED) > 1) {
+                    lines.add(Component.translatable("gui.antcolonies.centrifuge.speed", menu.data(CentrifugeBlockEntity.DATA_SPEED))
+                            .withStyle(ChatFormatting.GRAY));
+                }
+                graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
             }
             return;
         }

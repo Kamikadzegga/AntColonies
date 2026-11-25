@@ -1,7 +1,9 @@
 package com.antcolonies.content.blockentity;
 
+import com.antcolonies.colony.upgrade.UpgradeType;
 import com.antcolonies.content.block.CentrifugeBlock;
 import com.antcolonies.content.block.ComparatorSource;
+import com.antcolonies.content.item.UpgradeItem;
 import com.antcolonies.content.menu.CentrifugeMenu;
 import com.antcolonies.content.recipe.CentrifugingRecipe;
 import com.antcolonies.core.config.AntConfig;
@@ -20,6 +22,8 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -85,10 +89,30 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
     /** What one run of the droplet in the slot gives (mB) and takes (FE). */
     public static final int DATA_RUN_AMOUNT = 9;
     public static final int DATA_RUN_ENERGY = 10;
-    public static final int DATA_COUNT = 11;
+    /** Steps of a run it makes each tick: one, and one more per Speed Upgrade tier. */
+    public static final int DATA_SPEED = 11;
+    public static final int DATA_COUNT = 12;
+    public static final int UPGRADE_SLOTS = 2;
     private static final int[] SLOTS = {0};
 
     private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
+    private final SimpleContainer upgrades = new SimpleContainer(UPGRADE_SLOTS) {
+        @Override
+        public boolean canPlaceItem(int slot, ItemStack stack) {
+            return stack.getItem() instanceof UpgradeItem upgrade && upgrade.type() == UpgradeType.SPEED;
+        }
+
+        @Override
+        public int getMaxStackSize() {
+            return 1;
+        }
+
+        @Override
+        public void setChanged() {
+            super.setChanged();
+            CentrifugeBlockEntity.this.setChanged();
+        }
+    };
     private final SimpleEnergyHandler energy;
     private final FluidStacksResourceHandler tank;
     /** The tank as other blocks see it: fluid comes out, nothing goes in. */
@@ -121,6 +145,7 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
                 case DATA_MAKING -> recipe == null ? -1 : BuiltInRegistries.FLUID.getId(recipe.fluid().getFluid());
                 case DATA_RUN_AMOUNT -> recipe == null ? 0 : recipe.amount();
                 case DATA_RUN_ENERGY -> recipe == null ? 0 : recipe.energyCost();
+                case DATA_SPEED -> speed();
                 default -> 0;
             };
         }
@@ -176,6 +201,21 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
 
     public ContainerData data() {
         return data;
+    }
+
+    public SimpleContainer upgrades() {
+        return upgrades;
+    }
+
+    /** Steps of a run each tick: one, and one more per Speed Upgrade tier in its slots. The FE of a run stays the same. */
+    public int speed() {
+        int speed = 1;
+        for (int slot = 0; slot < UPGRADE_SLOTS; slot++) {
+            if (upgrades.getItem(slot).getItem() instanceof UpgradeItem upgrade && upgrade.type() == UpgradeType.SPEED) {
+                speed += upgrade.tier();
+            }
+        }
+        return speed;
     }
 
     /** The FE input, on every side: takes energy in, never gives it out. */
@@ -250,6 +290,27 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
     }
 
     private void tick(ServerLevel level, BlockPos pos, BlockState state) {
+        Status now = spin(level, pos);
+        // Speed Upgrades: more steps in the same tick, while it keeps working.
+        for (int extra = speed() - 1; extra > 0 && now == Status.WORKING; extra--) {
+            if (spin(level, pos) != Status.WORKING) {
+                break;
+            }
+        }
+        status = now;
+        push(level, pos);
+        boolean working = now == Status.WORKING;
+        if (state.getValue(CentrifugeBlock.WORKING) != working) {
+            level.setBlock(pos, state.setValue(CentrifugeBlock.WORKING, working), Block.UPDATE_ALL);
+        }
+        if (syncPending && level.getGameTime() % 10 == 0) {
+            syncPending = false;
+            level.sendBlockUpdated(pos, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    /** One step of the run of the droplet in the slot; says what the Centrifuge did, or why it waits. */
+    private Status spin(ServerLevel level, BlockPos pos) {
         ItemStack input = items.get(0);
         CentrifugingRecipe run = currentRecipe(level);
         int amount = tank.getAmountAsInt(0);
@@ -299,16 +360,7 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
                 }
             }
         }
-        status = now;
-        push(level, pos);
-        boolean working = now == Status.WORKING;
-        if (state.getValue(CentrifugeBlock.WORKING) != working) {
-            level.setBlock(pos, state.setValue(CentrifugeBlock.WORKING, working), Block.UPDATE_ALL);
-        }
-        if (syncPending && level.getGameTime() % 10 == 0) {
-            syncPending = false;
-            level.sendBlockUpdated(pos, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-        }
+        return now;
     }
 
     private void push(ServerLevel level, BlockPos pos) {
@@ -389,6 +441,14 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
         return new CentrifugeMenu(containerId, inventory, this);
     }
 
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        if (level != null) {
+            Containers.dropContents(level, pos, upgrades);
+        }
+    }
+
     // --- Saving and syncing ---
 
     @Override
@@ -396,6 +456,13 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
         super.loadAdditional(input);
         items = NonNullList.withSize(1, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
+        upgrades.clearContent();
+        int slot = 0;
+        for (ItemStack stack : input.listOrEmpty("upgrades", ItemStack.OPTIONAL_CODEC)) {
+            if (slot < UPGRADE_SLOTS) {
+                upgrades.setItem(slot++, stack);
+            }
+        }
         energy.set(Math.clamp(input.getIntOr("energy", 0), 0, energy.getCapacityAsInt()));
         FluidStack stored = input.read("fluid", FluidStack.OPTIONAL_CODEC).orElse(FluidStack.EMPTY);
         if (stored.isEmpty() || stored.getFluid() == Fluids.EMPTY) {
@@ -413,6 +480,10 @@ public class CentrifugeBlockEntity extends BaseContainerBlockEntity implements W
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         ContainerHelper.saveAllItems(output, items);
+        ValueOutput.TypedOutputList<ItemStack> list = output.list("upgrades", ItemStack.OPTIONAL_CODEC);
+        for (int slot = 0; slot < UPGRADE_SLOTS; slot++) {
+            list.add(upgrades.getItem(slot));
+        }
         output.putInt("energy", energy.getAmountAsInt());
         output.store("fluid", FluidStack.OPTIONAL_CODEC, fluid());
         output.putInt("progress", progress);

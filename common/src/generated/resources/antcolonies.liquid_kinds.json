@@ -1,0 +1,548 @@
+{
+  "kinds": [
+    {
+      "name": "crude_oil",
+      "sources": [
+        {
+          "mod": "machinaopus",
+          "fluid": "machinaopus:crude_oil"
+        },
+        {
+          "mod": "pneumaticcraft",
+          "fluid": "pneumaticcraft:oil"
+        },
+        {
+          "mod": "modern_industrialization",
+          "fluid": "modern_industrialization:crude_oil"
+        },
+        {
+          "mod": "oritech",
+          "fluid": "oritech:still_oil"
+        },
+        {
+          "mod": "ad_astra",
+          "fluid": "ad_astra:oil"
+        },
+        {
+          "mod": "stellaris",
+          "fluid": "stellaris:oil"
+        }
+      ]
+    },
+    {
+      "name": "liquid_blaze",
+      "sources": [
+        {
+          "mod": "machinaopus",
+          "fluid": "machinaopus:liquid_blaze"
+        }
+      ]
+    },
+    {
+      "name": "brine",
+      "sources": [
+        {
+          "mod": "mekanism",
+          "fluid": "mekanism:brine"
+        }
+      ]
+    },
+    {
+      "name": "heavy_water",
+      "sources": [
+        {
+          "mod": "mekanism",
+          "fluid": "mekanism:heavy_water"
+        },
+        {
+          "mod": "modern_industrialization",
+          "fluid": "modern_industrialization:heavy_water"
+        }
+      ]
+    },
+    {
+      "name": "honey",
+      "sources": [
+        {
+          "mod": "create",
+          "fluid": "create:honey"
+        },
+        {
+          "mod": "productivebees",
+          "fluid": "productivebees:honey"
+        },
+        {
+          "mod": "extended_industrialization",
+          "fluid": "extended_industrialization:honey"
+        },
+        {
+          "mod": "the_bumblezone",
+          "fluid": "the_bumblezone:honey_fluid_still"
+        }
+      ]
+    },
+    {
+      "name": "chocolate",
+      "sources": [
+        {
+          "mod": "create",
+          "fluid": "create:chocolate"
+        }
+      ]
+    },
+    {
+      "name": "tea",
+      "sources": [
+        {
+          "mod": "create",
+          "fluid": "create:tea"
+        }
+      ]
+    },
+    {
+      "name": "pink_slime",
+      "sources": [
+        {
+          "mod": "industrialforegoing",
+          "fluid": "industrialforegoing:pink_slime"
+        }
+      ]
+    },
+    {
+      "name": "latex",
+      "sources": [
+        {
+          "mod": "industrialforegoing",
+          "fluid": "industrialforegoing:latex"
+        }
+      ]
+    },
+    {
+      "name": "nutrient_distillation",
+      "sources": [
+        {
+          "mod": "enderio",
+          "fluid": "enderio:fluid_nutrient_distillation_still"
+        }
+      ]
+    },
+    {
+      "name": "hootch",
+      "sources": [
+        {
+          "mod": "enderio",
+          "fluid": "enderio:fluid_hootch_still"
+        }
+      ]
+    },
+    {
+      "name": "resin",
+      "sources": [
+        {
+          "mod": "thermal",
+          "fluid": "thermal:resin"
+        }
+      ]
+    },
+    {
+      "name": "sap",
+      "sources": [
+        {
+          "mod": "thermal",
+          "fluid": "thermal:sap"
+        },
+        {
+          "mod": "productivetrees",
+          "fluid": "productivetrees:maple_sap"
+        }
+      ]
+    },
+    {
+      "name": "creosote",
+      "sources": [
+        {
+          "mod": "immersiveengineering",
+          "fluid": "immersiveengineering:creosote"
+        },
+        {
+          "mod": "railcraft",
+          "fluid": "railcraft:creosote"
+        },
+        {
+          "mod": "modern_industrialization",
+          "fluid": "modern_industrialization:creosote"
+        }
+      ]
+    },
+    {
+      "name": "plant_oil",
+      "sources": [
+        {
+          "mod": "immersiveengineering",
+          "fluid": "immersiveengineering:plantoil"
+        },
+        {
+          "mod": "pneumaticcraft",
+          "fluid": "pneumaticcraft:vegetable_oil"
+        },
+        {
+          "mod": "createaddition",
+          "fluid": "createaddition:seed_oil"
+        },
+        {
+          "mod": "modern_industrialization",
+          "fluid": "modern_industrialization:plant_oil"
+        }
+      ]
+    },
+    {
+      "name": "experience",
+      "sources": [
+        {
+          "mod": "enderio",
+          "fluid": "enderio:fluid_xp_juice_still"
+        },
+        {
+          "mod": "industrialforegoing",
+          "fluid": "industrialforegoing:essence"
+        },
+        {
+          "mod": "pneumaticcraft",
+          "fluid": "pneumaticcraft:memory_essence"
+        },
+        {
+          "mod": "mob_grinding_utils",
+          "fluid": "mob_grinding_utils:fluid_xp"
+        },
+        {
+          "mod": "create_enchantment_industry",
+          "fluid": "create_enchantment_industry:experience"
+        },
+        {
+          "mod": "justdirethings",
+          "fluid": "justdirethings:xp_fluid_source"
+        },
+        {
+          "mod": "energizedpower",
+          "fluid": "energizedpower:liquid_xp"
+        },
+        {
+          "mod": "neovitae",
+          "fluid": "neovitae:liquified_experience_source"
+        },
+        {
+          "mod": "sophisticatedcore",
+          "fluid": "sophisticatedcore:xp_still"
+        }
+      ]
+    },
+    {
+      "name": "fire_water",
+      "sources": [
+        {
+          "mod": "enderio",
+          "fluid": "enderio:fluid_fire_water_still"
+        }
+      ]
+    },
+    {
+      "name": "liquid_sunshine",
+      "sources": [
+        {
+          "mod": "enderio",
+          "fluid": "enderio:fluid_liquid_sunshine_still"
+        }
+      ]
+    },
+    {
+      "name": "dew_of_the_void",
+      "sources": [
+        {
+          "mod": "enderio",
+          "fluid": "enderio:fluid_dew_of_the_void_still"
+        }
+      ]
+    },
+    {
+      "name": "cloud_seed",
+      "sources": [
+        {
+          "mod": "enderio",
+          "fluid": "enderio:fluid_cloud_seed_still"
+        }
+      ]
+    },
+    {
+      "name": "blood",
+      "sources": [
+        {
+          "mod": "evilcraft",
+          "fluid": "evilcraft:blood"
+        }
+      ]
+    },
+    {
+      "name": "soul_lava",
+      "sources": [
+        {
+          "mod": "allthemodium",
+          "fluid": "allthemodium:soul_lava"
+        }
+      ]
+    },
+    {
+      "name": "menril_resin",
+      "sources": [
+        {
+          "mod": "integrateddynamics",
+          "fluid": "integrateddynamics:menril_resin"
+        }
+      ]
+    },
+    {
+      "name": "liquid_chorus",
+      "sources": [
+        {
+          "mod": "integrateddynamics",
+          "fluid": "integrateddynamics:liquid_chorus"
+        }
+      ]
+    },
+    {
+      "name": "sal_ammoniac_solution",
+      "sources": [
+        {
+          "mod": "theurgy",
+          "fluid": "theurgy:sal_ammoniac"
+        }
+      ]
+    },
+    {
+      "name": "liquid_force",
+      "sources": [
+        {
+          "mod": "forcecraft",
+          "fluid": "forcecraft:fluid_force_source"
+        }
+      ]
+    },
+    {
+      "name": "liquid_etherium",
+      "sources": [
+        {
+          "mod": "arsmagicalegacy",
+          "fluid": "arsmagicalegacy:liquid_etherium"
+        }
+      ]
+    },
+    {
+      "name": "virulent_mix",
+      "sources": [
+        {
+          "mod": "undergarden",
+          "fluid": "undergarden:virulent_mix_source"
+        }
+      ]
+    },
+    {
+      "name": "polymorphic_fluid",
+      "sources": [
+        {
+          "mod": "justdirethings",
+          "fluid": "justdirethings:polymorphic_fluid_source"
+        }
+      ]
+    },
+    {
+      "name": "sulfuric_acid",
+      "sources": [
+        {
+          "mod": "mekanism",
+          "fluid": "mekanism:sulfuric_acid"
+        },
+        {
+          "mod": "modern_industrialization",
+          "fluid": "modern_industrialization:sulfuric_acid"
+        },
+        {
+          "mod": "oritech",
+          "fluid": "oritech:still_sulfuric_acid"
+        }
+      ]
+    },
+    {
+      "name": "heavy_oil",
+      "sources": [
+        {
+          "mod": "oritech",
+          "fluid": "oritech:still_heavy_oil"
+        }
+      ]
+    },
+    {
+      "name": "diesel",
+      "sources": [
+        {
+          "mod": "oritech",
+          "fluid": "oritech:still_diesel"
+        },
+        {
+          "mod": "stellaris",
+          "fluid": "stellaris:diesel"
+        }
+      ]
+    },
+    {
+      "name": "naphtha",
+      "sources": [
+        {
+          "mod": "oritech",
+          "fluid": "oritech:still_naphtha"
+        }
+      ]
+    },
+    {
+      "name": "turbofuel",
+      "sources": [
+        {
+          "mod": "oritech",
+          "fluid": "oritech:still_fuel"
+        }
+      ]
+    },
+    {
+      "name": "fuel",
+      "sources": [
+        {
+          "mod": "stellaris",
+          "fluid": "stellaris:fuel"
+        }
+      ]
+    },
+    {
+      "name": "hydrogen",
+      "sources": [
+        {
+          "mod": "stellaris",
+          "fluid": "stellaris:hydrogen"
+        }
+      ]
+    },
+    {
+      "name": "oxygen",
+      "sources": [
+        {
+          "mod": "stellaris",
+          "fluid": "stellaris:oxygen"
+        }
+      ]
+    },
+    {
+      "name": "rocket_fuel",
+      "sources": [
+        {
+          "mod": "enderio",
+          "fluid": "enderio:fluid_rocket_fuel_still"
+        }
+      ]
+    },
+    {
+      "name": "blaze_ember_fuel",
+      "sources": [
+        {
+          "mod": "justdirethings",
+          "fluid": "justdirethings:refined_t2_fluid_source"
+        }
+      ]
+    },
+    {
+      "name": "voidflame_fuel",
+      "sources": [
+        {
+          "mod": "justdirethings",
+          "fluid": "justdirethings:refined_t3_fluid_source"
+        }
+      ]
+    },
+    {
+      "name": "eclipse_ember_fuel",
+      "sources": [
+        {
+          "mod": "justdirethings",
+          "fluid": "justdirethings:refined_t4_fluid_source"
+        }
+      ]
+    },
+    {
+      "name": "time_fluid",
+      "sources": [
+        {
+          "mod": "justdirethings",
+          "fluid": "justdirethings:time_fluid_source"
+        }
+      ]
+    },
+    {
+      "name": "portal_fluid",
+      "sources": [
+        {
+          "mod": "justdirethings",
+          "fluid": "justdirethings:portal_fluid_source"
+        }
+      ]
+    },
+    {
+      "name": "canola_oil",
+      "sources": [
+        {
+          "mod": "actuallyadditions",
+          "fluid": "actuallyadditions:canola_oil"
+        }
+      ]
+    },
+    {
+      "name": "biofuel",
+      "sources": [
+        {
+          "mod": "oritech",
+          "fluid": "oritech:still_biofuel"
+        },
+        {
+          "mod": "industrialforegoing",
+          "fluid": "industrialforegoing:biofuel"
+        }
+      ]
+    },
+    {
+      "name": "bioethanol",
+      "sources": [
+        {
+          "mod": "mekanismgenerators",
+          "fluid": "mekanismgenerators:bioethanol"
+        },
+        {
+          "mod": "createaddition",
+          "fluid": "createaddition:bioethanol"
+        }
+      ]
+    },
+    {
+      "name": "ether",
+      "sources": [
+        {
+          "mod": "eternal_starlight",
+          "fluid": "eternal_starlight:ether"
+        }
+      ]
+    },
+    {
+      "name": "liquid_starlight",
+      "sources": [
+        {
+          "mod": "astralsorcery",
+          "fluid": "astralsorcery:liquid_starlight"
+        }
+      ]
+    }
+  ]
+}

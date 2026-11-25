@@ -1,7 +1,11 @@
 package com.antcolonies.client.model;
 
 import com.antcolonies.AntColonies;
+import java.util.EnumMap;
+import java.util.Map;
+
 import com.antcolonies.colony.species.Caste;
+import com.antcolonies.colony.species.Costume;
 
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -45,6 +49,10 @@ public final class AntModel {
     public final ModelPart crop;
     public final ModelPart cropSkin;
     public final ModelPart cropPlates;
+    /** Each costume's parts: those on the thorax and (in a child that follows the head) on the head, and those on the gaster. */
+    private final Map<Costume, ModelPart> costumes = new EnumMap<>(Costume.class);
+    private final Map<Costume, ModelPart> costumeHeads = new EnumMap<>(Costume.class);
+    private final Map<Costume, ModelPart> costumeGasters = new EnumMap<>(Costume.class);
     public final ModelPart[] femurs = new ModelPart[6];
     public final ModelPart[] tibias = new ModelPart[6];
     public final ModelPart[] antennae = new ModelPart[2];
@@ -82,6 +90,12 @@ public final class AntModel {
             mandibles[i] = head.getChild("mandible" + i);
             antennaRest[i] = antennae[i].storePose();
             mandibleRest[i] = mandibles[i].storePose();
+        }
+        for (Costume costume : Costume.values()) {
+            ModelPart parts = root.getChild("costume_" + costume.getSerializedName());
+            costumes.put(costume, parts);
+            costumeHeads.put(costume, parts.getChild("head"));
+            costumeGasters.put(costume, root.getChild("costume_" + costume.getSerializedName() + "_gaster"));
         }
         bodyRest = body.storePose();
         gasterRest = gaster.storePose();
@@ -130,8 +144,9 @@ public final class AntModel {
                 femur.addBox(0, -t / 2, -t / 2, s.femur(), t, t);
                 tibia.addBox(0, -t * 0.4F, -t * 0.4F, s.tibia(), t * 0.8F, t * 0.8F);
             } else {
-                femur.addBox(-s.femur(), -t / 2, -t / 2, s.femur(), t, t);
-                tibia.addBox(-s.tibia(), -t * 0.4F, -t * 0.4F, s.tibia(), t * 0.8F, t * 0.8F);
+                // Mirrored, so the foot end of the texture is the foot on this side too (a costume paints hooves and boots there).
+                femur.mirror().addBox(-s.femur(), -t / 2, -t / 2, s.femur(), t, t);
+                tibia.mirror().addBox(-s.tibia(), -t * 0.4F, -t * 0.4F, s.tibia(), t * 0.8F, t * 0.8F);
             }
             // Femurs rise from the body (z rotation), tibias come down to the ground; front legs reach forward, hind legs back.
             PartDefinition leg = body.addOrReplaceChild("femur" + i, femur, PartPose.offsetAndRotation(side * s.legSpread() * 0.85F,
@@ -165,6 +180,26 @@ public final class AntModel {
                 PartPose.offsetAndRotation(-1.4F, -s.gasterH() / 2 + 0.6F, s.gasterL() * 0.62F, -0.5F, 0.3F, -0.4F));
         crystalsGaster.addOrReplaceChild("c2", CubeListBuilder.create().texOffs(0, 48).addBox(-0.8F, -2.8F, -0.8F, 1.6F, 2.8F, 1.6F),
                 PartPose.offsetAndRotation(1.5F, -s.gasterH() / 2 + 0.7F, s.gasterL() * 0.7F, -0.6F, -0.4F, 0.45F));
+        // Costumes: every costume's parts are in the mesh, each set under roots of its own that follow the body and the gaster.
+        CostumeParts.Dims dims = new CostumeParts.Dims(s.thoraxW(), s.thoraxH(), s.thoraxL(), s.headW(), s.headH(), s.headL(), s.gasterW(),
+                s.gasterH(), s.gasterL());
+        for (String name : CostumeParts.NAMES) {
+            PartDefinition onBody = root.addOrReplaceChild("costume_" + name, CubeListBuilder.create(), PartPose.offset(0, -s.bodyHeight(), 0));
+            PartDefinition onHead = onBody.addOrReplaceChild("head", CubeListBuilder.create(),
+                    PartPose.offsetAndRotation(0, -0.8F, -halfL + 0.3F, 0.18F, 0, 0));
+            PartDefinition onGaster = root.addOrReplaceChild("costume_" + name + "_gaster", CubeListBuilder.create(), gasterPose);
+            int index = 0;
+            for (CostumeParts.Part part : CostumeParts.parts(name, dims)) {
+                PartDefinition parent = switch (part.anchor()) {
+                    case HEAD -> onHead;
+                    case BODY -> onBody;
+                    case GASTER -> onGaster;
+                };
+                parent.addOrReplaceChild("part" + index++, CubeListBuilder.create().texOffs(part.u(), part.v())
+                                .addBox(part.x(), part.y(), part.z(), part.w(), part.h(), part.d(), new CubeDeformation(part.grow())),
+                        PartPose.offsetAndRotation(part.pivotX(), part.pivotY(), part.pivotZ(), part.pitch(), part.yaw(), part.roll()));
+            }
+        }
         // A Liquid Ant's crop, one size and always full: the rounded liquid, its thin skin a little bigger, the plates on top.
         float cw = cropWidth(caste);
         float ch = cropHeight(caste);
@@ -273,12 +308,30 @@ public final class AntModel {
         crystalsBody.loadPose(body.storePose());
         crystalsBody.xRot = body.xRot;
         crystalsGaster.loadPose(gaster.storePose());
+        for (Costume costume : Costume.values()) {
+            costumes.get(costume).loadPose(body.storePose());
+            costumeHeads.get(costume).loadPose(head.storePose());
+            ModelPart onGaster = costumeGasters.get(costume);
+            onGaster.loadPose(gaster.storePose());
+            onGaster.xScale = gaster.xScale;
+            onGaster.yScale = gaster.yScale;
+        }
         // The crop keeps its rest pose and size whatever the ant does: it only bobs and tilts with the body.
         crop.loadPose(cropRest);
         crop.y += gaster.y - gasterRest.y();
         crop.xRot += gaster.xRot - gasterRest.xRot();
         cropSkin.loadPose(crop.storePose());
         cropPlates.loadPose(crop.storePose());
+    }
+
+    /** A costume's parts on the thorax and the head. */
+    public ModelPart costume(Costume costume) {
+        return costumes.get(costume);
+    }
+
+    /** A costume's parts on the gaster. */
+    public ModelPart costumeGaster(Costume costume) {
+        return costumeGasters.get(costume);
     }
 
     /** Where the carried thing sits: between the mandibles (units, ant space). */

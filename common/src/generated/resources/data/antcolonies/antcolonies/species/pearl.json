@@ -1,0 +1,66 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#4E4B47",
+    "gaster": "#CDC6BC",
+    "accent": "#E9E5E1",
+    "pattern": "faceted",
+    "crystal": "#DAD4CD",
+    "glow": true
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "crystal",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.008,
+    "outputs": [
+      {
+        "tag": "c:gems/pearl",
+        "weight": 6
+      },
+      {
+        "tag": "c:dusts/pearl",
+        "weight": 2
+      },
+      {
+        "item": "minecraft:netherrack",
+        "weight": 40
+      },
+      {
+        "item": "minecraft:calcite",
+        "weight": 4,
+        "min_stage": 2
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.8,
+    "growth": 0.85
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "silentgems"
+    }
+  ]
+}

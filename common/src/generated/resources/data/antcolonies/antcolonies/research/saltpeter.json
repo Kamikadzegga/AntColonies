@@ -1,0 +1,24 @@
+{
+  "material": "#c:dusts/saltpeter",
+  "species": "antcolonies:saltpeter",
+  "tier": "basic",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "railcraft"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "neovitae"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "eternal_starlight"
+        }
+      ]
+    }
+  ]
+}

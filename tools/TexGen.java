@@ -6,6 +6,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -367,6 +368,811 @@ public class TexGen {
                 }
             }
             img.save("entity/ant/" + caste + "_" + pattern);
+        }
+    }
+
+    // --- Costumes: what the ants for fun wear ---
+
+    /** The costumes, in the order of the game's Costume enum (and CostumeParts.NAMES). */
+    static final String[] COSTUMES = {"cow", "chicken", "sheep", "baker", "bookworm", "party", "pirate", "pig", "rabbit", "fisher"};
+
+    /** One box of a costume, as the client's CostumeParts places it in the texture. */
+    record Prop(String name, int u, int v, double w, double h, double d, double grow) {}
+
+    /** Compiles the client's CostumeParts and asks it for a costume's boxes, so the model and its texture never differ. */
+    static List<Prop> costumeProps(String costume, String caste) {
+        try {
+            if (costumeClass == null) {
+                Path out = Files.createTempDirectory("costumeparts");
+                int failed = ToolProvider.getSystemJavaCompiler().run(null, null, null, "-d", out.toString(),
+                        "client/src/main/java/com/antcolonies/client/model/CostumeParts.java");
+                if (failed != 0) {
+                    throw new IllegalStateException("CostumeParts.java did not compile");
+                }
+                costumeClass = new URLClassLoader(new URL[] {out.toUri().toURL()}).loadClass("com.antcolonies.client.model.CostumeParts");
+                String[] names = (String[]) costumeClass.getField("NAMES").get(null);
+                if (!Arrays.equals(names, COSTUMES)) {
+                    throw new IllegalStateException("COSTUMES must list CostumeParts.NAMES, in its order");
+                }
+            }
+            Class<?> dimsClass = costumeClass.getClassLoader().loadClass("com.antcolonies.client.model.CostumeParts$Dims");
+            Shape s = shape(caste);
+            Object dims = dimsClass.getDeclaredConstructors()[0].newInstance((float) s.thoraxW(), (float) s.thoraxH(), (float) s.thoraxL(),
+                    (float) s.headW(), (float) s.headH(), (float) s.headL(), (float) s.gasterW(), (float) s.gasterH(), (float) s.gasterL());
+            List<Prop> props = new ArrayList<>();
+            for (Object part : (List<?>) costumeClass.getMethod("parts", String.class, dimsClass).invoke(null, costume, dims)) {
+                Class<?> c = part.getClass();
+                props.add(new Prop((String) c.getMethod("name").invoke(part), (int) c.getMethod("u").invoke(part), (int) c.getMethod("v").invoke(part),
+                        (float) c.getMethod("w").invoke(part), (float) c.getMethod("h").invoke(part), (float) c.getMethod("d").invoke(part),
+                        (float) c.getMethod("grow").invoke(part)));
+            }
+            return props;
+        } catch (ReflectiveOperationException | java.io.IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    static Class<?> costumeClass;
+
+    /**
+     * Clears paint that spilled over a box's edges in the texture. The model's boxes have sizes like 4.2, so two faces
+     * that meet share a line of texels, and paint meant for one showed as a line along the edge of the other (a white
+     * belly drew a white line down the back). The shared line goes to the face that shows: the top over the underside,
+     * a side over the underside, the larger part between two sides. It takes the paint of that face's next line in.
+     */
+    static void settle(Img img, Box b) {
+        double u = b.u(), v = b.v(), w = b.w(), h = b.h(), d = b.d();
+        int top = (int) Math.floor(v);
+        int split = (int) Math.floor(v + d);
+        int bottom = (int) Math.ceil(v + d + h);
+        boolean sharedRow = v + d > split;
+        int topEnd = sharedRow ? split + 1 : split;
+        double edge = u + d + w;
+        int upFrom = (int) Math.floor(u + d);
+        int column = (int) Math.floor(edge);
+        if (edge > column && column - 1 >= upFrom) {
+            for (int y = top; y < topEnd; y++) {
+                img.set(column, y, img.get(column - 1, y));
+            }
+        }
+        if (sharedRow) {
+            int upTo = (int) Math.ceil(edge);
+            for (int x = (int) Math.floor(u); x < (int) Math.ceil(u + 2 * d + 2 * w); x++) {
+                boolean up = x >= upFrom && x < upTo;
+                if (up && split - 1 >= top) {
+                    img.set(x, split, img.get(x, split - 1));
+                } else if (!up && split + 1 < bottom) {
+                    img.set(x, split, img.get(x, split + 1));
+                }
+            }
+        }
+        for (double side : new double[] {u + d, edge, u + 2 * d + w}) {
+            int x = (int) Math.floor(side);
+            if (side > x) {
+                int from = side - x >= 0.5 ? x - 1 : x + 1;
+                for (int y = topEnd; y < bottom; y++) {
+                    img.set(x, y, img.get(from, y));
+                }
+            }
+        }
+    }
+
+    /**
+     * A band round a leg, from tenth {@code from} to {@code to} of its length counted from the body: on its four long
+     * faces (the back one runs the other way in the texture), and on its end when the band reaches the foot.
+     */
+    static void band(Img img, int[][] leg, int from, int to, int color) {
+        for (int f : new int[] {0, 1, 3}) {
+            patch(img, leg[f], from, 0, to, 10, color);
+        }
+        patch(img, leg[5], 10 - to, 0, 10 - from, 10, color);
+        if (to == 10) {
+            img.fill(leg[4][0], leg[4][1], leg[4][2], leg[4][3], color);
+        }
+    }
+
+    /** Fills a box's six faces: its top, its sides and its underside, each one colour. */
+    static void solid(Img img, int[][] faces, int top, int side, int under) {
+        for (int f = 0; f < 6; f++) {
+            int[] r = faces[f];
+            img.fill(r[0], r[1], r[2], r[3], f == 0 ? top : f == 1 ? under : side);
+        }
+    }
+
+    /** Every other texel of a face, in rings round the body: across a top or bottom face, down a side. */
+    static void rings(Img img, int[][] faces, int a, int b) {
+        for (int f = 0; f < 6; f++) {
+            int[] r = faces[f];
+            for (int y = r[1]; y < r[3]; y++) {
+                for (int x = r[0]; x < r[2]; x++) {
+                    int along = f == 0 || f == 1 ? y - r[1] : f == 2 || f == 4 ? x - r[0] : 0;
+                    img.set(x, y, along / 2 % 2 == 0 ? a : b);
+                }
+            }
+        }
+    }
+
+    /** A patch on a face, given in tenths of the face: from (x0, y0) to (x1, y1). */
+    static void patch(Img img, int[] r, int x0, int y0, int x1, int y1, int color) {
+        int w = r[2] - r[0];
+        int h = r[3] - r[1];
+        for (int y = r[1] + h * y0 / 10; y < Math.max(r[1] + h * y0 / 10 + 1, r[1] + h * y1 / 10); y++) {
+            for (int x = r[0] + w * x0 / 10; x < Math.max(r[0] + w * x0 / 10 + 1, r[0] + w * x1 / 10); x++) {
+                if (x < r[2] && y < r[3]) {
+                    img.set(x, y, color);
+                }
+            }
+        }
+    }
+
+    /** Wool: pale curls with a darker fleck in every other one, a soft underside. */
+    static void wool(Img img, int[][] faces, Random random) {
+        for (int f = 0; f < 6; f++) {
+            int[] r = faces[f];
+            for (int y = r[1]; y < r[3]; y++) {
+                for (int x = r[0]; x < r[2]; x++) {
+                    int curl = ((x - r[0]) / 2 + (y - r[1]) / 2) % 2;
+                    int color = curl == 0 ? hex(0xF6F2E8) : hex(0xE6DFD0);
+                    if ((x - r[0]) % 2 == 1 && (y - r[1]) % 2 == 1 && random.nextInt(3) == 0) {
+                        color = hex(0xCFC6B2);
+                    }
+                    img.set(x, y, f == 1 ? shade(color, 0.86) : color);
+                }
+            }
+        }
+    }
+
+    /**
+     * entity/ant/costume/<costume>_<caste>: in the ant skin's layout, paint over the ant's own boxes (clear elsewhere)
+     * and, in the corners no box uses, the costume's own parts. Opaque or clear only: it is drawn cut out.
+     */
+    static void costumes() {
+        for (String caste : new String[] {"worker", "soldier", "queen"}) {
+            Box[] boxes = boxes(caste);
+            int[][] thorax = faces(boxes[0]);
+            int[][] hump = faces(boxes[2]);
+            int[][] head = faces(boxes[3]);
+            int[][] mandible = faces(boxes[4]);
+            int[][] femur = faces(boxes[8]);
+            int[][] tibia = faces(boxes[9]);
+            int[][][] gaster = {faces(boxes[10]), faces(boxes[13])};
+            for (String costume : COSTUMES) {
+                Img img = new Img(128, 64);
+                Random random = new Random(costume.hashCode() * 31L + caste.hashCode());
+                // --- Paint over the ant's own boxes ---
+                switch (costume) {
+                    case "cow" -> {
+                        int black = hex(0x26211F);
+                        int soft = hex(0x3A3330);
+                        // Blotches: one over the shoulders, one low on each flank, one round an eye.
+                        patch(img, thorax[0], 0, 1, 10, 5, black);
+                        patch(img, thorax[2], 1, 0, 5, 7, black);
+                        patch(img, thorax[4], 5, 0, 9, 7, black);
+                        patch(img, thorax[2], 7, 5, 10, 10, soft);
+                        patch(img, hump[0], 0, 0, 6, 10, black);
+                        patch(img, head[0], 0, 5, 5, 10, black);
+                        patch(img, head[2], 3, 0, 9, 5, black);
+                        // The muzzle: pink across the lower face, two nostrils.
+                        patch(img, head[3], 1, 6, 9, 10, hex(0xF2A9B6));
+                        patch(img, head[3], 1, 9, 9, 10, hex(0xD98C9C));
+                        patch(img, head[3], 3, 7, 4, 8, hex(0xB56A7C));
+                        patch(img, head[3], 6, 7, 7, 8, hex(0xB56A7C));
+                        // Hooves.
+                        band(img, tibia, 8, 10, black);
+                        for (int[][] g : gaster) {
+                            patch(img, g[0], 2, 2, 8, 6, black);
+                            patch(img, g[2], 5, 2, 9, 9, black);
+                            patch(img, g[4], 1, 0, 4, 6, black);
+                        }
+                    }
+                    case "chicken" -> {
+                        // Yellow legs, darker at the feet.
+                        solid(img, femur, hex(0xF2B62A), hex(0xE9A520), hex(0xC98612));
+                        solid(img, tibia, hex(0xF2B62A), hex(0xE9A520), hex(0xC98612));
+                        band(img, tibia, 8, 10, hex(0xB87410));
+                        // Folded wings: grey scallops along the gaster's sides.
+                        for (int[][] g : gaster) {
+                            for (int side : new int[] {2, 4}) {
+                                int[] r = g[side];
+                                for (int x = r[0] + 1; x < r[2] - 1; x += 3) {
+                                    img.set(x, r[1] + (r[3] - r[1]) / 2, hex(0xCFCBC0));
+                                    img.set(x + 1, r[1] + (r[3] - r[1]) / 2 + 1, hex(0xCFCBC0));
+                                    img.set(x, r[3] - 2, hex(0xBDB8AC));
+                                }
+                            }
+                        }
+                    }
+                    case "sheep" -> {
+                        // The fleece: the same faces are drawn again on the coat that stands off the body.
+                        wool(img, thorax, random);
+                        wool(img, hump, random);
+                        for (int[][] g : gaster) {
+                            wool(img, g, random);
+                        }
+                        // A paler nose.
+                        patch(img, head[3], 2, 7, 8, 10, hex(0x8A7A6C));
+                    }
+                    case "baker" -> {
+                        // An apron: white round the lower thorax and under it, a tie at the back; flour on the face.
+                        for (int side : new int[] {2, 4}) {
+                            patch(img, thorax[side], 0, 4, 7, 10, hex(0xFAFAF4));
+                            patch(img, thorax[side], 0, 9, 7, 10, hex(0xD9D7CD));
+                            patch(img, thorax[side], 7, 4, 10, 5, hex(0xE6E4DA));
+                        }
+                        img.fill(thorax[1][0], thorax[1][1], thorax[1][2], thorax[1][3], hex(0xE6E4DA));
+                        patch(img, thorax[3], 0, 4, 10, 10, hex(0xFAFAF4));
+                        patch(img, head[3], 2, 5, 4, 6, hex(0xFFFFFF));
+                        patch(img, head[3], 6, 7, 8, 8, hex(0xFFFFFF));
+                        patch(img, head[0], 6, 2, 8, 4, hex(0xFFFFFF));
+                        for (int[][] g : gaster) {
+                            patch(img, g[0], 3, 0, 7, 2, hex(0xFAFAF4));
+                        }
+                    }
+                    case "bookworm" -> {
+                        // Ink on the jaws, and a ribbon bookmark trailing down the gaster.
+                        patch(img, mandible[0], 0, 0, 10, 4, hex(0x1E2A5A));
+                        for (int[][] g : gaster) {
+                            patch(img, g[0], 4, 0, 6, 7, hex(0xB02A2A));
+                            patch(img, g[0], 4, 6, 6, 7, hex(0x7E1C1C));
+                        }
+                    }
+                    case "party" -> {
+                        // Confetti, everywhere.
+                        int[] confetti = {hex(0xFFE040), hex(0x34C0E8), hex(0xE0349A), hex(0x58D858), hex(0xFFFFFF)};
+                        int[][][] all = {thorax, head, hump, gaster[0], gaster[1]};
+                        for (int[][] part : all) {
+                            for (int f = 0; f < 6; f++) {
+                                if (f == 1) {
+                                    continue;
+                                }
+                                int[] r = part[f];
+                                for (int y = r[1]; y < r[3]; y++) {
+                                    for (int x = r[0]; x < r[2]; x++) {
+                                        if ((x * 7 + y * 13 + f) % 9 == 0) {
+                                            img.set(x, y, confetti[(x + y * 3) % confetti.length]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        // A bow tie.
+                        patch(img, thorax[3], 2, 2, 8, 6, hex(0xE0349A));
+                        patch(img, thorax[3], 4, 3, 6, 5, hex(0xFFE040));
+                    }
+                    case "pirate" -> {
+                        // A striped shirt, an eyepatch with its strap over the head, a gold earring on the other side.
+                        rings(img, thorax, hex(0xC42626), hex(0xF2EFE6));
+                        img.fill(thorax[1][0], thorax[1][1], thorax[1][2], thorax[1][3], hex(0x9A1C1C));
+                        int[] eye = head[4];
+                        double cx = (eye[0] + eye[2]) / 2.0 + 0.6;
+                        double cy = eye[1] + (eye[3] - eye[1]) * 0.38;
+                        disc(img, cx, cy, Math.max(1.4, (eye[3] - eye[1]) * 0.3), hex(0x141416));
+                        for (int x = eye[0]; x < eye[2]; x++) {
+                            img.set(x, eye[1], hex(0x141416));
+                        }
+                        int strap = head[0][1] + (head[0][3] - head[0][1]) * 4 / 10;
+                        for (int x = head[0][0]; x < head[0][2]; x++) {
+                            img.set(x, strap, hex(0x141416));
+                        }
+                        int[] ear = head[2];
+                        img.set((ear[0] + ear[2]) / 2, ear[3] - 2, hex(0xF2C230));
+                        // A red sash round the gaster's front.
+                        for (int[][] g : gaster) {
+                            patch(img, g[0], 0, 0, 10, 2, hex(0xC42626));
+                            patch(img, g[2], 0, 0, 2, 10, hex(0xC42626));
+                            patch(img, g[4], 8, 0, 10, 10, hex(0xC42626));
+                        }
+                    }
+                    case "pig" -> {
+                        int pale = hex(0xF6C4C0);
+                        int mud = hex(0x6E4A30);
+                        int wet = hex(0x54361F);
+                        // A paler belly and jowls, trotters, and mud up the legs and low on the flanks.
+                        img.fill(thorax[1][0], thorax[1][1], thorax[1][2], thorax[1][3], pale);
+                        patch(img, head[3], 1, 7, 9, 10, pale);
+                        band(img, tibia, 6, 8, mud);
+                        band(img, tibia, 8, 10, hex(0x4A3A34));
+                        for (int side : new int[] {2, 4}) {
+                            patch(img, thorax[side], 0, 6, 6, 10, mud);
+                            patch(img, thorax[side], 1, 5, 4, 6, mud);
+                            patch(img, thorax[side], 2, 8, 5, 10, wet);
+                            patch(img, thorax[side], 7, 7, 10, 10, mud);
+                        }
+                        for (int[][] g : gaster) {
+                            img.fill(g[1][0], g[1][1], g[1][2], g[1][3], pale);
+                            // A splash up each flank: a ragged edge, wet at the bottom.
+                            for (int side : new int[] {2, 4}) {
+                                patch(img, g[side], 0, 6, 10, 10, mud);
+                                patch(img, g[side], 1, 5, 4, 6, mud);
+                                patch(img, g[side], 6, 4, 8, 6, mud);
+                                patch(img, g[side], 2, 8, 9, 10, wet);
+                            }
+                            patch(img, g[0], 6, 5, 9, 8, mud);
+                            patch(img, g[0], 1, 2, 3, 4, mud);
+                        }
+                    }
+                    case "rabbit" -> {
+                        int white = hex(0xF7F3EA);
+                        int cream = hex(0xE6DCC8);
+                        // A white chest and belly, white paws and muzzle, a pink nose.
+                        img.fill(thorax[1][0], thorax[1][1], thorax[1][2], thorax[1][3], white);
+                        patch(img, thorax[3], 0, 3, 10, 10, white);
+                        patch(img, head[3], 2, 6, 8, 10, white);
+                        patch(img, head[3], 4, 5, 6, 7, hex(0xE58FA0));
+                        band(img, tibia, 7, 10, white);
+                        for (int[][] g : gaster) {
+                            img.fill(g[1][0], g[1][1], g[1][2], g[1][3], white);
+                            patch(img, g[5], 2, 2, 8, 9, cream);
+                        }
+                    }
+                    case "fisher" -> {
+                        int coat = hex(0xF2C62A);
+                        int fold = hex(0xD9A61C);
+                        int dark = hex(0xB07F12);
+                        // An oilskin coat over the thorax, buttoned down the front, and green rubber boots.
+                        solid(img, thorax, coat, coat, dark);
+                        solid(img, hump, hex(0xF8D850), coat, fold);
+                        for (int side : new int[] {2, 4}) {
+                            int[] r = thorax[side];
+                            img.fill(r[0], r[3] - 1, r[2], r[3], fold);
+                            for (int x = r[0] + 2; x < r[2]; x += 3) {
+                                img.fill(x, r[1] + 1, x + 1, r[3] - 1, fold);
+                            }
+                        }
+                        img.fill(thorax[0][0], thorax[0][1], thorax[0][2], thorax[0][1] + 1, dark);
+                        int[] front = thorax[3];
+                        int mid = (front[0] + front[2]) / 2;
+                        for (int y = front[1] + 1; y < front[3]; y += 2) {
+                            img.set(mid, y, hex(0x3A3A40));
+                        }
+                        band(img, tibia, 6, 10, hex(0x3E6B3A));
+                        band(img, tibia, 6, 7, hex(0x5A8A4E));
+                    }
+                    default -> throw new IllegalStateException(costume);
+                }
+                // Paint on one face must not show along the edge of the next: see settle.
+                for (int own : new int[] {0, 2, 3, 10, 13}) {
+                    settle(img, boxes[own]);
+                }
+                // --- The costume's own parts ---
+                for (Prop prop : costumeProps(costume, caste)) {
+                    if (prop.grow() > 0) {
+                        // A coat stands on a model box's own place in the texture: painted above.
+                        continue;
+                    }
+                    int[][] f = faces(new Box(prop.name(), prop.u(), prop.v(), prop.w(), prop.h(), prop.d()));
+                    switch (prop.name()) {
+                        case "horn" -> {
+                            solid(img, f, hex(0xF6EED6), hex(0xE2D6B4), hex(0xC9BA92));
+                            // A darker tip: the top of each side.
+                            for (int side = 2; side < 6; side++) {
+                                img.fill(f[side][0], f[side][1], f[side][2], f[side][1] + 1, hex(0xA08E68));
+                            }
+                            img.fill(f[0][0], f[0][1], f[0][2], f[0][3], hex(0x8A7856));
+                        }
+                        case "ear" -> {
+                            boolean sheep = costume.equals("sheep");
+                            solid(img, f, sheep ? hex(0x5A4E44) : hex(0xF4F2EE), sheep ? hex(0x4A4038) : hex(0xE4E0DA), hex(0xE59AAC));
+                            // Pink inside, seen from the front.
+                            patch(img, f[3], 2, 2, 8, 8, hex(0xE59AAC));
+                        }
+                        case "bell" -> {
+                            solid(img, f, hex(0xFBE27A), hex(0xF2C230), hex(0xA8781A));
+                            for (int side = 2; side < 6; side++) {
+                                img.fill(f[side][0], f[side][3] - 1, f[side][2], f[side][3], hex(0xC8961A));
+                                img.set(f[side][0], f[side][1], hex(0xFFF6C0));
+                            }
+                        }
+                        case "comb", "wattle" -> {
+                            solid(img, f, hex(0xF0503C), hex(0xD8281E), hex(0xA81A14));
+                            if (prop.name().equals("comb")) {
+                                // Three points: notches in the top edge of each long side.
+                                for (int side : new int[] {2, 4}) {
+                                    int w = f[side][2] - f[side][0];
+                                    img.set(f[side][0] + w / 3, f[side][1], 0);
+                                    img.set(f[side][0] + 2 * w / 3, f[side][1], 0);
+                                }
+                            }
+                        }
+                        case "beak" -> solid(img, f, hex(0xF8C83A), hex(0xF2B21E), hex(0xD08A10));
+                        case "tail", "tail_side" -> {
+                            solid(img, f, hex(0xFFFFFF), hex(0xF6F4EE), hex(0xD8D4C8));
+                            // Feather shafts and grey tips, on the broad faces.
+                            for (int side : new int[] {3, 5}) {
+                                int[] r = f[side];
+                                for (int x = r[0]; x < r[2]; x++) {
+                                    img.set(x, r[1], (x - r[0]) % 2 == 0 ? hex(0xBDB8AC) : 0);
+                                    if ((x - r[0]) % 2 == 1) {
+                                        for (int y = r[1] + 1; y < r[3]; y++) {
+                                            img.set(x, y, hex(0xDDD9CE));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        case "wool_cap" -> wool(img, f, random);
+                        case "toque_band" -> {
+                            solid(img, f, hex(0xFFFFFF), hex(0xF2F0E8), hex(0xD9D7CD));
+                            for (int side = 2; side < 6; side++) {
+                                img.fill(f[side][0], f[side][3] - 1, f[side][2], f[side][3], hex(0xD0CEC4));
+                            }
+                        }
+                        case "toque_puff" -> {
+                            solid(img, f, hex(0xFFFFFF), hex(0xFAFAF4), hex(0xDCDAD0));
+                            // Pleats down the sides, a shaded lower edge where it billows over the band.
+                            for (int side = 2; side < 6; side++) {
+                                int[] r = f[side];
+                                for (int x = r[0] + 1; x < r[2]; x += 2) {
+                                    for (int y = r[1] + 1; y < r[3]; y++) {
+                                        img.set(x, y, hex(0xE4E2D8));
+                                    }
+                                }
+                                img.fill(r[0], r[3] - 1, r[2], r[3], hex(0xCFCDC3));
+                            }
+                        }
+                        case "lens" -> {
+                            // A gold rim round pale glass, with a glint.
+                            solid(img, f, hex(0xE9BE44), hex(0xD8A830), hex(0xA87818));
+                            for (int side : new int[] {3, 5}) {
+                                int[] r = f[side];
+                                if (r[2] - r[0] > 2 && r[3] - r[1] > 2) {
+                                    img.fill(r[0] + 1, r[1] + 1, r[2] - 1, r[3] - 1, hex(0xCDEBFA));
+                                    img.set(r[0] + 1, r[1] + 1, hex(0xFFFFFF));
+                                } else {
+                                    img.fill(r[0], r[1], r[2], r[3], hex(0xCDEBFA));
+                                    img.fill(r[0], r[1], r[2], r[1] + 1, hex(0xD8A830));
+                                }
+                            }
+                        }
+                        case "bridge" -> solid(img, f, hex(0xE9BE44), hex(0xD8A830), hex(0xA87818));
+                        case "book_red", "book_blue" -> {
+                            boolean red = prop.name().equals("book_red");
+                            int cover = red ? hex(0xB02E26) : hex(0x2E5EAE);
+                            int dark = red ? hex(0x7E1E1A) : hex(0x1E3F7C);
+                            solid(img, f, cover, hex(0xF2E8CC), dark);
+                            // Pages on three edges, the spine (the back) in the cover's colour, a gold title bar on top.
+                            img.fill(f[5][0], f[5][1], f[5][2], f[5][3], dark);
+                            for (int side : new int[] {2, 3, 4}) {
+                                int[] r = f[side];
+                                img.fill(r[0], r[1], r[2], r[1] + 1, cover);
+                                if (r[3] - r[1] > 1) {
+                                    img.fill(r[0], r[3] - 1, r[2], r[3], dark);
+                                }
+                            }
+                            patch(img, f[0], 2, 2, 8, 4, hex(0xE9BE44));
+                        }
+                        case "hat_low", "hat_mid", "hat_tip" -> {
+                            // The party hat: each tier its own two colours, in upright stripes.
+                            int a = prop.name().equals("hat_mid") ? hex(0x34C0E8) : hex(0xE0349A);
+                            int b = prop.name().equals("hat_mid") ? hex(0xFFE040) : hex(0x34C0E8);
+                            solid(img, f, a, a, shade(a, 0.7));
+                            for (int side = 2; side < 6; side++) {
+                                int[] r = f[side];
+                                for (int x = r[0]; x < r[2]; x++) {
+                                    if ((x - r[0]) % 2 == 1) {
+                                        for (int y = r[1]; y < r[3]; y++) {
+                                            img.set(x, y, b);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        case "pompom" -> {
+                            solid(img, f, hex(0xFFF7A8), hex(0xFFE040), hex(0xD9B41E));
+                            for (int side = 2; side < 6; side++) {
+                                img.set(f[side][0], f[side][1], hex(0xFFFFFF));
+                            }
+                        }
+                        case "hat_brim" -> {
+                            solid(img, f, hex(0x2A2A30), hex(0x1C1C20), hex(0x101012));
+                            // Gold braid round the edge.
+                            for (int side = 2; side < 6; side++) {
+                                img.fill(f[side][0], f[side][1], f[side][2], f[side][3], hex(0xE8C030));
+                            }
+                        }
+                        case "hat_crown" -> {
+                            solid(img, f, hex(0x2E2E36), hex(0x1E1E24), hex(0x101012));
+                            // A skull on the front: a pale block with two eyes.
+                            int[] r = f[3];
+                            int mx = (r[0] + r[2]) / 2;
+                            img.fill(mx - 1, r[1], mx + 1, r[3] - (r[3] - r[1] > 1 ? 1 : 0), hex(0xF2F0E6));
+                            if (r[2] - r[0] >= 4) {
+                                img.set(mx - 1, r[1], hex(0x1E1E24));
+                            }
+                            for (int side : new int[] {2, 4, 5}) {
+                                img.fill(f[side][0], f[side][3] - 1, f[side][2], f[side][3], hex(0xC42626));
+                            }
+                        }
+                        case "snout" -> {
+                            solid(img, f, hex(0xF2A8AE), hex(0xE58E98), hex(0xC8707C));
+                            // The flat end with its two nostrils.
+                            int[] r = f[3];
+                            img.fill(r[0], r[1], r[2], r[3], hex(0xF6B6BA));
+                            int y = (r[1] + r[3] - 1) / 2;
+                            img.set(r[0] + (r[2] - r[0] > 3 ? 1 : 0), y, hex(0x9A4A5A));
+                            img.set(r[2] - 1 - (r[2] - r[0] > 3 ? 1 : 0), y, hex(0x9A4A5A));
+                        }
+                        case "pig_ear" -> {
+                            solid(img, f, hex(0xEFA4A6), hex(0xE08C92), hex(0xD67A86));
+                            // A darker tip at the front edge.
+                            img.fill(f[0][0], f[0][1], f[0][2], f[0][1] + 1, hex(0xD67A86));
+                        }
+                        case "curl" -> solid(img, f, hex(0xF2A8AE), hex(0xE58E98), hex(0xC8707C));
+                        case "rabbit_ear" -> {
+                            solid(img, f, hex(0xB48C62), hex(0xA07850), hex(0x8A6440));
+                            // Pink inside, seen from the front, with the fur as a rim; a dark tip.
+                            int[] r = f[3];
+                            if (r[2] - r[0] > 2) {
+                                img.fill(r[0] + 1, r[1] + 1, r[2] - 1, r[3], hex(0xEFA9B4));
+                            } else {
+                                img.fill(r[0], r[1] + 1, r[2], r[3], hex(0xEFA9B4));
+                                img.fill(r[0], r[1] + 1, r[0] + 1, r[3], hex(0xA07850));
+                            }
+                            for (int side = 2; side < 6; side++) {
+                                img.fill(f[side][0], f[side][1], f[side][2], f[side][1] + 1, hex(0x6E4E30));
+                            }
+                            img.fill(f[0][0], f[0][1], f[0][2], f[0][3], hex(0x6E4E30));
+                        }
+                        case "teeth" -> solid(img, f, hex(0xFFFFFF), hex(0xF4F2EA), hex(0xD8D4C8));
+                        case "cottontail" -> {
+                            solid(img, f, hex(0xFFFFFF), hex(0xF7F3EA), hex(0xDCD6C8));
+                            for (int side = 2; side < 6; side++) {
+                                int[] r = f[side];
+                                img.fill(r[0], r[3] - 1, r[2], r[3], hex(0xE4DDCE));
+                                img.set(r[0], r[1], hex(0xE4DDCE));
+                            }
+                        }
+                        case "rain_crown" -> {
+                            solid(img, f, hex(0xF8D850), hex(0xF2C62A), hex(0xB07F12));
+                            // Seams down from the top, and a dark band where the crown meets the brim.
+                            for (int side = 2; side < 6; side++) {
+                                int[] r = f[side];
+                                img.set((r[0] + r[2]) / 2, r[1], hex(0xD9A61C));
+                                img.fill(r[0], r[3] - 1, r[2], r[3], hex(0x3A3A40));
+                            }
+                            int[] r = f[0];
+                            img.fill((r[0] + r[2]) / 2, r[1], (r[0] + r[2]) / 2 + 1, r[3], hex(0xD9A61C));
+                        }
+                        case "rain_brim" -> {
+                            solid(img, f, hex(0xF2C62A), hex(0xD9A61C), hex(0xB07F12));
+                            // The long back of the brim a shade deeper, where the rain runs off.
+                            int[] r = f[0];
+                            img.fill(r[0], r[3] - 2, r[2], r[3], hex(0xD9A61C));
+                        }
+                        case "rod" -> {
+                            solid(img, f, hex(0x9A6E3A), hex(0x7E5628), hex(0x5E3E1A));
+                            // A cork grip at the near end and a pale tip at the far one, on every long face (the back face is mirrored).
+                            for (int side : new int[] {0, 1, 3, 5}) {
+                                int[] r = f[side];
+                                int grip = side == 5 ? r[2] - 3 : r[0];
+                                img.fill(grip, r[1], grip + 3, r[3], hex(0xD8B078));
+                                int tip = side == 5 ? r[0] : r[2] - 1;
+                                img.fill(tip, r[1], tip + 1, r[3], hex(0xE8E0C8));
+                            }
+                        }
+                        case "line" -> solid(img, f, hex(0xE8E8E8), hex(0xD8D8D8), hex(0xC0C0C0));
+                        case "float" -> {
+                            // Red over white, as a float sits in the water.
+                            solid(img, f, hex(0xE04030), hex(0xF4F2EA), hex(0xD8D4C8));
+                            for (int side = 2; side < 6; side++) {
+                                int[] r = f[side];
+                                img.fill(r[0], r[1], r[2], (r[1] + r[3] + 1) / 2, hex(0xD03020));
+                            }
+                        }
+                        default -> throw new IllegalStateException("No paint for the costume part " + prop.name());
+                    }
+                }
+                img.save("entity/ant/costume/" + costume + "_" + caste);
+            }
+        }
+    }
+
+    /**
+     * The costumes' rows of entity/ant_side.png: from row 16, a row per costume and caste, the same in all four frames
+     * (only the legs move). Drawn over the tinted ant, in its own colours.
+     */
+    static void sideCostumes(Img img) {
+        String[] castes = {"worker", "soldier", "queen"};
+        for (int c = 0; c < COSTUMES.length; c++) {
+            for (int k = 0; k < 3; k++) {
+                boolean queen = castes[k].equals("queen");
+                boolean soldier = castes[k].equals("soldier");
+                // Where the parts of sideAnt's sprite are: the head's middle and half sizes, the thorax's span and top, the gaster.
+                double hcx = queen ? 19.8 : soldier ? 19.6 : 18.9;
+                int hx = (int) Math.round(hcx - 0.5);
+                int hr = soldier ? 3 : 2;
+                double hcy = soldier ? 6.0 : 6.3;
+                int headTop = (int) Math.ceil(hcy - (soldier ? 2.4 : 1.7));
+                int top = queen ? 5 : 6;
+                int x0 = 11;
+                int x1 = queen ? 17 : 16;
+                double gcx = queen ? 5.8 : 6.0;
+                double grx = queen ? 5.3 : soldier ? 3.9 : 4.2;
+                double gry = queen ? 3.1 : 2.3;
+                double gcy = queen ? 6.6 : 7.2;
+                int row = (16 + c * 3 + k) * SIDE_CELL_H;
+                for (int frame = 0; frame < 4; frame++) {
+                    int ox = frame * SIDE_CELL_W;
+                    switch (COSTUMES[c]) {
+                        case "cow" -> {
+                            // Horns, a patch on the shoulders and one on the head, a pink muzzle, the bell.
+                            img.set(ox + hx - 1, row + headTop - 1, hex(0xF6EED6));
+                            img.set(ox + hx + 1, row + headTop - 1, hex(0xF6EED6));
+                            img.set(ox + hx + 1, row + headTop - 2, hex(0xA08E68));
+                            img.set(ox + x0 + 2, row + top, hex(0x26211F));
+                            img.set(ox + x0 + 3, row + top, hex(0x26211F));
+                            img.set(ox + x0 + 3, row + top + 1, hex(0x26211F));
+                            img.set(ox + hx - 1, row + headTop + 1, hex(0x26211F));
+                            img.set(ox + hx + hr, row + (int) hcy + 1, hex(0xF2A9B6));
+                            img.set(ox + hx + hr - 1, row + (int) hcy + 2, hex(0xD98C9C));
+                            img.set(ox + x1 + 1, row + 9, hex(0xF2C230));
+                        }
+                        case "chicken" -> {
+                            // A comb, a beak with the wattle under it, tail feathers up behind.
+                            img.set(ox + hx - 1, row + headTop - 1, hex(0xD8281E));
+                            img.set(ox + hx, row + headTop - 2, hex(0xF0503C));
+                            img.set(ox + hx, row + headTop - 1, hex(0xD8281E));
+                            img.set(ox + hx + 1, row + headTop - 1, hex(0xD8281E));
+                            img.set(ox + hx + hr + 1, row + (int) hcy, hex(0xF2B21E));
+                            img.set(ox + hx + hr, row + (int) hcy, hex(0xF8C83A));
+                            img.set(ox + hx + hr, row + (int) hcy + 1, hex(0xD8281E));
+                            int tx = (int) Math.round(gcx - grx);
+                            int ty = (int) Math.round(gcy - gry);
+                            img.set(ox + tx, row + ty, hex(0xFFFFFF));
+                            img.set(ox + tx, row + ty - 1, hex(0xF6F4EE));
+                            img.set(ox + Math.max(0, tx - 1), row + ty - 2, hex(0xFFFFFF));
+                            img.set(ox + tx + 1, row + ty - 2, hex(0xBDB8AC));
+                            img.set(ox + tx + 1, row + ty - 1, hex(0xFFFFFF));
+                        }
+                        case "sheep" -> {
+                            // The fleece: over the gaster and the thorax, a tuft on the head.
+                            for (int y = 0; y < SIDE_CELL_H; y++) {
+                                for (int x = 0; x < SIDE_CELL_W; x++) {
+                                    double dx = (x + 0.5 - gcx) / (grx + 0.6);
+                                    double dy = (y + 0.5 - (gcy - 0.4)) / (gry + 0.7);
+                                    boolean onGaster = dx * dx + dy * dy <= 1;
+                                    boolean onThorax = x >= x0 && x <= x1 && y >= top - 2 && y <= 7;
+                                    if (onGaster || onThorax) {
+                                        img.set(ox + x, row + y, (x / 2 + y / 2) % 2 == 0 ? hex(0xF6F2E8) : hex(0xE2DBCB));
+                                    }
+                                }
+                            }
+                            img.set(ox + hx - 1, row + headTop - 1, hex(0xF6F2E8));
+                            img.set(ox + hx, row + headTop - 1, hex(0xE2DBCB));
+                            img.set(ox + hx - 2, row + headTop + 1, hex(0x4A4038));
+                        }
+                        case "baker" -> {
+                            // The toque: a band and the puff over it; the apron under the thorax.
+                            for (int x = hx - 1; x <= hx + 1; x++) {
+                                img.set(ox + x, row + headTop - 1, hex(0xE6E4DA));
+                            }
+                            for (int x = hx - 2; x <= hx + 2; x++) {
+                                img.set(ox + x, row + headTop - 2, hex(0xFAFAF4));
+                            }
+                            for (int x = hx - 2; x <= hx + 1; x++) {
+                                img.set(ox + x, row + headTop - 3, hex(0xFFFFFF));
+                            }
+                            for (int x = x0 + 2; x <= x1; x++) {
+                                img.set(ox + x, row + 8, hex(0xFAFAF4));
+                                img.set(ox + x, row + 7, hex(0xFAFAF4));
+                            }
+                        }
+                        case "bookworm" -> {
+                            // Glasses round the eye, two books on the back.
+                            int ex = (int) Math.round(hcx + 0.6);
+                            int ey = (int) Math.round(hcy - 0.8);
+                            img.set(ox + ex - 1, row + ey, hex(0xD8A830));
+                            img.set(ox + ex + 1, row + ey, hex(0xD8A830));
+                            img.set(ox + ex, row + ey - 1, hex(0xD8A830));
+                            img.set(ox + ex, row + ey + 1, hex(0xD8A830));
+                            img.set(ox + ex, row + ey, hex(0xCDEBFA));
+                            for (int x = x0 + 1; x <= x0 + 4; x++) {
+                                img.set(ox + x, row + top - 1, hex(0xB02E26));
+                            }
+                            img.set(ox + x0 + 4, row + top - 1, hex(0xF2E8CC));
+                            for (int x = x0 + 1; x <= x0 + 3; x++) {
+                                img.set(ox + x, row + top - 2, hex(0x2E5EAE));
+                            }
+                        }
+                        case "party" -> {
+                            // The cone hat with its pompom; confetti on the back.
+                            for (int x = hx - 1; x <= hx + 1; x++) {
+                                img.set(ox + x, row + headTop - 1, (x - hx) % 2 == 0 ? hex(0xE0349A) : hex(0x34C0E8));
+                            }
+                            img.set(ox + hx - 1, row + headTop - 2, hex(0x34C0E8));
+                            img.set(ox + hx, row + headTop - 2, hex(0xFFE040));
+                            img.set(ox + hx, row + headTop - 3, hex(0xE0349A));
+                            img.set(ox + hx, row + headTop - 4, hex(0xFFF7A8));
+                            img.set(ox + x0 + 2, row + top, hex(0xFFE040));
+                            img.set(ox + x0 + 4, row + top + 1, hex(0x34C0E8));
+                            img.set(ox + (int) gcx - 2, row + (int) (gcy - gry) + 1, hex(0xE0349A));
+                            img.set(ox + (int) gcx + 1, row + (int) gcy, hex(0x58D858));
+                            img.set(ox + (int) gcx - 1, row + (int) gcy + 1, hex(0xFFFFFF));
+                        }
+                        case "pirate" -> {
+                            // The hat: a brim wider than the head, the crown with its skull; the patch; the striped shirt.
+                            for (int x = hx - hr; x <= hx + hr; x++) {
+                                img.set(ox + x, row + headTop - 1, hex(0x1C1C20));
+                            }
+                            for (int x = hx - 1; x <= hx + 1; x++) {
+                                img.set(ox + x, row + headTop - 2, hex(0x2E2E36));
+                                img.set(ox + x, row + headTop - 3, hex(0x2E2E36));
+                            }
+                            img.set(ox + hx, row + headTop - 2, hex(0xF2F0E6));
+                            img.set(ox + hx - hr, row + headTop - 1, hex(0xE8C030));
+                            img.set(ox + hx + hr, row + headTop - 1, hex(0xE8C030));
+                            int ex = (int) Math.round(hcx + 0.6);
+                            int ey = (int) Math.round(hcy - 0.8);
+                            img.set(ox + ex, row + ey, hex(0x141416));
+                            img.set(ox + ex - 1, row + ey - 1, hex(0x141416));
+                            img.set(ox + ex + 1, row + ey, hex(0x141416));
+                            for (int x = x0 + 1; x <= x1 - 1; x++) {
+                                for (int y = top + 1; y <= 7; y++) {
+                                    img.set(ox + x, row + y, (x - x0) % 2 == 1 ? hex(0xC42626) : hex(0xF2EFE6));
+                                }
+                            }
+                        }
+                        case "pig" -> {
+                            // The snout out in front, a flop ear, the curl of a tail, mud under the belly.
+                            img.set(ox + hx + hr + 1, row + (int) hcy, hex(0xF6B6BA));
+                            img.set(ox + hx + hr + 1, row + (int) hcy + 1, hex(0xE58E98));
+                            img.set(ox + hx, row + headTop - 1, hex(0xE08C92));
+                            img.set(ox + hx + 1, row + headTop, hex(0xD67A86));
+                            int tx = (int) Math.round(gcx - grx) - 1;
+                            int ty = (int) Math.round(gcy) - 1;
+                            img.set(ox + Math.max(0, tx), row + ty, hex(0xF2A8AE));
+                            img.set(ox + Math.max(0, tx), row + ty - 1, hex(0xE58E98));
+                            img.set(ox + Math.max(0, tx - 1), row + ty - 2, hex(0xF2A8AE));
+                            img.set(ox + x0 + 1, row + 8, hex(0x6E4A30));
+                            img.set(ox + x0 + 2, row + 8, hex(0x54361F));
+                            img.set(ox + (int) gcx, row + (int) Math.round(gcy + gry) - 1, hex(0x6E4A30));
+                            img.set(ox + (int) gcx + 1, row + (int) Math.round(gcy + gry) - 1, hex(0x6E4A30));
+                        }
+                        case "rabbit" -> {
+                            // Two long ears laid back, the white tail, a white chest and a tooth.
+                            int fur = hex(0xC8A27A);
+                            img.set(ox + hx - 1, row + headTop - 1, hex(0xEFA9B4));
+                            img.set(ox + hx - 1, row + headTop - 2, hex(0xEFA9B4));
+                            img.set(ox + hx - 2, row + headTop - 3, fur);
+                            img.set(ox + hx - 2, row + headTop - 4, hex(0x6E4E30));
+                            img.set(ox + hx - 2, row + headTop - 1, fur);
+                            img.set(ox + hx - 3, row + headTop - 2, fur);
+                            img.set(ox + hx - 3, row + headTop - 3, hex(0x6E4E30));
+                            int tx = (int) Math.round(gcx - grx) - 1;
+                            int ty = (int) Math.round(gcy) - 1;
+                            img.set(ox + Math.max(0, tx), row + ty, hex(0xFFFFFF));
+                            img.set(ox + Math.max(0, tx), row + ty + 1, hex(0xE4DDCE));
+                            img.set(ox + tx + 1, row + ty, hex(0xF7F3EA));
+                            for (int x = x1 - 2; x <= x1; x++) {
+                                img.set(ox + x, row + 8, hex(0xF7F3EA));
+                            }
+                            img.set(ox + x1, row + 7, hex(0xF7F3EA));
+                            img.set(ox + hx + hr, row + (int) hcy + 2, hex(0xFFFFFF));
+                        }
+                        case "fisher" -> {
+                            // The rain hat with its long back brim, the yellow coat, the rod up over the back with its float.
+                            for (int x = hx - 1; x <= hx + 1; x++) {
+                                img.set(ox + x, row + headTop - 2, hex(0xF8D850));
+                                img.set(ox + x, row + headTop - 1, hex(0x3A3A40));
+                            }
+                            for (int x = hx - hr - 1; x <= hx + hr; x++) {
+                                img.set(ox + x, row + headTop, x < hx - 1 ? hex(0xD9A61C) : hex(0xF2C62A));
+                            }
+                            for (int x = x0 + 1; x <= x1 - 1; x++) {
+                                for (int y = top; y <= 7; y++) {
+                                    img.set(ox + x, row + y, y == 7 ? hex(0xD9A61C) : hex(0xF2C62A));
+                                }
+                            }
+                            for (int i = 0; i < 5; i++) {
+                                img.set(ox + x0 + 2 - i, row + top - 1 - (i + 1) / 2, i == 4 ? hex(0xE8E0C8) : hex(0x7E5628));
+                            }
+                            img.set(ox + x0 - 2, row + top - 2, hex(0xD8D8D8));
+                            img.set(ox + x0 - 2, row + top - 1, hex(0xD03020));
+                        }
+                        default -> throw new IllegalStateException(COSTUMES[c]);
+                    }
+                }
+            }
         }
     }
 
@@ -1419,11 +2225,13 @@ public class TexGen {
 
     /**
      * entity/ant_side.png: side-view ants, four walking frames across; per caste a row each for body, gaster and
-     * crystals. The white block at (88, 108) is the carried crumb; rows 10 to 15, see {@link #sideCrops}.
+     * crystals. The white block at (88, 108) is the carried crumb; rows 10 to 15, see {@link #sideCrops}; from row 16,
+     * {@link #sideCostumes}. The client's SideSprites has the same layout.
      */
     static void sideSprites() {
-        Img img = new Img(96, 192);
+        Img img = new Img(96, SIDE_CELL_H * (16 + COSTUMES.length * 3));
         sideCrops(img);
+        sideCostumes(img);
         String[] castes = {"worker", "soldier", "queen"};
         for (int c = 0; c < 3; c++) {
             for (int frame = 0; frame < 4; frame++) {
@@ -1529,15 +2337,19 @@ public class TexGen {
         img.set(ox + mx, body + (int) hcy + 1, dark);
         img.set(ox + mx - 1, body + (int) hcy + 2, dark);
         if (soldier) {
-            img.set(ox + mx + 1, body + (int) hcy + 1, dark);
-            img.set(ox + mx + 1, body + (int) hcy + 2, dark);
+            // The big mandibles' tip, kept in the cell like the antenna's.
+            int tip = Math.min(mx + 1, SIDE_CELL_W - 1);
+            img.set(ox + tip, body + (int) hcy + 1, dark);
+            img.set(ox + tip, body + (int) hcy + 2, dark);
         }
         int twitch = frame % 2;
         int ax = (int) Math.round(hcx);
         int ay = body + (int) Math.round(hcy - hry);
+        // Its tip stays in the cell: a pixel further would show in the next frame, behind the gaster.
+        int reach = Math.min(3, SIDE_CELL_W - 2 - ax);
         line(img, ox + ax, ay, ox + ax - 1, ay - 3, shadow);
-        line(img, ox + ax - 1, ay - 3, ox + ax + 3, ay - 3 + twitch, shadow);
-        img.set(ox + ax + 4, ay - 2 + twitch, shadow);
+        line(img, ox + ax - 1, ay - 3, ox + ax + reach, ay - 3 + twitch, shadow);
+        img.set(ox + ax + reach + 1, ay - 2 + twitch, shadow);
         // Crystals: spikes rising from the gaster and the thorax.
         int[][] spikes = {{4, 3}, {7, 4}, {9, 2}, {13, 2}};
         for (int[] spike : spikes) {
@@ -2208,43 +3020,6 @@ public class TexGen {
         return t;
     }
 
-    /** A block of overlapping arched scales; {@code base} is the tone of a scale's body in {@code body}. */
-    static Img scales(long seed, int[] body, int base, int crest, int crestEdge, int glint, int pocket, int seam) {
-        Img img = new Img(16, 16);
-        int[][] t = clusters(seed, 3, 0.2, 0);
-        Random random = new Random(seed + 1);
-        // Two rows of scales 8 px square per block, the second shifted half a scale: big enough to read as arches.
-        for (int y = 0; y < 16; y++) {
-            int row = y / 8;
-            int dy = y % 8;
-            for (int x = 0; x < 16; x++) {
-                int dx = Math.floorMod(x + row * 4, 8);
-                double edge = Math.abs(dx - 3.5) / 3.5;
-                // Each scale's lower rim is a U: low in the middle, rising at the sides.
-                int rim = 7 - (int) Math.round(edge * edge * 3.2);
-                int c;
-                if (dy > rim) {
-                    c = dy == rim + 1 ? pocket : seam;
-                } else if (dy == rim) {
-                    c = edge > 0.8 ? crestEdge : crest;
-                } else if (dx == 0) {
-                    c = seam;
-                } else {
-                    // Shaded where the row above overlaps it, fullest in its middle.
-                    int shade = dy == 0 ? -2 : dy == 1 ? -1 : dy >= 3 && dy <= 4 && edge < 0.6 ? 1 : 0;
-                    c = body[Math.clamp(base + t[y][x] - 1 + shade, 0, body.length - 1)];
-                }
-                img.set(x, y, c);
-            }
-        }
-        // A glint on the crest of two of the four scales.
-        for (int row = 0; row < 2; row++) {
-            int dx = 2 + random.nextInt(3);
-            img.set(Math.floorMod(dx - row * 4, 8) + random.nextInt(2) * 8, row * 8 + 3, glint);
-        }
-        return img;
-    }
-
     static int[][] grid(int value) {
         int[][] g = new int[16][16];
         for (int[] row : g) {
@@ -2270,46 +3045,81 @@ public class TexGen {
     }
 
     static final int[] SOIL = ramp(0x3B2416, 0x553520, 0x6E462A, 0x875834, 0x9F6B40, 0xB7814F);
+    /**
+     * Anthill soil in the tone of the ground round it (SoilTone in the mod): the same pellets and laminae, in the colours
+     * of earth, sand, red sand, frozen ground, bare rock, a pale garden, dark rock and the Nether.
+     */
+    static final String[] SOIL_TONES = {"earth", "sand", "red", "frost", "stone", "pale", "dark", "nether"};
+    static final int[][] SOIL_RAMPS = {
+            SOIL,
+            ramp(0x93805A, 0xA59366, 0xB7A777, 0xC8BA89, 0xD6C99A, 0xE2D7AC),
+            ramp(0x6A3014, 0x86401A, 0xA2511F, 0xBA6326, 0xCB7533, 0xD98A47),
+            ramp(0x6C6A69, 0x82807F, 0x999897, 0xB1B1B1, 0xCACCCD, 0xE3E7E8),
+            ramp(0x4C4A47, 0x5F5D59, 0x73706C, 0x87847F, 0x9B9893, 0xAFACA6),
+            ramp(0x4C4E48, 0x5D6058, 0x6F7369, 0x82867B, 0x969A8E, 0xAAAFA2),
+            ramp(0x252329, 0x333139, 0x424049, 0x52505A, 0x63616C, 0x76747F),
+            ramp(0x3C191B, 0x502123, 0x652B2D, 0x7A3638, 0x8D4345, 0x9F5154)};
+    static final int[][] PACKED_RAMPS = {
+            ramp(0x3A2417, 0x4F321F, 0x654129, 0x7B5034, 0x91623F),
+            ramp(0x8B7A54, 0x9D8C61, 0xAF9F70, 0xC0B180, 0xCFC191),
+            ramp(0x662E14, 0x7E3E19, 0x964E1E, 0xAC5E25, 0xBE6F31),
+            ramp(0x666463, 0x7A7877, 0x8F8E8D, 0xA5A5A5, 0xBCBDBE),
+            ramp(0x484643, 0x595754, 0x6B6965, 0x7D7B77, 0x908D89),
+            ramp(0x484A45, 0x585B54, 0x696C64, 0x7B7F75, 0x8D9186),
+            ramp(0x222026, 0x2F2D35, 0x3D3B44, 0x4C4A54, 0x5C5A65),
+            ramp(0x38181A, 0x4A1F21, 0x5D282A, 0x703133, 0x823C3E)};
     static final int[] ADOBE = ramp(0x5A3923, 0x70482C, 0x865936, 0x9C6A41, 0xB27D50);
     static final int[] CHITIN = ramp(0x341E10, 0x4E2C17, 0x683A1E, 0x804A26, 0x985C30, 0xB0713E, 0xC6864E, 0xDDA466, 0xEEC082);
-    static final int[] ROYAL = ramp(0x1C0E1C, 0x2F1630, 0x432042, 0x572B55, 0x6C3868, 0x84487D, 0x9C5C92);
     static final int[] GOLD = ramp(0x5E420F, 0x8E6A1A, 0xBF962B, 0xE2BF4A, 0xF8E28A);
     static final int[] AMBER = ramp(0x3E1C05, 0x5A2A08, 0x7A3D0B, 0x9A520F, 0xB66816, 0xCC7F20, 0xE09A34, 0xF0BE62);
     static final int[] FUNGUS = ramp(0x6E604C, 0x8C7D64, 0xAA9B7E, 0xC5B797, 0xDCCFB0, 0xEEE4CA, 0xFAF4E2);
     static final int[] GLOW = ramp(0x16221E, 0x1F322C, 0x2A453B, 0x34604F, 0x3F8A6F, 0x5DBE97, 0x97EBC6, 0xDBFFEE);
 
+    /** The chitin blocks' cuticle (a red-brown, calmer than the items' caramel) and the royal blocks' wine and old gold. */
+    static final int[] CUTICLE = ramp(0x3F2219, 0x4F2B1E, 0x603524, 0x72402B, 0x844C33, 0x96593C, 0xA86947, 0xBA7C56);
+    static final int[] WINE = ramp(0x2C1519, 0x3A1C21, 0x48242A, 0x572C33, 0x66353D, 0x774048, 0x894C55);
+    static final int[] OLD_GOLD = ramp(0x6B5220, 0x8F7030, 0xB39246, 0xD1B463);
+
+    /** A distance along a tile's side, the short way round its edge. */
+    static double around(double d) {
+        return d - 16 * Math.round(d / 16);
+    }
+
     static void nestBlocks() {
-        // --- Anthill: soil, packed soil, adobe bricks, polished bricks, a pillar ---
-        {
-            // Calm earth in the middle tones, so the pellets on it read: lit crumbs with a shadow under them.
-            int[][] t = clusters(101, 3, 0.25, 0);
-            for (int[] row : t) {
-                for (int x = 0; x < 16; x++) {
-                    row[x] += 1;
-                }
-            }
-            pellets(t, SOIL.length - 1, 102, 9);
-            Img img = new Img(16, 16);
-            render(img, t, SOIL);
-            img.save("block/anthill_soil");
-        }
-        {
-            // Pellets pressed flat: thin horizontal laminae, every few rows a darker seam.
-            int[][] t = clusters(111, 5, 0.2, 0);
-            double[][] wave = valueNoise(112, 8);
-            for (int y = 0; y < 16; y++) {
-                for (int x = 0; x < 16; x++) {
-                    int band = (y + (int) Math.round(wave[0][x] * 2)) % 4;
-                    if (band == 0) {
-                        t[y][x] = Math.max(0, t[y][x] - 2);
-                    } else if (band == 1) {
-                        t[y][x] = Math.min(4, t[y][x] + 1);
+        // --- Anthill: soil and packed soil in the tone of each ground, adobe bricks, polished bricks, a pillar ---
+        for (int tone = 0; tone < SOIL_TONES.length; tone++) {
+            String suffix = tone == 0 ? "" : "_" + SOIL_TONES[tone];
+            {
+                // Calm earth in the middle tones, so the pellets on it read: lit crumbs with a shadow under them.
+                int[][] t = clusters(101, 3, 0.25, 0);
+                for (int[] row : t) {
+                    for (int x = 0; x < 16; x++) {
+                        row[x] += 1;
                     }
                 }
+                pellets(t, SOIL.length - 1, 102, 9);
+                Img img = new Img(16, 16);
+                render(img, t, SOIL_RAMPS[tone]);
+                img.save("block/anthill_soil" + suffix);
             }
-            Img img = new Img(16, 16);
-            render(img, t, ramp(0x3A2417, 0x4F321F, 0x654129, 0x7B5034, 0x91623F));
-            img.save("block/packed_anthill_soil");
+            {
+                // Pellets pressed flat: thin horizontal laminae, every few rows a darker seam.
+                int[][] t = clusters(111, 5, 0.2, 0);
+                double[][] wave = valueNoise(112, 8);
+                for (int y = 0; y < 16; y++) {
+                    for (int x = 0; x < 16; x++) {
+                        int band = (y + (int) Math.round(wave[0][x] * 2)) % 4;
+                        if (band == 0) {
+                            t[y][x] = Math.max(0, t[y][x] - 2);
+                        } else if (band == 1) {
+                            t[y][x] = Math.min(4, t[y][x] + 1);
+                        }
+                    }
+                }
+                Img img = new Img(16, 16);
+                render(img, t, PACKED_RAMPS[tone]);
+                img.save("block/packed_anthill_soil" + suffix);
+            }
         }
         {
             int[][] mortar = new int[16][16];
@@ -2370,42 +3180,83 @@ public class TexGen {
             top.save("block/nest_pillar_top");
         }
 
-        // --- Chitin: scales, polished, bricks, tiles ---
+        // --- Chitin: a mosaic of scutes, polished, plates in courses, tiles ---
         {
-            scales(201, CHITIN, 5, CHITIN[7], CHITIN[5], CHITIN[8], CHITIN[0], CHITIN[2]).save("block/chitin_block");
-        }
-        {
-            // Polished: one calm plate per block face, a lit rim at the top and left, a dark rim at the bottom and right.
-            int[][] t = clusters(211, 3, 0.12, 0);
+            // Raw chitin: scutes fitted edge to edge, each a low dome: lit along its upper left edge, shaded along its
+            // lower right, mottled in between. Their middles are placed by hand.
+            double[][] middles = {{2.5, 2.5}, {9.0, 1.5}, {14.0, 6.0}, {6.5, 7.0}, {11.0, 11.5}, {2.0, 11.0}, {6.5, 14.0}};
+            int[] body = {4, 3, 4, 5, 3, 4, 3};
+            int[][] grain = clusters(201, 3, 0.45, 0);
+            int[][] owner = new int[16][16];
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    int nearest = 0;
+                    double first = 99;
+                    double second = 99;
+                    for (int i = 0; i < middles.length; i++) {
+                        double d = Math.hypot(around(x - middles[i][0]), around(y - middles[i][1]));
+                        if (d < first) {
+                            second = first;
+                            first = d;
+                            nearest = i;
+                        } else if (d < second) {
+                            second = d;
+                        }
+                    }
+                    owner[y][x] = second - first < 0.9 ? -1 : nearest;   // -1: the seam between two scutes
+                }
+            }
             Img img = new Img(16, 16);
             for (int y = 0; y < 16; y++) {
                 for (int x = 0; x < 16; x++) {
-                    int v = 3 + t[y][x];
-                    if (y == 0 || x == 0) {
-                        v = 7;
-                    } else if (y == 15 || x == 15) {
-                        v = 1;
-                    } else if (y == 1 || x == 1) {
-                        v = 6;
-                    } else if (y == 14 || x == 14) {
-                        v = 2;
+                    int own = owner[y][x];
+                    int v;
+                    if (own < 0) {
+                        v = grain[y][x] == 2 ? 1 : 0;
+                    } else if (owner[(y + 15) % 16][x] < 0 || owner[y][(x + 15) % 16] < 0) {
+                        v = body[own] + 2;                       // the edge that faces the light
+                    } else if (owner[(y + 1) % 16][x] < 0 || owner[y][(x + 1) % 16] < 0) {
+                        v = body[own] - 1;                       // the edge that turns away
+                    } else {
+                        v = body[own] + grain[y][x] - 1;
                     }
-                    img.set(x, y, CHITIN[v]);
+                    img.set(x, y, CUTICLE[Math.clamp(v, 0, 7)]);
                 }
             }
-            // A soft sheen in the plate's upper left, where the light catches the gloss.
-            for (int[] p : new int[][] {{3, 3}, {4, 3}, {5, 3}, {3, 4}, {4, 4}, {3, 5}, {6, 3}, {3, 6}}) {
-                img.set(p[0], p[1], CHITIN[p[0] + p[1] <= 7 ? 6 : 5]);
+            img.save("block/chitin_block");
+        }
+        {
+            // Polished: one mottled plate per face, a sheen in two strokes, a rim lit above and left, dark below and right.
+            int[][] grain = clusters(211, 3, 0.4, 0);
+            Img img = new Img(16, 16);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    int v = 3 + grain[y][x];
+                    int diagonal = x + y;
+                    if (diagonal == 8 && x >= 2 && x <= 6 || diagonal == 11 && x >= 4 && x <= 6) {
+                        v = 6;                                   // the sheen
+                    }
+                    if (y == 15 || x == 15) {
+                        v = 1;
+                    } else if (y == 0 || x == 0) {
+                        v = 6;
+                    } else if (y == 14 || x == 14) {
+                        v = 2 + grain[y][x] / 2;
+                    }
+                    img.set(x, y, CUTICLE[v]);
+                }
             }
-            img.set(4, 3, CHITIN[7]);
-            img.set(0, 0, CHITIN[8]);
+            img.set(15, 0, CUTICLE[3]);
+            img.set(0, 15, CUTICLE[3]);
+            img.set(3, 0, CUTICLE[7]);
+            img.set(0, 5, CUTICLE[7]);
             img.save("block/polished_chitin");
         }
         {
-            // Chitin bricks: dark, glossy carapace plates in staggered courses, each overlapping the one below. No mortar.
-            int[] carapace = {hex(0x150C07), CHITIN[0], CHITIN[1], CHITIN[2], CHITIN[3], CHITIN[4], CHITIN[5], CHITIN[7], CHITIN[8]};
+            // Chitin bricks: carapace plates in staggered courses, each lit along its top over a dark joint. No two plates
+            // of one tone side by side.
             Img img = new Img(16, 16);
-            int[][] t = clusters(221, 2, 0.2, 0);
+            int[][] grain = clusters(221, 3, 0.45, 0);
             int[][] courses = {{0, 5, 0, 9}, {5, 5, 4, 13}, {10, 6, 2, 11}}; // top row, height, the two sutures' x
             for (int ci = 0; ci < courses.length; ci++) {
                 int[] course = courses[ci];
@@ -2415,70 +3266,63 @@ public class TexGen {
                     int start = joint + 1;
                     int end = course[2 + (1 - b)] + (b == 1 ? 16 : 0); // the next suture, wrapping round the tile
                     int w = end - start;
+                    int base = 3 + (ci + b) % 2;
                     for (int r = 0; r < h; r++) {
                         int y = course[0] + r;
-                        img.set(joint, y, carapace[r == h - 1 ? 3 : 0]);
+                        img.set(joint, y, CUTICLE[r == 0 ? 1 : 0]);
                         for (int c = 0; c < w; c++) {
                             int x = Math.floorMod(start + c, 16);
                             int v;
-                            if (r == 0) {
-                                v = 1;                                 // the shadow of the plate above
-                            } else if (r == h - 1) {
-                                v = c == w - 1 ? 4 : 6;                // the lower lip, lit
+                            if (r == h - 1) {
+                                v = grain[y][x] == 2 ? 1 : 0;          // the joint, in the shadow of this plate
+                            } else if (r == 0) {
+                                v = c == w - 1 ? base : base + 2;      // the plate's upper edge, lit
                             } else if (c == 0) {
-                                v = 5;                                 // the lit edge after the suture
-                            } else if (c == w - 1) {
-                                v = 2;                                 // turning into the next suture
+                                v = base + 1;                          // its left edge, lit a little
+                            } else if (r == h - 2 || c == w - 1) {
+                                v = base - 1;                          // turning under
                             } else {
-                                v = (r == 1 ? 3 : 4) + t[y][x] - (r == h - 2 ? 1 : 0); // the dome
+                                v = base + grain[y][x] - 1;            // the dome, mottled
                             }
-                            img.set(x, y, carapace[Math.clamp(v, 0, 8)]);
+                            img.set(x, y, CUTICLE[Math.clamp(v, 0, 7)]);
                         }
                     }
-                    // The highlight: a short arc over the dome, shifted per plate so the highlights never line up.
-                    int hx = start + 1 + (ci + b) % 2;
-                    int hy = course[0] + 2;
-                    img.set(Math.floorMod(hx, 16), hy, carapace[7]);
-                    img.set(Math.floorMod(hx + 1, 16), hy - 1, carapace[8]);
-                    img.set(Math.floorMod(hx + 2, 16), hy - 1, carapace[7]);
-                    if (w >= 8) {
-                        img.set(Math.floorMod(hx + 3, 16), hy - 1, carapace[6]);
-                    }
-                    // Hair pits.
-                    int[] pits = w >= 8 ? new int[] {w - 3, 5} : new int[] {w - 2};
-                    for (int i = 0; i < pits.length; i++) {
-                        img.set(Math.floorMod(start + pits[i], 16), course[0] + (i == 0 ? h - 2 : 3), carapace[1]);
-                    }
+                    // A chip out of one corner of each plate, never the same corner twice running.
+                    int chipX = Math.floorMod((ci + b) % 2 == 0 ? start : start + w - 1, 16);
+                    img.set(chipX, course[0], CUTICLE[1]);
                 }
             }
             img.save("block/chitin_bricks");
         }
         {
-            // Tiles: octagonal plates 8x8 with amber-chitin studs where four corners meet.
+            // Tiles: four mottled plates with clipped corners, every other one a tone deeper, a stud where the corners meet.
             Img img = new Img(16, 16);
-            int[][] t = clusters(231, 3, 0.15, 0);
+            int[][] grain = clusters(231, 3, 0.4, 0);
             for (int y = 0; y < 16; y++) {
                 for (int x = 0; x < 16; x++) {
                     int dx = x % 8;
                     int dy = y % 8;
                     int cx = Math.min(dx, 7 - dx);
                     int cy = Math.min(dy, 7 - dy);
+                    int deep = (x / 8 + y / 8) % 2;
                     int v;
-                    if (cx + cy <= 1) {
-                        v = -1; // the stud between four tiles
-                    } else if (dx == 7 || dy == 7 || cx + cy == 2) {
-                        v = 1;
-                    } else if (dy == 0 || dx == 0 || cx + cy == 3 && (dx < 4 || dy < 4)) {
-                        v = 6;
+                    if (cx + cy == 0) {
+                        v = 1;                                   // the stud between four tiles
+                    } else if (dx == 7 || dy == 7 || cx + cy == 1 && (dx > 3 || dy > 3)) {
+                        v = grain[y][x] == 2 ? 1 : 0;
+                    } else if (dx == 0 || dy == 0 || cx + cy == 1) {
+                        v = 6 - deep;
+                    } else if (dx == 6 || dy == 6) {
+                        v = 3 - deep;
                     } else {
-                        v = 3 + t[y][x];
+                        v = 3 - deep + grain[y][x];
                     }
-                    img.set(x, y, v < 0 ? hex(0xD9922A) : CHITIN[v]);
+                    img.set(x, y, CUTICLE[v]);
                 }
             }
             for (int[] p : new int[][] {{0, 0}, {8, 8}, {8, 0}, {0, 8}}) {
-                img.set(p[0], p[1], hex(0xF2BB4C));
-                img.set(Math.floorMod(p[0] - 1, 16), Math.floorMod(p[1] - 1, 16), hex(0x82430C));
+                img.set(p[0], p[1], CUTICLE[7]);
+                img.set(Math.floorMod(p[0] - 1, 16), Math.floorMod(p[1] - 1, 16), CUTICLE[0]);
             }
             img.save("block/chitin_tiles");
         }
@@ -2627,90 +3471,147 @@ public class TexGen {
             img.save("block/glowing_fungal_block");
         }
 
-        // --- Royal: plum chitin set in gold, for a Queen's chamber ---
+        // --- Royal: wine-dark chitin for a Queen's chamber; gold only as studs on the worked blocks ---
         {
-            // The same arched scales, plum, each crest gilded.
-            scales(501, ROYAL, 4, ROYAL[6], ROYAL[4], GOLD[3], ROYAL[0], ROYAL[1]).save("block/royal_chitin_block");
+            // The Queen's own cuticle: rounded scales four rows to a block, each row half a scale along and lying over
+            // the next. A scale's lower edge catches the light and shades the scale under it; its face is mottled. No gold.
+            Img img = new Img(16, 16);
+            int[][] grain = clusters(501, 3, 0.45, 0);
+            int[][] owner = new int[16][16];
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    // The tip of a scale of the row above, where it reaches this far down; else the scale of this row.
+                    int above = Math.floorDiv(y, 4) - 1;
+                    double down = (y - above * 4 + 0.5) / 8.0;
+                    double halfWidth = 4 * Math.sqrt(1 - down * down);
+                    double fromMiddle = Math.abs(Math.floorMod(x - Math.floorMod(above, 2) * 4, 8) + 0.5 - 4);
+                    int row = fromMiddle <= halfWidth ? above : above + 1;
+                    int column = Math.floorDiv(x - Math.floorMod(row, 2) * 4, 8);
+                    owner[y][x] = Math.floorMod(row, 4) * 4 + Math.floorMod(column, 2);
+                }
+            }
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    int row = owner[y][x] / 4;
+                    int inScale = Math.floorMod(x - row % 2 * 4, 8);
+                    // Every other scale a tone deeper, so the rows do not read as stripes.
+                    int base = 3 + (owner[y][x] % 4 + row / 2) % 2;
+                    int v;
+                    if (owner[(y + 1) % 16][x] != owner[y][x]) {
+                        v = inScale <= 4 ? 6 : 5;                // the lower edge, lit on its left
+                    } else if (owner[(y + 15) % 16][x] != owner[y][x]) {
+                        v = grain[y][x] == 2 ? 1 : 0;            // in the shadow of the scale above
+                    } else {
+                        v = base + grain[y][x] - 1;
+                    }
+                    img.set(x, y, WINE[Math.clamp(v, 0, 6)]);
+                }
+            }
+            img.save("block/royal_chitin_block");
         }
         {
+            // Bricks: four mottled courses in dark joints, a small gold stud in the middle of two of them.
             int[][] mortar = new int[16][16];
-            int[][] t = bricks(511, 5, new int[] {4, 4, 4, 4}, new int[] {8, 8, 8, 8}, new int[] {0, 4, 0, 4}, false, mortar);
+            int[][] t = bricks(511, 4, new int[] {4, 4, 4, 4}, new int[] {8, 8, 8, 8}, new int[] {0, 4, 0, 4}, false, mortar);
+            int[][] grain = clusters(512, 3, 0.45, 0);
             Img img = new Img(16, 16);
             for (int y = 0; y < 16; y++) {
                 for (int x = 0; x < 16; x++) {
-                    img.set(x, y, mortar[y][x] != 0 ? GOLD[(x + y) % 5 == 0 ? 2 : 1] : ROYAL[1 + t[y][x]]);
+                    // A brick's top row is lit, the row over the joint turns under.
+                    int v = y % 4 == 0 ? 5 : y % 4 == 2 ? 2 + grain[y][x] / 2 : 2 + t[y][x];
+                    img.set(x, y, mortar[y][x] != 0 ? WINE[grain[y][x] == 2 ? 1 : 0] : WINE[Math.clamp(v, 1, 6)]);
                 }
+            }
+            for (int[] p : new int[][] {{3, 1}, {11, 9}}) {
+                img.set(p[0], p[1], OLD_GOLD[3]);
+                img.set(p[0] + 1, p[1], OLD_GOLD[2]);
+                img.set(p[0], p[1] + 1, OLD_GOLD[1]);
+                img.set(p[0] + 1, p[1] + 1, OLD_GOLD[0]);
             }
             img.save("block/royal_chitin_bricks");
         }
         {
-            // Pillar: plum fluting between gold bands at the ends; the top a gold ring on plum.
+            // Pillar: flutes, each lit on its left and deep on its right, between a gold fillet at each end; the top a
+            // ring with four gold studs.
             Img side = new Img(16, 16);
-            int[][] t = clusters(521, 3, 0.15, 0);
+            int[][] grain = clusters(521, 3, 0.4, 0);
+            int[] flute = {0, 5, 4, 2};
             for (int y = 0; y < 16; y++) {
                 for (int x = 0; x < 16; x++) {
                     int c;
-                    if (y <= 1 || y >= 14) {
-                        c = y == 0 || y == 14 ? GOLD[3] : GOLD[1];
-                    } else if (x % 4 == 0) {
-                        c = ROYAL[1];
+                    if (y == 1 || y == 14) {
+                        c = OLD_GOLD[x % 4 == 1 ? 3 : x % 4 == 0 ? 0 : 1 + grain[y][x] / 2];
+                    } else if (y == 0 || y == 15) {
+                        c = WINE[y == 0 ? 5 : 1];
+                    } else if (y == 2 || y == 13) {
+                        c = WINE[y == 2 ? 0 : 2];
                     } else {
-                        c = ROYAL[Math.clamp(2 + t[y][x] + (x % 4 == 1 ? 1 : 0), 0, ROYAL.length - 1)];
+                        c = WINE[Math.clamp(flute[x % 4] + (x % 4 == 0 ? 0 : grain[y][x] - 1), 0, 6)];
                     }
                     side.set(x, y, c);
                 }
             }
-            side.set(5, 0, GOLD[4]);
-            side.set(10, 14, GOLD[4]);
             side.save("block/royal_chitin_pillar");
             Img top = new Img(16, 16);
             for (int y = 0; y < 16; y++) {
                 for (int x = 0; x < 16; x++) {
                     double r = Math.hypot(x - 7.5, y - 7.5);
-                    int c = r > 6.5 ? ROYAL[1] : r > 5.3 ? GOLD[r > 6 ? 1 : 3] : ROYAL[Math.clamp(2 + t[y][x] + (r < 2.5 ? 1 : 0), 0, 6)];
-                    top.set(x, y, c);
+                    int v = r > 7.2 ? grain[y][x] / 2 : r > 6.2 ? 2 : r > 5.0 ? (x + y < 15 ? 6 : 4) : r > 4.0 ? 1 : 2 + grain[y][x] + (r < 2.2 ? 1 : 0);
+                    top.set(x, y, WINE[Math.clamp(v, 0, 6)]);
                 }
             }
-            top.set(5, 3, GOLD[4]);
+            for (int[] p : new int[][] {{7, 2}, {8, 13}, {2, 8}, {13, 7}}) {
+                top.set(p[0], p[1], OLD_GOLD[3]);
+            }
             top.save("block/royal_chitin_pillar_top");
         }
         {
-            // Chiseled: a gold-framed panel with the Queen: a crowned ant seen from above.
+            // Chiseled: a framed, mottled panel with the Queen's crown cut in relief; only its three points and its
+            // jewel are gold.
             Img img = new Img(16, 16);
-            int[][] t = clusters(531, 3, 0.15, 0);
+            int[][] grain = clusters(531, 3, 0.4, 0);
             for (int y = 0; y < 16; y++) {
                 for (int x = 0; x < 16; x++) {
-                    boolean frame = x <= 1 || y <= 1 || x >= 14 || y >= 14;
-                    int c = frame ? (x == 0 || y == 0 ? GOLD[3] : x == 15 || y == 15 ? GOLD[0] : GOLD[2]) : ROYAL[Math.clamp(1 + t[y][x], 0, 6)];
-                    img.set(x, y, c);
+                    int v;
+                    if (x == 0 || y == 0) {
+                        v = 6;
+                    } else if (x == 15 || y == 15) {
+                        v = 0;
+                    } else if (x == 1 || y == 1 || x == 14 || y == 14) {
+                        v = 3 + grain[y][x] / 2;
+                    } else if (x == 2 || y == 2) {
+                        v = 0;                                   // the panel is sunk: its upper and left walls in shadow
+                    } else if (x == 13 || y == 13) {
+                        v = 4;                                   // and its lower and right walls in the light
+                    } else {
+                        v = 1 + grain[y][x];
+                    }
+                    img.set(x, y, WINE[v]);
                 }
             }
-            // The Queen's crown inlaid in gold, set with a Royal Jelly cabochon; lit on its left, shaded on its right.
+            img.set(15, 0, WINE[3]);
+            img.set(0, 15, WINE[3]);
             String[] crown = {
-                    "............",
-                    "..g...g...g.",
-                    ".gGg.gGg.gGg",
-                    ".GGG.GGG.GGG",
-                    ".GGGGGGGGGGd",
-                    ".GGGGJJGGGGd",
-                    ".GGGJjjJGGGd",
-                    ".GGGGJJGGGGd",
-                    ".dddddddddd.",
-                    "..ssssssss..",
-                    "............"};
+                    "g...g...g",
+                    "H...H...L",
+                    "HL.LHL.LL",
+                    "HLLLLLLLd",
+                    "HLLLJLLLd",
+                    "sssssssss",
+                    "HLLLLLLLd"};
             for (int y = 0; y < crown.length; y++) {
-                for (int x = 0; x < 12; x++) {
+                for (int x = 0; x < crown[y].length(); x++) {
                     int c = switch (crown[y].charAt(x)) {
-                        case 'g' -> GOLD[4];
-                        case 'G' -> x < 5 ? GOLD[3] : GOLD[2];
-                        case 'd' -> GOLD[1];
-                        case 's' -> ROYAL[0];
-                        case 'J' -> hex(0xE8C878);
-                        case 'j' -> hex(0xFFF4C8);
+                        case 'g' -> OLD_GOLD[3];
+                        case 'H' -> WINE[6];
+                        case 'L' -> WINE[5];
+                        case 'd' -> WINE[4];
+                        case 's' -> WINE[2];
+                        case 'J' -> OLD_GOLD[3];
                         default -> 0;
                     };
                     if (c != 0) {
-                        img.set(2 + x, 3 + y, c);
+                        img.set(4 + x, 4 + y, c);
                     }
                 }
             }
@@ -2806,38 +3707,76 @@ public class TexGen {
     }
 
     /** The Nest Door (two halves and its item) and Trapdoor: chitin frames around packed-soil panels, round tunnel windows. */
+    /**
+     * The Nest Door and Nest Trapdoor: packed soil panels in a chitin frame, held by chitin bands with a stud at each
+     * end. The door's upper half has a round window with a raised rim (see-through: cutout), its lower half a latch.
+     */
     static void doorAndTrapdoor() {
-        int[] panel = ramp(0x4F321F, 0x654129, 0x7B5034, 0x91623F);
-        int[][] soil = clusters(601, 4, 0.2, 0);
+        int[] soil = PACKED_RAMPS[0];
+        int[][] earth = clusters(601, 4, 0.3, 0);
+        int[][] grain = clusters(602, 3, 0.45, 0);
         for (int half = 0; half < 2; half++) {
             Img img = new Img(16, 16);
+            // The rows of chitin across this half: a band's lit edge, its face, its underside, the shadow it casts.
+            int[] lit = half == 0 ? new int[] {0, 13} : new int[] {6, 13};
+            int[] face = half == 0 ? new int[] {1, 14, 15} : new int[] {0, 7, 14};
+            int[] under = half == 0 ? new int[] {} : new int[] {8};
+            int[] shadow = half == 0 ? new int[] {2} : new int[] {1, 9, 15};
             for (int y = 0; y < 16; y++) {
                 for (int x = 0; x < 16; x++) {
-                    boolean frame = x <= 1 || x >= 14 || (half == 0 ? y >= 14 : y <= 1);
-                    boolean band = y % 8 == 4 || y % 8 == 5;
                     int c;
-                    if (frame) {
-                        c = x == 0 || (half == 1 && y == 0) ? CHITIN[5] : x == 15 || (half == 0 && y == 15) ? CHITIN[0] : CHITIN[3];
-                    } else if (band) {
-                        c = y % 8 == 4 ? CHITIN[4] : CHITIN[1];
+                    if (x == 0) {
+                        c = CUTICLE[6];
+                    } else if (x == 15) {
+                        c = CUTICLE[0];
+                    } else if (has(shadow, y) && (x >= 2 && x <= 13 || y == 15)) {
+                        c = CUTICLE[grain[y][x] == 2 ? 1 : 0];
+                    } else if (has(lit, y)) {
+                        c = CUTICLE[x == 14 ? 4 : 6];
+                    } else if (has(face, y)) {
+                        c = CUTICLE[4 + grain[y][x]];
+                    } else if (has(under, y)) {
+                        c = CUTICLE[2 + grain[y][x] / 2];
+                    } else if (x == 1) {
+                        c = CUTICLE[4 + grain[y][x]];
+                    } else if (x == 14) {
+                        c = CUTICLE[3 + grain[y][x]];
                     } else {
-                        c = panel[soil[(y + half * 8) % 16][x]];
+                        // The panel: packed soil, darker where the frame on its left shades it.
+                        c = soil[x == 2 ? 0 : Math.min(3, earth[y][x] + (y % 5 == 3 ? 1 : 0))];
                     }
                     img.set(x, y, c);
                 }
             }
+            // A stud at each end of a band.
+            for (int row : half == 0 ? new int[] {14} : new int[] {7}) {
+                for (int x : new int[] {3, 12}) {
+                    img.set(x, row, CUTICLE[7]);
+                    img.set(x + 1, row + 1, CUTICLE[0]);
+                }
+            }
             if (half == 0) {
-                // The round tunnel window near the top of the door (see-through: cutout).
-                for (int y = 4; y < 12; y++) {
-                    for (int x = 4; x < 12; x++) {
-                        double r = Math.hypot(x - 7.5, y - 8.5);
-                        if (r < 3.0) {
+                // The round window: clear inside, its rim lit above and on the left, dark below and on the right.
+                for (int y = 3; y < 13; y++) {
+                    for (int x = 3; x < 13; x++) {
+                        double r = Math.hypot(x - 7.5, y - 7.5);
+                        if (r < 2.6) {
                             img.set(x, y, 0);
-                        } else if (r < 3.8) {
-                            img.set(x, y, x + y < 16 ? CHITIN[2] : CHITIN[5]);
+                        } else if (r < 3.7) {
+                            img.set(x, y, CUTICLE[x + y < 15 ? 7 : x + y == 15 ? 5 : 3]);
+                        } else if (r < 4.6 && x + y > 16) {
+                            img.set(x, y, soil[0]);              // the rim's shadow on the soil
                         }
                     }
                 }
+            } else {
+                // The latch: a small hooked knob on the side away from the hinge.
+                img.set(11, 3, CUTICLE[7]);
+                img.set(12, 3, CUTICLE[5]);
+                img.set(11, 4, CUTICLE[5]);
+                img.set(12, 4, CUTICLE[2]);
+                img.set(12, 5, soil[0]);
+                img.set(13, 5, soil[0]);
             }
             img.save(half == 0 ? "block/nest_door_top" : "block/nest_door_bottom");
         }
@@ -2845,36 +3784,78 @@ public class TexGen {
         Img item = new Img(16, 16);
         for (int y = 0; y < 16; y++) {
             for (int x = 4; x < 12; x++) {
-                boolean frame = x == 4 || x == 11 || y == 0 || y == 15;
-                int c = frame ? (x == 4 || y == 0 ? CHITIN[5] : CHITIN[0]) : y == 8 ? CHITIN[4] : panel[soil[y][x] % 4];
+                int c;
+                if (x == 4 || y == 0) {
+                    c = CUTICLE[6];
+                } else if (x == 11 || y == 15) {
+                    c = CUTICLE[0];
+                } else if (y == 8 || y == 12) {
+                    c = CUTICLE[5];
+                } else if (y == 9 || y == 13) {
+                    c = CUTICLE[1];
+                } else {
+                    c = soil[earth[y][x]];
+                }
                 item.set(x, y, c);
             }
         }
         disc(item, 8, 4.5, 1.6, 0);
-        item.set(7, 3, CHITIN[2]);
-        item.set(9, 6, CHITIN[5]);
-        item.set(10, 10, GOLD[3]);
+        item.set(6, 3, CUTICLE[6]);
+        item.set(7, 2, CUTICLE[6]);
+        item.set(9, 6, CUTICLE[2]);
+        item.set(10, 5, CUTICLE[2]);
+        item.set(10, 10, CUTICLE[7]);
         item.save("item/nest_door");
-        // The trapdoor: frame, a cross band, four round breathing holes.
+        // The trapdoor: the same frame, two bands crossing with a stud where they meet, a breathing hole in each panel.
         Img trap = new Img(16, 16);
         for (int y = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
-                boolean frame = x <= 1 || y <= 1 || x >= 14 || y >= 14;
-                boolean band = x == 7 || x == 8 || y == 7 || y == 8;
-                int c = frame ? (x == 0 || y == 0 ? CHITIN[5] : x == 15 || y == 15 ? CHITIN[0] : CHITIN[3])
-                        : band ? (x == 7 || y == 7 ? CHITIN[4] : CHITIN[1]) : panel[soil[y][x]];
+                int c;
+                if (x == 0 || y == 0) {
+                    c = CUTICLE[6];
+                } else if (x == 15 || y == 15) {
+                    c = CUTICLE[0];
+                } else if (x == 1 || y == 1) {
+                    c = CUTICLE[4 + grain[y][x]];
+                } else if (x == 14 || y == 14) {
+                    c = CUTICLE[3 + grain[y][x]];
+                } else if (x == 7 || y == 7) {
+                    c = CUTICLE[6];
+                } else if (x == 8 || y == 8) {
+                    c = CUTICLE[4 + grain[y][x] / 2];
+                } else if (x == 9 || y == 9 || x == 2 || y == 2) {
+                    c = soil[0];                             // the shadow of a band or of the frame
+                } else {
+                    c = soil[Math.min(3, earth[y][x])];
+                }
                 trap.set(x, y, c);
             }
         }
+        trap.set(15, 0, CUTICLE[3]);
+        trap.set(0, 15, CUTICLE[3]);
+        trap.set(7, 7, CUTICLE[7]);
+        trap.set(8, 8, CUTICLE[1]);
         for (int[] c : new int[][] {{4, 4}, {11, 4}, {4, 11}, {11, 11}}) {
             trap.set(c[0], c[1], 0);
-            trap.set(c[0] - 1, c[1], 0);
-            trap.set(c[0], c[1] - 1, 0);
-            trap.set(c[0] - 1, c[1] - 1, 0);
-            trap.set(c[0] + 1, c[1], CHITIN[5]);
-            trap.set(c[0], c[1] + 1, CHITIN[5]);
+            trap.set(c[0] + 1, c[1], 0);
+            trap.set(c[0], c[1] + 1, 0);
+            trap.set(c[0] + 1, c[1] + 1, 0);
+            // Lit below and on the right, where the hole's far edge faces the light.
+            trap.set(c[0] + 2, c[1], soil[3]);
+            trap.set(c[0] + 2, c[1] + 1, soil[3]);
+            trap.set(c[0], c[1] + 2, soil[3]);
+            trap.set(c[0] + 1, c[1] + 2, soil[3]);
         }
         trap.save("block/nest_trapdoor");
+    }
+
+    static boolean has(int[] rows, int row) {
+        for (int one : rows) {
+            if (one == row) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** The floors of the new chambers and the End portal's animation. */
@@ -3415,7 +4396,7 @@ public class TexGen {
     // --- Liquid Ants, droplets and the Droplet Centrifuge ---
 
     /**
-     * One fluid's droplet: its colour and its finish (clear, glass, thick, oil, slime or molten). The same rows are in
+     * One fluid's droplet: its colour and its finish (clear, glass, gas, thick, oil, tar, slime or molten). The same rows are in
      * tools/DataGen.java (LIQUIDS) and the mod's code (LiquidKinds and compat/liquid).
      */
     record LiquidArt(String id, int color, String style) {}
@@ -3423,6 +4404,8 @@ public class TexGen {
     static final LiquidArt[] LIQUIDS = {
             // vanilla water_still is tinted 3F76E4; lava_still averages D8681A with C73405 shades and FAEB72 lights.
             new LiquidArt("water", 0x3F76E4, "clear"), new LiquidArt("lava", 0xE05A16, "molten"),
+            // Milk (the Cow Ant's): a warm cream, thick, where latex is a cold white with bubbles.
+            new LiquidArt("milk", 0xF4EEDD, "thick"),
             // MachinaOpus: crude oil tint 1E1A16 (lifted), liquid blaze FFA020 over the glowing molten texture.
             new LiquidArt("crude_oil", 0x24201C, "oil"), new LiquidArt("liquid_blaze", 0xFFA020, "molten"),
             // Mekanism: brine tint FEEF9C; heavy water is vanilla water tinted 0D1455 (a deep navy, lifted).
@@ -3437,6 +4420,44 @@ public class TexGen {
             new LiquidArt("resin", 0x9E6806, "thick"), new LiquidArt("sap", 0xA03A08, "thick"),
             // Immersive Engineering: creosote 361300 (lifted), plant oil 918F4A.
             new LiquidArt("creosote", 0x3E1A04, "thick"), new LiquidArt("plant_oil", 0x918F4A, "thick"),
+            // Liquid experience is 8CFE16 in every mod that has one: bubbly, to keep it apart from the acids.
+            new LiquidArt("experience", 0x8CFE16, "slime"),
+            // Ender IO's Vat fluids: fire water 8A490F (lifted, burning), liquid sunshine D1C357 (glowing), dew of the void 129238,
+            // cloud seed 248589.
+            new LiquidArt("fire_water", 0x9A4F10, "molten"), new LiquidArt("liquid_sunshine", 0xE6D64A, "molten"),
+            new LiquidArt("dew_of_the_void", 0x129238, "clear"), new LiquidArt("cloud_seed", 0x248589, "clear"),
+            // EvilCraft blood 8D0A0A; Allthemodium soul lava 5B80B2 (a blue lava).
+            new LiquidArt("blood", 0x8D0A0A, "thick"), new LiquidArt("soul_lava", 0x5B80B2, "molten"),
+            // Integrated Dynamics: menril resin 7ECDE1; liquid chorus is CE9ECE, pink slime's colour to a shade, so it is
+            // turned toward the chorus fruit's violet.
+            new LiquidArt("menril_resin", 0x7ECDE1, "thick"), new LiquidArt("liquid_chorus", 0xB58CD6, "thick"),
+            // Theurgy's liquid sal ammoniac is water tinted FF00FF; Forcecraft's liquid force A99E00; Ars Magica's etherium B7DAFF.
+            new LiquidArt("sal_ammoniac_solution", 0xD020D0, "clear"), new LiquidArt("liquid_force", 0xA99E00, "thick"),
+            new LiquidArt("liquid_etherium", 0xB7DAFF, "clear"),
+            // The Undergarden's virulent mix 300737 (lifted).
+            new LiquidArt("virulent_mix", 0x5A1466, "thick"),
+            // Just Dire Things: polymorphic fluid is water tinted FF0000 (a little off pure here).
+            new LiquidArt("polymorphic_fluid", 0xE02020, "clear"),
+            // Sulfuric acid in Oritech's green (its pale texture tinted 65FF4C); other mods colour theirs olive or orange.
+            new LiquidArt("sulfuric_acid", 0x4ACE40, "clear"),
+            // Actually Additions canola oil F4CF2F; Oritech biofuel 2E4011 (lifted and greener); Mekanism bioethanol CEEB3D.
+            new LiquidArt("canola_oil", 0xF4CF2F, "thick"), new LiquidArt("biofuel", 0x2E6A2A, "clear"), new LiquidArt("bioethanol", 0xCEEB3D, "clear"),
+            // Eternal Starlight ether DFFFF2 and Astral Sorcery liquid starlight DDE1EE are both near white: each is turned a
+            // little toward its own hue, and starlight glows.
+            new LiquidArt("ether", 0xBFF5E1, "clear"), new LiquidArt("liquid_starlight", 0xC8D2F0, "molten"),
+            // Oritech's refinery: heavy oil 160A04 (a warm tar where crude oil is cold black), diesel 899732 (greener, away from
+            // plant oil), light naphtha A14A19 in the fluid but a pale straw liquid by its tint F1ECBD, turbofuel 20303C (lifted).
+            new LiquidArt("heavy_oil", 0x4A3A26, "tar"), new LiquidArt("diesel", 0x8FA02A, "clear"), new LiquidArt("naphtha", 0xD4C070, "glass"),
+            new LiquidArt("turbofuel", 0x34566C, "thick"),
+            // Stellaris: fuel 9A8B54 (browner: it sat on plant oil), hydrogen 2EC0DE and oxygen 95D5E3, both gases.
+            new LiquidArt("fuel", 0xA8862E, "thick"), new LiquidArt("hydrogen", 0x22B8E8, "gas"), new LiquidArt("oxygen", 0xB8ECF8, "gas"),
+            // Ender IO rocket fuel 707044 (greyer, away from nutrient distillation and plant oil).
+            new LiquidArt("rocket_fuel", 0x6E6E58, "clear"),
+            // Just Dire Things: its fuels burn (tints 8B0000, 40C7C7, 1B2027), so they glow where blood, cloud seed and crude oil
+            // of the same colours do not. Time Fluid 00FF00 glows a pale mint, away from the acids; Portal Fluid 00DD00 is turned to emerald and bubbles.
+            new LiquidArt("blaze_ember_fuel", 0xB83210, "molten"), new LiquidArt("voidflame_fuel", 0x38C4C0, "molten"),
+            new LiquidArt("eclipse_ember_fuel", 0x2C2226, "molten"), new LiquidArt("time_fluid", 0x5CFF9A, "molten"),
+            new LiquidArt("portal_fluid", 0x00B48C, "slime"),
     };
 
     /** The one droplet shape every fluid shares: o outline, h highlight, l light, m body, d shade. Lit from the top left. */
@@ -3484,13 +4505,19 @@ public class TexGen {
             boolean molten = art.style().equals("molten");
             // The ramp: lights lean warm and pale, shades lean cool and deep. Very dark fluids get lights they can show.
             boolean oil = art.style().equals("oil");
+            // Tar is a brown-black oil: where crude oil shines cold and blue, it shines warm.
+            boolean tar = art.style().equals("tar");
             // Molten ramps come from the fluid's own hue, so lava stays red-orange and liquid blaze stays gold.
-            int highlight = molten ? mix(base, hex(0xFFFBE0), 0.78) : oil ? hex(0x9AA8C8) : mix(base, hex(0xFFFFFF), dark ? 0.62 : 0.78);
-            int light = molten ? mix(base, hex(0xFFF07A), 0.48) : oil ? hex(0x4A4E62)
+            // A blue or green fire (soul lava) burns pale cyan at its core, not yellow.
+            float hue = Color.RGBtoHSB((base >> 16) & 0xFF, (base >> 8) & 0xFF, base & 0xFF, null)[0];
+            boolean cool = molten && hue > 0.4 && hue < 0.75;
+            int highlight = molten ? mix(base, hex(cool ? 0xE8FBFF : 0xFFFBE0), 0.78) : oil ? hex(0x9AA8C8) : tar ? hex(0xE0B070)
+                    : mix(base, hex(0xFFFFFF), dark ? 0.62 : 0.78);
+            int light = molten ? mix(base, hex(cool ? 0x9AE8FF : 0xFFF07A), 0.48) : oil ? hex(0x4A4E62) : tar ? hex(0x8A6A3E)
                     : dark ? tone(mix(base, hex(0xFFFFFF), 0.24), 1.05, 1.1, 8) : tone(mix(base, hex(0xFFFFFF), 0.32), 1, 0.9, 6);
             int body = base;
             int shadeTone = molten ? tone(base, 0.74, 1.12, -12) : tone(base, dark ? 0.62 : 0.74, 1.12, -8);
-            int outlineTone = molten ? tone(base, 0.4, 1.2, -16) : oil ? hex(0x0C0A0A) : tone(base, dark ? 0.36 : 0.42, 1.15, -12);
+            int outlineTone = molten ? tone(base, 0.4, 1.2, -16) : oil ? hex(0x0C0A0A) : tar ? hex(0x1A100A) : tone(base, dark ? 0.36 : 0.42, 1.15, -12);
             Img img = item();
             paint(img, 0, 0, DROPLET, 'o', outlineTone, 'h', highlight, 'l', light, 'm', body, 'd', shadeTone);
             // The lit side's outline a touch lighter than the far side's, so the drop sits in the light.
@@ -3498,13 +4525,20 @@ public class TexGen {
                 img.set(p[0], p[1], mix(outlineTone, body, 0.28));
             }
             switch (art.style()) {
-                case "clear", "glass" -> {
+                case "clear", "glass", "gas" -> {
                     // Light let through: a small bright crescent low on the far side.
                     img.set(10, 11, light);
                     img.set(9, 12, light);
                     img.set(10, 12, mix(light, highlight, 0.5));
-                    if (art.style().equals("glass")) {
-                        // A colourless liquid (hootch): the body and its shade are see-through, the rim and gloss stay solid.
+                    if (art.style().equals("gas")) {
+                        // A gas kept as a drop: bubbles rising through it, one at the top about to leave.
+                        img.set(8, 10, highlight);
+                        img.set(7, 12, highlight);
+                        img.set(9, 7, highlight);
+                        img.set(8, 5, mix(light, highlight, 0.5));
+                    }
+                    if (!art.style().equals("clear")) {
+                        // A colourless liquid (hootch) or a gas: the body and its shade are see-through, the rim and gloss stay solid.
                         for (int y = 0; y < 16; y++) {
                             for (int x = 0; x < 16; x++) {
                                 int c = img.get(x, y);
@@ -3516,12 +4550,18 @@ public class TexGen {
                         }
                     }
                 }
-                case "oil" -> {
-                    // A cool sheen on black: a blue-grey gloss down the lit side and a faint violet glint low on the far side.
+                case "oil", "tar" -> {
+                    // A sheen on black: a gloss down the lit side and a faint glint low on the far side. Cold on oil
+                    // (blue-grey, violet), warm on tar (amber, rust), which also drags a thick foot.
                     img.set(5, 9, highlight);
                     img.set(5, 10, light);
-                    img.set(10, 11, hex(0x3C3450));
-                    img.set(9, 12, hex(0x2E2A3E));
+                    img.set(10, 11, tar ? hex(0x7A4A22) : hex(0x3C3450));
+                    img.set(9, 12, tar ? hex(0x5A3418) : hex(0x2E2A3E));
+                    if (tar) {
+                        img.set(5, 8, light);
+                        img.set(6, 11, hex(0x8A6A3E));
+                        img.set(11, 13, tone(shadeTone, 0.82, 1, 0));
+                    }
                     for (int x = 6; x <= 10; x++) {
                         img.set(x, 14, tone(shadeTone, 0.82, 1, 0));
                     }
@@ -4018,6 +5058,7 @@ public class TexGen {
     public static void main(String[] args) {
         liquids();
         antSkins();
+        costumes();
         terrariumInside();
         blocks();
         generator();

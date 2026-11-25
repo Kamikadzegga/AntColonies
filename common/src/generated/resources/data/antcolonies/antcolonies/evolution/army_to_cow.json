@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:army",
+  "to": "antcolonies:cow",
+  "item": "minecraft:milk_bucket",
+  "chance": 0.15,
+  "guaranteed_after": 8,
+  "min_stage": 2,
+  "min_population": 300
+}

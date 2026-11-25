@@ -1,0 +1,66 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#474246",
+    "gaster": "#BBAEB7",
+    "accent": "#E0DBDF",
+    "pattern": "faceted",
+    "crystal": "#CCC2C9",
+    "glow": true
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "crystal",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.008,
+    "outputs": [
+      {
+        "tag": "c:gems/white_diamond",
+        "weight": 3
+      },
+      {
+        "tag": "c:dusts/white_diamond",
+        "weight": 2
+      },
+      {
+        "item": "minecraft:end_stone",
+        "weight": 40
+      },
+      {
+        "item": "minecraft:calcite",
+        "weight": 4,
+        "min_stage": 2
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.8,
+    "growth": 0.85
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "silentgems"
+    }
+  ]
+}

@@ -6,6 +6,8 @@ import com.antcolonies.core.registry.ModStructures;
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.core.QuartPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -18,6 +20,8 @@ public class GiantAnthill extends Structure {
     public static final MapCodec<GiantAnthill> CODEC = simpleCodec(GiantAnthill::new);
 
     private static final int MAX_SLOPE = 3;
+    /** The least thickness of land, in another mod's world, that a nest is dug into. */
+    private static final int MIN_LAND = 24;
 
     public GiantAnthill(StructureSettings settings) {
         super(settings);
@@ -52,12 +56,29 @@ public class GiantAnthill extends Structure {
         }
         // The ground's top block is one below the first free one.
         BlockPos center = new BlockPos(cx, middle - 1, cz);
+        int lowestY = context.heightAccessor().getMinY() + 4;
+        NoiseColumn column = generator.getBaseColumn(cx, cz, context.heightAccessor(), context.randomState());
+        Block rock = AnthillPiece.foreignRock(column, middle - 2, Math.max(context.heightAccessor().getMinY(), middle - 12));
+        AnthillTheme theme;
+        if (rock != null) {
+            // Another mod's world: built of its own ground, and no deeper than its land is thick (it may be a floating island).
+            int bottom = middle - 2;
+            while (bottom > context.heightAccessor().getMinY() && !column.getBlock(bottom - 1).isAir()) {
+                bottom--;
+            }
+            if (middle - bottom < MIN_LAND) {
+                return Optional.empty();
+            }
+            lowestY = Math.max(lowestY, bottom + 4);
+            theme = AnthillTheme.LOCAL;
+        } else {
+            // Its look comes from the biome at its center.
+            theme = AnthillTheme.of(context.biomeSource().getNoiseBiome(QuartPos.fromBlock(cx), QuartPos.fromBlock(middle), QuartPos.fromBlock(cz),
+                context.randomState().sampler()));
+        }
         // A layout planned from the world seed and the spot: the same anthill whichever chunk asks.
-        // Its look comes from the biome at its center.
-        AnthillTheme theme = AnthillTheme.of(context.biomeSource().getNoiseBiome(QuartPos.fromBlock(cx), QuartPos.fromBlock(middle),
-                QuartPos.fromBlock(cz), context.randomState().sampler()));
-        AnthillPiece piece = AnthillPiece.plan(center, AnthillPiece.Kind.OVERWORLD, context.seed() ^ center.asLong() * 0x9E3779B97F4A7C15L,
-                context.heightAccessor().getMinY() + 4, theme);
+        AnthillPiece piece = AnthillPiece.plan(center, AnthillPiece.Kind.OVERWORLD, context.seed() ^ center.asLong() * 0x9E3779B97F4A7C15L, lowestY,
+                theme, rock);
         return Optional.of(new GenerationStub(center, builder -> builder.addPiece(piece)));
     }
 

@@ -1,6 +1,7 @@
 package com.antcolonies.content.item;
 
 import com.antcolonies.colony.species.Caste;
+import com.antcolonies.colony.species.RetiredSpecies;
 import com.antcolonies.core.config.AntConfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -18,7 +19,7 @@ public record AntSample(Identifier species, Caste caste, int count) {
         return AntConfig.get(AntConfig.TWEEZERS_ANTS);
     }
     public static final Codec<AntSample> CODEC = RecordCodecBuilder.create(i -> i.group(
-            Identifier.CODEC.fieldOf("species").forGetter(AntSample::species),
+            RetiredSpecies.CODEC.fieldOf("species").forGetter(AntSample::species),
             Caste.CODEC.optionalFieldOf("caste", Caste.WORKER).forGetter(AntSample::caste),
             Codec.intRange(1, MAX).optionalFieldOf("count", 1).forGetter(AntSample::count)
     ).apply(i, AntSample::new));

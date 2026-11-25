@@ -1,0 +1,50 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:honey_droplet",
+  "result": {
+    "id": "the_bumblezone:honey_fluid_still",
+    "amount": 50
+  },
+  "energy": 800,
+  "time": 60,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "the_bumblezone"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "the_bumblezone:honey_fluid_still"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:honey_droplet"
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "create:honey"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "productivebees:honey"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "extended_industrialization:honey"
+      }
+    }
+  ]
+}

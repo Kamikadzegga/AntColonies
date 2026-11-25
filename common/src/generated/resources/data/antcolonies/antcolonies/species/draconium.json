@@ -1,0 +1,67 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#2E0E43",
+    "gaster": "#7824B1",
+    "accent": "#C29CDC",
+    "pattern": "faceted",
+    "crystal": "#9A5BC5",
+    "glow": true
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "crystal",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.008,
+    "outputs": [
+      {
+        "tag": "c:dusts/draconium",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:end_stone",
+        "weight": 24
+      },
+      {
+        "item": "minecraft:cobbled_deepslate",
+        "weight": 20
+      },
+      {
+        "tag": "c:ingots/draconium",
+        "weight": 0.3,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "draconicevolution"
+    }
+  ]
+}

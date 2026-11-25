@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:fire_water_droplet",
+  "result": {
+    "id": "enderio:fluid_fire_water_still",
+    "amount": 50
+  },
+  "energy": 2400,
+  "time": 120,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "enderio"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "enderio:fluid_fire_water_still"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:fire_water_droplet"
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#5A3008",
+    "gaster": "#E89018",
+    "accent": "#FFD890",
+    "pattern": "banded",
+    "crystal": "#FFB030"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "crystal",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.45,
+    "outputs": [
+      {
+        "tag": "c:gems/amber",
+        "weight": 34
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 12
+      },
+      {
+        "tag": "c:raw_materials/cinnabar",
+        "weight": 8
+      },
+      {
+        "tag": "c:gems/quicksilver",
+        "weight": 6,
+        "min_stage": 2
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "thaumaturge"
+    }
+  ]
+}

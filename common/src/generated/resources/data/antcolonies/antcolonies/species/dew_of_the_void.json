@@ -1,0 +1,53 @@
+{
+  "tier": 2,
+  "category": "liquid",
+  "look": {
+    "body": "#084219",
+    "gaster": "#062F12",
+    "accent": "#062F12",
+    "pattern": "plain",
+    "crop": "#129238"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.8
+  },
+  "liquid": {
+    "fluid": "enderio:fluid_dew_of_the_void_still",
+    "droplet": "antcolonies:dew_of_the_void_droplet",
+    "rate": 0.06
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "minecraft:honey_bottle",
+        "count": 2
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "enderio"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "enderio:fluid_dew_of_the_void_still"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:dew_of_the_void_droplet"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "tier": 2,
+  "category": "liquid",
+  "look": {
+    "body": "#0F5368",
+    "gaster": "#0B3B4A",
+    "accent": "#0B3B4A",
+    "pattern": "plain",
+    "crop": "#22B8E8"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.5
+  },
+  "liquid": {
+    "fluid": "stellaris:hydrogen",
+    "droplet": "antcolonies:hydrogen_droplet",
+    "rate": 0.15
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "minecraft:honey_bottle",
+        "count": 2
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "stellaris"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "stellaris:hydrogen"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:hydrogen_droplet"
+    }
+  ]
+}

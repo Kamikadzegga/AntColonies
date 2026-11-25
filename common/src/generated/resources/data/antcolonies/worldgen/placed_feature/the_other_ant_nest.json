@@ -1,0 +1,19 @@
+{
+  "feature": "antcolonies:warped_ant_nest",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 24
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "antcolonies:nest_ground",
+      "chance": 0.9
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

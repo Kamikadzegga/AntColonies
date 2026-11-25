@@ -1,0 +1,8 @@
+{
+  "values": [
+    {
+      "id": "stellaris:hydrogen_bucket",
+      "required": false
+    }
+  ]
+}

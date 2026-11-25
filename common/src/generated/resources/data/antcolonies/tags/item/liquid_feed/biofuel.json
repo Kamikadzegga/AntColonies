@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "oritech:still_biofuel_bucket",
+      "required": false
+    },
+    {
+      "id": "industrialforegoing:biofuel_bucket",
+      "required": false
+    }
+  ]
+}

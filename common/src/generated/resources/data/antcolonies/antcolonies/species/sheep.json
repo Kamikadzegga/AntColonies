@@ -1,0 +1,78 @@
+{
+  "tier": 1,
+  "category": "hunter",
+  "look": {
+    "body": "#4A4038",
+    "gaster": "#F4F0E6",
+    "accent": "#FFFFFF",
+    "pattern": "plain",
+    "size": 1.05,
+    "costume": "sheep"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.1
+  },
+  "production": {
+    "rate": 0.5,
+    "outputs": [
+      {
+        "item": "minecraft:white_wool",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:string",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:light_gray_wool",
+        "weight": 3
+      },
+      {
+        "item": "minecraft:gray_wool",
+        "weight": 3
+      },
+      {
+        "item": "minecraft:black_wool",
+        "weight": 3
+      },
+      {
+        "item": "minecraft:brown_wool",
+        "weight": 2
+      },
+      {
+        "item": "minecraft:pink_wool",
+        "weight": 0.2,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 0.9,
+    "targets": [
+      {
+        "entity": "minecraft:sheep",
+        "weight": 100
+      }
+    ]
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:white_wool",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:white_wool"
+}

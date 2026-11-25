@@ -1,0 +1,60 @@
+{
+  "tier": 1,
+  "category": "hunter",
+  "look": {
+    "body": "#F6F4EC",
+    "gaster": "#FFFFFF",
+    "accent": "#D8281E",
+    "pattern": "plain",
+    "size": 0.9,
+    "costume": "chicken"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.0
+  },
+  "production": {
+    "rate": 0.6,
+    "outputs": [
+      {
+        "item": "minecraft:egg",
+        "weight": 22
+      },
+      {
+        "item": "minecraft:wheat_seeds",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:feather",
+        "weight": 8
+      }
+    ]
+  },
+  "combat": {
+    "strength": 0.8,
+    "targets": [
+      {
+        "entity": "minecraft:chicken",
+        "weight": 100
+      }
+    ]
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:egg",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 1.1,
+    "growth": 1.1
+  },
+  "signature_item": "minecraft:feather"
+}

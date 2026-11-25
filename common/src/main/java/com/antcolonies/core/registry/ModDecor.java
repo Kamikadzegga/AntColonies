@@ -7,7 +7,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import com.antcolonies.content.block.AnthillSoilBlock;
 import com.antcolonies.content.block.BroodClusterBlock;
+import com.antcolonies.content.block.SoilTone;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
@@ -49,8 +51,8 @@ public final class ModDecor {
     public static final List<String> WITH_WALLS = new ArrayList<>();
 
     // --- Anthill ---
-    public static final DeferredBlock<Block> ANTHILL_SOIL = simple("anthill_soil", SOIL);
-    public static final DeferredBlock<Block> PACKED_ANTHILL_SOIL = simple("packed_anthill_soil", PACKED);
+    public static final DeferredBlock<AnthillSoilBlock> ANTHILL_SOIL = soil("anthill_soil", SOIL);
+    public static final DeferredBlock<AnthillSoilBlock> PACKED_ANTHILL_SOIL = soil("packed_anthill_soil", PACKED);
     public static final DeferredBlock<Block> ANTHILL_BRICKS = family("anthill_bricks", BRICK, true);
     public static final DeferredBlock<Block> POLISHED_ANTHILL_BRICKS = family("polished_anthill_bricks", BRICK, false);
     public static final DeferredBlock<RotatedPillarBlock> NEST_PILLAR = pillar("nest_pillar", BRICK);
@@ -104,6 +106,14 @@ public final class ModDecor {
 
     private static DeferredBlock<Block> simple(String id, Feel feel) {
         return register(id, Block::new, feel::apply);
+    }
+
+    /** Soil in tones: on a map each tone has its colour, earth the family's own. */
+    private static DeferredBlock<AnthillSoilBlock> soil(String id, Feel feel) {
+        return register(id, AnthillSoilBlock::new, p -> feel.apply(p).mapColor(state -> {
+            SoilTone tone = state.getValue(AnthillSoilBlock.TONE);
+            return tone == SoilTone.EARTH ? feel.color() : tone.mapColor;
+        }));
     }
 
     private static DeferredBlock<RotatedPillarBlock> pillar(String id, Feel feel) {

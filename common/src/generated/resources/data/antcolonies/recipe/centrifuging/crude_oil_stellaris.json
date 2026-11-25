@@ -1,0 +1,66 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:crude_oil_droplet",
+  "result": {
+    "id": "stellaris:oil",
+    "amount": 50
+  },
+  "energy": 2400,
+  "time": 120,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "stellaris"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "stellaris:oil"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:crude_oil_droplet"
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "machinaopus:crude_oil"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "pneumaticcraft:oil"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "modern_industrialization:crude_oil"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "oritech:still_oil"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "ad_astra:oil"
+      }
+    }
+  ]
+}

@@ -1,5 +1,10 @@
 {
   "values": [
-    "#minecraft:is_badlands"
+    "#minecraft:is_badlands",
+    "#c:is_badlands",
+    {
+      "id": "terralith:warped_mesa",
+      "required": false
+    }
   ]
 }

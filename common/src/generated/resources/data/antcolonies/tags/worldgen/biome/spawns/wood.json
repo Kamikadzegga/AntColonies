@@ -4,6 +4,61 @@
     "minecraft:old_growth_birch_forest",
     "minecraft:dark_forest",
     "minecraft:old_growth_pine_taiga",
-    "minecraft:old_growth_spruce_taiga"
+    "minecraft:old_growth_spruce_taiga",
+    "#c:is_taiga",
+    "#c:is_old_growth",
+    "#c:is_tree/coniferous",
+    {
+      "id": "terralith:yosemite_cliffs",
+      "required": false
+    },
+    {
+      "id": "terralith:alpha_islands_winter",
+      "required": false
+    },
+    {
+      "id": "regions_unexplored:pine_slopes",
+      "required": false
+    },
+    {
+      "id": "regions_unexplored:cold_boreal_taiga",
+      "required": false
+    },
+    {
+      "id": "regions_unexplored:frozen_pine_taiga",
+      "required": false
+    },
+    {
+      "id": "twilightforest:highlands",
+      "required": false
+    },
+    {
+      "id": "twilightforest:dense_forest",
+      "required": false
+    },
+    {
+      "id": "aether_ii:violet_highwoods",
+      "required": false
+    },
+    {
+      "id": "aether_ii:turquoise_forest",
+      "required": false
+    },
+    {
+      "id": "aether_ii:shrouded_forest",
+      "required": false
+    },
+    {
+      "id": "undergarden:smogstem_forest",
+      "required": false
+    },
+    {
+      "id": "undergarden:wigglewood_forest",
+      "required": false
+    },
+    {
+      "id": "undergarden:dense_forest",
+      "required": false
+    }
   ]
 }

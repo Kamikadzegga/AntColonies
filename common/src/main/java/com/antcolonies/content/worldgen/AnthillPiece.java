@@ -1,10 +1,14 @@
 package com.antcolonies.content.worldgen;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.content.block.AnthillSoilBlock;
 import com.antcolonies.content.block.BroodClusterBlock;
+import com.antcolonies.content.block.SoilTone;
 import com.antcolonies.content.block.WildNestBlock;
 import com.antcolonies.content.blockentity.BroodClusterBlockEntity;
 import com.antcolonies.content.entity.WildAnt;
@@ -23,6 +27,9 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.NoiseColumn;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
@@ -81,6 +88,8 @@ public class AnthillPiece extends StructurePiece {
     private final long seed;
     /** How it looks; null for a piece planned before themes (the old look). */
     private final @Nullable AnthillTheme theme;
+    /** The rock of another mod's world, for the LOCAL look; null in the base game's own. */
+    private final @Nullable Block rock;
     /** The plan, made again from the seed after loading (never saved). */
     private final AnthillLayout layout;
     /** The columns the ants' trails wear into the ground (relative x, z packed), made from the seed. */
@@ -97,11 +106,18 @@ public class AnthillPiece extends StructurePiece {
     }
 
     public AnthillPiece(BlockPos center, Kind kind, AnthillLayout.Style style, long seed, @Nullable AnthillTheme theme) {
-        this(center, kind, style, seed, theme, AnthillLayout.create(style, seed));
+        this(center, kind, style, seed, theme, AnthillLayout.create(style, seed), null);
     }
 
-    private AnthillPiece(BlockPos center, Kind kind, AnthillLayout.Style style, long seed, @Nullable AnthillTheme theme, AnthillLayout layout) {
+    /** An anthill of the LOCAL look, with the rock of its world. */
+    public static AnthillPiece ofLand(BlockPos center, Kind kind, AnthillLayout.Style style, long seed, Block rock) {
+        return new AnthillPiece(center, kind, style, seed, AnthillTheme.LOCAL, AnthillLayout.create(style, seed), rock);
+    }
+
+    private AnthillPiece(BlockPos center, Kind kind, AnthillLayout.Style style, long seed, @Nullable AnthillTheme theme, AnthillLayout layout,
+                         @Nullable Block rock) {
         super(ModStructures.ANTHILL_PIECE.get(), 0, box(center, layout, theme));
+        this.rock = rock;
         this.center = center;
         this.kind = kind;
         this.style = style;
@@ -120,21 +136,41 @@ public class AnthillPiece extends StructurePiece {
         this.style = AnthillLayout.Style.byName(tag.getStringOr("Style", "classic"));
         this.seed = tag.getLongOr("Seed", center.asLong());
         this.theme = tag.getString("Theme").map(AnthillTheme::byName).orElse(null);
+        this.rock = tag.getString("Rock").map(Identifier::tryParse).flatMap(BuiltInRegistries.BLOCK::getOptional).orElse(null);
         this.layout = AnthillLayout.create(style, seed);
     }
 
     /** Plans an anthill at {@code center}, trying other seeds while it would reach below {@code lowestY}, then a shallow abandoned nest. */
     public static AnthillPiece plan(BlockPos center, Kind kind, long seed, int lowestY, AnthillTheme theme) {
+        return plan(center, kind, seed, lowestY, theme, null);
+    }
+
+    public static AnthillPiece plan(BlockPos center, Kind kind, long seed, int lowestY, AnthillTheme theme, @Nullable Block rock) {
         for (int attempt = 0; attempt < 4; attempt++) {
             long tried = seed + attempt * 0x9E3779B97F4A7C15L;
             AnthillLayout.Style style = hash(tried, 17, 29, 31) < 0.1 ? AnthillLayout.Style.ABANDONED
                     : AnthillLayout.Style.GROWN;
             AnthillLayout layout = AnthillLayout.create(style, tried);
             if (center.getY() + layout.minY() > lowestY) {
-                return new AnthillPiece(center, kind, style, tried, theme, layout);
+                return new AnthillPiece(center, kind, style, tried, theme, layout, rock);
             }
         }
-        return new AnthillPiece(center, kind, AnthillLayout.Style.ABANDONED, seed, theme, AnthillLayout.create(AnthillLayout.Style.ABANDONED, seed));
+        return new AnthillPiece(center, kind, AnthillLayout.Style.ABANDONED, seed, theme, AnthillLayout.create(AnthillLayout.Style.ABANDONED, seed), rock);
+    }
+
+    /**
+     * The rock under a spot when it is another mod's: the first solid block of the column from {@code from} down to
+     * {@code to} that is not stone, deepslate, netherrack or end stone. Null in the base game's worlds.
+     */
+    public static @Nullable Block foreignRock(NoiseColumn column, int from, int to) {
+        for (int y = from; y >= to; y--) {
+            BlockState state = column.getBlock(y);
+            if (!state.isAir() && state.getFluidState().isEmpty()) {
+                Block block = state.getBlock();
+                return block == Blocks.STONE || block == Blocks.DEEPSLATE || block == Blocks.NETHERRACK || block == Blocks.END_STONE ? null : block;
+            }
+        }
+        return null;
     }
 
     /** A plan's style from the older set, picked from its seed (the game tests use it). */
@@ -174,6 +210,9 @@ public class AnthillPiece extends StructurePiece {
         tag.putLong("Seed", seed);
         if (theme != null) {
             tag.putString("Theme", theme.getSerializedName());
+        }
+        if (rock != null) {
+            tag.putString("Rock", BuiltInRegistries.BLOCK.getKey(rock).toString());
         }
     }
 
@@ -261,6 +300,8 @@ public class AnthillPiece extends StructurePiece {
                 int rx = x - center.getX();
                 int rz = z - center.getZ();
                 int mound = theme.moundHeight(hashSeed, rx, rz);
+                // Read before anything is built in the column.
+                BlockState[] land = theme == AnthillTheme.LOCAL ? land(level, chunkBB, x, z) : null;
                 for (int y = boundingBox.minY(); y <= boundingBox.maxY(); y++) {
                     BlockPos pos = new BlockPos(x, y, z);
                     if (!chunkBB.isInside(pos) || level.isOutsideBuildHeight(pos)) {
@@ -272,11 +313,11 @@ public class AnthillPiece extends StructurePiece {
                     if (ry > 0) {
                         BlockState here = level.getBlockState(pos);
                         if (ry <= mound) {
-                            level.setBlock(pos, carved ? Blocks.AIR.defaultBlockState() : theme.mound(roll, mound - ry, y), Block.UPDATE_CLIENTS);
+                            level.setBlock(pos, carved ? Blocks.AIR.defaultBlockState() : local(theme.mound(roll, mound - ry, y), land), Block.UPDATE_CLIENTS);
                         } else if (mound > 0 && ry <= mound + 2 && (here.isAir() || here.canBeReplaced())) {
                             // Grass and flowers left floating are cleared; the mound's own topping (snow, petals) goes on its top.
                             BlockState topping = ry == mound + 1 && !carved && !layout.carved(rx, ry - 1, rz) ? theme.topping(roll, true) : null;
-                            if (topping != null) {
+                            if (topping != null && topping.canSurvive(level, pos)) {
                                 level.setBlock(pos, topping, Block.UPDATE_CLIENTS);
                             } else if (!here.isAir()) {
                                 level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
@@ -305,10 +346,10 @@ public class AnthillPiece extends StructurePiece {
                         if (!here.isAir() || kind == Kind.END) {
                             boolean floor = layout.carved(rx, ry + 1, rz);
                             AnthillLayout.Room room = floor ? layout.roomAt(rx, ry + 1, rz) : null;
-                            level.setBlock(pos, theme.wall(roll, floor, room == null ? null : room.type(), y), Block.UPDATE_CLIENTS);
+                            level.setBlock(pos, local(theme.wall(roll, floor, room == null ? null : room.type(), y), land), Block.UPDATE_CLIENTS);
                         }
                     } else if (mound > 0 && ry >= -2 && here.canBeReplaced() && here.getFluidState().isEmpty()) {
-                        level.setBlock(pos, theme.mound(roll, 1, y), Block.UPDATE_CLIENTS); // fill dips under the mound
+                        level.setBlock(pos, local(theme.mound(roll, 1, y), land), Block.UPDATE_CLIENTS); // fill dips under the mound
                     }
                 }
                 if (mound == 0) {
@@ -316,6 +357,46 @@ public class AnthillPiece extends StructurePiece {
                 }
             }
         }
+    }
+
+    /** How deep under and over the anthill's own ground a column's ground is looked for. */
+    private static final int LAND_REACH = 6;
+
+    /**
+     * The ground of a column as the world made it, for the LOCAL look: its top block (the turf) and the block under
+     * that (the soil). Where no ground is found near the anthill's own level, both are the world's rock.
+     */
+    private BlockState[] land(WorldGenLevel level, BoundingBox chunkBB, int x, int z) {
+        BlockState stone = (rock == null ? Blocks.STONE : rock).defaultBlockState();
+        for (int y = center.getY() + LAND_REACH; y >= center.getY() - LAND_REACH; y--) {
+            BlockPos pos = new BlockPos(x, y, z);
+            if (!chunkBB.isInside(pos) || level.isOutsideBuildHeight(pos) || level.isOutsideBuildHeight(pos.above())) {
+                continue;
+            }
+            BlockState state = level.getBlockState(pos);
+            if (ground(level, pos, state) && !ground(level, pos.above(), level.getBlockState(pos.above()))) {
+                BlockState under = level.getBlockState(pos.below());
+                return new BlockState[] {state, ground(level, pos.below(), under) ? under : state, stone};
+            }
+        }
+        return new BlockState[] {stone, stone, stone};
+    }
+
+    /** A whole block of earth or rock (mud and soul sand count): not a plant, a tree, a fluid or something with a block entity. */
+    private static boolean ground(WorldGenLevel level, BlockPos pos, BlockState state) {
+        return !state.isAir() && state.getFluidState().isEmpty() && !state.hasBlockEntity() && !state.is(BlockTags.LEAVES) && !state.is(BlockTags.LOGS)
+                && state.isSolidRender();
+    }
+
+    /** A block of the LOCAL look: the column's own turf, soil and rock for grass, dirt and stone, anthill soil in that soil's tone. */
+    private static BlockState local(BlockState state, BlockState @Nullable [] land) {
+        if (land == null) {
+            return state;
+        }
+        if (state.hasProperty(AnthillSoilBlock.TONE)) {
+            return state.setValue(AnthillSoilBlock.TONE, SoilTone.of(land[1]));
+        }
+        return state.is(Blocks.GRASS_BLOCK) ? land[0] : state.is(Blocks.DIRT) ? land[1] : state.is(Blocks.STONE) ? land[2] : state;
     }
 
     private void groundCover(WorldGenLevel level, BoundingBox chunkBB, int x, int z, int rx, int rz, long hashSeed, AnthillTheme theme,
@@ -392,15 +473,14 @@ public class AnthillPiece extends StructurePiece {
         return (long) x << 32 | z & 0xFFFFFFFFL;
     }
 
+    /** How far above the mound's foot the land may stand for an ant to be posted on it. */
+    private static final int OUTSIDE_STEP = 3;
+
     /** What lies in each room, and who lives there; each only by the chunk it stands in. */
     private void furnish(WorldGenLevel level, BoundingBox chunkBB, long hashSeed, ChunkGenerator generator) {
         Holder<Biome> biome = biome(level, generator);
         RandomSource random = RandomSource.create(hashSeed + 1);
-        Identifier species = switch (kind) {
-            case NETHER -> netherSpecies(biome);
-            case END -> AntColonies.id("chorus");
-            case OVERWORLD -> WildAnt.speciesFor(level.registryAccess(), biome, random);
-        };
+        Identifier species = dweller(level.registryAccess(), biome, random);
         ResourceKey<LootTable> loot = switch (kind) {
             case NETHER -> NETHER_LOOT;
             case END -> END_LOOT;
@@ -411,8 +491,10 @@ public class AnthillPiece extends StructurePiece {
         BlockPos anthill = floor(queen, 0, 0);
         boolean abandoned = style == AnthillLayout.Style.ABANDONED;
         AnthillTheme look = theme;
+        AnthillDecor decor = new AnthillDecor(level, chunkBB, layout, center, kind, theme, abandoned);
         for (AnthillLayout.Room room : layout.rooms()) {
-            RandomSource roomRandom = RandomSource.create(hashSeed ^ (long) (room.x() * 31 + room.y() * 977 + room.z() * 7919));
+            long roomSeed = hashSeed ^ (long) (room.x() * 31 + room.y() * 977 + room.z() * 7919);
+            RandomSource roomRandom = RandomSource.create(roomSeed);
             switch (room.type()) {
                 case QUEEN -> {
                     // The great Queen, her nest, a barrel of the colony's riches, her eggs, and her royal guard (an abandoned nest's Queen is alone).
@@ -425,7 +507,8 @@ public class AnthillPiece extends StructurePiece {
                     }
                     BlockState lamp = kind == Kind.OVERWORLD ? ModDecor.PHEROMONE_LAMP.get().defaultBlockState()
                             : kind == Kind.NETHER ? Blocks.SHROOMLIGHT.defaultBlockState() : Blocks.END_ROD.defaultBlockState();
-                    place(level, chunkBB, floor(room, -3, -1), lamp);
+                    // In a grand chamber a royal guard is posted three blocks out: the lamp stands a block further.
+                    place(level, chunkBB, floor(room, grand ? -4 : -3, -1), lamp);
                     if (grand) {
                         place(level, chunkBB, floor(room, 3, -3), lamp);
                         place(level, chunkBB, floor(room, -1, 4), lamp);
@@ -511,7 +594,8 @@ public class AnthillPiece extends StructurePiece {
                             }
                         }
                     }
-                    place(level, chunkBB, floor(room, 1, 1), Blocks.BONE_BLOCK.defaultBlockState());
+                    // Clear of the worker's post.
+                    place(level, chunkBB, floor(room, 2, 1), Blocks.BONE_BLOCK.defaultBlockState());
                     place(level, chunkBB, floor(room, -1, -1), Blocks.BONE_BLOCK.defaultBlockState());
                     workers(level, chunkBB, room, species, anthill, 1);
                 }
@@ -522,7 +606,8 @@ public class AnthillPiece extends StructurePiece {
                             spawn(level, chunkBB, floor(room, i - 1, roomRandom.nextInt(3) - 1), species, Caste.SOLDIER, WildAnt.Rank.NORMAL, anthill, 8);
                         }
                     }
-                    place(level, chunkBB, floor(room, 2, 1), Blocks.BONE_BLOCK.defaultBlockState());
+                    // Clear of the soldiers' posts.
+                    place(level, chunkBB, floor(room, -2, 2), Blocks.BONE_BLOCK.defaultBlockState());
                 }
                 case CHITIN_STORAGE -> {
                     for (int i = 0; i < 3; i++) {
@@ -549,14 +634,7 @@ public class AnthillPiece extends StructurePiece {
                 }
                 case RARE -> {
                     // Where the ants dug into something precious: a few ore and crystal blocks left in the walls and floor.
-                    BlockState[] finds = switch (kind) {
-                        case NETHER -> new BlockState[] {Blocks.NETHER_GOLD_ORE.defaultBlockState(), Blocks.NETHER_QUARTZ_ORE.defaultBlockState(),
-                                Blocks.GILDED_BLACKSTONE.defaultBlockState()};
-                        case END -> new BlockState[] {Blocks.PURPUR_PILLAR.defaultBlockState(), Blocks.OBSIDIAN.defaultBlockState(),
-                                ModDecor.AMBER_BLOCK.get().defaultBlockState()};
-                        case OVERWORLD -> new BlockState[] {Blocks.IRON_ORE.defaultBlockState(), Blocks.COPPER_ORE.defaultBlockState(),
-                                ModDecor.AMBER_BLOCK.get().defaultBlockState(), Blocks.AMETHYST_BLOCK.defaultBlockState()};
-                    };
+                    BlockState[] finds = AnthillDecor.finds(kind);
                     for (int i = 0; i < 3; i++) {
                         BlockPos spot = floor(room, roomRandom.nextInt(3) - 1, roomRandom.nextInt(3) - 1).below();
                         if (chunkBB.isInside(spot)) {
@@ -582,7 +660,10 @@ public class AnthillPiece extends StructurePiece {
                     workers(level, chunkBB, room, species, anthill, 2);
                 }
             }
+            // After the room's own things, so nothing of them is built over.
+            decor.room(room, RandomSource.create(roomSeed ^ 0x3C6EF372FE94F82BL));
         }
+        decor.tunnels(RandomSource.create(hashSeed ^ 0x1F83D9ABFB41BD6BL));
         if (abandoned) {
             return;
         }
@@ -606,8 +687,16 @@ public class AnthillPiece extends StructurePiece {
                 if (layout.carved(rx, ry - 1, rz) || layout.carved(rx, ry, rz)) {
                     continue;
                 }
-                spawn(level, chunkBB, center.offset(rx, ry, rz), species, i < 2 && count > 3 || i == 0 ? Caste.SOLDIER : Caste.WORKER,
-                        WildAnt.Rank.NORMAL, anthill, 10);
+                BlockPos spot = center.offset(rx, ry, rz);
+                if (chunkBB.isInside(spot)) {
+                    // On a slope the land stands higher than the mound's foot: the ant stands on it, or stays away from a cliff.
+                    int land = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spot.getX(), spot.getZ());
+                    if (land > spot.getY() + OUTSIDE_STEP) {
+                        continue;
+                    }
+                    spot = spot.atY(Math.max(spot.getY(), land));
+                }
+                spawn(level, chunkBB, spot, species, i < 2 && count > 3 || i == 0 ? Caste.SOLDIER : Caste.WORKER, WildAnt.Rank.NORMAL, anthill, 10);
             }
         }
     }
@@ -624,8 +713,10 @@ public class AnthillPiece extends StructurePiece {
                 center.getX() + room.x() + room.rx() + 1, center.getY() + room.y() + room.ry() + 1, center.getZ() + room.z() + room.rz() + 1);
     }
 
-    private static boolean free(BlockState state) {
-        return state.isAir() || state.is(Blocks.MOSS_CARPET) || state.is(Blocks.SNOW) || state.is(Blocks.HANGING_ROOTS) || state.is(Blocks.GLOW_LICHEN);
+    static boolean free(BlockState state) {
+        return state.isAir() || state.is(Blocks.MOSS_CARPET) || state.is(Blocks.SNOW) || state.is(Blocks.HANGING_ROOTS) || state.is(Blocks.GLOW_LICHEN)
+                || state.is(Blocks.PALE_MOSS_CARPET) || state.is(Blocks.PALE_HANGING_MOSS) || state.is(Blocks.POINTED_DRIPSTONE)
+                || state.is(Blocks.WEEPING_VINES);
     }
 
     private static void place(WorldGenLevel level, BoundingBox chunkBB, BlockPos pos, BlockState state) {
@@ -658,9 +749,32 @@ public class AnthillPiece extends StructurePiece {
                 level.getLevel().getChunkSource().randomState().sampler());
     }
 
-    private static Identifier netherSpecies(Holder<Biome> biome) {
-        boolean forest = biome.is(Biomes.WARPED_FOREST) || biome.is(Biomes.CRIMSON_FOREST);
-        return AntColonies.id(forest ? "warped" : "fire");
+    /**
+     * The ants of this anthill: one of its look's own species that lives in the biome, else the look's first. A look
+     * with none of its own takes any ant of the biome, else Common, Fire or Chorus Ants by the world. The old look
+     * keeps the old rule.
+     */
+    public Identifier dweller(RegistryAccess registries, Holder<Biome> biome, RandomSource random) {
+        Identifier fallback = AntColonies.id(kind == Kind.NETHER ? "fire" : kind == Kind.END ? "chorus" : "common");
+        if (theme == null) {
+            return switch (kind) {
+                case NETHER -> AntColonies.id(biome.is(Biomes.WARPED_FOREST) || biome.is(Biomes.CRIMSON_FOREST) ? "warped" : "fire");
+                case END -> fallback;
+                case OVERWORLD -> WildAnt.speciesFor(registries, biome, random);
+            };
+        }
+        List<Identifier> natives = WildAnt.natives(registries, biome);
+        List<String> own = theme.dwellers();
+        if (own.isEmpty()) {
+            return natives.isEmpty() ? fallback : natives.get(random.nextInt(natives.size()));
+        }
+        List<Identifier> suited = new ArrayList<>();
+        for (String name : own) {
+            if (natives.contains(AntColonies.id(name))) {
+                suited.add(AntColonies.id(name));
+            }
+        }
+        return suited.isEmpty() ? AntColonies.id(own.getFirst()) : suited.get(random.nextInt(suited.size()));
     }
 
     /** The lowest dug-out spot of a room's column (offset from its center), in the world. */

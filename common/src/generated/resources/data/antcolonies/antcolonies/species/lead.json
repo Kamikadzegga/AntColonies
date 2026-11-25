@@ -1,5 +1,5 @@
 {
-  "tier": 2,
+  "tier": 1,
   "category": "mineral",
   "look": {
     "body": "#2E2E3A",
@@ -10,12 +10,12 @@
   },
   "climate": "underground",
   "diet": {
-    "consumption": 1.5,
+    "consumption": 1.3499999999999999,
     "special_food": "mineral",
-    "special_per_egg": 0.6
+    "special_per_egg": 0.45
   },
   "production": {
-    "rate": 0.45,
+    "rate": 0.6,
     "outputs": [
       {
         "tag": "c:nuggets/lead",
@@ -52,7 +52,7 @@
         "count": 4
       }
     ],
-    "time": 6000
+    "time": 4800
   },
   "breeding": {
     "eggs": 0.9,
@@ -81,6 +81,14 @@
         {
           "type": "neoforge:mod_loaded",
           "modid": "alltheores"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "railcraft"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "modern_industrialization"
         }
       ]
     }

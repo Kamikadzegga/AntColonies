@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#antcolonies:spawns/the_other",
+  "features": "antcolonies:the_other_ant_nest",
+  "step": "vegetal_decoration"
+}

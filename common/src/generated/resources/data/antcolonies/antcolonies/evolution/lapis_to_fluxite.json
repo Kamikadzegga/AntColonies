@@ -1,0 +1,16 @@
+{
+  "from": "antcolonies:lapis",
+  "to": "antcolonies:fluxite",
+  "item": "#c:gems/fluxite",
+  "chance": 0.06,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 400,
+  "lab_amount": 8,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "oritech"
+    }
+  ]
+}

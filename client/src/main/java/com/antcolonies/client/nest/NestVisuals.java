@@ -127,7 +127,11 @@ public final class NestVisuals {
     public float prevQueenWalked;
     public boolean queenRight = true;
     public boolean queenMoving;
+    /** How big the species is drawn (its look's size): she keeps her whole length on her floor. */
+    public float queenSize = 1;
     private float queenTarget;
+    private int queenFloorLeft;
+    private int queenFloorRight;
     private float queenMin;
     private float queenMax;
     private int queenRest;
@@ -707,36 +711,33 @@ public final class NestVisuals {
 
     // --- The Queen ---
 
-    /** Half the Queen's length on the face, px (NestRenderer draws her 1.75 times a worker's 1.9 px). */
+    /** Half the Queen's length on the face at size 1, px (NestRenderer draws her 1.75 times a worker's 1.9 px). */
     private static final float QUEEN_HALF = 1.75F * 1.9F / 2;
 
     private void placeQueen() {
         queenU = Float.NaN;
         prevQueenU = Float.NaN;
-        for (NestLayout.Feature feature : layout.features) {
-            if (feature.type() != 'q') {
-                continue;
-            }
-            int v = feature.v();
-            int left = feature.u();
-            int right = feature.u();
-            while (layout.floor(left - 1, v)) {
-                left--;
-            }
-            while (layout.floor(right + 1, v)) {
-                right++;
-            }
-            queenMin = left + QUEEN_HALF;
-            queenMax = right + 1 - QUEEN_HALF;
-            if (queenMin > queenMax) {
-                queenMin = queenMax = (left + right + 1) / 2F;
-            }
-            queenU = prevQueenU = Math.clamp(feature.u() + 0.5F, queenMin, queenMax);
-            queenV = v;
-            queenTarget = queenU;
-            queenRest = 40 + random.nextInt(80);
-            queenMoving = false;
+        int[] floor = layout.queenFloor();
+        if (floor.length == 0) {
             return;
+        }
+        queenFloorLeft = floor[0];
+        queenFloorRight = floor[1];
+        queenV = floor[2];
+        boundQueen();
+        queenU = prevQueenU = Math.clamp(floor[3] + 0.5F, queenMin, queenMax);
+        queenTarget = queenU;
+        queenRest = 40 + random.nextInt(80);
+        queenMoving = false;
+    }
+
+    /** How far her middle may go either way, so that none of her leaves her floor. */
+    private void boundQueen() {
+        float half = QUEEN_HALF * queenSize;
+        queenMin = queenFloorLeft + half;
+        queenMax = queenFloorRight + 1 - half;
+        if (queenMin > queenMax) {
+            queenMin = queenMax = (queenFloorLeft + queenFloorRight + 1) / 2F;
         }
     }
 
@@ -751,6 +752,7 @@ public final class NestVisuals {
             queenMoving = false;
             if (queenRest == 0) {
                 // Somewhere else on her floor, at least a step away when there is room for it.
+                boundQueen();
                 float span = queenMax - queenMin;
                 queenTarget = span < 1 ? queenMin + random.nextFloat() * span : queenU;
                 for (int attempt = 0; attempt < 6 && span >= 1 && Math.abs(queenTarget - queenU) < 1; attempt++) {

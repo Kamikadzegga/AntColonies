@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "antcolonies:item/sulfuric_acid_droplet"
+  }
+}

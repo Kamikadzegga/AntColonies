@@ -1,6 +1,7 @@
 {
   "values": [
     "antcolonies:water_droplet",
+    "antcolonies:milk_droplet",
     "antcolonies:lava_droplet",
     {
       "id": "antcolonies:crude_oil_droplet",
@@ -60,6 +61,138 @@
     },
     {
       "id": "antcolonies:plant_oil_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:experience_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:fire_water_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:liquid_sunshine_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:dew_of_the_void_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:cloud_seed_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:blood_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:soul_lava_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:menril_resin_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:liquid_chorus_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:sal_ammoniac_solution_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:liquid_force_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:liquid_etherium_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:virulent_mix_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:polymorphic_fluid_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:sulfuric_acid_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:heavy_oil_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:diesel_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:naphtha_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:turbofuel_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:fuel_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:hydrogen_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:oxygen_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:rocket_fuel_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:blaze_ember_fuel_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:voidflame_fuel_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:eclipse_ember_fuel_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:time_fluid_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:portal_fluid_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:canola_oil_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:biofuel_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:bioethanol_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:ether_droplet",
+      "required": false
+    },
+    {
+      "id": "antcolonies:liquid_starlight_droplet",
       "required": false
     }
   ]

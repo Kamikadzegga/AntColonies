@@ -3,6 +3,26 @@
     {
       "id": "machinaopus:crude_oil_bucket",
       "required": false
+    },
+    {
+      "id": "pneumaticcraft:oil_bucket",
+      "required": false
+    },
+    {
+      "id": "modern_industrialization:crude_oil_bucket",
+      "required": false
+    },
+    {
+      "id": "oritech:still_oil_bucket",
+      "required": false
+    },
+    {
+      "id": "ad_astra:oil_bucket",
+      "required": false
+    },
+    {
+      "id": "stellaris:oil_bucket",
+      "required": false
     }
   ]
 }

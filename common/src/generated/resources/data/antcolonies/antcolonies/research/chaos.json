@@ -1,0 +1,22 @@
+{
+  "material": "silentgems:chaos_essence",
+  "species": "antcolonies:chaos",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "silentgems"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "silentgems:chaos_essence"
+    }
+  ]
+}

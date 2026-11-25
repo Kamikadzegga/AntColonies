@@ -1,0 +1,22 @@
+{
+  "material": "rftoolsbase:dimensionalshard",
+  "species": "antcolonies:dimensional",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "rftoolsbase"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "rftoolsbase:dimensionalshard"
+    }
+  ]
+}

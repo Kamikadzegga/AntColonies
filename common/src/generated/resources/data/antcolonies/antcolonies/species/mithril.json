@@ -1,0 +1,62 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#2A3235",
+    "gaster": "#6E848C",
+    "accent": "#BEC8CB",
+    "pattern": "metallic",
+    "crystal": "#92A3A9"
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.0025,
+    "outputs": [
+      {
+        "item": "minecraft:cobbled_deepslate",
+        "weight": 50
+      },
+      {
+        "item": "minecraft:tuff",
+        "weight": 30
+      },
+      {
+        "tag": "c:raw_materials/mithril",
+        "weight": 22,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "irons_spellbooks"
+    }
+  ]
+}

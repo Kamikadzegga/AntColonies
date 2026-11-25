@@ -1,0 +1,60 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#2E2A28",
+    "gaster": "#7A746E",
+    "accent": "#C8C2BA",
+    "pattern": "faceted",
+    "crystal": "#A09A92"
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "crystal",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.45,
+    "outputs": [
+      {
+        "tag": "c:gems/bort",
+        "weight": 36
+      },
+      {
+        "item": "minecraft:cobbled_deepslate",
+        "weight": 16
+      },
+      {
+        "item": "minecraft:coal",
+        "weight": 8
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "silentgear"
+    }
+  ]
+}

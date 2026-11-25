@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:common",
+  "to": "antcolonies:party",
+  "item": "minecraft:firework_rocket",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 200
+}

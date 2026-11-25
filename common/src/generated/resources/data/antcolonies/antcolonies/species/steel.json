@@ -1,0 +1,101 @@
+{
+  "tier": 1,
+  "category": "mineral",
+  "look": {
+    "body": "#2E2E30",
+    "gaster": "#797A7F",
+    "accent": "#C3C3C5",
+    "pattern": "metallic",
+    "crystal": "#9B9B9F",
+    "size": 1.05
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.3499999999999999,
+    "special_food": "mineral",
+    "special_per_egg": 0.45
+  },
+  "production": {
+    "rate": 0.42,
+    "outputs": [
+      {
+        "tag": "c:nuggets/steel",
+        "weight": 40
+      },
+      {
+        "tag": "c:dusts/steel",
+        "weight": 10,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 15
+      },
+      {
+        "tag": "c:ingots/steel",
+        "weight": 2,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 4800
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "alltheores"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "thermal"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mekanism"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "immersiveengineering"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "railcraft"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "oritech"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "energizedpower"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "modern_industrialization"
+        }
+      ]
+    }
+  ]
+}

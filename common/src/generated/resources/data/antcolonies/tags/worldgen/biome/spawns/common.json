@@ -6,6 +6,78 @@
     "minecraft:forest",
     "minecraft:flower_forest",
     "minecraft:birch_forest",
-    "minecraft:cherry_grove"
+    "minecraft:cherry_grove",
+    "#c:is_plains",
+    "#c:is_forest",
+    "#c:is_birch_forest",
+    "#c:is_flower_forest",
+    {
+      "id": "terralith:blooming_plateau",
+      "required": false
+    },
+    {
+      "id": "terralith:shrubland",
+      "required": false
+    },
+    {
+      "id": "terralith:valley_clearing",
+      "required": false
+    },
+    {
+      "id": "terralith:lush_valley",
+      "required": false
+    },
+    {
+      "id": "terralith:shield_clearing",
+      "required": false
+    },
+    {
+      "id": "terralith:alpha_islands",
+      "required": false
+    },
+    {
+      "id": "regions_unexplored:tropics",
+      "required": false
+    },
+    {
+      "id": "twilightforest:forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:dense_forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:firefly_forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:clearing",
+      "required": false
+    },
+    {
+      "id": "twilightforest:enchanted_forest",
+      "required": false
+    },
+    {
+      "id": "aether_ii:flourishing_field",
+      "required": false
+    },
+    {
+      "id": "aether_ii:verdant_woods",
+      "required": false
+    },
+    {
+      "id": "aether_ii:enduring_woodland",
+      "required": false
+    },
+    {
+      "id": "aether_ii:shimmering_basin",
+      "required": false
+    },
+    {
+      "id": "aether_ii:expanse",
+      "required": false
+    }
   ]
 }

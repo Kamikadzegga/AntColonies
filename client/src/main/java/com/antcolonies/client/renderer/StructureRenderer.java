@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.antcolonies.client.ClientHooks;
 import com.antcolonies.client.nest.NestVisuals;
+import com.antcolonies.client.terrarium.HuntVisuals;
 import com.antcolonies.client.terrarium.SiteVisuals;
 import com.antcolonies.colony.species.Climate;
 import com.antcolonies.content.block.ColonyEntityBlock;
@@ -30,6 +31,9 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -37,6 +41,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -51,6 +56,25 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
     private final AntDrawer drawer;
     private final AntPose pose = new AntPose();
     private final ItemModelResolver items;
+    private final EntityRenderDispatcher entities;
+    /** Pixels between a mob's side and the hunter facing it, and how far a lunge closes that. */
+    private static final float HUNTER_REACH = 1.9F;
+    private static final float LUNGE_REACH = 0.9F;
+    /** A hunter this far into its lunge lands a bite: the mob flashes red. */
+    private static final float BITE = 0.996F;
+    /** Mobs are longer than they are wide: the hunters stand this much further out than its side. */
+    private static final float BODY_ROOM = 1.25F;
+
+    /**
+     * The mob the hunters fight (HuntVisuals).
+     *
+     * @param mob       its drawing state, or null when the game cannot make that mob
+     * @param scale     how large it is drawn
+     * @param halfWidth how far from the middle its hunters stand off, in pixels
+     * @param into      ticks into its bout
+     * @param facing    the side it faces, in radians round its spot
+     */
+    record Prey(@Nullable EntityRenderState mob, float scale, float halfWidth, float into, float facing) {}
 
     public static class State extends BlockEntityRenderState {
         StructureKind kind = StructureKind.STORAGE;
@@ -80,6 +104,8 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         /** Ants walking the tunnels behind the glass: the chamber belongs to a colony with ants. */
         boolean wallAnts;
         AntLook wallLook = AntLook.UNKNOWN;
+        /** The mob its hunters stand round. */
+        @Nullable Prey prey;
     }
 
     /** A stacked Storage's shelves hold this many kinds of item. */
@@ -88,6 +114,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
     public StructureRenderer(BlockEntityRendererProvider.Context context) {
         this.drawer = new AntDrawer(context.entityModelSet());
         this.items = context.itemModelResolver();
+        this.entities = context.entityRenderer();
     }
 
     @Override
@@ -114,6 +141,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         state.near = Vec3.atCenterOf(structure.getBlockPos()).distanceToSqr(camera) < distance * distance;
         state.ants = 0;
         state.soldiers = 0;
+        state.prey = null;
         // The ground: the colony's soil in its climate's colours (the Formicarium's), its shape from the blocks around.
         if (structure.getLevel() != null) {
             FlatGround.extract(state.shape, structure.getLevel(), structure.getBlockPos(), structure.getBlockState());
@@ -133,7 +161,7 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
         if (detailed && structure.kind().job().any() && structure.clientLinked() && structure.assigned() > 0
                 && AntConfig.client(AntConfig.STRUCTURE_ANTS)) {
             int shown = (int) Math.min(6, 1 + Math.floor(Math.log(structure.assigned()) / Math.log(2.5)));
-            // Hunters face off in pairs, lunging (the look of the hunt); everyone else goes about its site's work (SiteVisuals).
+            // Hunters stand round a mob they hunt, lunging at it in turn; everyone else goes about its site's work (SiteVisuals).
             if (structure.kind() == StructureKind.HUNTING_GROUND) {
                 state.soldiers = Math.max(2, shown / 2 * 2);
             } else {
@@ -150,6 +178,9 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             }
             state.look = species == null ? AntLook.UNKNOWN : species.look();
             state.farmers = species != null && species.canFarm();
+            if (state.soldiers > 0 && structure.getLevel() != null) {
+                extractPrey(structure, state, species, partialTicks);
+            }
             // Liquid Ants carry a droplet of their fluid.
             state.carry = state.kind == StructureKind.LIQUID_CHAMBER ? 0xFF000000 | state.look.crop().orElse(0x9AD8FF)
                     : state.kind == StructureKind.HARVESTING_SITE ? 0xFF5DAA3C
@@ -177,6 +208,40 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
                 state.heapCounts.add(sorted.get(i).getValue());
             }
         }
+    }
+
+    /** The mob the hunters fight: one of the species' hunt targets, changed every bout, which rises, takes bites and falls. */
+    private void extractPrey(StructureBlockEntity structure, State state, @Nullable AntSpecies species, float partialTicks) {
+        // Its own time, so the mobs of sites side by side do not change together.
+        float clock = state.time + Math.floorMod(state.seed, 1000L);
+        long bout = (long) (clock / HuntVisuals.BOUT);
+        float into = clock % HuntVisuals.BOUT;
+        float facing = HuntVisuals.facing(state.time, state.soldiers);
+        Entity mob = HuntVisuals.standIn(structure.getLevel(), HuntVisuals.target(species, state.seed * 31 + bout));
+        if (mob == null) {
+            state.prey = new Prey(null, 0, 1, into, facing);
+            return;
+        }
+        mob.setPos(Vec3.atCenterOf(structure.getBlockPos()));
+        EntityRenderState drawn = entities.extractEntity(mob, partialTicks);
+        drawn.lightCoords = state.lightCoords;
+        drawn.ageInTicks = state.time;
+        drawn.shadowPieces.clear();
+        drawn.nameTag = null;
+        drawn.displayFireAnimation = false;
+        if (drawn instanceof LivingEntityRenderState living) {
+            living.bodyRot = 0;
+            living.yRot = 0;
+            living.xRot = 0;
+            living.deathTime = Math.max(0, into - (HuntVisuals.BOUT - HuntVisuals.FALL));
+            boolean bitten = false;
+            for (int hunter = 0; hunter < state.soldiers; hunter++) {
+                bitten |= HuntVisuals.lunge(state.time, into, hunter, state.soldiers) > BITE;
+            }
+            living.hasRedOverlay = bitten || living.deathTime > 0;
+        }
+        float scale = HuntVisuals.scale(mob);
+        state.prey = new Prey(drawn, scale, mob.getBbWidth() * scale * 8 * BODY_ROOM, into, facing);
     }
 
     @Override
@@ -211,15 +276,17 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             float yaw;
             int carry = 0;
             if (soldier) {
-                // Pairs of soldiers face off in a corner of the site, lunging at each other.
-                int pair = (i - state.ants) / 2;
-                boolean left = (i - state.ants) % 2 == 0;
-                float lunge = Math.max(0, Mth.sin(state.time * 0.25F + pair * 2)) * 0.8F;
-                float cx = 5 + (pair % 2) * 6;
-                float cz = 5 + (pair / 2) * 6;
-                x = cx + (left ? -1.8F + lunge : 1.8F - lunge);
-                z = cz;
-                yaw = left ? -Mth.HALF_PI : Mth.HALF_PI;
+                // Hunters stand round the mob in the middle of the site, each lunging at it in its turn.
+                if (state.prey == null) {
+                    continue;
+                }
+                float lunge = HuntVisuals.lunge(state.time, state.prey.into(), i - state.ants, state.soldiers);
+                float side = HuntVisuals.side(i - state.ants, state.soldiers);
+                float reach = state.prey.halfWidth() + HUNTER_REACH - lunge * LUNGE_REACH;
+                x = HuntVisuals.SPOT + Mth.cos(side) * reach;
+                z = HuntVisuals.SPOT + Mth.sin(side) * reach;
+                // Facing the mob.
+                yaw = Mth.HALF_PI - side;
                 pose.rear = 0.4F + lunge * 0.5F;
                 pose.mandibleOpen = 0.5F + lunge * 0.5F;
                 pose.alert = 1;
@@ -248,6 +315,17 @@ public class StructureRenderer implements BlockEntityRenderer<StructureBlockEnti
             Caste caste = soldier ? Caste.SOLDIER : Caste.WORKER;
             drawer.draw(collector, poseStack, caste, state.look, pose, LENGTH * AntDrawer.casteScale(caste), state.lightCoords,
                     OverlayTexture.NO_OVERLAY, carry, 0);
+            poseStack.popPose();
+        }
+        Prey prey = state.prey;
+        if (prey != null && prey.mob() != null) {
+            // It grows out of the ground as its bout starts.
+            float size = prey.scale() * Math.min(1, (prey.into() + 1) / HuntVisuals.RISE);
+            poseStack.pushPose();
+            poseStack.translate(HuntVisuals.SPOT / 16, top / 16, HuntVisuals.SPOT / 16);
+            poseStack.mulPose(Axis.YP.rotation(Mth.HALF_PI - prey.facing()));
+            poseStack.scale(size, size, size);
+            entities.submit(prey.mob(), camera, 0, 0, 0, poseStack, collector);
             poseStack.popPose();
         }
         poseStack.popPose();

@@ -3,6 +3,7 @@ package com.antcolonies.colony.genetics;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.antcolonies.colony.species.RetiredSpecies;
 import com.antcolonies.core.config.AntConfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -26,7 +27,7 @@ public record QueenData(Identifier species, Genome genome, int grown, float grow
     }
 
     public static final Codec<QueenData> CODEC = RecordCodecBuilder.create(i -> i.group(
-            Identifier.CODEC.fieldOf("species").forGetter(QueenData::species),
+            RetiredSpecies.CODEC.fieldOf("species").forGetter(QueenData::species),
             Genome.CODEC.fieldOf("genome").forGetter(QueenData::genome),
             Codec.intRange(0, 4).optionalFieldOf("grown", 0).forGetter(QueenData::grown),
             Codec.FLOAT.optionalFieldOf("growth", 0.0F).forGetter(QueenData::growth)

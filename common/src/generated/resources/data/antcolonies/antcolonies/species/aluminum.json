@@ -12,7 +12,7 @@
   "diet": {
     "consumption": 1.3499999999999999,
     "special_food": "mineral",
-    "special_per_egg": 0.44999999999999996
+    "special_per_egg": 0.45
   },
   "production": {
     "rate": 0.6,

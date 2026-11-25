@@ -1,0 +1,62 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#224049",
+    "gaster": "#5AA8C1",
+    "accent": "#B5D8E3",
+    "pattern": "faceted",
+    "crystal": "#83BED1",
+    "glow": true
+  },
+  "climate": "nether",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "crystal",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.4,
+    "outputs": [
+      {
+        "item": "bigreactors:benitoite_crystal",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:netherrack",
+        "weight": 24
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "bigreactors"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "bigreactors:benitoite_crystal"
+    }
+  ]
+}

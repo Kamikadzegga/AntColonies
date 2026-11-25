@@ -1,0 +1,16 @@
+{
+  "from": "antcolonies:iron",
+  "to": "antcolonies:crimson_iron",
+  "item": "#c:ingots/crimson_iron",
+  "chance": 0.07,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 400,
+  "lab_amount": 8,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "silentgear"
+    }
+  ]
+}

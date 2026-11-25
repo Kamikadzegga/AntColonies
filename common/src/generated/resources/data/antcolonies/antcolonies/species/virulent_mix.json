@@ -1,0 +1,53 @@
+{
+  "tier": 2,
+  "category": "liquid",
+  "look": {
+    "body": "#28092E",
+    "gaster": "#1D0621",
+    "accent": "#1D0621",
+    "pattern": "plain",
+    "crop": "#5A1466"
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.5
+  },
+  "liquid": {
+    "fluid": "undergarden:virulent_mix_source",
+    "droplet": "antcolonies:virulent_mix_droplet",
+    "rate": 0.15
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "minecraft:honey_bottle",
+        "count": 2
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "undergarden"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "undergarden:virulent_mix_source"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:virulent_mix_droplet"
+    }
+  ]
+}

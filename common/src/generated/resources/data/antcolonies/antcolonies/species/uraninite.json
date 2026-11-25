@@ -1,0 +1,61 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#16301E",
+    "gaster": "#2E9E5A",
+    "accent": "#9AF0B8",
+    "pattern": "speckled",
+    "crystal": "#4ADE8A",
+    "glow": true
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "mineral",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.35,
+    "outputs": [
+      {
+        "tag": "c:raw_materials/uraninite",
+        "weight": 36
+      },
+      {
+        "item": "minecraft:redstone",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 14
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "powah"
+    }
+  ]
+}

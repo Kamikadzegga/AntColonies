@@ -1,0 +1,50 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:plant_oil_droplet",
+  "result": {
+    "id": "modern_industrialization:plant_oil",
+    "amount": 50
+  },
+  "energy": 1200,
+  "time": 80,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "modern_industrialization"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "modern_industrialization:plant_oil"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:plant_oil_droplet"
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "immersiveengineering:plantoil"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "pneumaticcraft:vegetable_oil"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "createaddition:seed_oil"
+      }
+    }
+  ]
+}

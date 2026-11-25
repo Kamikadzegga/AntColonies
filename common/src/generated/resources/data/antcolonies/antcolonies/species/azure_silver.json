@@ -1,0 +1,68 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#14285A",
+    "gaster": "#4A8AF0",
+    "accent": "#C0DCFF",
+    "pattern": "metallic",
+    "crystal": "#70A8FF",
+    "glow": true,
+    "size": 1.05
+  },
+  "climate": "end",
+  "diet": {
+    "consumption": 1.65,
+    "special_food": "mineral",
+    "special_per_egg": 0.75
+  },
+  "production": {
+    "rate": 0.008,
+    "outputs": [
+      {
+        "tag": "c:nuggets/azure_silver",
+        "weight": 40
+      },
+      {
+        "tag": "c:raw_materials/azure_silver",
+        "weight": 3
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 15
+      },
+      {
+        "tag": "c:ingots/azure_silver",
+        "weight": 2,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "silentgear"
+    }
+  ]
+}

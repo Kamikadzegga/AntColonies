@@ -22,8 +22,8 @@ public enum StructureKind implements StringRepresentable {
     NEST_CHAMBER("nest_chamber", Job.NONE, 0, 3, EnumSet.of(UpgradeType.BREEDING, UpgradeType.SPEED, UpgradeType.POPULATION)),
     /** Workers find the species' resources; a small store for when the Storage is full. */
     FORAGING_SITE("foraging_site", Job.FORAGING, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
-    /** Hunter species kill mobs here: their loot, and food from what they catch. */
-    HUNTING_GROUND("hunting_ground", Job.HUNTING, 0, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.HUNTING, UpgradeType.FOOD_EFFICIENCY,
+    /** Hunter species kill mobs here: their loot, and food from what they catch; a small store for when the Storage is full. */
+    HUNTING_GROUND("hunting_ground", Job.HUNTING, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.HUNTING, UpgradeType.FOOD_EFFICIENCY,
             UpgradeType.POPULATION)),
     /** Farmer Ants grow food and harvest. */
     HARVESTING_SITE("harvesting_site", Job.FARMERS, 0, 3, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
@@ -107,9 +107,9 @@ public enum StructureKind implements StringRepresentable {
         return this == STORAGE || siteStore();
     }
 
-    /** The job sites with a small store of their own for what their ants bring: the Foraging Sites and the Liquid Chamber. */
+    /** The job sites with a small store of their own for what their ants bring: Foraging Sites, Liquid Chamber, Hunting Ground. */
     public boolean siteStore() {
-        return foraging() || this == LIQUID_CHAMBER;
+        return foraging() || this == LIQUID_CHAMBER || this == HUNTING_GROUND;
     }
 
     public boolean foraging() {
@@ -126,7 +126,7 @@ public enum StructureKind implements StringRepresentable {
 
     /** Every job site with a store of its own ({@link #siteStore}), in the order finds overflow into them. */
     public static final List<StructureKind> SITE_STORES =
-            List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER);
+            List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER, HUNTING_GROUND);
 
     public String translationKey() {
         return "block.antcolonies." + name;

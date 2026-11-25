@@ -1,5 +1,5 @@
 {
-  "tier": 2,
+  "tier": 3,
   "category": "mineral",
   "look": {
     "body": "#4A1410",
@@ -15,7 +15,7 @@
     "special_per_egg": 0.6
   },
   "production": {
-    "rate": 0.45,
+    "rate": 0.03,
     "outputs": [
       {
         "tag": "c:gems/cinnabar",

@@ -6,6 +6,60 @@
     "minecraft:snowy_slopes",
     "minecraft:grove",
     "minecraft:frozen_peaks",
-    "minecraft:snowy_beach"
+    "minecraft:snowy_beach",
+    "#c:is_snowy",
+    "#c:is_icy",
+    {
+      "id": "terralith:cold_shrubland",
+      "required": false
+    },
+    {
+      "id": "terralith:rocky_shrubland",
+      "required": false
+    },
+    {
+      "id": "terralith:gravel_desert",
+      "required": false
+    },
+    {
+      "id": "terralith:alpha_islands_winter",
+      "required": false
+    },
+    {
+      "id": "regions_unexplored:tundra",
+      "required": false
+    },
+    {
+      "id": "regions_unexplored:cold_deciduous_forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:snowy_forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:glacier",
+      "required": false
+    },
+    {
+      "id": "aether_ii:frigid_sierra",
+      "required": false
+    },
+    {
+      "id": "aether_ii:sheer_tundra",
+      "required": false
+    },
+    {
+      "id": "aether_ii:frozen_lakes",
+      "required": false
+    },
+    {
+      "id": "undergarden:frostfields",
+      "required": false
+    },
+    {
+      "id": "undergarden:frosty_smogstem_forest",
+      "required": false
+    }
   ]
 }

@@ -1,0 +1,60 @@
+{
+  "tier": 2,
+  "category": "liquid",
+  "look": {
+    "body": "#404813",
+    "gaster": "#2E330D",
+    "accent": "#2E330D",
+    "pattern": "plain",
+    "crop": "#8FA02A"
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.7
+  },
+  "liquid": {
+    "fluid": [
+      "oritech:still_diesel",
+      "stellaris:diesel"
+    ],
+    "droplet": "antcolonies:diesel_droplet",
+    "rate": 0.06
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "minecraft:honey_bottle",
+        "count": 2
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "oritech"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "stellaris"
+        }
+      ]
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:diesel_droplet"
+    }
+  ]
+}

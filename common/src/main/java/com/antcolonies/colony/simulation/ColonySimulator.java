@@ -596,19 +596,28 @@ public final class ColonySimulator {
             }
         }
 
-        /** A colony living in another dimension sometimes finds that dimension's trail pheromone: one chance per find. */
+        /**
+         * A colony living in another dimension sometimes finds that dimension's trail pheromone: one chance per find.
+         * Ants adapted to a dimension find its pheromone away from it too, far more rarely.
+         */
         private static void trail(Step step, StructureBlockEntity entity, int rolls) {
             if (rolls <= 0) {
                 return;
             }
             for (Expedition expedition : step.expeditions()) {
-                if (expedition.trail().isEmpty() || !expedition.home().equals(step.level.dimension())) {
+                if (expedition.trail().isEmpty()) {
                     continue;
                 }
                 Expedition.Trail trail = expedition.trail().get();
+                boolean home = expedition.home().equals(step.level.dimension());
+                double chance = home ? trail.chance()
+                        : expedition.adapted(step.level.registryAccess(), step.colony.species()) ? trail.awayChance() : 0;
+                if (chance <= 0) {
+                    continue;
+                }
                 int found = 0;
                 for (int i = 0; i < rolls; i++) {
-                    if (step.random.nextDouble() < trail.chance()) {
+                    if (step.random.nextDouble() < chance) {
                         found++;
                     }
                 }
@@ -720,8 +729,14 @@ public final class ColonySimulator {
             int rolls = 0;
             double casualtyChance = AntConfig.get(AntConfig.HUNTER_CASUALTY_CHANCE) / Math.max(0.1, strength * (1 + HUNTING_UPGRADE_STRENGTH * huntingTiers));
             while (progress >= 1 && rolls < MAX_ROLLS) {
-                Holder<EntityType<?>> target = pick(targets, total, step.random);
-                List<ItemStack> loot = MobLoot.roll(step.level, target.value(), entity.getBlockPos());
+                AntSpecies.Combat.Target target = pick(targets, total, step.random);
+                List<ItemStack> loot = new ArrayList<>(MobLoot.roll(step.level, target.entity().value(), entity.getBlockPos()));
+                if (target.trophy().isPresent()) {
+                    AntSpecies.Combat.Trophy trophy = target.trophy().get();
+                    if (ColonyAccess.stage(step.colony) >= trophy.minStage() && step.random.nextDouble() < trophy.chance()) {
+                        loot.add(new ItemStack(trophy.item()));
+                    }
+                }
                 if (!ColonyStorage.canFit(step.level, step.colony, loot, entity)) {
                     site.addStatus(ColonyStatus.STORAGE_FULL);
                     progress = 1;
@@ -740,15 +755,15 @@ public final class ColonySimulator {
             return rolls;
         }
 
-        private static Holder<EntityType<?>> pick(List<AntSpecies.Combat.Target> targets, int total, RandomSource random) {
+        private static AntSpecies.Combat.Target pick(List<AntSpecies.Combat.Target> targets, int total, RandomSource random) {
             int pick = random.nextInt(Math.max(1, total));
             for (AntSpecies.Combat.Target target : targets) {
                 pick -= target.weight();
                 if (pick < 0) {
-                    return target.entity();
+                    return target;
                 }
             }
-            return targets.getFirst().entity();
+            return targets.getFirst();
         }
     }
 

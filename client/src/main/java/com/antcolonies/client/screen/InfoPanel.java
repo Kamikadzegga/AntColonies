@@ -213,8 +213,8 @@ public final class InfoPanel {
         // What its workers find, or what its farmers grow.
         rows.add(new Gap(3));
         if (data.makesLiquid()) {
-            // A Liquid Ant: the one thing it makes, with the droplet itself and the fluid it becomes.
-            text(font, Component.translatable("info.antcolonies.liquid"), TEXT);
+            // What it gives at a Liquid Chamber, with the droplet itself and the fluid it becomes.
+            text(font, Component.translatable(data.liquidOnly() ? "info.antcolonies.liquid" : "info.antcolonies.liquid.also"), TEXT);
             AntSpecies.Liquid liquid = data.liquid().orElse(null);
             if (liquid != null && liquid.available()) {
                 ItemStack droplet = new ItemStack(liquid.dropletItem().get());
@@ -234,7 +234,7 @@ public final class InfoPanel {
                 text(font, Component.translatable("status.antcolonies.no_droplet"), BAD);
             }
         }
-        if (!data.makesLiquid()) {
+        if (!data.liquidOnly()) {
             outputs(font, data.production().outputs(), "info.antcolonies.finds");
         }
         if (data.canFarm()) {
@@ -626,7 +626,8 @@ public final class InfoPanel {
             } else {
                 text(font, Component.translatable("status.antcolonies.no_droplet"), BAD);
             }
-        } else {
+        }
+        if (!data.liquidOnly()) {
             text(font, Component.translatable("book.antcolonies.production.rate", String.format(Locale.ROOT, "%.2f", data.production().rate())), TEXT);
             outputs(font, data.production().outputs(), "info.antcolonies.finds");
         }

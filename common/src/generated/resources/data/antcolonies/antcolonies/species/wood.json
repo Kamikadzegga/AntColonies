@@ -41,6 +41,10 @@
         "weight": 5
       },
       {
+        "item": "minecraft:birch_sapling",
+        "weight": 4
+      },
+      {
         "item": "minecraft:apple",
         "weight": 3,
         "min_stage": 2
@@ -48,6 +52,12 @@
       {
         "item": "minecraft:dark_oak_log",
         "weight": 4,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:dark_oak_sapling",
+        "weight": 1,
         "min_stage": 3,
         "special": true
       },

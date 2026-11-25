@@ -13,7 +13,10 @@
     "consumption": 1.4
   },
   "liquid": {
-    "fluid": "thermal:sap",
+    "fluid": [
+      "thermal:sap",
+      "productivetrees:maple_sap"
+    ],
     "droplet": "antcolonies:sap_droplet",
     "rate": 0.2
   },
@@ -36,16 +39,20 @@
   },
   "neoforge:conditions": [
     {
-      "type": "neoforge:mod_loaded",
-      "modid": "thermal"
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "thermal"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "productivetrees"
+        }
+      ]
     },
     {
-      "type": "neoforge:registered",
-      "registry": "minecraft:fluid",
-      "value": "thermal:sap"
-    },
-    {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:item",
       "value": "antcolonies:sap_droplet"
     }

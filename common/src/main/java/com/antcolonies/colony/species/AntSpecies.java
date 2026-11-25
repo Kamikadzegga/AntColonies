@@ -3,6 +3,7 @@ package com.antcolonies.colony.species;
 import java.util.List;
 import java.util.Optional;
 
+import com.antcolonies.colony.liquid.LiquidKind;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -10,6 +11,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.biome.Biome;
@@ -51,7 +53,13 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
         return category == Category.HUNTER;
     }
 
+    /** Whether its workers give droplets at a Liquid Chamber: Liquid Ants, and any other species with a liquid (Cow Ants). */
     public boolean makesLiquid() {
+        return category == Category.LIQUID || liquid.isPresent();
+    }
+
+    /** A Liquid Ant proper: its workers work at Liquid Chambers and nowhere else. */
+    public boolean liquidOnly() {
         return category == Category.LIQUID;
     }
 
@@ -103,11 +111,25 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
                 Target.CODEC.listOf().optionalFieldOf("targets", List.of()).forGetter(Combat::targets)
         ).apply(i, Combat::new));
 
-        public record Target(Holder<EntityType<?>> entity, int weight) {
+        public record Target(Holder<EntityType<?>> entity, int weight, Optional<Trophy> trophy) {
             public static final Codec<Target> CODEC = RecordCodecBuilder.create(i -> i.group(
                     BuiltInRegistries.ENTITY_TYPE.holderByNameCodec().fieldOf("entity").forGetter(Target::entity),
-                    Codec.intRange(1, 100000).optionalFieldOf("weight", 1).forGetter(Target::weight)
+                    Codec.intRange(1, 100000).optionalFieldOf("weight", 1).forGetter(Target::weight),
+                    Trophy.CODEC.optionalFieldOf("trophy").forGetter(Target::trophy)
             ).apply(i, Target::new));
+
+            public Target(Holder<EntityType<?>> entity, int weight) {
+                this(entity, weight, Optional.empty());
+            }
+        }
+
+        /** A drop the mob only gives a player: hunters of a colony at {@code minStage} bring it with this chance a catch. */
+        public record Trophy(Holder<Item> item, double chance, int minStage) {
+            public static final Codec<Trophy> CODEC = RecordCodecBuilder.create(i -> i.group(
+                    BuiltInRegistries.ITEM.holderByNameCodec().fieldOf("item").forGetter(Trophy::item),
+                    Codec.doubleRange(0, 1).fieldOf("chance").forGetter(Trophy::chance),
+                    Codec.intRange(1, 4).optionalFieldOf("min_stage", 1).forGetter(Trophy::minStage)
+            ).apply(i, Trophy::new));
         }
     }
 
@@ -124,21 +146,32 @@ public record AntSpecies(int tier, Category category, AntLook look, Climate clim
      * What a Liquid Ant species makes. The fluid and the droplet are ids looked up when needed, so a species whose mod
      * was removed still loads and just makes nothing.
      *
-     * @param rate droplets per minute compared to Water Ants
+     * @param fluids one fluid, or the same liquid as several mods add it: the first that is in the game is made
+     * @param rate   droplets per minute compared to Water Ants
      */
-    public record Liquid(Identifier fluid, Identifier droplet, double rate) {
+    public record Liquid(List<Identifier> fluids, Identifier droplet, double rate) {
         public static final Codec<Liquid> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Identifier.CODEC.fieldOf("fluid").forGetter(Liquid::fluid),
+                ExtraCodecs.nonEmptyList(ExtraCodecs.compactListCodec(Identifier.CODEC)).fieldOf("fluid").forGetter(Liquid::fluids),
                 Identifier.CODEC.fieldOf("droplet").forGetter(Liquid::droplet),
                 Codec.doubleRange(0, 1000).optionalFieldOf("rate", 1.0).forGetter(Liquid::rate)
         ).apply(i, Liquid::new));
+
+        /** The fluid in use: the first listed that is in the game, else the first listed. */
+        public Identifier fluid() {
+            for (Identifier fluid : fluids) {
+                if (LiquidKind.usable(fluid)) {
+                    return fluid;
+                }
+            }
+            return fluids.getFirst();
+        }
 
         public Optional<Item> dropletItem() {
             return BuiltInRegistries.ITEM.getOptional(droplet);
         }
 
         public Optional<Fluid> fluidValue() {
-            return BuiltInRegistries.FLUID.getOptional(fluid);
+            return BuiltInRegistries.FLUID.getOptional(fluid());
         }
 
         public boolean available() {

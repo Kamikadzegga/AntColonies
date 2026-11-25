@@ -1,0 +1,82 @@
+{
+  "tier": 1,
+  "category": "base",
+  "look": {
+    "body": "#3A5A78",
+    "gaster": "#E8C020",
+    "accent": "#F4E060",
+    "pattern": "plain",
+    "costume": "fisher"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.1
+  },
+  "production": {
+    "rate": 0.5,
+    "outputs": [
+      {
+        "item": "minecraft:cod",
+        "weight": 24
+      },
+      {
+        "item": "minecraft:salmon",
+        "weight": 16
+      },
+      {
+        "item": "minecraft:kelp",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:string",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:lily_pad",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:tropical_fish",
+        "weight": 4,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:pufferfish",
+        "weight": 4,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:bowl",
+        "weight": 2,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:leather_boots",
+        "weight": 0.1,
+        "min_stage": 2,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 0.9
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:cod",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:tropical_fish"
+}

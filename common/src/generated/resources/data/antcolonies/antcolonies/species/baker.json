@@ -1,0 +1,81 @@
+{
+  "tier": 1,
+  "category": "farmer",
+  "look": {
+    "body": "#E8D8B8",
+    "gaster": "#C89A5A",
+    "accent": "#FFFFFF",
+    "pattern": "plain",
+    "costume": "baker"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 0.9
+  },
+  "production": {
+    "rate": 0.7,
+    "outputs": [
+      {
+        "item": "minecraft:wheat",
+        "weight": 22
+      },
+      {
+        "item": "minecraft:sugar",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:egg",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:cocoa_beans",
+        "weight": 5
+      }
+    ]
+  },
+  "farming": {
+    "food": 1.2,
+    "harvest": [
+      {
+        "item": "minecraft:bread",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:cookie",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:pumpkin_pie",
+        "weight": 6,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:cake",
+        "weight": 1,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 0.8
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:bread",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:cake"
+}

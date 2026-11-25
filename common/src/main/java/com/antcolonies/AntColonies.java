@@ -15,6 +15,7 @@ import com.antcolonies.content.worldgen.AnthillAlarm;
 import com.antcolonies.core.advancement.ModTriggers;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.content.entity.WildAnt;
+import com.antcolonies.core.registry.ModAttachments;
 import com.antcolonies.core.registry.ModBlockEntities;
 import com.antcolonies.core.registry.ModBlocks;
 import com.antcolonies.core.registry.ModCapabilities;
@@ -37,6 +38,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.NeoForgeMod;
 
 @Mod(AntColonies.MODID)
 public class AntColonies {
@@ -48,6 +50,7 @@ public class AntColonies {
         ModBlocks.BLOCKS.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModDataComponents.DATA_COMPONENTS.register(modEventBus);
+        ModAttachments.ATTACHMENT_TYPES.register(modEventBus);
         ModBlockEntities.BLOCK_ENTITY_TYPES.register(modEventBus);
         ModMenus.MENUS.register(modEventBus);
         ModEntities.ENTITY_TYPES.register(modEventBus);
@@ -57,10 +60,14 @@ public class AntColonies {
         ModTriggers.TRIGGERS.register(modEventBus);
         ModStructures.STRUCTURE_TYPES.register(modEventBus);
         ModStructures.STRUCTURE_PIECES.register(modEventBus);
+        ModStructures.PLACEMENT_MODIFIERS.register(modEventBus);
+        ModRegistries.CONDITIONS.register(modEventBus);
         ModRecipes.RECIPE_TYPES.register(modEventBus);
         ModRecipes.RECIPE_SERIALIZERS.register(modEventBus);
         ModRecipes.RECIPE_BOOK_CATEGORIES.register(modEventBus);
         // Liquid Ants: fluids are offered now; droplet items wait until every mod's fluids are registered.
+        // Milk as a fluid, for the Cow Ants' droplets: NeoForge has it and registers it only when a mod asks.
+        NeoForgeMod.enableMilkFluid();
         LiquidIntegrations.offerAll();
         modEventBus.addListener(LiquidKinds::registerItems);
         // Species, evolutions, hybrids and mutations are datapack registries, synced to clients (JEI, rendering).

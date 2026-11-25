@@ -12,6 +12,7 @@ import com.antcolonies.content.blockentity.GeneticLabBlockEntity;
 import com.antcolonies.content.blockentity.HomeNestBlockEntity;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
+import com.antcolonies.content.blockentity.WildNestBlockEntity;
 import com.antcolonies.content.entity.WildAnt;
 
 import snownee.jade.api.IWailaClientRegistration;
@@ -30,6 +31,7 @@ public class AntColoniesJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(ColonyProviders.MACHINE_DATA, GeneticLabBlockEntity.class);
         registration.registerBlockDataProvider(ColonyProviders.MACHINE_DATA, CentrifugeBlockEntity.class);
         registration.registerBlockDataProvider(ColonyProviders.NEST_DATA, HomeNestBlockEntity.class);
+        registration.registerBlockDataProvider(ColonyProviders.NEST_DATA, WildNestBlockEntity.class);
     }
 
     @Override

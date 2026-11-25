@@ -3,6 +3,23 @@
     "minecraft:cherry_grove",
     "minecraft:flower_forest",
     "minecraft:meadow",
-    "minecraft:sunflower_plains"
+    "minecraft:sunflower_plains",
+    "#c:is_floral",
+    {
+      "id": "terralith:blooming_plateau",
+      "required": false
+    },
+    {
+      "id": "twilightforest:enchanted_forest",
+      "required": false
+    },
+    {
+      "id": "aether_ii:flourishing_field",
+      "required": false
+    },
+    {
+      "id": "thaumaturge:magical_forest",
+      "required": false
+    }
   ]
 }

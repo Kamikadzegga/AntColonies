@@ -1,0 +1,16 @@
+{
+  "values": [
+    {
+      "id": "antcolonies:allthemodium",
+      "required": false
+    },
+    {
+      "id": "antcolonies:crimson",
+      "required": false
+    },
+    {
+      "id": "antcolonies:vibranium",
+      "required": false
+    }
+  ]
+}

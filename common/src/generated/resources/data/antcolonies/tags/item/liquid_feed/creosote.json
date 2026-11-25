@@ -3,6 +3,14 @@
     {
       "id": "immersiveengineering:creosote_bucket",
       "required": false
+    },
+    {
+      "id": "railcraft:creosote_bucket",
+      "required": false
+    },
+    {
+      "id": "modern_industrialization:creosote_bucket",
+      "required": false
     }
   ]
 }

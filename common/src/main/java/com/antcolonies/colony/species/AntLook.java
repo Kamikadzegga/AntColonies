@@ -19,9 +19,10 @@ import net.minecraft.util.ExtraCodecs;
  * @param crystal crystal growths on the back, if the species has them
  * @param glow    whether the crystals (or the crop) glow in the dark
  * @param crop    Liquid Ants: the colour of the liquid in their swollen crop
+ * @param costume what the species wears over its colours, if anything
  */
 public record AntLook(int body, int gaster, int accent, Pattern pattern, Optional<Integer> crystal, boolean glow, float size,
-                      Optional<Integer> crop) {
+                      Optional<Integer> crop, Optional<Costume> costume) {
     public static final Codec<Integer> COLOR = Codec.either(Codec.STRING, ExtraCodecs.RGB_COLOR_CODEC).comapFlatMap(
             either -> either.map(AntLook::parseHex, DataResult::success),
             color -> Either.left(String.format(Locale.ROOT, "#%06X", color & 0xFFFFFF)));
@@ -34,11 +35,12 @@ public record AntLook(int body, int gaster, int accent, Pattern pattern, Optiona
             COLOR.optionalFieldOf("crystal").forGetter(AntLook::crystal),
             Codec.BOOL.optionalFieldOf("glow", false).forGetter(AntLook::glow),
             Codec.floatRange(0.25F, 4.0F).optionalFieldOf("size", 1.0F).forGetter(AntLook::size),
-            COLOR.optionalFieldOf("crop").forGetter(AntLook::crop)
+            COLOR.optionalFieldOf("crop").forGetter(AntLook::crop),
+            Costume.CODEC.optionalFieldOf("costume").forGetter(AntLook::costume)
     ).apply(i, AntLook::new));
 
     /** Drawn for species that are unknown (a removed datapack). */
-    public static final AntLook UNKNOWN = new AntLook(0x3A2A20, 0x2A1E18, 0x000000, Pattern.PLAIN, Optional.empty(), false, 1.0F, Optional.empty());
+    public static final AntLook UNKNOWN = new AntLook(0x3A2A20, 0x2A1E18, 0x000000, Pattern.PLAIN, Optional.empty(), false, 1.0F, Optional.empty(), Optional.empty());
 
     private static DataResult<Integer> parseHex(String text) {
         String hex = text.startsWith("#") ? text.substring(1) : text;

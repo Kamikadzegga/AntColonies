@@ -1,5 +1,15 @@
 {
   "values": [
-    "#minecraft:is_jungle"
+    "#minecraft:is_jungle",
+    "#c:is_jungle",
+    "#c:is_tree/jungle",
+    {
+      "id": "regions_unexplored:tropics",
+      "required": false
+    },
+    {
+      "id": "aether_ii:contaminated_jungle",
+      "required": false
+    }
   ]
 }

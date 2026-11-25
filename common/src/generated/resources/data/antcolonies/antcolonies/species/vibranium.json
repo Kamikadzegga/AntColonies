@@ -11,6 +11,7 @@
     "size": 1.2
   },
   "climate": "nether",
+  "spawn_biomes": "antcolonies:spawns/the_other",
   "diet": {
     "consumption": 2.8,
     "special_food": "nether",

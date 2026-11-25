@@ -1,0 +1,62 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#1D2529",
+    "gaster": "#4C616B",
+    "accent": "#AEB8BC",
+    "pattern": "metallic",
+    "crystal": "#798990"
+  },
+  "climate": "end",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "crystal",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.0025,
+    "outputs": [
+      {
+        "item": "minecraft:end_stone",
+        "weight": 50
+      },
+      {
+        "item": "minecraft:obsidian",
+        "weight": 30
+      },
+      {
+        "tag": "c:raw_materials/eclipsealloy",
+        "weight": 5,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "justdirethings"
+    }
+  ]
+}

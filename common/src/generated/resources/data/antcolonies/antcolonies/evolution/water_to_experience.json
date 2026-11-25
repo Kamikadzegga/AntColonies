@@ -1,0 +1,57 @@
+{
+  "from": "antcolonies:water",
+  "to": "antcolonies:experience",
+  "item": "#antcolonies:liquid_feed/experience",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "enderio"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "industrialforegoing"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "pneumaticcraft"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mob_grinding_utils"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "create_enchantment_industry"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "justdirethings"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "energizedpower"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "neovitae"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "sophisticatedcore"
+        }
+      ]
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:experience_droplet"
+    }
+  ]
+}

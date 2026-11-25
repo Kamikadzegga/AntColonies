@@ -104,6 +104,7 @@ public final class ClientHooks {
             visuals = new NestVisuals(pos.asLong());
             terrarium.clientVisuals = visuals;
         }
+        visuals.queenSize = look.size();
         visuals.tick(brief, host(level, pos, facing, pos), near(pos, AntConfig.client(AntConfig.VISUAL_DISTANCE) + 8));
     }
 

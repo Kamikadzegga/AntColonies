@@ -2,7 +2,7 @@
 
 How to start a colony, and what every part of it does. Two more pages cover the rest of the mod:
 
-- [Species and genetics](species-and-genetics.md): the 48 species, research, the Genetic Laboratory, hybrids and traits.
+- [Species and genetics](species-and-genetics.md): the 56 species, research, the Genetic Laboratory, hybrids and traits.
 - [World and gear](world-and-gear.md): giant anthills, home nests, Chitin gear, Guard Ants and building blocks.
 
 The numbers on these pages are the defaults. A server can change most of them in the [config](#configuration).
@@ -30,8 +30,12 @@ The numbers on these pages are the defaults. A server can change most of them in
 
 1. Craft **Tweezers** and a few **Test Tubes**.
 2. Find wild ants or a wild **Ant Nest**. They live in plains, forests, taigas, mountains, snowy biomes, deserts and
-   jungles. Right-click one with the Tweezers and the ants go into an empty tube from your inventory. Queens are rare;
-   a nest gives one now and then.
+   jungles. A nest is easy to miss, so look for its ant: **one worker walks around every wild nest** while you are near.
+   Right-click the nest or an ant with the Tweezers. Workers go into a tube of the same ants if you carry one with room,
+   anything else into an empty tube from your inventory. **Your first catch from each kind of nest is always a Queen**:
+   one from the first Stone Ant nest you try, one from the first Wood Ant nest, and so on. After that a nest of that
+   kind gives a Queen only now and then (5%). **A nest you took ants from needs ten minutes** until its ants are
+   back: Tweezers on it show the time left, and so does Jade.
 3. Place a **Formicarium**. Put the **Queen Test Tube** in (right-click, or the Queen slot) and add some **Ant Food**.
 4. Open the **Info** tab. If the climate is wrong, put the block it shows under the Formicarium.
 5. Add chambers as the colony grows: a **Nest Chamber** for more ants, a **Foraging Site** to put workers to work and a
@@ -95,6 +99,25 @@ Food keeps a colony working. The Formicarium's screen shows how much is left.
 
 The jobs that bring food in never slow below 80%, so a colony that can feed itself always recovers.
 
+**What ants eat.** Ant Food and Royal Jelly feed best (200 and 400). Beyond those a colony eats most things that grow
+or are cooked:
+
+| Food | Worth |
+|---|---|
+| Seeds | 4 |
+| Crops: wheat 15, beetroot 20, carrots and potatoes 25, pumpkin 60, a whole melon 225; sugar cane, cactus 10; cocoa beans, nether wart 15 | as listed |
+| Mushrooms, fungi, melon slices | 25 |
+| Berries 30 to 40, apples 50, chorus fruit 30 | as listed |
+| Sugar 20, cookies 40, honey bottles 150 | as listed |
+| Raw fish and eggs 30, raw meat 40, rotten flesh 30, spider eyes 25 | as listed |
+| Cooked fish 50, baked potatoes 50, cooked meat 65 | as listed |
+| Stews and soups 70, bread 80, pumpkin pie 90 | as listed |
+
+**Other mods' food works too.** Anything a mod puts in the common tags for crops, seeds, fruit, vegetables, berries,
+meat, fish, bread, soup, pie, cookies or candy is eaten at its kind's worth: another mod's tomato or cabbage is a
+crop (20), its cooked meat is worth 65. Golden carrots, golden apples and cake are not food: a Queen is fed those
+for other things.
+
 Where food comes from:
 
 - **The food slot** of the Formicarium: by hand, by right-clicking the Formicarium with food, or by hopper or pipe.
@@ -131,7 +154,7 @@ Chambers join a colony. Job sites that only some species use are left alone by t
 | Nest Chamber | Eggs at full speed, faster larvae, and room for 3,000 adults and 1,500 larvae. More chambers lay faster, each a little less. |
 | Foraging Site | Workers find the species' items. Takes species upgrades. |
 | Harvesting Site | Farmer species grow food and harvest mushrooms, seeds and berries. |
-| Hunting Ground | Hunter species hunt mobs. Each catch gives the mob's own drops and 40 food. No mobs are spawned. |
+| Hunting Ground | Hunter species hunt mobs. Each catch gives the mob's own drops and 40 food. No mobs are spawned. Its nine slots hold the loot while the Storage is full. From stage 3 Bullet Ants also bring phantom membranes and Rabbit Ants, rarely, a rabbit's foot, drops those mobs only give a player. |
 | Liquid Chamber | [Liquid Ants](#liquid-ants-and-the-droplet-centrifuge) give droplets of their fluid. |
 | Storage | Holds the finds in 18 slots and adds 25,000 food room. Hoppers can empty it. |
 | Queen Chamber | Raises daughter Queens. With a Genetic Sample it can raise [hybrids](species-and-genetics.md#hybrids). |
@@ -157,7 +180,7 @@ it goes, and JEI and EMI list them all. Upgrades of one kind in the same block a
 
 | Upgrade | Effect |
 |---|---|
-| Speed | Faster work in chambers and the laboratory, faster larvae |
+| Speed | Faster work in chambers, the laboratory and the Droplet Centrifuge, faster larvae |
 | Food Efficiency | Less food eaten |
 | Population | More ants housed, or more working in one chamber |
 | Breeding | Faster egg laying and Queen rearing |
@@ -275,16 +298,19 @@ finds.
 | Ants that go | Warped, Fire, Inferno, Soul, Netherite, Wither and Crimson Ants | Chorus, Ender and Dragon Ants |
 | Common finds | Quartz, glowstone dust, nether wart, blackstone, soul sand and soil, basalt, magma cream, fungi | End stone, chorus fruit, obsidian |
 | From stage 2 | Blaze powder, shroomlights, gold | Purpur, ender pearls, rarely chorus flowers |
-| From stage 3 | Blaze rods; rarely gilded blackstone, ghast tears and Infernal Chitin | End rods; rarely shulker shells and Void Chitin |
+| From stage 3 | Blaze rods; rarely gilded blackstone, ghast tears, the three froglights and Infernal Chitin | End rods; rarely shulker shells and Void Chitin |
 | Only some species | Ancient debris (Netherite, Wither), wither roses (Wither, Soul) | Dragon's breath (Dragon) |
 | Made from | A Foraging Site, 4 obsidian, 2 Infernal Chitin, 2 Nether Trail Pheromones | A Foraging Site, 3 end stone bricks, 2 Void Chitin, an eye of ender, 2 End Trail Pheromones |
 
 - Nothing really travels and the other dimension is never loaded. The site finds things at the colony's real rate,
   like an ordinary Foraging Site, and uses no power.
 - The portal glows while ants are out. Other species leave the site alone, and its screen names the ants it needs.
-- **Trail pheromones** are found only by a colony **living in** the Nether or the End: its ordinary Foraging Sites turn
+- **Trail pheromones** are found by a colony **living in** the Nether or the End: its ordinary Foraging Sites turn
   one up now and then (2% of their finds). So take a colony there, let it forage for a while, and bring the pheromones
   home.
+- **Without moving a colony:** the ants that go on an expedition also find its pheromone at home, very rarely: about
+  one in an hour or two from a full Foraging Site. So a colony of Fire Ants in the Overworld finds its own way to the
+  Nether in time.
 
 ## Colony Connectors
 
@@ -311,7 +337,8 @@ network and the food moving along it.
 ## Liquid Ants and the Droplet Centrifuge
 
 Liquid Ants carry a crop full of fluid, like honeypot ants. They do one job: at a **Liquid Chamber** they give
-**droplets** of their fluid. They work at no other site, and no other species works at a Liquid Chamber.
+**droplets** of their fluid. They work at no other site. Of the other species only
+[Cow Ants](species-and-genetics.md#ants-for-fun) work at a Liquid Chamber, where they give milk.
 
 | Species | Comes from | Fed | One droplet in a Centrifuge |
 |---|---|---|---|
@@ -321,11 +348,13 @@ Liquid Ants carry a crop full of fluid, like honeypot ants. They do one job: at 
 - **Getting them.** Honeypot Ants are the hybrid of Blossom and Farmer Ants. Feed their Formicarium the bucket at
   stage 2 with 300 adults. Each bucket is one attempt, the 25th always works, and the empty bucket comes back.
 - **Droplets come like any other work**: more ants make more, and Speed and Population Upgrades help. A full Liquid
-  Chamber of 256 Water Ants gives about 30 droplets a minute (3 buckets of water); of Lava Ants about 3.
+  Chamber of 256 Water Ants with no upgrades gives about 35 droplets a minute (3.5 buckets of water); of Lava Ants
+  about 3.5.
 - **They must be fed.** Liquid Ants eat more than Common Ants (Water 1.3 times, Lava 1.8 times) and bring in almost no
   food.
 
-The **Droplet Centrifuge** spins droplets into fluid. Put droplets in by hand, hopper or pipe and give it FE on any
+The **Droplet Centrifuge** spins droplets into fluid. Its two upgrade slots take Speed Upgrades: each tier adds one
+step a tick, so Speed II makes it three times as fast, and a droplet still takes the same FE. Put droplets in by hand, hopper or pipe and give it FE on any
 side; a Generator next to it will do. It holds 50,000 FE and 8,000 mB.
 
 - **Getting the fluid out:** use a bucket on it, put a tank next to it, or connect a fluid pipe on any side. It also

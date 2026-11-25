@@ -1,0 +1,64 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#1E2E16",
+    "gaster": "#4F7A3A",
+    "accent": "#B0C3A6",
+    "pattern": "banded",
+    "crystal": "#7B9B6B"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.03,
+    "outputs": [
+      {
+        "tag": "c:ingots/steeleaf",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:oak_leaves",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:vine",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:stick",
+        "weight": 5
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "twilightforest"
+    }
+  ]
+}

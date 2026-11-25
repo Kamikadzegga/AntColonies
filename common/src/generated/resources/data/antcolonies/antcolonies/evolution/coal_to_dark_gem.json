@@ -1,0 +1,26 @@
+{
+  "from": "antcolonies:coal",
+  "to": "antcolonies:dark_gem",
+  "item": "evilcraft:dark_gem",
+  "chance": 0.06,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 400,
+  "lab_amount": 8,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "evilcraft"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "evilcraft:dark_gem"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "evilcraft:dark_gem_crushed"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -421,16 +422,59 @@ public class DataGen {
         return loaded.size() == 1 ? loaded : arr(obj("type", "neoforge:or", "values", loaded));
     }
 
-    /** A metal species for another mod's ore: it finds through the c: tags, so it works with whichever mod provides the metal. */
-    static void compat(String id, String name, int tier, String climate, String body, String gaster, String accent, String pattern, String crystal,
+    /**
+     * Another mod's items that a species names outright (most go through c: tags instead). Its files load only while each
+     * of them is registered: a renamed item then takes the species away, where a missing one would stop the world loading.
+     * The condition is the mod's own "antcolonies:registered", never "neoforge:registered": a client reading the files
+     * from its own jar cannot test NeoForge's, and would drop a species the server has.
+     */
+    static final Map<String, List<String>> NEEDS_ITEMS = new LinkedHashMap<>();
+
+    /** The load conditions of a species of {@link #NEEDS_MODS}, for its own file and for its evolution and research. */
+    static List<Object> speciesConditions(String id) {
+        List<Object> all = conditions(NEEDS_MODS.get(id));
+        for (String item : NEEDS_ITEMS.getOrDefault(id, List.of())) {
+            all.add(obj("type", ac("registered"), "registry", "minecraft:item", "value", item));
+        }
+        return all;
+    }
+
+    /**
+     * A mineral species for a material of one mod or a few: {@code look} is body, gaster, accent, pattern and crystal
+     * (null for none), {@code food} the special food its eggs need (mineral, crystal or nether).
+     */
+    static void pack(String id, String name, int tier, String climate, String[] look, boolean glow, String food, double rate, List<Out> outputs,
+                     List<String> mods, String description) {
+        SPECIES.add(new Species(id, name, tier, "mineral", climate, null, look[0], look[1], look[2], look[3], look[4], glow, 1.0, 1.2 + tier * 0.1,
+                food, 0.3 + tier * 0.1, rate, outputs, 0, List.of(), 1.0, List.of(),
+                List.of(new String[] {ac("royal_jelly"), tier >= 3 ? "4" : "3"}, new String[] {ac(food + "_ant_food"), "6"}),
+                3600 + tier * 1200, 0.9, 0.9, null, name.replace(" Ant", "") + " Extraction", "Ore Sorting", name.replace(" Ant", "") + " Efficiency",
+                description));
+        NEEDS_MODS.put(id, mods);
+        List<String> named = outputs.stream().filter(o -> !o.tag() && o.item().contains(":") && !o.item().startsWith("minecraft:"))
+                .map(Out::item).toList();
+        if (!named.isEmpty()) {
+            NEEDS_ITEMS.put(id, named);
+        }
+    }
+
+    /**
+     * A metal species for another mod's ore: it finds through the c: tags, so it works with whichever mod provides the metal.
+     * {@code difficulty} is how hard the metal is to get in a big pack: 1 like iron, 2 like gold, 3 hard ({@link #HARD_RATE}),
+     * 4 like diamond ({@link #DIAMOND_RATE}).
+     */
+    static void compat(String id, String name, int difficulty, String climate, String body, String gaster, String accent, String pattern, String crystal,
                        boolean glow, String metal, List<String> mods, String description) {
-        // Common metals at the built-in metal ants' pace; tier 3 (uranium, which gates nuclear tech) much slower.
-        double rate = tier == 1 ? 0.6 : tier == 2 ? 0.45 : 0.12;
-        // Uranium's raw ore from the start: MachinaOpus has no uranium nuggets or ingots, so stage 1 would find only stone.
-        int rawStage = tier == 3 ? 1 : 2;
+        int tier = Math.min(difficulty, 3);
+        double rate = difficulty == 1 ? 0.6 : difficulty == 2 ? 0.45 : difficulty == 3 ? HARD_RATE : DIAMOND_RATE;
+        // A hard metal's raw ore comes from the start, or a young colony would find only stone. Uranium's too: MachinaOpus has
+        // no uranium nuggets or ingots.
+        int rawStage = difficulty >= 3 || id.equals("uranium") ? 1 : 2;
+        // A metal like diamond comes nearly all as nuggets, nine finds to an ingot.
+        double raw = difficulty >= 4 ? 3 : 10;
         SPECIES.add(new Species(id, name, tier, "mineral", climate, null, body, gaster, accent, pattern, crystal, glow, 1.05, 1.2 + tier * 0.15,
                 "mineral", 0.3 + tier * 0.15, rate,
-                List.of(Out.of("c:nuggets/" + metal, 40).asTag(), Out.of("c:raw_materials/" + metal, 10).atStage(rawStage).asTag(), Out.of("cobblestone", 15),
+                List.of(Out.of("c:nuggets/" + metal, 40).asTag(), Out.of("c:raw_materials/" + metal, raw).atStage(rawStage).asTag(), Out.of("cobblestone", 15),
                         Out.of("c:ingots/" + metal, 2).atStage(3).asSpecial().asTag()),
                 0, List.of(), 1.1, List.of(), List.of(new String[] {ac("royal_jelly"), "2"}, new String[] {ac("mineral_ant_food"), "4"}),
                 3600 + tier * 1200, 0.9, 0.9, null, title(metal) + " Extraction", "Metal Processing", title(metal) + " Efficiency", description));
@@ -461,7 +505,7 @@ public class DataGen {
         if (raw > 0) {
             outputs.add(Out.of("c:raw_materials/" + id, raw).atStage(4).asSpecial().asTag());
         }
-        SPECIES.add(new Species(id, name, 4, "endgame", climate, null, body, gaster, accent, "metallic", crystal, true,
+        SPECIES.add(new Species(id, name, 4, "endgame", climate, NEST_DWELLERS.get(id), body, gaster, accent, "metallic", crystal, true,
                 1.2, 2.8, food, 2.0, 0.0025, outputs, 0, List.of(), 2.0, List.of(),
                 List.of(new String[] {ac("royal_jelly"), "6"}, new String[] {ac(food + "_ant_food"), "12"}, new String[] {ac("nuptial_pheromone"), "4"}),
                 12000, 0.3, 0.4, null, title(id) + " Extraction", "Rare Metal Smelting", title(id) + " Efficiency", description));
@@ -469,8 +513,67 @@ public class DataGen {
         LIFESPANS.put(id, 3.0);
     }
 
+    /**
+     * Species with no nest block of their own that live wild in another kind of nest, and the biome tag they are at home
+     * in: Allthemodium and Vibranium Ants in The Other, Crimson Ants in crimson forests (whose nests are the Warped
+     * Ants' kind). They go into the species tag nest_dwellers.
+     */
+    static final Map<String, String> NEST_DWELLERS = Map.of("allthemodium", "spawns/the_other", "vibranium", "spawns/the_other",
+            "crimson", "spawns/crimson");
+
     /** Species whose adults live this many times the usual lifespan. */
     static final Map<String, Double> LIFESPANS = new LinkedHashMap<>();
+
+    /**
+     * Species that are not Liquid Ants and still give a liquid at a Liquid Chamber: the fluid, its kind in LIQUIDS, the
+     * droplet rate and the crop's colour.
+     */
+    /** Species that wear a costume of their own name over their colours (the game's Costume enum, TexGen's COSTUMES). */
+    /** Other mods' worlds whose ants the mod knows: anthills stand there too, built of the ground they find (the LOCAL look). */
+    static final List<String> SURFACE_WORLD_BIOMES = List.of("twilightforest:clearing", "twilightforest:dark_forest", "twilightforest:dark_forest_center",
+            "twilightforest:dense_forest", "twilightforest:dense_mushroom_forest", "twilightforest:enchanted_forest", "twilightforest:final_plateau",
+            "twilightforest:fire_swamp", "twilightforest:firefly_forest", "twilightforest:forest", "twilightforest:glacier", "twilightforest:highlands",
+            "twilightforest:mushroom_forest", "twilightforest:oak_savannah", "twilightforest:snowy_forest", "twilightforest:spooky_forest",
+            "twilightforest:swamp", "twilightforest:thornlands", "aether_ii:battleground_wastes", "aether_ii:contaminated_jungle",
+            "aether_ii:enduring_woodland", "aether_ii:expanse", "aether_ii:flourishing_field", "aether_ii:frigid_sierra", "aether_ii:frozen_lakes",
+            "aether_ii:glistening_swamp", "aether_ii:magnetic_scar", "aether_ii:sheer_tundra", "aether_ii:shimmering_basin",
+            "aether_ii:shrouded_forest", "aether_ii:turquoise_forest", "aether_ii:verdant_woods", "aether_ii:violet_highwoods");
+    static final List<String> CAVE_WORLD_BIOMES = List.of("undergarden:barren_abyss", "undergarden:blood_mushroom_bog", "undergarden:dense_forest",
+            "undergarden:depths", "undergarden:forgotten_field", "undergarden:frostfields", "undergarden:frosty_smogstem_forest",
+            "undergarden:gronglegrowth", "undergarden:indigo_mushroom_bog", "undergarden:ink_mushroom_bog", "undergarden:puff_mushroom_forest",
+            "undergarden:smog_spires", "undergarden:smogstem_forest", "undergarden:veil_mushroom_bog", "undergarden:wigglewood_forest",
+            "allthemodium:the_other", "allthemodium:warped_forest", "allthemodium:crimson_forest", "allthemodium:soul_sand_valley",
+            "allthemodium:basalt_deltas", "allthemodium:desert", "allthemodium:desert_hills");
+
+    static final Set<String> COSTUMED = Set.of("cow", "chicken", "sheep", "baker", "bookworm", "party", "pirate", "pig", "rabbit",
+            "fisher");
+
+    static final Map<String, Object[]> SIDE_LIQUIDS = Map.of("cow", new Object[] {"minecraft:milk", "milk", 0.3, "F4EEDD"});
+
+    /** An ant's colours from its material's one colour: body, gaster, accent, the pattern and the crystal. */
+    static String[] tones(String base, String pattern) {
+        int rgb = Integer.parseInt(base, 16);
+        return new String[] {toward(rgb, 0x000000, 0.62), base, toward(rgb, 0xFFFFFF, 0.55), pattern, toward(rgb, 0xFFFFFF, 0.25)};
+    }
+
+    static String toward(int rgb, int target, double share) {
+        int r = (int) Math.round(((rgb >> 16) & 0xFF) * (1 - share) + ((target >> 16) & 0xFF) * share);
+        int g = (int) Math.round(((rgb >> 8) & 0xFF) * (1 - share) + ((target >> 8) & 0xFF) * share);
+        int b = (int) Math.round((rgb & 0xFF) * (1 - share) + (target & 0xFF) * share);
+        return String.format("%02X%02X%02X", r, g, b);
+    }
+
+    /** The laboratory rows of the species added with {@link #made}: evolutions() and research() append them. */
+    static final List<Object[]> MADE = new ArrayList<>();
+
+    /**
+     * How a species of another mod is made: from which species, with which material (an item or a #tag), at which
+     * research tier, after which research (null for none). Its evolution's numbers follow the species' tier.
+     */
+    static void made(String id, String from, String material, String research, String requires, String hint) {
+        MADE.add(new Object[] {id, from, material, research, requires, hint});
+        LAB_AMOUNTS.put(from + "_to_" + id, HARDEST.contains(id) ? 4 : 8);
+    }
 
     static void species() {
         List<String[]> baseRearing = List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"#minecraft:flowers", "4"});
@@ -484,7 +587,8 @@ public class DataGen {
         SPECIES.add(new Species("wood", "Wood Ant", 0, "base", "temperate", "spawns/wood", "8E3B1F", "2A1C16", "A0522D", "plain", null, false,
                 1.05, 1.0, "", 0, 0.9,
                 List.of(Out.of("oak_log", 18), Out.of("spruce_log", 10), Out.of("birch_log", 8), Out.of("stick", 22), Out.of("oak_sapling", 6),
-                        Out.of("spruce_sapling", 5), Out.of("apple", 3).atStage(2), Out.of("dark_oak_log", 4).atStage(3).asSpecial(),
+                        Out.of("spruce_sapling", 5), Out.of("birch_sapling", 4), Out.of("apple", 3).atStage(2),
+                        Out.of("dark_oak_log", 4).atStage(3).asSpecial(), Out.of("dark_oak_sapling", 1).atStage(3).asSpecial(),
                         Out.of(ac("ant_resin"), 7)),
                 0, List.of(), 1.1, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"#minecraft:saplings", "4"}), 2400, 1.0, 1.0,
                 "oak_log", "Wood Gathering", "Timber Processing", "Sapling Production",
@@ -572,19 +676,6 @@ public class DataGen {
                 List.of(new String[] {ac("royal_jelly"), "6"}, new String[] {ac("nether_ant_food"), "12"}, new String[] {ac("nuptial_pheromone"), "4"}),
                 12000, 0.6, 0.7, "netherite_scrap", "Ancient Extraction", "Debris Smelting", "Infernal Efficiency",
                 "The end of the line: heat-forged ants of the Nether. Very slow, very hungry, and the only ants that find netherite."));
-        SPECIES.add(new Species("crystal_wood", "Crystal Wood Ant", 2, "hybrid", "temperate", null, "6A3A1A", "7AD0D8", "C8F0F0", "faceted", "9AF0FF", false,
-                1.05, 1.2, "", 0, 0.6,
-                List.of(Out.of("oak_log", 24), Out.of("stick", 18), Out.of(ac("diamond_fragment"), 0.05).atStage(3).asSpecial(), Out.of("amethyst_shard", 10)),
-                0, List.of(), 1.1, List.of(), crystalRearing, 4800, 0.9, 1.0, "dark_oak_log",
-                "Crystal Timber Extraction", "Crystal Sap Refining", "Living Wood Efficiency",
-                "A hybrid of Wood and Diamond Ants: forest ants whose bark has turned to crystal."));
-        SPECIES.add(new Species("frost_emerald", "Frost Emerald Ant", 3, "hybrid", "cold", null, "BFE3F0", "4AE08A", "E0FFF0", "faceted", "9AFFC8", true,
-                1.05, 1.3, "crystal", 0.6, 0.35,
-                List.of(Out.of("snowball", 20), Out.of("packed_ice", 14), Out.of(ac("emerald_fragment"), 0.15).asSpecial().processed("emerald", 9),
-                        Out.of("blue_ice", 3).atStage(3)),
-                0, List.of(), 1.0, List.of(), crystalRearing, 6000, 0.85, 0.9, "packed_ice",
-                "Frost Gem Extraction", "Glacial Purification", "Hibernation Efficiency",
-                "A hybrid of Snow and Emerald Ants that grows emeralds in the cold."));
         SPECIES.add(new Species("mechanical_miner", "Mechanical Miner Ant", 2, "hybrid", "any", null, "3E3E42", "A82020", "D0D0D0", "metallic", "FF4A2A", false,
                 1.0, 1.3, "mineral", 0.3, 0.75,
                 List.of(Out.of("cobblestone", 25), Out.of("redstone", 18), Out.of("iron_nugget", 15).processed("iron_ingot", 9), Out.of("raw_copper", 10),
@@ -700,12 +791,16 @@ public class DataGen {
                 "Nomad hunters of plains and savannas that live anywhere. At a Hunting Ground they swarm zombies, skeletons and spiders, and feed on the catch."));
         SPECIES.add(new Species("bullet", "Bullet Ant", 1, "hunter", "hot", null, "2A1A10", "8A3A10", "E0A040", "striped", null, false,
                 1.2, 1.3, "", 0, 0.5,
-                List.of(Out.of("gunpowder", 10), Out.of("redstone", 6), Out.of("glowstone_dust", 4).atStage(2)),
+                List.of(Out.of("gunpowder", 10), Out.of("redstone", 6), Out.of("glowstone_dust", 4).atStage(2),
+                        Out.of("phantom_membrane", 0.3).atStage(3).asSpecial()),
                 0, List.of(), 1.6, List.of(new String[] {"minecraft:creeper", "40"}, new String[] {"minecraft:witch", "15"},
-                        new String[] {"minecraft:spider", "15"}, new String[] {"minecraft:cave_spider", "10"}, new String[] {"minecraft:phantom", "10"}),
+                        new String[] {"minecraft:spider", "15"}, new String[] {"minecraft:cave_spider", "10"},
+                        // A membrane is a player's drop: a grown colony's hunters bring one from every fourth phantom.
+                        new String[] {"minecraft:phantom", "10", "phantom_membrane", "0.25", "3"}),
                 List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"gunpowder", "4"}), 3600, 1.0, 1.0, "gunpowder",
                 "Powder Extraction", "Powder Packing", "Sting Efficiency",
-                "Jungle Ants fed gunpowder. Their sting fells creepers and witches: gunpowder, redstone and glowstone come home."));
+                "Jungle Ants fed gunpowder. Their sting fells creepers and witches: gunpowder, redstone and glowstone come home, and from "
+                        + "stage 3 phantom membranes."));
         SPECIES.add(new Species("trap_jaw", "Trap-Jaw Ant", 1, "hunter", "temperate", null, "3A3020", "6A5A2A", "B0A050", "speckled", null, false,
                 1.1, 1.2, "", 0, 0.5,
                 List.of(Out.of("slime_ball", 10), Out.of("kelp", 10), Out.of("prismarine_shard", 3).atStage(3)),
@@ -731,7 +826,7 @@ public class DataGen {
                 netherRearing, 6000, 0.8, 0.85, "soul_sand",
                 "Soul Extraction", "Soul Fire Refining", "Restless Efficiency",
                 "Fire Ants touched by soul fire. Live best in the Nether; bring soul sand, basalt and blackstone, and ghast tears."));
-        SPECIES.add(new Species("crimson", "Crimson Ant", 2, "hybrid", "hot", null, "6A1020", "A02030", "2AA8A0", "plain", null, false,
+        SPECIES.add(new Species("crimson", "Crimson Ant", 2, "hybrid", "hot", NEST_DWELLERS.get("crimson"), "6A1020", "A02030", "2AA8A0", "plain", null, false,
                 1.0, 1.3, "nether", 0.3, 0.6,
                 List.of(Out.of("crimson_stem", 14), Out.of("warped_stem", 14), Out.of("weeping_vines", 6), Out.of("twisting_vines", 6),
                         Out.of("shroomlight", 3).atStage(3).asSpecial()),
@@ -852,22 +947,26 @@ public class DataGen {
                         + "and skulls, and very rarely a Nether Star of their own."));
 
         // --- Species for other mods' metals and crystals: loaded only with such a mod, finds through c: tags, no signature item ---
-        compat("osmium", "Osmium Ant", 2, "any", "5A6E80", "A8C0D0", "D8E8F0", "metallic", "B0D0E8", false, "osmium", List.of("mekanism", "alltheores"),
-                "Stone Ants fed osmium. Bring osmium for Mekanism's machines.");
-        compat("tin", "Tin Ant", 1, "any", "6A6A70", "C8C8D0", "E8E8F0", "metallic", null, false, "tin", List.of("mekanism", "thermal", "machinaopus", "alltheores"),
+        compat("osmium", "Osmium Ant", 3, "any", "5A6E80", "A8C0D0", "D8E8F0", "metallic", "B0D0E8", false, "osmium", List.of("mekanism", "alltheores"),
+                "Stone Ants fed osmium, which takes a diamond pickaxe to mine. Slow; bring osmium for Mekanism's machines.");
+        compat("tin", "Tin Ant", 1, "any", "6A6A70", "C8C8D0", "E8E8F0", "metallic", null, false, "tin",
+                List.of("mekanism", "thermal", "machinaopus", "alltheores", "railcraft", "energizedpower", "modern_industrialization"),
                 "Copper Ants fed tin: together they make bronze. Bring tin.");
-        compat("lead", "Lead Ant", 2, "underground", "2E2E3A", "5A5A78", "8A8AA8", "metallic", null, false, "lead",
-                List.of("mekanism", "thermal", "immersiveengineering", "machinaopus", "alltheores"), "Heavy, slow Iron Ants fed lead. Bring lead.");
+        compat("lead", "Lead Ant", 1, "underground", "2E2E3A", "5A5A78", "8A8AA8", "metallic", null, false, "lead",
+                List.of("mekanism", "thermal", "immersiveengineering", "machinaopus", "alltheores", "railcraft", "modern_industrialization"),
+                "Heavy, slow Iron Ants fed lead. Bring lead.");
         compat("silver", "Silver Ant", 2, "any", "6A7078", "D8E0E8", "FFFFFF", "metallic", "E0E8F0", false, "silver",
-                List.of("thermal", "immersiveengineering", "machinaopus", "alltheores"), "Lead Ants fed silver; they shine like mirrors. Bring silver.");
+                List.of("thermal", "immersiveengineering", "machinaopus", "alltheores", "railcraft", "occultism", "iceandfire"),
+                "Lead Ants fed silver; they shine like mirrors. Bring silver.");
         compat("nickel", "Nickel Ant", 2, "any", "6A6A50", "C8C8A0", "E8E8C8", "metallic", null, false, "nickel",
-                List.of("thermal", "immersiveengineering", "alltheores"), "Iron Ants fed nickel. Bring nickel.");
+                List.of("thermal", "immersiveengineering", "alltheores", "railcraft", "oritech", "modern_industrialization"), "Iron Ants fed nickel. Bring nickel.");
         compat("aluminum", "Aluminum Ant", 1, "any", "8A8A90", "D8DCE0", "F0F4F8", "metallic", null, false, "aluminum",
                 List.of("immersiveengineering", "alltheores"), "Light, quick Iron Ants fed aluminum. Bring aluminum.");
-        compat("zinc", "Zinc Ant", 1, "any", "5A6A60", "A8C0B0", "D0E8D8", "metallic", null, false, "zinc", List.of("create", "alltheores"),
+        compat("zinc", "Zinc Ant", 1, "any", "5A6A60", "A8C0B0", "D0E8D8", "metallic", null, false, "zinc", List.of("create", "alltheores", "railcraft"),
                 "Copper Ants fed zinc, ready for Create's brass. Bring zinc.");
-        compat("uranium", "Uranium Ant", 3, "underground", "2A3A1A", "5AE02A", "C8FF8A", "faceted", "7AFF3A", true, "uranium",
-                List.of("mekanism", "immersiveengineering", "machinaopus", "alltheores"), "Lead Ants fed raw uranium. They glow green in the dark; bring uranium.");
+        compat("uranium", "Uranium Ant", 2, "underground", "2A3A1A", "5AE02A", "C8FF8A", "faceted", "7AFF3A", true, "uranium",
+                List.of("mekanism", "immersiveengineering", "machinaopus", "alltheores", "oritech", "modern_industrialization", "bigreactors"),
+                "Lead Ants fed raw uranium. They glow green in the dark; bring uranium.");
         // Crystals rather than metals: their own outputs.
         SPECIES.add(new Species("fluorite", "Fluorite Ant", 2, "mineral", "underground", null, "3A2A60", "8A6AE8", "D0C0FF", "faceted", "A890FF", true,
                 1.0, 1.4, "crystal", 0.5, 0.45,
@@ -887,17 +986,19 @@ public class DataGen {
         NEEDS_MODS.put("certus", List.of("ae2"));
 
         // All The Ores' other ores: two rare metals, three gems, cinnabar (with the sulfur found beside it) and salt.
-        compat("platinum", "Platinum Ant", 3, "underground", "56626E", "C4D4E0", "F2F8FF", "metallic", "D4E8F8", false, "platinum",
-                List.of("alltheores"), "Gold Ants fed platinum, a rare white metal. Slow and choosy; bring platinum.");
-        compat("iridium", "Iridium Ant", 3, "underground", "4A465A", "B4ACD0", "ECE8FF", "metallic", "C8C0F0", true, "iridium",
-                List.of("alltheores"), "Platinum Ants fed iridium, the hardest of the white metals. Bring iridium.");
-        gem("ruby", "Ruby Ant", "5A0E1E", "D8203E", "FF9AA8", "FF3A5A", List.of("alltheores"), "Amethyst Ants fed rubies. Deep red; bring rubies.");
-        gem("sapphire", "Sapphire Ant", "0E2A6A", "2A6AE8", "A0C8FF", "4A8AFF", List.of("alltheores"),
+        compat("platinum", "Platinum Ant", 4, "underground", "56626E", "C4D4E0", "F2F8FF", "metallic", "D4E8F8", false, "platinum",
+                List.of("alltheores", "oritech"), "Gold Ants fed platinum, a rare white metal. As slow as Diamond Ants; bring platinum.");
+        compat("iridium", "Iridium Ant", 4, "underground", "4A465A", "B4ACD0", "ECE8FF", "metallic", "C8C0F0", true, "iridium",
+                List.of("alltheores"), "Platinum Ants fed iridium, the hardest of the white metals. As slow as Diamond Ants; bring iridium.");
+        gem("ruby", "Ruby Ant", "5A0E1E", "D8203E", "FF9AA8", "FF3A5A", List.of("alltheores", "silentgems"),
+                "Amethyst Ants fed rubies. Deep red; bring rubies.");
+        gem("sapphire", "Sapphire Ant", "0E2A6A", "2A6AE8", "A0C8FF", "4A8AFF", List.of("alltheores", "silentgems", "iceandfire"),
                 "Lapis Ants fed sapphires. Clear blue; bring sapphires.");
-        gem("peridot", "Peridot Ant", "2E4A0E", "8AD82A", "D8FF9A", "A8F04A", List.of("alltheores"),
+        gem("peridot", "Peridot Ant", "2E4A0E", "8AD82A", "D8FF9A", "A8F04A", List.of("alltheores", "silentgems"),
                 "Amethyst Ants fed peridot. Lime green; bring peridot.");
-        SPECIES.add(new Species("cinnabar", "Cinnabar Ant", 2, "mineral", "hot", null, "4A1410", "C8341E", "FF8A5A", "speckled", "E84A2A", false,
-                1.0, 1.4, "mineral", 0.6, 0.45,
+        // All The Ores' cinnabar: two small veins a chunk in a big pack, several times rarer than gold.
+        SPECIES.add(new Species("cinnabar", "Cinnabar Ant", 3, "mineral", "hot", null, "4A1410", "C8341E", "FF8A5A", "speckled", "E84A2A", false,
+                1.0, 1.4, "mineral", 0.6, HARD_RATE,
                 List.of(Out.of("c:gems/cinnabar", 36).asTag(), Out.of("c:dusts/cinnabar", 10).asTag(), Out.of("c:dusts/sulfur", 10).asTag(),
                         Out.of("redstone", 8), Out.of("cobblestone", 12)),
                 0, List.of(), 1.0, List.of(), mineralRearing, 4800, 0.85, 0.9, null,
@@ -915,7 +1016,7 @@ public class DataGen {
         // Allthemodium's three metals, past netherite and as slow, each from the one before. The first digs its metal in the
         // Overworld; the other two find theirs only on Nether and End expeditions (see expeditions()).
         modium("allthemodium", "Allthemodium Ant", "underground", "5A4208", "F0C020", "FFF0A0", "FFD840", "mineral",
-                List.of(Out.of("cobbled_deepslate", 30), Out.of("gold_nugget", 30), Out.of("tuff", 20)), 1.5, 0.25,
+                List.of(Out.of("cobbled_deepslate", 30), Out.of("gold_nugget", 30), Out.of("tuff", 20)), 165, 3,
                 "Netherite Ants fed allthemodium, the gold-bright metal under the deepest stone. They breed slowly and live long; "
                         + "very slowly, they bring allthemodium.");
         modium("vibranium", "Vibranium Ant", "nether", "0A3A34", "20C8A8", "A0FFE8", "40F0C8", "nether",
@@ -936,14 +1037,16 @@ public class DataGen {
                 "Molybdenum Extraction", "Metal Processing", "Molybdenum Efficiency",
                 "Iron Ants fed molybdenum, the metal that hardens MachinaOpus's steel. Bring molybdenum."));
         NEEDS_MODS.put("molybdenum", List.of("machinaopus"));
+        // Sulfur through the common tag, so any mod's sulfur will do; the petroleum coke is MachinaOpus's alone (an own tag,
+        // empty without it).
         SPECIES.add(new Species("sulfur", "Sulfur Ant", 2, "mineral", "hot", null, "5A4A0A", "E0C820", "FFF080", "speckled", "F0E040", false,
                 1.0, 1.4, "nether", 0.4, 0.5,
-                List.of(Out.of("machinaopus:sulfur", 36), Out.of("netherrack", 14), Out.of("magma_block", 6), Out.of("basalt", 6),
-                        Out.of("gunpowder", 4).atStage(2), Out.of("machinaopus:petroleum_coke", 0.5).atStage(3).asSpecial()),
-                0, List.of(), 1.3, List.of(), netherRearing, 4800, 0.9, 1.0, "machinaopus:sulfur",
+                List.of(Out.of("c:dusts/sulfur", 36).asTag(), Out.of("netherrack", 14), Out.of("magma_block", 6), Out.of("basalt", 6),
+                        Out.of("gunpowder", 4).atStage(2), Out.of(ac("foraging/sulfur_vents"), 0.5).atStage(3).asSpecial().asTag()),
+                0, List.of(), 1.3, List.of(), netherRearing, 4800, 0.9, 1.0, null,
                 "Brimstone Extraction", "Sulfur Refining", "Vent Efficiency",
-                "Fire Ants fed sulfur that live around hot vents. Bring sulfur for MachinaOpus's acids without refining oil."));
-        NEEDS_MODS.put("sulfur", List.of("machinaopus"));
+                "Fire Ants fed sulfur that live around hot vents. Bring sulfur without mining or refining for it."));
+        NEEDS_MODS.put("sulfur", List.of("machinaopus", "alltheores", "railcraft", "neovitae"));
         SPECIES.add(new Species("rubber", "Rubber Ant", 1, "farmer", "temperate", null, "4A3020", "2A1C14", "E8E0C8", "banded", null, false,
                 1.0, 0.85, "", 0, 0.8,
                 List.of(Out.of("machinaopus:rubber_log", 18), Out.of("stick", 14), Out.of("machinaopus:rubber_leaves", 8), Out.of("machinaopus:rubber_sapling", 5)),
@@ -953,13 +1056,95 @@ public class DataGen {
                 "Wood Ants fed rubber that tap rubber trees. Bring rubber logs and saplings; at a Harvesting Site they bring rubber for MachinaOpus's cables."));
         NEEDS_MODS.put("rubber", List.of("machinaopus"));
 
+        // --- The ores and gems of the mods of big packs (All the Mods 11): one ant for each material found in the world ---
+        pack("uraninite", "Uraninite Ant", 2, "underground", new String[] {"16301E", "2E9E5A", "9AF0B8", "speckled", "4ADE8A"}, true, "mineral", 0.35,
+                List.of(Out.of("c:raw_materials/uraninite", 36).asTag(), Out.of("redstone", 10), Out.of("cobblestone", 14)),
+                List.of("powah"), "Redstone Ants fed raw uraninite, the ore that charges Powah's machines. Bring raw uraninite.");
+        pack("inferium", "Inferium Ant", 1, "temperate", new String[] {"3A4A10", "9AC81E", "E0F78A", "banded", "B8E83A"}, false, "mineral", 0.5,
+                List.of(Out.of("mysticalagriculture:inferium_essence", 40), Out.of("cobblestone", 14), Out.of("dirt", 8),
+                        Out.of("mysticalagriculture:prosperity_shard", 8).atStage(2)),
+                List.of("mysticalagriculture"), "Stone Ants fed inferium essence. Bring essence for Mystical Agriculture, and prosperity shards "
+                        + "from stage 2.");
+        // Arcane crystal: three small veins a chunk, a third of gold. Its runes take a diamond pickaxe; stellarite is rarer still.
+        pack("arcane", "Arcane Ant", 3, "underground", new String[] {"4A1048", "D040C8", "FFB0F4", "faceted", "F060E0"}, true, "crystal", HARD_RATE,
+                List.of(Out.of("c:gems/arcane_crystal", 36).asTag(), Out.of("c:dusts/arcane_crystal", 10).asTag(), Out.of("cobblestone", 12),
+                        Out.of("forbidden_arcanus:rune", 2).atStage(2), Out.of("forbidden_arcanus:stellarite_piece", 0.3).atStage(4).asSpecial()),
+                List.of("forbidden_arcanus"), "Amethyst Ants fed arcane crystals. Slow; bring crystals and a few runes for Forbidden and Arcanus, and a rare "
+                        + "piece of stellarite.");
+        compat("iesnium", "Iesnium Ant", 4, "nether", "0E3438", "2AB8C0", "A8F4F8", "metallic", "50D8E0", true, "iesnium", List.of("occultism"),
+                "Silver Ants fed iesnium, the metal Occultism hides in netherrack. They see it without a third eye, but find it as rarely as diamonds; bring iesnium.");
+        pack("dark_gem", "Dark Gem Ant", 2, "underground", new String[] {"101014", "2A2A3A", "7A7A9A", "faceted", "4A4A6A"}, false, "crystal", 0.45,
+                List.of(Out.of("evilcraft:dark_gem", 36), Out.of("evilcraft:dark_gem_crushed", 10), Out.of("coal", 10), Out.of("cobblestone", 12)),
+                List.of("evilcraft"), "Coal Ants fed dark gems. Black as their find; bring dark gems for EvilCraft.");
+        pack("bort", "Bort Ant", 2, "underground", new String[] {"2E2A28", "7A746E", "C8C2BA", "faceted", "A09A92"}, false, "crystal", 0.45,
+                List.of(Out.of("c:gems/bort", 36).asTag(), Out.of("cobbled_deepslate", 16), Out.of("coal", 8)),
+                List.of("silentgear"), "Deepslate Ants fed bort, the rough diamond of Silent Gear. Bring bort.");
+        compat("crimson_iron", "Crimson Iron Ant", 2, "nether", "4A0E14", "C82838", "FF9AA0", "metallic", "E84050", false, "crimson_iron",
+                List.of("silentgear"), "Iron Ants fed crimson iron, the red metal of the Nether. Bring crimson iron for Silent Gear.");
+        compat("azure_silver", "Azure Silver Ant", 4, "end", "14285A", "4A8AF0", "C0DCFF", "metallic", "70A8FF", true, "azure_silver",
+                List.of("silentgear"), "Chorus Ants fed azure silver, the blue metal of the End that only a netherite pickaxe breaks. As slow as Diamond Ants; bring azure silver for Silent Gear.");
+        compat("cloggrum", "Cloggrum Ant", 2, "underground", "3A2E1E", "8A7450", "C8B48A", "metallic", null, false, "cloggrum",
+                List.of("undergarden"), "Iron Ants fed cloggrum, the dull metal of the Undergarden. Bring cloggrum.");
+        compat("froststeel", "Froststeel Ant", 3, "cold", "20384A", "7AB4D8", "D8F0FF", "metallic", "A0D0F0", false, "froststeel",
+                List.of("undergarden"), "Cloggrum Ants fed froststeel, the cold metal of the Undergarden's ice. Slow; bring froststeel.");
+        gemOf("utherium", "Utherium Ant", new String[] {"4A0A0A", "D82020", "FF9A8A", "faceted", "FF4030"}, 3, 1.0, "cobbled_deepslate", List.of("undergarden"),
+                "Redstone Ants fed utherium crystals from the Undergarden. Blood red; bring utherium.");
+        gemOf("regalium", "Regalium Ant", new String[] {"4A3A08", "E8C030", "FFF0A0", "faceted", "FFD850"}, 3, 0.5, "cobbled_deepslate", List.of("undergarden"),
+                "Amethyst Ants fed regalium crystals from the Undergarden. Bright as coins; bring regalium.");
+        pack("dimensional", "Dimensional Ant", 2, "any", new String[] {"10283A", "48C8D8", "D0FFFF", "faceted", "80F0F0"}, true, "crystal", 0.4,
+                List.of(Out.of("rftoolsbase:dimensionalshard", 36), Out.of("cobblestone", 12), Out.of("netherrack", 6), Out.of("end_stone", 6)),
+                List.of("rftoolsbase"), "Lapis Ants fed dimensional shards. Bring shards for RFTools from wherever they dig.");
+        gem("fluxite", "Fluxite Ant", "3A0E3A", "D040A0", "FFB0E0", "F060C0", List.of("oritech"),
+                "Lapis Ants fed fluxite. Bright pink; bring fluxite for Oritech.");
+        gem("force", "Force Ant", "4A4208", "F0D820", "FFF8A0", "FFE840", List.of("forcecraft"),
+                "Gold Ants fed force gems. Bring force gems for Forcecraft.");
+        pack("chimerite", "Chimerite Ant", 2, "underground", new String[] {"3A2A4A", "C890D8", "F0D8FF", "faceted", "D8A8F0"}, true, "crystal", 0.4,
+                List.of(Out.of("c:gems/chimerite", 30).asTag(), Out.of("c:dusts/vinteum", 14).asTag(), Out.of("cobblestone", 12),
+                        Out.of("c:gems/topaz", 8).atStage(2).asTag(), Out.of("c:gems/moonstone", 0.1).atStage(4).asSpecial().asTag(),
+                        Out.of("c:gems/sunstone", 0.3).atStage(4).asSpecial().asTag()),
+                List.of("arsmagicalegacy"), "Amethyst Ants fed chimerite. Bring chimerite, vinteum dust and topaz for Ars Magica, and a rare "
+                        + "moonstone or sunstone.");
+        pack("amber", "Amber Ant", 2, "temperate", new String[] {"5A3008", "E89018", "FFD890", "banded", "FFB030"}, false, "crystal", 0.45,
+                List.of(Out.of("c:gems/amber", 34).asTag(), Out.of("cobblestone", 12), Out.of("c:raw_materials/cinnabar", 8).asTag(),
+                        Out.of("c:gems/quicksilver", 6).atStage(2).asTag()),
+                List.of("thaumaturge"), "Stone Ants fed amber. Honey gold; bring amber for Thaumaturge, with cinnabar and quicksilver.");
+        pack("saltpeter", "Saltpeter Ant", 1, "hot", new String[] {"6A6A58", "E0E0C8", "FFFFF0", "speckled", null}, false, "mineral", 0.6,
+                List.of(Out.of("c:dusts/saltpeter", 38).asTag(), Out.of("sand", 20), Out.of("gravel", 8), Out.of("c:dusts/sulfur", 6).atStage(2).asTag()),
+                List.of("railcraft", "neovitae", "eternal_starlight"), "Desert Ants fed saltpeter that scrape it from dry sand. Bring saltpeter.");
+        gem("sal_ammoniac", "Sal Ammoniac Ant", "5A5A3A", "E8E8B0", "FFFFE0", "F0F0C0", List.of("theurgy"),
+                "Amethyst Ants fed sal ammoniac crystals. Pale and sharp-smelling; bring sal ammoniac for Theurgy.");
+        // Desh: only on the Moon, so a first rocket.
+        pack("desh", "Desh Ant", 3, "any", new String[] {"5A2A0E", "E87A28", "FFD0A0", "metallic", "FF9A40"}, false, "mineral", HARD_RATE,
+                List.of(Out.of("c:raw_materials/desh", 20).asTag(), Out.of("cobblestone", 30), Out.of("c:ingots/desh", 1).atStage(3).asSpecial().asTag()),
+                List.of("stellaris", "ad_astra"), "Iron Ants fed desh, the orange metal of other worlds. Slow; bring raw desh.");
+        compat("titanium", "Titanium Ant", 2, "any", "3A4250", "9AA8C0", "E0E8F8", "metallic", "B8C8E0", false, "titanium",
+                List.of("stellaris", "modern_industrialization"), "Iron Ants fed titanium, light and hard. Bring titanium.");
+        pack("ambrosium", "Ambrosium Ant", 1, "any", new String[] {"5A5210", "F0E040", "FFFFB0", "speckled", "FFF060"}, true, "mineral", 0.5,
+                List.of(Out.of("aether_ii:ambrosium_shard", 40), Out.of("cobblestone", 14)),
+                List.of("aether_ii"), "Coal Ants fed ambrosium shards, the glowing fuel of the Aether. Bring ambrosium.");
+        pack("zanite", "Zanite Ant", 2, "any", new String[] {"34206A", "8A5AE8", "D8C8FF", "faceted", "A880FF"}, true, "crystal", 0.45,
+                List.of(Out.of("aether_ii:zanite_gemstone", 36), Out.of("cobblestone", 14)),
+                List.of("aether_ii"), "Amethyst Ants fed zanite gemstones from the Aether. Bring zanite.");
+        // Arkenium and gravitite: deeper in the Aether's islands, each behind the tool tier before it.
+        pack("arkenium", "Arkenium Ant", 3, "any", new String[] {"3A3E48", "A8B0C0", "F0F4FF", "metallic", "C8D0E0"}, false, "mineral", HARD_RATE,
+                List.of(Out.of("aether_ii:arkenium_plate", 20), Out.of("cobblestone", 30)),
+                List.of("aether_ii"), "Iron Ants fed arkenium plates, the heavy metal of the Aether. Slow; bring arkenium plates.");
+        pack("gravitite", "Gravitite Ant", 3, "any", new String[] {"4A1040", "E060C8", "FFC0F0", "metallic", "F080E0"}, true, "mineral", HARD_RATE,
+                List.of(Out.of("aether_ii:gravitite_plate", 10), Out.of("cobblestone", 40)),
+                List.of("aether_ii"), "Arkenium Ants fed gravitite plates, the metal that falls upward. Slow; bring gravitite plates.");
+
+        funnyAnts();
+        packMaterials();
+        alloys();
         for (Species s : SPECIES) {
             List<Object> outputs = new ArrayList<>();
             s.outputs().forEach(o -> outputs.add(o.json()));
             List<Object> harvest = new ArrayList<>();
             s.harvest().forEach(o -> harvest.add(o.json()));
             List<Object> targets = new ArrayList<>();
-            s.targets().forEach(t -> targets.add(obj("entity", t[0], "weight", Integer.parseInt(t[1]))));
+            // A target's row may go on with a trophy: its item, its chance a catch and the colony stage it starts at.
+            s.targets().forEach(t -> targets.add(obj("entity", t[0], "weight", Integer.parseInt(t[1]), "trophy", t.length < 5 ? null
+                    : obj("item", mc(t[2]), "chance", Double.parseDouble(t[3]), "min_stage", Integer.parseInt(t[4])))));
             List<Object> cost = new ArrayList<>();
             s.rearing().forEach(c -> cost.add(obj("ingredient", c[0].startsWith("#") ? c[0] : mc(c[0]), "count", Integer.parseInt(c[1]))));
             Map<String, Object> look = obj("body", "#" + s.body(), "gaster", "#" + s.gaster(), "accent", "#" + s.accent(), "pattern", s.pattern(),
@@ -967,15 +1152,23 @@ public class DataGen {
             Map<String, Object> json = obj("tier", s.tier(), "category", s.category(), "look", look, "climate", s.climate(),
                     "spawn_biomes", s.spawn() == null ? null : ac(s.spawn()),
                     "diet", obj("consumption", s.consumption(), "special_food", s.special().isEmpty() ? null : s.special(),
-                            "special_per_egg", s.specialPerEgg() == 0 ? null : s.specialPerEgg()),
+                            "special_per_egg", s.specialPerEgg() == 0 ? null : Math.round(s.specialPerEgg() * 1000) / 1000.0),
                     "production", obj("rate", s.rate(), "outputs", outputs),
                     "farming", s.farmFood() > 0 ? obj("food", s.farmFood(), "harvest", harvest) : null,
                     "combat", obj("strength", s.strength(), "targets", targets.isEmpty() ? null : targets),
                     "rearing", obj("cost", cost, "time", s.rearingTime()),
                     "breeding", obj("eggs", s.eggs(), "growth", s.growth(), "lifespan", LIFESPANS.get(s.id())),
                     "signature_item", s.signature() == null ? null : s.signature().contains(":") ? s.signature() : mc(s.signature()));
+            if (COSTUMED.contains(s.id())) {
+                look.put("costume", s.id());
+            }
+            if (SIDE_LIQUIDS.containsKey(s.id())) {
+                Object[] liquid = SIDE_LIQUIDS.get(s.id());
+                look.put("crop", "#" + liquid[3]);
+                json.put("liquid", obj("fluid", liquid[0], "droplet", ac(liquid[1] + "_droplet"), "rate", liquid[2]));
+            }
             if (NEEDS_MODS.containsKey(s.id())) {
-                json.put("neoforge:conditions", conditions(NEEDS_MODS.get(s.id())));
+                json.put("neoforge:conditions", speciesConditions(s.id()));
             }
             write(DATA.resolve(NS + "/species/" + s.id() + ".json"), json);
             LANG.put("species." + NS + "." + s.id(), s.name());
@@ -984,6 +1177,456 @@ public class DataGen {
             LANG.put("upgrade." + NS + "." + s.id() + ".processing", s.processing());
             LANG.put("upgrade." + NS + "." + s.id() + ".efficiency", s.efficiency());
         }
+    }
+
+    /**
+     * Ants for fun, each fed into being like the hunters: five that took after animals (they forage, and "hunt" their
+     * animal's drops at a Hunting Ground; the Cow Ant gives milk at a Liquid Chamber too), a baker, a reader, a reveller,
+     * a pirate and a fisher. Their rare finds are kept rare: see the weights.
+     */
+    static void funnyAnts() {
+        SPECIES.add(new Species("cow", "Cow Ant", 1, "hunter", "temperate", null, "F2F2F2", "2E2A28", "F0A6B4", "speckled", null, false,
+                1.15, 1.3, "", 0, 0.5,
+                List.of(Out.of("wheat", 20), Out.of("wheat_seeds", 14), Out.of("short_grass", 12), Out.of("dandelion", 5)),
+                0, List.of(), 1.0, List.<String[]>of(new String[] {"minecraft:cow", "100"}),
+                List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"wheat", "4"}), 3600, 1.0, 1.0, "leather",
+                "Herd Extraction", "Cheese Making", "Grazing Efficiency",
+                "Army Ants fed milk. Black and white and very calm. They graze; what they bring from a Hunting Ground looks a lot like "
+                        + "beef and leather; and at a Liquid Chamber they give Milk Droplets. Nobody has heard one moo."));
+        SPECIES.add(new Species("chicken", "Chicken Ant", 1, "hunter", "temperate", null, "F6F4EC", "FFFFFF", "D8281E", "plain", null, false,
+                0.9, 1.0, "", 0, 0.6,
+                List.of(Out.of("egg", 22), Out.of("wheat_seeds", 20), Out.of("feather", 8)),
+                0, List.of(), 0.8, List.<String[]>of(new String[] {"minecraft:chicken", "100"}),
+                List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"egg", "4"}), 3600, 1.1, 1.1, "feather",
+                "Coop Extraction", "Egg Sorting", "Pecking Efficiency",
+                "Army Ants fed feathers. Small, white and easily startled. They forage eggs and seeds, and bring chicken and feathers from a "
+                        + "Hunting Ground. They cannot fly either."));
+        SPECIES.add(new Species("sheep", "Sheep Ant", 1, "hunter", "temperate", null, "4A4038", "F4F0E6", "FFFFFF", "plain", null, false,
+                1.05, 1.1, "", 0, 0.5,
+                List.of(Out.of("white_wool", 20), Out.of("string", 8), Out.of("light_gray_wool", 3), Out.of("gray_wool", 3), Out.of("black_wool", 3),
+                        Out.of("brown_wool", 2), Out.of("pink_wool", 0.2).atStage(3).asSpecial()),
+                0, List.of(), 0.9, List.<String[]>of(new String[] {"minecraft:sheep", "100"}),
+                List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"white_wool", "4"}), 3600, 1.0, 1.0, "white_wool",
+                "Flock Extraction", "Wool Carding", "Shearing Efficiency",
+                "Army Ants fed wool. Woolly ants that follow each other everywhere. They forage wool in the colours sheep come in, pink "
+                        + "very rarely, and bring wool and mutton from a Hunting Ground."));
+        SPECIES.add(new Species("baker", "Baker Ant", 1, "farmer", "temperate", null, "E8D8B8", "C89A5A", "FFFFFF", "plain", null, false,
+                1.0, 0.9, "", 0, 0.7,
+                List.of(Out.of("wheat", 22), Out.of("sugar", 10), Out.of("egg", 8), Out.of("cocoa_beans", 5)),
+                1.2, List.of(Out.of("bread", 30), Out.of("cookie", 20), Out.of("pumpkin_pie", 6).atStage(2), Out.of("cake", 1).atStage(3).asSpecial()),
+                0.8, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"bread", "4"}), 3600, 1.0, 1.0, "cake",
+                "Flour Milling", "Oven Tending", "Bakery Efficiency",
+                "Farmer Ants fed cake. Dusted white with flour. They forage wheat, sugar and eggs, and bake at a Harvesting Site: bread, "
+                        + "cookies, pumpkin pie and now and then a whole cake."));
+        SPECIES.add(new Species("bookworm", "Bookworm Ant", 1, "base", "temperate", null, "5A3A22", "8A6A3A", "E8DCC0", "banded", null, false,
+                1.0, 1.0, "", 0, 0.6,
+                List.of(Out.of("paper", 30), Out.of("book", 12), Out.of("feather", 6), Out.of("ink_sac", 6), Out.of("bookshelf", 3).atStage(2),
+                        Out.of("writable_book", 2).atStage(2), Out.of("experience_bottle", 1).atStage(3).asSpecial(),
+                        Out.of("name_tag", 0.05).atStage(4).asSpecial()),
+                0, List.of(), 0.8, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"book", "4"}), 3600, 1.0, 1.0, "book",
+                "Shelf Extraction", "Book Binding", "Reading Efficiency",
+                "Wood Ants fed books. They chew wood into paper and cannot stop reading. Paper, books and bookshelves come home, and "
+                        + "now and then a Bottle o' Enchanting from something they learned."));
+        SPECIES.add(new Species("party", "Party Ant", 1, "base", "any", null, "D83A8A", "3AB8E8", "FFE040", "striped", null, true,
+                1.0, 1.1, "", 0, 0.6,
+                List.of(Out.of("firework_rocket", 22), Out.of("paper", 12), Out.of("gunpowder", 8), Out.of("sugar", 8),
+                        Out.of("note_block", 3).atStage(2), Out.of("cake", 0.5).atStage(2), Out.of("music_disc_13", 0.02).atStage(3).asSpecial(),
+                        Out.of("music_disc_cat", 0.02).atStage(3).asSpecial(), Out.of("music_disc_blocks", 0.02).atStage(3).asSpecial(),
+                        Out.of("music_disc_chirp", 0.02).atStage(3).asSpecial()),
+                0, List.of(), 1.0, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"firework_rocket", "4"}), 3600, 1.1, 1.0,
+                "firework_rocket", "Confetti Extraction", "Playlist Sorting", "Party Efficiency",
+                "Common Ants fed firework rockets. Loud colours and no sense of bedtime. They bring rockets, note blocks and cake, and "
+                        + "at stage 3 the odd music disc."));
+        SPECIES.add(new Species("pirate", "Pirate Ant", 2, "base", "temperate", null, "8A6040", "A01818", "F0C830", "striped", null, false,
+                1.05, 1.2, "", 0, 0.4,
+                List.of(Out.of("sand", 20), Out.of("gold_nugget", 16), Out.of("bone", 8), Out.of("map", 3), Out.of("emerald", 0.05).atStage(3).asSpecial(),
+                        Out.of("compass", 1).atStage(2), Out.of("nautilus_shell", 0.3).atStage(3).asSpecial(),
+                        Out.of("heart_of_the_sea", 0.01).atStage(4).asSpecial()),
+                0, List.of(), 1.3, List.of(), List.of(new String[] {ac("royal_jelly"), "2"}, new String[] {"gold_ingot", "4"}), 4800, 0.9, 1.0,
+                "gold_nugget", "Plunder Extraction", "Loot Counting", "Boarding Efficiency",
+                "Shore Ants fed gold. Weathered raiders in black hats with a nose for buried treasure: sand, gold nuggets, a rare emerald and "
+                        + "nautilus shell, and once in a long while a Heart of the Sea. Arr."));
+        SPECIES.add(new Species("pig", "Pig Ant", 1, "hunter", "temperate", null, "E8A0A0", "F0B4B0", "C87880", "plain", null, false,
+                1.1, 1.3, "", 0, 0.5,
+                List.of(Out.of("carrot", 20), Out.of("potato", 14), Out.of("beetroot", 10), Out.of("mud", 8), Out.of("brown_mushroom", 4)),
+                0, List.of(), 1.0, List.<String[]>of(new String[] {"minecraft:pig", "100"}),
+                List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"carrot", "4"}), 3600, 1.1, 1.0, "cooked_porkchop",
+                "Sty Extraction", "Truffle Sorting", "Rooting Efficiency",
+                "Army Ants fed carrots on sticks. Pink, round and fond of mud. They root up carrots, potatoes and beetroot, and bring "
+                        + "porkchops from a Hunting Ground. They will follow a carrot anywhere."));
+        SPECIES.add(new Species("rabbit", "Rabbit Ant", 1, "hunter", "temperate", null, "A07850", "C8A27A", "F4EEE2", "plain", null, false,
+                0.9, 1.0, "", 0, 0.6,
+                List.of(Out.of("carrot", 20), Out.of("dandelion", 12), Out.of("short_grass", 10), Out.of("wheat_seeds", 8)),
+                // A rabbit's foot is a player's drop and a rare one from ants: a grown colony's hunters bring one from a rabbit
+                // in 125, about two an hour.
+                0, List.of(), 0.8, List.<String[]>of(new String[] {"minecraft:rabbit", "100", "rabbit_foot", "0.008", "3"}),
+                List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"carrot", "4"}), 3600, 1.3, 1.2, "rabbit_hide",
+                "Warren Extraction", "Hide Stretching", "Hopping Efficiency",
+                "Army Ants fed rabbit hide. Long ears, a white tail and a very large brood. They nibble up carrots and dandelions, and bring "
+                        + "raw rabbit and hide from a Hunting Ground, and from stage 3, rarely, a lucky foot."));
+        SPECIES.add(new Species("fisher", "Fisher Ant", 1, "base", "temperate", null, "3A5A78", "E8C020", "F4E060", "plain", null, false,
+                1.0, 1.1, "", 0, 0.5,
+                List.of(Out.of("cod", 24), Out.of("salmon", 16), Out.of("kelp", 8), Out.of("string", 6), Out.of("lily_pad", 4),
+                        Out.of("tropical_fish", 4).atStage(2), Out.of("pufferfish", 4).atStage(2), Out.of("bowl", 2).atStage(2),
+                        Out.of("leather_boots", 0.1).atStage(2).asSpecial()),
+                0, List.of(), 0.9, List.of(), List.of(new String[] {ac("royal_jelly"), "1"}, new String[] {"cod", "4"}), 3600, 1.0, 1.0,
+                "tropical_fish", "Net Extraction", "Fish Gutting", "Angling Efficiency",
+                "Shore Ants fed fishing rods. A yellow rain hat, a rod over the shoulder and all the patience in the world. Cod and salmon "
+                        + "come home, then tropical fish and pufferfish, and now and then an old boot."));
+    }
+
+    // --- How fast the ants of other mods' materials work, by how hard the material is to get in its own mod ---
+    // (ore veins a chunk, the tool that mines it, the dimension or boss before it). Numbers are for one full site of a
+    // grown colony; materials as easy as iron or gold keep the pace of the built-in metal ants, 400 an hour and more.
+
+    /** A material that takes a diamond pickaxe, the Nether or a rare vein: about 60 an hour, a tenth of a gold-like one. */
+    static final double HARD_RATE = 0.03;
+    /** A material as rare as diamond, or behind the End or a boss: the Diamond Ant's own rate, about 5 an hour. */
+    static final double DIAMOND_RATE = 0.008;
+    /** A material at the end of its mod, like netherite: the Netherite Ant's own rate, about one in two hours. */
+    static final double NETHERITE_RATE = 0.0025;
+
+    /** Species whose material ends its mod: they are made like Netherite Ants (stage 4, 5,000 ants, few successes). */
+    static final Set<String> HARDEST = Set.of("eclipse_alloy", "demonite", "mithril", "calorite");
+
+    /**
+     * A crystal species coloured from the gem's one colour. {@code difficulty} 2 is a gem as easy as gold (see {@link #gem}),
+     * 3 a hard one ({@link #HARD_RATE}), 4 one like diamond ({@link #DIAMOND_RATE}); {@code share} scales how much of its
+     * finds is the gem, {@code rock} is what it digs through.
+     */
+    static void gemOf(String id, String name, String colour, int difficulty, double share, String rock, List<String> mods, String description) {
+        gemOf(id, name, tones(colour, "faceted"), difficulty, share, rock, mods, description);
+    }
+
+    /** The same, with the ant's colours given as body, gaster, accent, pattern and crystal. */
+    static void gemOf(String id, String name, String[] look, int difficulty, double share, String rock, List<String> mods, String description) {
+        if (difficulty <= 2) {
+            gem(id, name, look[0], look[1], look[2], look[4], mods, description);
+            return;
+        }
+        boolean rare = difficulty >= 4;
+        List<Out> outputs = List.of(Out.of("c:gems/" + id, (rare ? 6 : 20) * share).asTag(), Out.of("c:dusts/" + id, rare ? 2 : 4).asTag(),
+                Out.of(rock, rare ? 40 : 22), Out.of("calcite", 4).atStage(2));
+        SPECIES.add(new Species(id, name, 3, "mineral", "underground", null, look[0], look[1], look[2], "faceted", look[4], true,
+                1.0, 1.5, "crystal", 0.6, rare ? DIAMOND_RATE : HARD_RATE, outputs,
+                0, List.of(), 1.0, List.of(), List.of(new String[] {ac("royal_jelly"), "4"}, new String[] {ac("crystal_ant_food"), "6"}), 6000, 0.8, 0.85,
+                null, title(id) + " Extraction", "Gem Cutting", title(id) + " Efficiency",
+                description + (rare ? " As rare from ants as from the rock." : " They find few.")));
+        NEEDS_MODS.put(id, mods);
+    }
+
+    // --- Alloys: metals that are mixed, not mined ---
+
+    /**
+     * An alloy ant works at this share of the pace of the ant of its hardest metal. The ants save the work of mixing it,
+     * so an alloy must always come a little slower than what it is made of.
+     */
+    static final double ALLOY_PACE = 0.7;
+
+    /**
+     * A metal species for an alloy, which has no ore: its nuggets and dust through the c: tags, an ingot now and then.
+     * {@code difficulty} is that of its hardest metal, as in {@link #compat}; its rate is {@link #ALLOY_PACE} of that
+     * metal's ant. It is made from the ant of one of its metals, {@code from}, fed the alloy, after the research of
+     * another, {@code requires}; of {@code mods} only those that also add both metals count.
+     */
+    static void alloy(String id, String name, String colour, boolean glow, int difficulty, String from, String requires, List<String> mods,
+                      String hint, String description) {
+        String[] look = tones(colour, "metallic");
+        int tier = Math.min(difficulty, 3);
+        double metalRate = difficulty == 1 ? 0.6 : difficulty == 2 ? 0.45 : difficulty == 3 ? HARD_RATE : DIAMOND_RATE;
+        double rate = Math.round(metalRate * ALLOY_PACE * 10000) / 10000.0;
+        SPECIES.add(new Species(id, name, tier, "mineral", "any", null, look[0], look[1], look[2], look[3], look[4], glow, 1.05, 1.2 + tier * 0.15,
+                "mineral", 0.3 + tier * 0.15, rate,
+                List.of(Out.of("c:nuggets/" + id, 40).asTag(), Out.of("c:dusts/" + id, difficulty >= 4 ? 3 : 10).atStage(difficulty >= 3 ? 1 : 2).asTag(),
+                        Out.of("cobblestone", 15), Out.of("c:ingots/" + id, 2).atStage(3).asSpecial().asTag()),
+                0, List.of(), 1.1, List.of(), List.of(new String[] {ac("royal_jelly"), "2"}, new String[] {ac("mineral_ant_food"), "4"}),
+                3600 + tier * 1200, 0.9, 0.9, null, title(id) + " Extraction", "Alloy Casting", title(id) + " Efficiency", description));
+        NEEDS_MODS.put(id, mods.stream().filter(mod -> List.of(from, requires).stream()
+                .allMatch(metal -> !NEEDS_MODS.containsKey(metal) || NEEDS_MODS.get(metal).contains(mod))).toList());
+        made(id, from, "#c:ingots/" + id, difficulty == 1 ? "basic" : "advanced", requires, hint);
+    }
+
+    /**
+     * The nine alloys of All The Ores (other mods make some of them too). Difficulty is that of the hardest metal in
+     * one: bronze, brass and steel like iron; those with nickel, silver or gold like gold; enderium like diamond, for
+     * its platinum. Each then comes slower than that metal's own ant, by {@link #ALLOY_PACE}.
+     */
+    static void alloys() {
+        alloy("bronze", "Bronze Ant", "C69317", false, 1, "tin", "tin", List.of("alltheores", "thermal", "mekanism", "railcraft", "modern_industrialization"),
+                "Three parts copper to one of tin.", "Tin Ants fed bronze. They bring bronze ready mixed: nuggets, dust and the odd ingot.");
+        alloy("brass", "Brass Ant", "CE9B3E", false, 1, "zinc", "zinc", List.of("alltheores", "create", "railcraft"),
+                "Three parts copper to one of zinc.", "Zinc Ants fed brass. They bring brass ready mixed: nuggets, dust and the odd ingot.");
+        alloy("steel", "Steel Ant", "797A7F", false, 1, "iron", "coal",
+                List.of("alltheores", "thermal", "mekanism", "immersiveengineering", "railcraft", "oritech", "energizedpower", "modern_industrialization"),
+                "Iron made hard with coal.", "Iron Ants fed steel. They bring steel with no furnace: nuggets, dust and the odd ingot.");
+        alloy("invar", "Invar Ant", "AAB0A5", false, 2, "nickel", "nickel", List.of("alltheores", "thermal", "railcraft", "modern_industrialization"),
+                "Two parts iron to one of nickel.", "Nickel Ants fed invar. They bring invar ready mixed: nuggets, dust and the odd ingot.");
+        alloy("constantan", "Constantan Ant", "C2A958", false, 2, "copper", "nickel", List.of("alltheores", "thermal", "immersiveengineering"),
+                "Copper and nickel in equal parts.", "Copper Ants fed constantan. They bring constantan ready mixed: nuggets, dust and the odd ingot.");
+        alloy("electrum", "Electrum Ant", "E4DC76", false, 2, "gold", "silver", List.of("alltheores", "thermal", "immersiveengineering"),
+                "Gold and silver in equal parts.", "Gold Ants fed electrum. They bring electrum ready mixed: nuggets, dust and the odd ingot.");
+        alloy("signalum", "Signalum Ant", "C25D11", true, 2, "redstone", "silver", List.of("alltheores", "thermal"),
+                "Copper and silver, red with redstone.", "Redstone Ants fed signalum. They bring signalum ready mixed: nuggets, dust and the odd ingot.");
+        alloy("lumium", "Lumium Ant", "FFDE88", true, 2, "tin", "silver", List.of("alltheores", "thermal"),
+                "Tin and silver that shine with glowstone.", "Tin Ants fed lumium. They glow, and bring lumium ready mixed: nuggets, dust and the odd ingot.");
+        alloy("enderium", "Enderium Ant", "0C5151", true, 4, "lead", "platinum", List.of("alltheores", "thermal"),
+                "Lead and platinum, bound with ender pearls.", "Lead Ants fed enderium. Slower than Platinum Ants; they bring enderium nuggets and dust.");
+        // Silicon is made too: quartz or certus quartz dust through a furnace. Slower than a Certus Ant, by the same share.
+        pack("silicon", "Silicon Ant", 2, "hot", tones("6E7B88", "faceted"), false, "mineral", Math.round(0.45 * ALLOY_PACE * 10000) / 10000.0,
+                List.of(Out.of("c:silicon", 30).asTag(), Out.of("sand", 22), Out.of("gravel", 12)),
+                List.of("ae2", "enderio", "energizedpower", "oritech", "refinedstorage", "stellaris"),
+                "Desert Ants fed silicon. They sift it from the sand ready smelted, grey and brittle, for circuits and solar panels.");
+        made("silicon", "desert", "#c:silicon", "advanced", null, "Quartz and sand, smelted to a grey wafer.");
+    }
+
+    /** The rest of the big packs' materials: Silent's Gems' other gems, and what no ore of the Overworld gives. */
+    static void packMaterials() {
+        // --- Silent's Gems: one crystal ant per gem, coloured from the gem ---
+        // Difficulty by where the gem really generates in a pack: an Overworld vein like gold's is 2; one small deep vein a
+        // chunk, or the Nether (a diamond pickaxe) is 3; the End (a netherite pickaxe) is 4.
+        List<String> gems = List.of("silentgems");
+        String deep = "cobbled_deepslate";
+        Object[][] silent = {
+                // id, name, colour, made from, description, research hint, difficulty, share, rock
+                {"alexandrite", "Alexandrite Ant", "943BCA", "amethyst", "Amethyst Ants fed alexandrite. Violet in one light and green in another; bring alexandrite.",
+                        "A gem that changes colour with the light.", 3, 1.0, deep},
+                {"ammolite", "Ammolite Ant", "A022CC", "amethyst", "Amethyst Ants fed ammolite, old sea shells turned to gem. Bring ammolite.",
+                        "A fossil shell that shines in every colour.", 4, 1.0, "end_stone"},
+                {"aquamarine", "Aquamarine Ant", "31B3B8", "lapis", "Lapis Ants fed aquamarine. Sea blue; bring aquamarine.", "A gem the colour of shallow sea.",
+                        2, 1.0, deep},
+                {"black_diamond", "Black Diamond Ant", "5F524D", "coal", "Coal Ants fed black diamonds. Bring black diamonds.", "A diamond as dark as coal.",
+                        3, 0.5, "netherrack"},
+                {"carnelian", "Carnelian Ant", "C64D2A", "redstone", "Redstone Ants fed carnelian. Warm orange-red; bring carnelian.", "A warm orange-red stone.",
+                        3, 1.0, "netherrack"},
+                {"citrine", "Citrine Ant", "A67D1C", "gold", "Gold Ants fed citrine. Bring citrine.", "A yellow quartz.", 3, 1.0, "netherrack"},
+                {"garnet", "Garnet Ant", "8A141E", "redstone", "Redstone Ants fed garnets. Dark red; bring garnets.", "A dark red gem.", 2, 1.0, deep},
+                {"heliodor", "Heliodor Ant", "AC9728", "gold", "Gold Ants fed heliodor. Bring heliodor.", "A golden gem named for the sun.", 3, 1.0, deep},
+                {"iolite", "Iolite Ant", "6952CD", "lapis", "Lapis Ants fed iolite. Violet-blue; bring iolite.", "A violet-blue gem sailors once steered by.",
+                        3, 1.0, deep},
+                {"kyanite", "Kyanite Ant", "3C9FB3", "lapis", "Lapis Ants fed kyanite. Bring kyanite.", "A blue gem that grows in blades.", 4, 1.0, "end_stone"},
+                {"moldavite", "Moldavite Ant", "8FB343", "amethyst", "Amethyst Ants fed moldavite. Bottle green; bring moldavite.",
+                        "Green glass made where a star fell.", 3, 1.0, "netherrack"},
+                {"opal", "Opal Ant", "CED7DF", "amethyst", "Amethyst Ants fed opals. Milk white; bring opals.", "A milky gem with fire inside.", 3, 1.0, deep},
+                {"pearl", "Pearl Ant", "CDC6BC", "amethyst", "Amethyst Ants fed pearls. Bring pearls.", "A round, pale gem.", 4, 1.0, "netherrack"},
+                {"rose_quartz", "Rose Quartz Ant", "CC6DA2", "amethyst", "Amethyst Ants fed rose quartz. Pink; bring rose quartz.", "A pink quartz.",
+                        4, 1.0, "end_stone"},
+                {"tanzanite", "Tanzanite Ant", "54349F", "lapis", "Lapis Ants fed tanzanite. Deep blue-violet; bring tanzanite.", "A deep blue-violet gem.",
+                        3, 1.0, "netherrack"},
+                {"topaz", "Topaz Ant", "B0632B", "gold", "Gold Ants fed topaz. Orange and clear; bring topaz.", "An orange gem, clear and hard.", 2, 1.0, deep},
+                {"turquoise", "Turquoise Ant", "4FD2B2", "copper", "Copper Ants fed turquoise. Blue-green; bring turquoise.",
+                        "A blue-green stone that grows near copper.", 3, 1.0, deep},
+                {"white_diamond", "White Diamond Ant", "BBAEB7", "diamond", "Diamond Ants fed white diamonds. Bring white diamonds.",
+                        "A diamond without a trace of colour.", 4, 0.5, "end_stone"},
+        };
+        Map<String, List<String>> shared = Map.of("topaz", List.of("silentgems", "arsmagicalegacy", "irons_jewelry"),
+                "garnet", List.of("silentgems", "irons_jewelry"),
+                "aquamarine", List.of("silentgems", "astralsorcery"));
+        for (Object[] gem : silent) {
+            String id = (String) gem[0];
+            gemOf(id, (String) gem[1], (String) gem[2], (Integer) gem[6], (Double) gem[7], (String) gem[8], shared.getOrDefault(id, gems), (String) gem[4]);
+            made(id, (String) gem[3], "#c:gems/" + id, "advanced", null, (String) gem[5]);
+        }
+        // Chaos ore is commoner than gold and drops up to three essence: easy but for the diamond pickaxe.
+        pack("chaos", "Chaos Ant", 2, "underground", tones("C6B2AF", "speckled"), true, "crystal", 0.4,
+                List.of(Out.of("silentgems:chaos_essence", 34), Out.of("cobbled_deepslate", 16), Out.of("cobblestone", 10)),
+                gems, "Amethyst Ants fed chaos essence. Restless and pale; bring chaos essence for Silent's Gems.");
+        made("chaos", "amethyst", "silentgems:chaos_essence", "advanced", null, "A pale essence that will not sit still.");
+
+        // --- Just Dire Things: its four materials, each ant from the one before, as its goo makes them ---
+        // Each tier of goo eats a block of iron, gold, diamond, netherite, and needs the Nether, the End, an Ancient City.
+        List<String> dire = List.of("justdirethings");
+        pack("ferricore", "Ferricore Ant", 2, "any", tones("779C9D", "metallic"), false, "mineral", 0.45,
+                List.of(Out.of("c:raw_materials/ferricore", 8).asTag(), Out.of("cobblestone", 30),
+                        Out.of("c:ingots/ferricore", 1).atStage(3).asSpecial().asTag()),
+                dire, "Iron Ants fed ferricore. Bring raw ferricore for Just Dire Things, with no goo to feed.");
+        made("ferricore", "iron", "#c:ingots/ferricore", "advanced", null, "Iron changed by a living goo.");
+        pack("blazegold", "Blazegold Ant", 3, "hot", tones("C06A4A", "metallic"), true, "nether", HARD_RATE,
+                List.of(Out.of("c:raw_materials/blazegold", 20).asTag(), Out.of("netherrack", 30),
+                        Out.of("c:ingots/blazegold", 1).atStage(3).asSpecial().asTag()),
+                dire, "Ferricore Ants fed blazegold. Slow; bring raw blazegold for Just Dire Things.");
+        made("blazegold", "ferricore", "#c:ingots/blazegold", "advanced", "ferricore", "Gold that took on the Nether's fire.");
+        pack("celestigem", "Celestigem Ant", 3, "any", tones("50BBB1", "faceted"), true, "crystal", DIAMOND_RATE,
+                List.of(Out.of("justdirethings:celestigem", 3), Out.of("cobblestone", 24), Out.of("end_stone", 20)),
+                dire, "Blazegold Ants fed celestigems. Rarer than diamonds from ants too; bring celestigems for Just Dire Things.");
+        made("celestigem", "blazegold", "justdirethings:celestigem", "advanced", "blazegold", "A sea-green gem grown from diamond.");
+        pack("eclipse_alloy", "Eclipse Alloy Ant", 3, "end", tones("4C616B", "metallic"), false, "crystal", NETHERITE_RATE,
+                List.of(Out.of("end_stone", 50), Out.of("obsidian", 30), Out.of("c:raw_materials/eclipsealloy", 5).atStage(3).asSpecial().asTag()),
+                dire, "Celestigem Ants fed eclipse alloy. They bring raw eclipse alloy about as often as Netherite Ants bring scrap.");
+        made("eclipse_alloy", "celestigem", "#c:ingots/eclipsealloy", "experimental", "celestigem", "A dark alloy that drinks the light.");
+
+        // --- The Twilight Forest: its three metals ---
+        // Ironwood is crafted from iron and a root; steeleaf is only found in chests; knightmetal is nine shards from knights.
+        List<String> twilight = List.of("twilightforest");
+        pack("ironwood", "Ironwood Ant", 2, "temperate", tones("8F875F", "banded"), false, "mineral", 0.45,
+                List.of(Out.of("c:raw_materials/ironwood", 8).asTag(), Out.of("twilightforest:liveroot", 10), Out.of("stick", 12), Out.of("moss_block", 8)),
+                twilight, "Wood Ants fed ironwood, the living metal of the Twilight Forest. Bring raw ironwood and liveroot.");
+        made("ironwood", "wood", "#c:ingots/ironwood", "advanced", null, "A metal that grows like a root.");
+        pack("steeleaf", "Steeleaf Ant", 3, "temperate", tones("4F7A3A", "banded"), false, "mineral", HARD_RATE,
+                List.of(Out.of("c:ingots/steeleaf", 20).asTag(), Out.of("oak_leaves", 20), Out.of("vine", 5), Out.of("stick", 5)),
+                twilight, "Ironwood Ants fed steeleaf. Slow; bring the Twilight Forest's steel-hard leaves, which no one can craft.");
+        made("steeleaf", "ironwood", "#c:ingots/steeleaf", "advanced", "ironwood", "A leaf as hard as steel.");
+        pack("knightmetal", "Knightmetal Ant", 3, "any", tones("99A788", "metallic"), false, "mineral", DIAMOND_RATE,
+                List.of(Out.of("twilightforest:armor_shard", 40), Out.of("cobblestone", 10),
+                        Out.of("c:raw_materials/knightmetal", 0.5).atStage(3).asSpecial().asTag()),
+                twilight, "Iron Ants fed knightmetal. Very slow; bring armor shards, nine to an ingot of knightmetal.");
+        made("knightmetal", "iron", "#c:ingots/knightmetal", "advanced", null, "The metal of the goblin knights' armour.");
+
+        // --- One material each ---
+        // Rogdorium: the Undergarden's last ore, three biomes, a tool tier above netherite. Nuggets, nine to a crystal.
+        pack("rogdorium", "Rogdorium Ant", 3, "underground", tones("7293A3", "faceted"), true, "crystal", DIAMOND_RATE,
+                List.of(Out.of("c:nuggets/rogdorium", 25).asTag(), Out.of("cobbled_deepslate", 22),
+                        Out.of("c:ingots/rogdorium", 0.5).atStage(3).asSpecial().asTag()),
+                List.of("undergarden"), "Froststeel Ants fed rogdorium, the pale crystal under the Undergarden's deepest rock. Very slow; bring rogdorium nuggets.");
+        made("rogdorium", "froststeel", "#c:ingots/rogdorium", "advanced", "froststeel", "A pale crystal from under the deepest rock of the deep.");
+        // Soulium: plentiful in the Nether's soulstone, any pickaxe; the dust is half an ingot.
+        pack("soulium", "Soulium Ant", 2, "nether", tones("7A4A32", "speckled"), false, "nether", 0.4,
+                List.of(Out.of("mysticalagriculture:soulium_dust", 30), Out.of("soul_sand", 16), Out.of("soul_soil", 10), Out.of("netherrack", 10)),
+                List.of("mysticalagriculture"), "Soul Ants fed soulium dust. Bring soulium for Mystical Agriculture.");
+        made("soulium", "soul", "mysticalagriculture:soulium_dust", "advanced", null, "A brown dust that holds what a mob leaves behind.");
+        // Novite: 25 ore blocks in a meteor crater, a crater every 1,900 chunks or so.
+        pack("novite", "Novite Ant", 3, "any", tones("8B6981", "metallic"), false, "mineral", DIAMOND_RATE,
+                List.of(Out.of("c:raw_materials/novite", 6).asTag(), Out.of("cobblestone", 44), Out.of("c:ingots/novite", 0.3).atStage(3).asSpecial().asTag()),
+                List.of("stellaris"), "Desh Ants fed novite, the violet metal of fallen stars. Very slow; bring raw novite for Stellaris.");
+        made("novite", "desh", "#c:ingots/novite", "advanced", "desh", "A violet metal that fell from the sky.");
+        // Firestone: beside Nether lava, a diamond pickaxe, a crusher; a player needs one.
+        pack("firestone", "Firestone Ant", 3, "nether", tones("AE3102", "speckled"), true, "nether", 0.3,
+                List.of(Out.of("netherrack", 30), Out.of("magma_block", 14), Out.of("blackstone", 10),
+                        Out.of("railcraft:raw_firestone", 0.06).atStage(3).asSpecial()),
+                List.of("railcraft"), "Fire Ants fed raw firestone, the burning stone under the Nether's lava. Now and then they bring one.");
+        made("firestone", "fire", "railcraft:raw_firestone", "advanced", null, "A stone from under the lava that never cools.");
+        LAB_AMOUNTS.put("fire_to_firestone", 2);
+        // Demonite: only in the last dungeon of Neo Vitae; its metal equals netherite.
+        pack("demonite", "Demonite Ant", 3, "nether", tones("78B1B3", "metallic"), false, "nether", NETHERITE_RATE,
+                List.of(Out.of("netherrack", 50), Out.of("blackstone", 30), Out.of("c:raw_materials/hellforged", 5).atStage(3).asSpecial().asTag()),
+                List.of("neovitae"), "Soul Ants fed hellforged metal. They bring raw demonite, the ore of Neo Vitae's last dungeon, about as often as "
+                        + "Netherite Ants bring scrap.");
+        made("demonite", "soul", "#c:ingots/hellforged", "experimental", null, "A pale metal forged where demons live.");
+        // Grains of infinity: free wherever fire burns on bedrock or deepslate.
+        pack("infinity", "Infinity Ant", 1, "underground", tones("6C6C6C", "speckled"), false, "mineral", 0.3,
+                List.of(Out.of("cobbled_deepslate", 30), Out.of("c:dusts/grains_of_infinity", 20).asTag(), Out.of("flint", 10)),
+                List.of("enderio"), "Deepslate Ants fed grains of infinity. They scrape the bedrock for the grey dust Ender IO starts with.");
+        made("infinity", "deepslate", "#c:dusts/grains_of_infinity", "basic", null, "A grey dust left where fire burns on bedrock.");
+        // Corrobonite: the Aether's deepest layer, its top tool, and a machine to restore each crystal.
+        pack("corrobonite", "Corrobonite Ant", 3, "any", tones("6BC397", "faceted"), true, "crystal", DIAMOND_RATE,
+                List.of(Out.of("aether_ii:corrobonite_crystal", 6), Out.of("cobblestone", 44)),
+                List.of("aether_ii"), "Zanite Ants fed corrobonite crystals from the Aether. Very slow; bring corrobonite.");
+        made("corrobonite", "zanite", "aether_ii:corrobonite_crystal", "advanced", "zanite", "A green crystal full of the sky's energy.");
+        // Neptunium: about one nugget in 300 casts of a fishing rod.
+        pack("neptunium", "Neptunium Ant", 3, "temperate", tones("3FCDA6", "metallic"), true, "mineral", 0.2,
+                List.of(Out.of("prismarine_shard", 24), Out.of("sand", 20), Out.of("kelp", 10),
+                        Out.of("c:nuggets/neptunium", 0.25).atStage(3).asSpecial().asTag()),
+                List.of("aquaculture"), "Reef Ants fed neptunium, the sea metal only fishing brings up. Now and then they bring a nugget.");
+        made("neptunium", "reef", "#c:ingots/neptunium", "advanced", null, "A sea-green metal only fishermen find.");
+        LAB_AMOUNTS.put("reef_to_neptunium", 2);
+        moreMaterials();
+    }
+
+    /**
+     * The materials of mods that are in All the Mods 10 and not (yet) on newer versions of the game. Their ids, ore
+     * generation and tool tiers were read from the mods' sources and never run: a species whose id is off simply does not load.
+     */
+    static void moreMaterials() {
+        // --- Modern Industrialization ---
+        List<String> industrialization = List.of("modern_industrialization");
+        // Antimony: more veins than iron's lower layers, a stone pickaxe.
+        String[] antimony = tones("B4B4D2", "metallic");
+        compat("antimony", "Antimony Ant", 1, "underground", antimony[0], antimony[1], antimony[2], antimony[3], null, false, "antimony",
+                industrialization, "Iron Ants fed antimony, a brittle white metal. Bring antimony for Modern Industrialization.");
+        made("antimony", "iron", "#c:ingots/antimony", "basic", null, "A brittle silver-white metal that hardens others.");
+        // Tungsten: veins like gold's, but the ingot belongs to the mod's late machines.
+        pack("tungsten", "Tungsten Ant", 3, "underground", tones("8760AD", "metallic"), false, "mineral", HARD_RATE,
+                List.of(Out.of("c:nuggets/tungsten", 30).asTag(), Out.of("cobbled_deepslate", 14), Out.of("c:raw_materials/tungsten", 10).asTag()),
+                industrialization, "Iron Ants fed tungsten, the metal that will not melt. Slow; bring tungsten.");
+        made("tungsten", "iron", "#c:ingots/tungsten", "advanced", null, "A violet-grey metal that will not melt.");
+        // Monazite: two tiny veins a chunk, rarer than diamond by count.
+        pack("monazite", "Monazite Ant", 3, "underground", tones("96248E", "speckled"), false, "mineral", HARD_RATE,
+                List.of(Out.of("c:dusts/monazite", 9).asTag(), Out.of("cobblestone", 30), Out.of("sand", 8)),
+                industrialization, "Redstone Ants fed monazite. Slow; bring monazite dust for Modern Industrialization.");
+        made("monazite", "redstone", "#c:dusts/monazite", "advanced", null, "A purple sand full of rare elements.");
+        pack("bauxite", "Bauxite Ant", 1, "hot", tones("C86400", "speckled"), false, "mineral", 0.5,
+                List.of(Out.of("c:dusts/bauxite", 12).asTag(), Out.of("cobblestone", 30), Out.of("clay_ball", 8)),
+                industrialization, "Iron Ants fed bauxite, the red earth aluminum comes from. Bring bauxite dust.");
+        made("bauxite", "iron", "#c:dusts/bauxite", "basic", null, "A red-brown earth that aluminum comes from.");
+        pack("lignite", "Lignite Ant", 1, "temperate", tones("644646", "speckled"), false, "mineral", 0.6,
+                List.of(Out.of("c:gems/lignite_coal", 40).asTag(), Out.of("cobblestone", 14), Out.of("dirt", 8)),
+                industrialization, "Coal Ants fed lignite coal. Bring lignite for Modern Industrialization's boilers.");
+        made("lignite", "coal", "#c:gems/lignite_coal", "basic", null, "A young, brown coal.");
+
+        // --- Extreme Reactors: its two crystals (its yellorite counts as uranium). Both are common where they are: the End
+        // is what makes anglesite hard. ---
+        List<String> reactors = List.of("bigreactors");
+        pack("anglesite", "Anglesite Ant", 3, "end", tones("BD9522", "faceted"), true, "crystal", HARD_RATE,
+                List.of(Out.of("bigreactors:anglesite_crystal", 20), Out.of("end_stone", 30)),
+                reactors, "Amethyst Ants fed anglesite crystals from the End. Slow; bring anglesite for Extreme Reactors.");
+        made("anglesite", "amethyst", "bigreactors:anglesite_crystal", "advanced", null, "A golden crystal from the End.");
+        pack("benitoite", "Benitoite Ant", 2, "nether", tones("5AA8C1", "faceted"), true, "crystal", 0.4,
+                List.of(Out.of("bigreactors:benitoite_crystal", 30), Out.of("netherrack", 24)),
+                reactors, "Lapis Ants fed benitoite crystals from the Nether. Bring benitoite for Extreme Reactors.");
+        made("benitoite", "lapis", "bigreactors:benitoite_crystal", "advanced", null, "A blue crystal from the Nether.");
+
+        // --- One material each ---
+        // Draconium: a vein in ten chunks outside the End, and the base of an end-game mod.
+        pack("draconium", "Draconium Ant", 3, "any", tones("7824B1", "faceted"), true, "crystal", DIAMOND_RATE,
+                List.of(Out.of("c:dusts/draconium", 6).asTag(), Out.of("end_stone", 24), Out.of("cobbled_deepslate", 20),
+                        Out.of("c:ingots/draconium", 0.3).atStage(3).asSpecial().asTag()),
+                List.of("draconicevolution"), "Diamond Ants fed draconium. Very slow; bring draconium dust for Draconic Evolution.");
+        made("draconium", "diamond", "#c:ingots/draconium", "advanced", null, "A purple metal with a dragon's power in it.");
+        gemOf("black_quartz", "Black Quartz Ant", "3A4452", 2, 1.0, "cobblestone", List.of("actuallyadditions"),
+                "Coal Ants fed black quartz. Bring black quartz for Actually Additions.");
+        made("black_quartz", "coal", "#c:gems/black_quartz", "basic", null, "A quartz as dark as night.");
+        // Mithril: built as a second ancient debris: a netherite pickaxe, never in the open, four scraps to an ingot.
+        pack("mithril", "Mithril Ant", 3, "underground", tones("6E848C", "metallic"), false, "mineral", NETHERITE_RATE,
+                List.of(Out.of("cobbled_deepslate", 50), Out.of("tuff", 30), Out.of("c:raw_materials/mithril", 22).atStage(3).asSpecial().asTag()),
+                List.of("irons_spellbooks"), "Deepslate Ants fed mithril, the pale metal at the bottom of the world. They bring raw mithril "
+                        + "about as often as Netherite Ants bring scrap.");
+        made("mithril", "deepslate", "#c:ingots/mithril", "experimental", null, "A pale metal from the very bottom of the world.");
+        // Starmetal: costs only iron, but takes Astral Sorcery's second stage to make.
+        pack("starmetal", "Starmetal Ant", 3, "any", tones("2E55B4", "metallic"), true, "mineral", HARD_RATE,
+                List.of(Out.of("c:raw_materials/starmetal", 20).asTag(), Out.of("cobblestone", 30),
+                        Out.of("c:ingots/starmetal", 1).atStage(3).asSpecial().asTag()),
+                List.of("astralsorcery"), "Iron Ants fed starmetal. Slow; bring raw starmetal for Astral Sorcery, whatever the sky is doing.");
+        made("starmetal", "iron", "#c:ingots/starmetal", "advanced", null, "Iron that lay under the stars too long.");
+        // Xychorium: closed source, so judged from the pack's own ore table only: easy.
+        pack("xychorium", "Xychorium Ant", 2, "underground", tones("4A8AD8", "faceted"), true, "crystal", 0.45,
+                List.of(Out.of("xycraft_world:xychorium_gem_blue", 8), Out.of("xycraft_world:xychorium_gem_green", 8),
+                        Out.of("xycraft_world:xychorium_gem_red", 8), Out.of("xycraft_world:xychorium_gem_dark", 8),
+                        Out.of("xycraft_world:xychorium_gem_light", 8), Out.of("cobblestone", 16)),
+                List.of("xycraft_world"), "Amethyst Ants fed xychorium. Bring its gems in all five colours for XyCraft.");
+        made("xychorium", "amethyst", "#c:gems/xychorium", "advanced", null, "A gem that comes in five colours.");
+
+        // --- Ad Astra: each metal is a planet further out. Ostrum takes the second rocket, calorite the third. ---
+        List<String> astra = List.of("ad_astra");
+        pack("ostrum", "Ostrum Ant", 3, "any", tones("6D4B56", "metallic"), false, "mineral", DIAMOND_RATE,
+                List.of(Out.of("c:nuggets/ostrum", 36).asTag(), Out.of("cobblestone", 10), Out.of("c:raw_materials/ostrum", 2).asTag()),
+                astra, "Desh Ants fed ostrum, the dusky metal of the red planet. Very slow; bring ostrum for Ad Astra.");
+        made("ostrum", "desh", "#c:ingots/ostrum", "advanced", "desh", "A dusky metal from the red planet.");
+        pack("calorite", "Calorite Ant", 3, "hot", tones("89233C", "metallic"), true, "mineral", NETHERITE_RATE,
+                List.of(Out.of("netherrack", 50), Out.of("basalt", 30), Out.of("c:nuggets/calorite", 165).atStage(3).asSpecial().asTag()),
+                astra, "Ostrum Ants fed calorite, the red metal of the hottest planet. They bring a few calorite nuggets an hour.");
+        made("calorite", "ostrum", "#c:ingots/calorite", "experimental", "ostrum", "A red metal from the hottest planet.");
+        // Ice shards: common on the Moon; the rocket is the cost.
+        pack("ice_shard", "Ice Shard Ant", 2, "cold", tones("93A8C1", "faceted"), false, "crystal", 0.05,
+                List.of(Out.of("ad_astra:ice_shard", 24), Out.of("ice", 16), Out.of("snowball", 10)),
+                astra, "Snow Ants fed ice shards. Slow; bring ice shards for Ad Astra.");
+        made("ice_shard", "snow", "ad_astra:ice_shard", "advanced", null, "A shard of ice from another world.");
+
+        // --- Eternal Starlight: the ores of its dimension. Deepsilver and malarite are its iron; starlit diamond its diamond. ---
+        List<String> starlight = List.of("eternal_starlight");
+        String[] deepsilver = tones("787CA4", "metallic");
+        compat("deepsilver", "Deepsilver Ant", 2, "any", deepsilver[0], deepsilver[1], deepsilver[2], deepsilver[3], deepsilver[4], false, "deepsilver",
+                starlight, "Iron Ants fed deepsilver, the blue-grey silver of the Starlight dimension. Bring deepsilver.");
+        made("deepsilver", "iron", "#c:ingots/deepsilver", "advanced", null, "A blue-grey silver from a land of endless night.");
+        gemOf("malarite", "Malarite Ant", "5A5268", 2, 1.0, "cobblestone", starlight, "Amethyst Ants fed malarite. Bring malarite for Eternal Starlight.");
+        made("malarite", "amethyst", "#c:gems/malarite", "advanced", null, "A dark gem from a land of endless night.");
+        gemOf("starcore", "Starcore Ant", "9C5E4B", 3, 1.0, "cobbled_deepslate", starlight,
+                "Redstone Ants fed starcores. Warm as embers; bring starcores for Eternal Starlight.");
+        made("starcore", "redstone", "#c:gems/starcore", "advanced", null, "A warm stone like a small ember.");
+        gemOf("starlit_diamond", "Starlit Diamond Ant", "C9C2ED", 4, 1.0, "cobbled_deepslate", starlight,
+                "Diamond Ants fed starlit diamonds. Bring starlit diamonds for Eternal Starlight.");
+        made("starlit_diamond", "diamond", "#c:gems/starlit_diamond", "advanced", null, "A diamond that keeps the starlight.");
+        gemOf("thioquartz", "Thioquartz Ant", "91986E", 3, 1.0, "cobbled_deepslate", starlight,
+                "Amethyst Ants fed thioquartz. Bring thioquartz shards for Eternal Starlight.");
+        made("thioquartz", "amethyst", "#c:gems/thioquartz", "advanced", null, "A yellow-green quartz that smells of sulfur.");
     }
 
     // --- Evolutions, hybrids, mutations ---
@@ -1011,6 +1654,19 @@ public class DataGen {
                 {"desert_to_fire", "desert", "fire", "blaze_powder", 0.06, 24, 2, 300, NETHER},
                 {"jungle_to_bullet", "jungle", "bullet", "gunpowder", 0.06, 24, 2, 300},
                 {"swamp_to_trap_jaw", "swamp", "trap_jaw", "slime_ball", 0.06, 24, 2, 300},
+                // The ants for fun. None is fed ant food (eggs, bread, cookies): feeding a colony must not change it by accident.
+                // Milk and cake come one at a time, so those two are sure after eight.
+                {"army_to_cow", "army", "cow", "milk_bucket", 0.15, 8, 2, 300},
+                {"army_to_chicken", "army", "chicken", "feather", 0.08, 24, 2, 300},
+                {"army_to_sheep", "army", "sheep", "#minecraft:wool", 0.08, 24, 2, 300},
+                {"farmer_to_baker", "farmer", "baker", "cake", 0.15, 8, 2, 200},
+                {"wood_to_bookworm", "wood", "bookworm", "book", 0.08, 24, 2, 200},
+                {"common_to_party", "common", "party", "firework_rocket", 0.08, 24, 2, 200},
+                {"shore_to_pirate", "shore", "pirate", "gold_ingot", 0.06, 24, 2, 300},
+                // Carrots on sticks and fishing rods come one at a time too. Carrots and raw rabbit are ant food: not those.
+                {"army_to_pig", "army", "pig", "carrot_on_a_stick", 0.15, 8, 2, 300},
+                {"army_to_rabbit", "army", "rabbit", "rabbit_hide", 0.08, 24, 2, 300},
+                {"shore_to_fisher", "shore", "fisher", "fishing_rod", 0.15, 8, 2, 300},
                 {"fire_to_inferno", "fire", "inferno", "blaze_powder", 0.05, 32, 3, 1000, NETHER},
                 {"fire_to_soul", "fire", "soul", "ghast_tear", 0.05, 32, 3, 1000, NETHER},
                 {"amethyst_to_ender", "amethyst", "ender", "ender_eye", 0.03, 40, 4, 3000, END},
@@ -1046,8 +1702,41 @@ public class DataGen {
                 {"netherite_to_allthemodium", "netherite", "allthemodium", "#c:ingots/allthemodium", 0.02, 48, 4, 5000},
                 {"allthemodium_to_vibranium", "allthemodium", "vibranium", "#c:ingots/vibranium", 0.02, 48, 4, 6000},
                 {"vibranium_to_unobtainium", "vibranium", "unobtainium", "#c:ingots/unobtainium", 0.02, 48, 4, 8000},
+                // The ores and gems of the mods of big packs.
+                {"redstone_to_uraninite", "redstone", "uraninite", "#c:raw_materials/uraninite", 0.06, 24, 2, 400},
+                {"stone_to_inferium", "stone", "inferium", "mysticalagriculture:inferium_essence", 0.08, 24, 2, 200},
+                {"amethyst_to_arcane", "amethyst", "arcane", "#c:gems/arcane_crystal", 0.06, 24, 2, 400},
+                {"silver_to_iesnium", "silver", "iesnium", "#c:ingots/iesnium", 0.06, 32, 2, 600},
+                {"coal_to_dark_gem", "coal", "dark_gem", "evilcraft:dark_gem", 0.06, 24, 2, 400},
+                {"deepslate_to_bort", "deepslate", "bort", "#c:gems/bort", 0.06, 24, 2, 400},
+                {"iron_to_crimson_iron", "iron", "crimson_iron", "#c:ingots/crimson_iron", 0.07, 24, 2, 400},
+                {"chorus_to_azure_silver", "chorus", "azure_silver", "#c:ingots/azure_silver", 0.06, 32, 2, 600},
+                {"iron_to_cloggrum", "iron", "cloggrum", "#c:ingots/cloggrum", 0.07, 24, 2, 400},
+                {"cloggrum_to_froststeel", "cloggrum", "froststeel", "#c:ingots/froststeel", 0.06, 32, 2, 600},
+                {"redstone_to_utherium", "redstone", "utherium", "#c:gems/utherium", 0.06, 24, 2, 400},
+                {"amethyst_to_regalium", "amethyst", "regalium", "#c:gems/regalium", 0.06, 24, 2, 400},
+                {"lapis_to_dimensional", "lapis", "dimensional", "rftoolsbase:dimensionalshard", 0.06, 24, 2, 400},
+                {"lapis_to_fluxite", "lapis", "fluxite", "#c:gems/fluxite", 0.06, 24, 2, 400},
+                {"gold_to_force", "gold", "force", "#c:gems/force", 0.06, 24, 2, 400},
+                {"amethyst_to_chimerite", "amethyst", "chimerite", "#c:gems/chimerite", 0.06, 24, 2, 400},
+                {"stone_to_amber", "stone", "amber", "#c:gems/amber", 0.06, 24, 2, 400},
+                {"desert_to_saltpeter", "desert", "saltpeter", "#c:dusts/saltpeter", 0.08, 24, 2, 200},
+                {"amethyst_to_sal_ammoniac", "amethyst", "sal_ammoniac", "#c:gems/sal_ammoniac", 0.06, 24, 2, 400},
+                {"iron_to_desh", "iron", "desh", "#c:ingots/desh", 0.05, 32, 3, 1000},
+                {"iron_to_titanium", "iron", "titanium", "#c:ingots/titanium", 0.05, 32, 3, 1000},
+                {"coal_to_ambrosium", "coal", "ambrosium", "aether_ii:ambrosium_shard", 0.08, 24, 2, 200},
+                {"amethyst_to_zanite", "amethyst", "zanite", "aether_ii:zanite_gemstone", 0.06, 24, 2, 400},
+                {"iron_to_arkenium", "iron", "arkenium", "aether_ii:arkenium_plate", 0.05, 32, 3, 1000},
+                {"arkenium_to_gravitite", "arkenium", "gravitite", "aether_ii:gravitite_plate", 0.04, 32, 3, 1500},
         };
-        for (Object[] e : list) {
+        List<Object[]> rows = new ArrayList<>(Arrays.asList(list));
+        for (Object[] made : MADE) {
+            int tier = SPECIES.stream().filter(s -> s.id().equals(made[0])).findFirst().orElseThrow().tier();
+            Object[] numbers = HARDEST.contains(made[0]) ? new Object[] {0.02, 48, 4, 5000}
+                    : new Object[] {tier == 1 ? 0.08 : tier == 2 ? 0.06 : 0.05, tier == 3 ? 32 : 24, tier == 3 ? 3 : 2, tier == 1 ? 200 : tier == 2 ? 400 : 1000};
+            rows.add(new Object[] {made[1] + "_to_" + made[0], made[1], made[0], made[2], numbers[0], numbers[1], numbers[2], numbers[3]});
+        }
+        for (Object[] e : rows) {
             Map<String, Object> json = obj("from", ac((String) e[1]), "to", ac((String) e[2]),
                     "item", mc((String) e[3]), "chance", e[4], "guaranteed_after", e[5], "min_stage", e[6], "min_population", ((Integer) e[7]).longValue());
             if (e.length > 8) {
@@ -1057,7 +1746,7 @@ public class DataGen {
                 json.put("lab_amount", LAB_AMOUNTS.get((String) e[0]));
             }
             if (NEEDS_MODS.containsKey((String) e[2])) {
-                json.put("neoforge:conditions", conditions(NEEDS_MODS.get((String) e[2])));
+                json.put("neoforge:conditions", speciesConditions((String) e[2]));
             }
             write(DATA.resolve(NS + "/evolution/" + e[0] + ".json"), json);
         }
@@ -1076,7 +1765,14 @@ public class DataGen {
                 {"amethyst_to_certus", "8"}, {"iron_to_molybdenum", "8"}, {"fire_to_sulfur", "8"},
                 {"gold_to_platinum", "8"}, {"platinum_to_iridium", "8"}, {"amethyst_to_ruby", "8"}, {"lapis_to_sapphire", "8"},
                 {"amethyst_to_peridot", "8"}, {"redstone_to_cinnabar", "8"}, {"desert_to_salt", "8"},
-                {"netherite_to_allthemodium", "4"}, {"allthemodium_to_vibranium", "4"}, {"vibranium_to_unobtainium", "4"}};
+                {"netherite_to_allthemodium", "4"}, {"allthemodium_to_vibranium", "4"}, {"vibranium_to_unobtainium", "4"},
+                {"redstone_to_uraninite", "8"}, {"stone_to_inferium", "8"}, {"amethyst_to_arcane", "8"}, {"silver_to_iesnium", "8"},
+                {"coal_to_dark_gem", "8"}, {"deepslate_to_bort", "8"}, {"iron_to_crimson_iron", "8"}, {"chorus_to_azure_silver", "8"},
+                {"iron_to_cloggrum", "8"}, {"cloggrum_to_froststeel", "8"}, {"redstone_to_utherium", "8"}, {"amethyst_to_regalium", "8"},
+                {"lapis_to_dimensional", "8"}, {"lapis_to_fluxite", "8"}, {"gold_to_force", "8"}, {"amethyst_to_chimerite", "8"},
+                {"stone_to_amber", "8"}, {"desert_to_saltpeter", "8"}, {"amethyst_to_sal_ammoniac", "8"}, {"iron_to_desh", "8"},
+                {"iron_to_titanium", "8"}, {"coal_to_ambrosium", "8"}, {"amethyst_to_zanite", "8"}, {"iron_to_arkenium", "4"},
+                {"arkenium_to_gravitite", "4"}};
         for (String[] amount : amounts) {
             LAB_AMOUNTS.put(amount[0], Integer.parseInt(amount[1]));
         }
@@ -1128,15 +1824,44 @@ public class DataGen {
                 {"allthemodium", "#c:ingots/allthemodium", "experimental", 2, "netherite", "A gold-bright metal from under the deepest stone."},
                 {"vibranium", "#c:ingots/vibranium", "experimental", 2, "allthemodium", "A teal metal that hums, from the Nether."},
                 {"unobtainium", "#c:ingots/unobtainium", "experimental", 2, "vibranium", "A violet metal from the End that should not exist."},
+                {"uraninite", "#c:raw_materials/uraninite", "advanced", 1, null, "A raw green ore that holds a charge."},
+                {"inferium", "mysticalagriculture:inferium_essence", "basic", 0, null, "A green essence, the first of five."},
+                {"arcane", "#c:gems/arcane_crystal", "advanced", 1, null, "A pink crystal that hums with magic."},
+                {"iesnium", "#c:ingots/iesnium", "advanced", 1, "silver", "A teal metal most eyes cannot see in the rock."},
+                {"dark_gem", "evilcraft:dark_gem", "advanced", 1, null, "A black gem that drinks the light."},
+                {"bort", "#c:gems/bort", "advanced", 1, null, "A rough, cloudy diamond, too poor for jewels."},
+                {"crimson_iron", "#c:ingots/crimson_iron", "advanced", 1, null, "A red iron from the Nether."},
+                {"azure_silver", "#c:ingots/azure_silver", "advanced", 1, null, "A blue silver from the End."},
+                {"cloggrum", "#c:ingots/cloggrum", "advanced", 1, null, "A dull brown metal from deep under the world."},
+                {"froststeel", "#c:ingots/froststeel", "advanced", 1, "cloggrum", "A metal that never warms in the hand."},
+                {"utherium", "#c:gems/utherium", "advanced", 1, null, "A blood red crystal from deep under the world."},
+                {"regalium", "#c:gems/regalium", "advanced", 1, null, "A golden crystal traders of the deep value."},
+                {"dimensional", "rftoolsbase:dimensionalshard", "advanced", 1, null, "A shard that belongs to no one world."},
+                {"fluxite", "#c:gems/fluxite", "advanced", 1, null, "A bright pink gem that bends energy."},
+                {"force", "#c:gems/force", "advanced", 1, null, "A yellow gem full of force."},
+                {"chimerite", "#c:gems/chimerite", "advanced", 1, null, "A gem that shifts colour as it turns."},
+                {"amber", "#c:gems/amber", "advanced", 1, null, "Old resin turned to stone."},
+                {"saltpeter", "#c:dusts/saltpeter", "basic", 0, null, "A white dust that makes powder burn."},
+                {"sal_ammoniac", "#c:gems/sal_ammoniac", "advanced", 1, null, "A pale crystal alchemists dissolve things in."},
+                {"desh", "#c:ingots/desh", "advanced", 1, null, "An orange metal from another world."},
+                {"titanium", "#c:ingots/titanium", "advanced", 1, null, "A light, hard metal from another world."},
+                {"ambrosium", "aether_ii:ambrosium_shard", "basic", 0, null, "A glowing yellow shard from the sky."},
+                {"zanite", "aether_ii:zanite_gemstone", "advanced", 1, null, "A purple gemstone from the sky."},
+                {"arkenium", "aether_ii:arkenium_plate", "advanced", 1, null, "A heavy plate of the sky's metal."},
+                {"gravitite", "aether_ii:gravitite_plate", "advanced", 1, "arkenium", "A plate of the metal that falls upward."},
         };
-        for (Object[] r : list) {
+        List<Object[]> rows = new ArrayList<>(Arrays.asList(list));
+        for (Object[] made : MADE) {
+            rows.add(new Object[] {made[0], made[2], made[3], made[3].equals("basic") ? 0 : made[3].equals("experimental") ? 2 : 1, made[4], made[5]});
+        }
+        for (Object[] r : rows) {
             String id = (String) r[0];
             Object material = r[1] instanceof String item ? mc(item) : r[1];
             Map<String, Object> json = obj("material", material, "species", ac(id), "tier", r[2],
                     "catalysts", (Integer) r[3] == 0 ? null : arr(obj("ingredient", ac("evolution_catalyst"), "count", r[3])),
                     "requires", r[4] == null ? null : arr(ac((String) r[4])));
             if (NEEDS_MODS.containsKey(id)) {
-                json.put("neoforge:conditions", conditions(NEEDS_MODS.get(id)));
+                json.put("neoforge:conditions", speciesConditions(id));
             }
             write(DATA.resolve(NS + "/research/" + id + ".json"), json);
             LANG.put("research." + NS + "." + id + ".hint", (String) r[5]);
@@ -1175,10 +1900,6 @@ public class DataGen {
     }
 
     static void hybrids() {
-        write(DATA.resolve(NS + "/hybrid/crystal_wood.json"), obj("first", ac("wood"), "second", ac("diamond"), "result", ac("crystal_wood"),
-                "chance", 0.25, "min_average_level", 3.0));
-        write(DATA.resolve(NS + "/hybrid/frost_emerald.json"), obj("first", ac("snow"), "second", ac("emerald"), "result", ac("frost_emerald"),
-                "chance", 0.2, "min_average_level", 4.0));
         write(DATA.resolve(NS + "/hybrid/mechanical_miner.json"), obj("first", ac("stone"), "second", ac("redstone"), "result", ac("mechanical_miner"),
                 "chance", 0.3, "min_average_level", 2.5));
         write(DATA.resolve(NS + "/hybrid/obsidian.json"), obj("first", ac("stone"), "second", ac("fire"), "result", ac("obsidian"),
@@ -1408,6 +2129,17 @@ public class DataGen {
 
     static void foodMap() {
         Map<String, Object> values = new LinkedHashMap<>();
+        // Whole kinds of food first, by the common tags, so other mods' crops, fruit, meat and fish feed a colony too.
+        // The game reads the file in order: an item named further down keeps its own number.
+        Object[][] kinds = {
+                {"#c:seeds", 4}, {"#c:crops", 20}, {"#c:foods/vegetable", 25}, {"#c:foods/berry", 30}, {"#c:foods/fruit", 40},
+                {"#c:foods/raw_fish", 30}, {"#c:foods/raw_meat", 40}, {"#c:foods/cooked_fish", 50}, {"#c:foods/cooked_meat", 65},
+                {"#c:foods/dough", 30}, {"#c:foods/cookie", 40}, {"#c:foods/candy", 40}, {"#c:foods/soup", 70}, {"#c:foods/bread", 80},
+                {"#c:foods/pie", 90},
+        };
+        for (Object[] kind : kinds) {
+            values.put((String) kind[0], obj("food", ((Integer) kind[1]).doubleValue()));
+        }
         Object[][] foods = {
                 {ac("ant_food"), 200, null, 0}, {ac("mineral_ant_food"), 100, "mineral", 100}, {ac("crystal_ant_food"), 100, "crystal", 100},
                 {ac("nether_ant_food"), 150, "nether", 100}, {ac("royal_jelly"), 400, null, 0},
@@ -1417,12 +2149,20 @@ public class DataGen {
                 {"potato", 25, null, 0}, {"beetroot", 20, null, 0}, {"rotten_flesh", 30, null, 0}, {"spider_eye", 25, null, 0},
                 {"beef", 40, null, 0}, {"porkchop", 40, null, 0}, {"chicken", 40, null, 0}, {"mutton", 40, null, 0}, {"rabbit", 40, null, 0},
                 {"cod", 30, null, 0}, {"salmon", 30, null, 0}, {"egg", 30, null, 0}, {"cookie", 40, null, 0},
+                // More of the base game's: what grows, what is cooked from an ant's finds, and what ants are known to carry off.
+                {"baked_potato", 50, null, 0}, {"poisonous_potato", 15, null, 0}, {"melon", 225, null, 0}, {"pumpkin", 60, null, 0},
+                {"sugar_cane", 10, null, 0}, {"cactus", 10, null, 0}, {"cocoa_beans", 15, null, 0}, {"nether_wart", 15, null, 0},
+                {"chorus_fruit", 30, null, 0}, {"dried_kelp", 10, null, 0}, {"crimson_fungus", 25, null, 0},
+                {"warped_fungus", 25, null, 0}, {"blue_egg", 30, null, 0}, {"brown_egg", 30, null, 0},
         };
         for (Object[] food : foods) {
             values.put(mc((String) food[0]), obj("food", ((Integer) food[1]).doubleValue(), "special_kind", food[2],
                     "special", food[2] == null ? null : ((Integer) food[3]).doubleValue()));
         }
-        write(DATA.resolve("data_maps/item/ant_food.json"), obj("values", values));
+        // Out again: what the tags bring in that a Queen is fed for something else. Golden food makes mutations, a cake
+        // makes Baker Ants; as food they would be eaten instead.
+        write(DATA.resolve("data_maps/item/ant_food.json"), obj("values", values,
+                "remove", arr("minecraft:golden_carrot", "minecraft:golden_apple", "minecraft:enchanted_golden_apple", "minecraft:cake")));
     }
 
     // --- Recipes ---
@@ -1601,38 +2341,57 @@ public class DataGen {
         floors.put("cold", arr("minecraft:snow_block", "minecraft:powder_snow", "#minecraft:ice"));
         floors.put("hot", hot);
         floors.put("temperate", arr("#minecraft:dirt", "#minecraft:grass_blocks", "#minecraft:mud", "#minecraft:moss_blocks"));
-        floors.put("underground", arr("#minecraft:base_stone_overworld", "minecraft:smooth_stone", "minecraft:polished_granite",
+        // The stones and nylium by name, not by the base game's tags: world generation mods add to those (Nullscape end stone
+        // and Terralith blackstone to the Overworld's stones, Terralith grass to the nylium), and a block must have one climate.
+        floors.put("underground", arr("minecraft:stone", "minecraft:granite", "minecraft:diorite", "minecraft:andesite", "minecraft:tuff",
+                "minecraft:deepslate", "minecraft:smooth_stone", "minecraft:polished_granite",
                 "minecraft:polished_diorite", "minecraft:polished_andesite", "minecraft:polished_tuff", "minecraft:cobbled_deepslate",
                 "minecraft:polished_deepslate", "minecraft:cobblestone", "minecraft:mossy_cobblestone", "minecraft:calcite",
                 "minecraft:dripstone_block"));
-        floors.put("nether", arr("#minecraft:base_stone_nether", "minecraft:polished_basalt", "minecraft:smooth_basalt",
-                "minecraft:polished_blackstone", "#minecraft:nylium", "minecraft:magma_block", "minecraft:soul_sand", "minecraft:soul_soil"));
+        floors.put("nether", arr("minecraft:netherrack", "minecraft:basalt", "minecraft:blackstone", "minecraft:polished_basalt",
+                "minecraft:smooth_basalt", "minecraft:polished_blackstone", "minecraft:crimson_nylium", "minecraft:warped_nylium",
+                "minecraft:magma_block", "minecraft:soul_sand", "minecraft:soul_soil"));
         floors.put("end", arr("minecraft:end_stone", "minecraft:end_stone_bricks"));
         for (Map.Entry<String, List<Object>> floor : floors.entrySet()) {
             write(DATA.resolve("tags/block/climate/" + floor.getKey() + ".json"), obj("values", floor.getValue()));
         }
         // Where each wild species lives.
+        // The common biome tags (c:is_...) bring in the biomes of world generation mods; MOD_BIOMES adds the ones no tag sorts.
         Map<String, List<Object>> biomes = new LinkedHashMap<>();
         biomes.put("common", arr("minecraft:plains", "minecraft:sunflower_plains", "minecraft:meadow", "minecraft:forest", "minecraft:flower_forest",
-                "minecraft:birch_forest", "minecraft:cherry_grove"));
+                "minecraft:birch_forest", "minecraft:cherry_grove", "#c:is_plains", "#c:is_forest", "#c:is_birch_forest", "#c:is_flower_forest"));
         biomes.put("wood", arr("#minecraft:is_taiga", "minecraft:old_growth_birch_forest", "minecraft:dark_forest", "minecraft:old_growth_pine_taiga",
-                "minecraft:old_growth_spruce_taiga"));
+                "minecraft:old_growth_spruce_taiga", "#c:is_taiga", "#c:is_old_growth", "#c:is_tree/coniferous"));
         biomes.put("stone", arr("minecraft:stony_peaks", "minecraft:stony_shore", "minecraft:windswept_hills", "minecraft:windswept_gravelly_hills",
-                "minecraft:dripstone_caves", "minecraft:jagged_peaks"));
+                "minecraft:dripstone_caves", "minecraft:jagged_peaks", "#c:is_mountain", "#c:is_hill", "#c:is_stony_shores", "#c:is_windswept"));
         biomes.put("snow", arr("minecraft:snowy_plains", "minecraft:ice_spikes", "minecraft:snowy_taiga", "minecraft:snowy_slopes", "minecraft:grove",
-                "minecraft:frozen_peaks", "minecraft:snowy_beach"));
-        biomes.put("desert", arr("minecraft:desert", "minecraft:badlands", "minecraft:eroded_badlands", "minecraft:wooded_badlands"));
-        biomes.put("farmer", arr("#minecraft:is_jungle", "minecraft:mushroom_fields", "minecraft:swamp", "minecraft:mangrove_swamp"));
-        biomes.put("jungle", arr("#minecraft:is_jungle"));
-        biomes.put("swamp", arr("minecraft:swamp", "minecraft:mangrove_swamp"));
-        biomes.put("savanna", arr("#minecraft:is_savanna"));
-        biomes.put("shore", arr("minecraft:beach"));
-        biomes.put("blossom", arr("minecraft:cherry_grove", "minecraft:flower_forest", "minecraft:meadow", "minecraft:sunflower_plains"));
+                "minecraft:frozen_peaks", "minecraft:snowy_beach", "#c:is_snowy", "#c:is_icy"));
+        biomes.put("desert", arr("minecraft:desert", "minecraft:badlands", "minecraft:eroded_badlands", "minecraft:wooded_badlands", "#c:is_desert",
+                "#c:is_badlands"));
+        biomes.put("farmer", arr("#minecraft:is_jungle", "minecraft:mushroom_fields", "minecraft:swamp", "minecraft:mangrove_swamp", "#c:is_jungle",
+                "#c:is_mushroom", "#c:is_swamp"));
+        biomes.put("jungle", arr("#minecraft:is_jungle", "#c:is_jungle", "#c:is_tree/jungle"));
+        biomes.put("swamp", arr("minecraft:swamp", "minecraft:mangrove_swamp", "#c:is_swamp"));
+        biomes.put("savanna", arr("#minecraft:is_savanna", "#c:is_savanna"));
+        biomes.put("shore", arr("minecraft:beach", "#c:is_beach"));
+        biomes.put("blossom", arr("minecraft:cherry_grove", "minecraft:flower_forest", "minecraft:meadow", "minecraft:sunflower_plains", "#c:is_floral"));
         biomes.put("pale", arr("minecraft:pale_garden"));
-        biomes.put("badlands", arr("#minecraft:is_badlands"));
-        biomes.put("army", arr("#minecraft:is_savanna", "minecraft:plains", "minecraft:sunflower_plains"));
-        biomes.put("warped", arr("minecraft:warped_forest", "minecraft:crimson_forest"));
+        biomes.put("badlands", arr("#minecraft:is_badlands", "#c:is_badlands"));
+        biomes.put("army", arr("#minecraft:is_savanna", "minecraft:plains", "minecraft:sunflower_plains", "#c:is_savanna", "#c:is_plains"));
+        biomes.put("warped", arr("minecraft:warped_forest", "minecraft:crimson_forest", "#c:is_nether_forest"));
         biomes.put("chorus", arr("minecraft:end_highlands", "minecraft:end_midlands"));
+        // Crimson Ants take the crimson forest over from Warped Ants, whose tag (and so whose nests) still covers it.
+        biomes.put("crimson", arr("minecraft:crimson_forest"));
+        // The Other (Allthemodium's Nether-like dimension): the home of Allthemodium and Vibranium Ants, who have no nest
+        // block of their own and live in the nests that stand there (the nest_dwellers species tag).
+        biomes.put("the_other", arr());
+        for (String[] row : MOD_BIOMES) {
+            for (String biome : row[2].split(" ")) {
+                for (String nest : row[1].split(" ")) {
+                    biomes.get(nest).add(obj("id", row[0] + ":" + biome, "required", false));
+                }
+            }
+        }
         List<Object> all = new ArrayList<>();
         for (Map.Entry<String, List<Object>> entry : biomes.entrySet()) {
             write(DATA.resolve("tags/worldgen/biome/spawns/" + entry.getKey() + ".json"), obj("values", entry.getValue()));
@@ -1641,38 +2400,92 @@ public class DataGen {
         write(DATA.resolve("tags/worldgen/biome/has_wild_ants.json"), obj("values", all));
     }
 
+    /**
+     * Other mods' biomes that the common tags leave out or sort too loosely: the mod, the nests that stand there, the biomes.
+     * Every entry is optional in its tag, so a missing mod or a renamed biome changes nothing.
+     */
+    static final String[][] MOD_BIOMES = {
+            // Terralith.
+            {"terralith", "common", "blooming_plateau shrubland valley_clearing lush_valley shield_clearing alpha_islands"},
+            {"terralith", "blossom", "blooming_plateau"},
+            {"terralith", "wood", "yosemite_cliffs alpha_islands_winter"},
+            {"terralith", "stone", "basalt_cliffs granite_cliffs white_cliffs yellowstone yosemite_cliffs frozen_cliffs"},
+            {"terralith", "snow", "cold_shrubland rocky_shrubland gravel_desert alpha_islands_winter"},
+            {"terralith", "savanna army", "hot_shrubland brushland"},
+            {"terralith", "farmer", "mirage_isles"},
+            {"terralith", "badlands desert", "warped_mesa"},
+            // Regions Unexplored.
+            {"regions_unexplored", "common", "tropics"},
+            {"regions_unexplored", "jungle farmer", "tropics"},
+            {"regions_unexplored", "wood", "pine_slopes cold_boreal_taiga frozen_pine_taiga"},
+            {"regions_unexplored", "snow", "tundra cold_deciduous_forest"},
+            {"regions_unexplored", "stone", "chalk_cliffs"},
+            {"regions_unexplored", "pale", "ashen_woodland"},
+            {"regions_unexplored", "warped", "glistering_meadow mycotoxic_undergrowth infernal_holt"},
+            // Nullscape (the End).
+            {"nullscape", "chorus", "shadowlands crystal_peaks"},
+            // The Twilight Forest.
+            {"twilightforest", "common", "forest dense_forest firefly_forest clearing enchanted_forest"},
+            {"twilightforest", "blossom", "enchanted_forest"},
+            {"twilightforest", "wood", "highlands dense_forest"},
+            {"twilightforest", "savanna army", "oak_savannah"},
+            {"twilightforest", "farmer", "mushroom_forest dense_mushroom_forest swamp"},
+            {"twilightforest", "swamp", "swamp fire_swamp"},
+            {"twilightforest", "snow", "snowy_forest glacier"},
+            {"twilightforest", "pale", "dark_forest dark_forest_center spooky_forest"},
+            {"twilightforest", "stone", "thornlands final_plateau"},
+            // Aether II.
+            {"aether_ii", "common", "flourishing_field verdant_woods enduring_woodland shimmering_basin expanse"},
+            {"aether_ii", "blossom", "flourishing_field"},
+            {"aether_ii", "wood", "violet_highwoods turquoise_forest shrouded_forest"},
+            {"aether_ii", "stone", "magnetic_scar battleground_wastes"},
+            {"aether_ii", "snow", "frigid_sierra sheer_tundra frozen_lakes"},
+            {"aether_ii", "swamp farmer", "glistening_swamp"},
+            {"aether_ii", "jungle farmer", "contaminated_jungle"},
+            // The Undergarden (a roofed dimension: nests stand on its cave floors).
+            {"undergarden", "stone", "forgotten_field barren_abyss smog_spires depths gronglegrowth"},
+            {"undergarden", "wood", "smogstem_forest wigglewood_forest dense_forest"},
+            {"undergarden", "snow", "frostfields frosty_smogstem_forest"},
+            {"undergarden", "farmer", "blood_mushroom_bog indigo_mushroom_bog ink_mushroom_bog veil_mushroom_bog puff_mushroom_forest"},
+            // Allthemodium: The Other (its own tag: its nests hold Allthemodium and Vibranium Ants) and The Beyond (like the
+            // End). Not the Mining Dimension: the user wants no nests there.
+            {"allthemodium", "the_other", "the_other warped_forest crimson_forest soul_sand_valley basalt_deltas desert desert_hills"},
+            {"allthemodium", "chorus", "the_beyond"},
+            // Thaumaturge.
+            {"thaumaturge", "blossom", "magical_forest"},
+    };
+
+    /**
+     * The share of their spots wild nests take (NestGround's chance): the rarities below thinned by a tenth, which a
+     * whole number of chunks cannot say.
+     */
+    static final double NEST_SHARE = 0.9;
+    /** One nest in this many chunks of The Other. */
+    static final int THE_OTHER_NEST_RARITY = 24;
+
     static void worldgen() {
         for (String nest : NESTS) {
             write(DATA.resolve("worldgen/feature/" + nest + "_ant_nest.json"), obj("type", "minecraft:simple_block", "to_place", obj("id", ac(nest + "_ant_nest"))));
             List<Object> placement = new ArrayList<>();
             boolean nether = nest.equals("warped");
+            // Nether nests more often: their forests are small, and many spots there are rock or lava.
             placement.add(obj("type", "minecraft:rarity_filter", "chance", nest.equals("stone") || nest.equals("snow") ? 28
                     : nest.equals("shore") || nest.equals("pale") ? 14 : nether ? 6 : 20));
-            if (nether) {
-                // A few tries in each chosen chunk: many land in rock or over lava.
-                placement.add(obj("type", "minecraft:count", "count", 4));
-            }
             placement.add(obj("type", "minecraft:in_square"));
-            // Where a nest may stand: air, or (in the Nether's forests, thick with roots and sprouts) a plant it replaces.
-            Map<String, Object> room = nether ? obj("type", "minecraft:matching_block_tag", "tag", "minecraft:replaceable")
-                    : obj("type", "minecraft:matching_block_tag", "tag", "minecraft:air");
-            if (nether) {
-                // The Nether has a roof: take a height between floor and roof, scan down to the ground, stand on it.
-                placement.add(obj("type", "minecraft:height_range", "height", obj("type", "minecraft:uniform",
-                        "min_inclusive", obj("absolute", 32), "max_inclusive", obj("absolute", 110))));
-                placement.add(obj("type", "minecraft:environment_scan", "direction_of_search", "down", "max_steps", 32,
-                        "target_condition", obj("type", "minecraft:solid"), "allowed_search_condition", room));
-                placement.add(obj("type", "minecraft:offset", "x", 0, "y", 1, "z", 0));
-            } else {
-                placement.add(obj("type", "minecraft:heightmap", "heightmap", "WORLD_SURFACE_WG"));
-            }
+            // The mod's own step (NestGround): the ground under the leaves, or a cave floor where the dimension has a roof.
+            placement.add(obj("type", ac("nest_ground"), "chance", NEST_SHARE));
             placement.add(obj("type", "minecraft:biome"));
-            placement.add(obj("type", "minecraft:block_predicate_filter", "predicate", obj("type", "minecraft:all_of", "predicates", arr(
-                    room, obj("type", "minecraft:has_sturdy_face", "direction", "up", "offset", arr(0, -1, 0))))));
             write(DATA.resolve("worldgen/placed_feature/" + nest + "_ant_nest.json"), obj("feature", ac(nest + "_ant_nest"), "placement", placement));
             write(DATA.resolve("neoforge/biome_modifier/add_" + nest + "_ant_nests.json"), obj("type", "neoforge:add_features",
                     "biomes", "#" + ac("spawns/" + nest), "features", ac(nest + "_ant_nest"), "step", "vegetal_decoration"));
         }
+        // The Other's nests: the Nether nest block, rarely, in every biome of that dimension. Who lives in one is decided
+        // where it stands (WildNestBlockEntity.dweller).
+        write(DATA.resolve("worldgen/placed_feature/the_other_ant_nest.json"), obj("feature", ac("warped_ant_nest"), "placement", arr(
+                obj("type", "minecraft:rarity_filter", "chance", THE_OTHER_NEST_RARITY), obj("type", "minecraft:in_square"),
+                obj("type", ac("nest_ground"), "chance", NEST_SHARE), obj("type", "minecraft:biome"))));
+        write(DATA.resolve("neoforge/biome_modifier/add_the_other_ant_nests.json"), obj("type", "neoforge:add_features",
+                "biomes", "#" + ac("spawns/the_other"), "features", ac("the_other_ant_nest"), "step", "vegetal_decoration"));
         write(DATA.resolve("neoforge/biome_modifier/add_wild_ants.json"), obj("type", "neoforge:add_spawns", "biomes", "#" + ac("has_wild_ants"),
                 "spawners", arr(obj("type", ac("wild_ant"), "count", obj("type", "minecraft:uniform", "min_inclusive", 2, "max_inclusive", 5), "weight", 12))));
     }
@@ -2279,9 +3092,13 @@ public class DataGen {
         write(DATA.resolve("worldgen/structure_set/giant_anthills.json"), obj("placement", obj("type", "minecraft:random_spread",
                         "exclusion_zone", obj("chunk_count", 4, "other_set", "minecraft:villages"), "salt", 1836401827, "separation", 7, "spacing", 20),
                 "structures", arr(obj("structure", ac("giant_anthill"), "weight", 1))));
-        write(DATA.resolve("tags/worldgen/biome/has_structure/giant_anthill.json"), obj("values", arr("#c:is_plains", "#c:is_forest",
+        List<Object> giantAnthillBiomes = new ArrayList<>(List.of("#c:is_plains", "#c:is_forest",
                 "#c:is_savanna", "#c:is_jungle", "#c:is_taiga", "#c:is_desert", "#c:is_badlands", "minecraft:meadow",
-                "#c:is_swamp", "#c:is_mushroom", "minecraft:cherry_grove", "minecraft:snowy_plains", "minecraft:grove")));
+                "#c:is_swamp", "#c:is_mushroom", "minecraft:cherry_grove", "minecraft:snowy_plains", "minecraft:grove",
+                // Bare ground too: beaches, stony shores, windswept hills, peaks and ice.
+                "minecraft:pale_garden", "#c:is_beach", "#c:is_stony_shores", "#c:is_windswept", "#c:is_mountain/peak", "#c:is_icy"));
+        SURFACE_WORLD_BIOMES.forEach(biome -> giantAnthillBiomes.add(obj("id", biome, "required", false)));
+        write(DATA.resolve("tags/worldgen/biome/has_structure/giant_anthill.json"), obj("values", giantAnthillBiomes));
         // Its chests.
         write(DATA.resolve("loot_table/chests/giant_anthill.json"), obj("type", "minecraft:chest", "pools", arr(
                 obj("entries", arr(
@@ -2302,8 +3119,10 @@ public class DataGen {
         write(DATA.resolve("worldgen/structure_set/nether_anthills.json"), obj("placement", obj("type", "minecraft:random_spread",
                         "salt", 517294613, "separation", 6, "spacing", 18),
                 "structures", arr(obj("structure", ac("nether_anthill"), "weight", 1))));
-        write(DATA.resolve("tags/worldgen/biome/has_structure/nether_anthill.json"), obj("values", arr("minecraft:nether_wastes",
-                "minecraft:crimson_forest", "minecraft:warped_forest", "minecraft:soul_sand_valley")));
+        List<Object> netherAnthillBiomes = new ArrayList<>(List.of("minecraft:nether_wastes",
+                "minecraft:crimson_forest", "minecraft:warped_forest", "minecraft:soul_sand_valley", "minecraft:basalt_deltas"));
+        CAVE_WORLD_BIOMES.forEach(biome -> netherAnthillBiomes.add(obj("id", biome, "required", false)));
+        write(DATA.resolve("tags/worldgen/biome/has_structure/nether_anthill.json"), obj("values", netherAnthillBiomes));
         write(DATA.resolve("loot_table/chests/nether_anthill.json"), obj("type", "minecraft:chest", "pools", arr(
                 obj("entries", arr(
                         lootItem(ac("nether_ant_food"), 15, 2, 6), lootItem("minecraft:quartz", 15, 4, 12), lootItem("minecraft:gold_ingot", 12, 2, 6),
@@ -2584,7 +3403,7 @@ public class DataGen {
         }
         String[][] guide = {
                 {"start", "Getting Started", String.join("\n",
-                        "Craft Tweezers and some Test Tubes. Find wild ants or an Ant Nest and use the Tweezers on them: the ants go into an empty Test Tube in your inventory. Queens are rare; nests give one now and then.",
+                        "Craft Tweezers and some Test Tubes. Find wild ants or an Ant Nest and use the Tweezers on them: the ants go into an empty Test Tube in your inventory. Your first catch from a nest is always a Queen. After that Queens are rare; nests give one now and then.",
                         "Place a Formicarium, put the Queen Test Tube in, then some Ant Food. The Queen starts laying eggs at once: a Formicarium works on its own.",
                         "The Formicarium's screen shows the colony: its ants, genes, jobs and numbers, and on the Info page what its ants are like.",
                         "To move a colony, take it out in Test Tubes: an empty tube in the Queen slot takes the Queen out, empty tubes in the feed slot fill with ants (up to 1,000 each), and the Colony page's Take out buttons do the same from your inventory. Then break the Formicarium and put the tubes into a new one. Ants left inside a broken Formicarium are lost.")},
@@ -2742,7 +3561,7 @@ public class DataGen {
                 {"upgrade_station", "Makes species upgrades from an Upgrade Base and a species' signature material."},
                 {"generator", "Burns furnace fuel into FE and gives it to the machines next to it, such as the Genetic Laboratory."},
                 {"genetic_laboratory", "Scans materials for research, mutates Queens into researched species and edits their genes. Runs on FE: put a Generator next to it."},
-                {"tweezers", "Catches wild ants into empty Test Tubes in your inventory. Also works on wild nests."},
+                {"tweezers", "Catches wild ants into Test Tubes in your inventory: a tube of the same ants, or an empty one. Also works on wild nests."},
                 {"test_tube", "Holds caught ants. Keep some in your inventory when using Tweezers."},
                 {"ant_food", "Basic colony food (200 food)."}, {"mineral_ant_food", "Food for mineral species; their eggs need it."},
                 {"crystal_ant_food", "Food for crystal species (Amethyst, Diamond, Emerald)."}, {"nether_ant_food", "Food for Netherite Ants."},
@@ -2784,7 +3603,7 @@ public class DataGen {
         l.put("jei." + NS + ".goes_in", "Goes in here");
         // A heading per place, then short values under it, like vanilla's "When in Main Hand:" lines.
         String[][] places = {{"sites", "In job sites:"}, {"nest", "In Nest Chambers:"}, {"queen", "In Queen Chambers:"},
-                {"lab", "In the Genetic Lab:"}, {"terrarium", "In the Formicarium:"}, {"terrarium_or_site", "In the Formicarium or a job site:"},
+                {"lab", "In the Genetic Lab:"}, {"centrifuge", "In the Droplet Centrifuge:"}, {"terrarium", "In the Formicarium:"}, {"terrarium_or_site", "In the Formicarium or a job site:"},
                 {"terrarium_and_nest", "In the Formicarium & Nest Chambers:"}, {"storage", "In Storage:"}, {"hunting", "In Hunting Grounds:"}};
         for (String[] place : places) {
             l.put("tooltip." + NS + ".upgrade_place." + place[0], place[1]);
@@ -2795,6 +3614,7 @@ public class DataGen {
                 {"speed.eggs", "+%s%% egg laying"},
                 {"speed.queen", "+%s%% Queen rearing"},
                 {"speed.lab", "%sx lab speed"},
+                {"speed.centrifuge", "%sx spinning speed"},
                 {"food_efficiency", "-%s%% food eaten"},
                 {"simulation", "%s of offline catch-up"},
                 {"storage.slots", "%s slots (+%s)"},
@@ -2813,7 +3633,7 @@ public class DataGen {
         for (String[] effect : effects) {
             l.put("tooltip." + NS + ".upgrade_effect." + effect[0], effect[1]);
         }
-        String[][] upgradeTips = {{"speed", "Faster work in chambers and the lab, faster larvae."}, {"food_efficiency", "Less food eaten."},
+        String[][] upgradeTips = {{"speed", "Faster work in chambers, the lab and the Centrifuge, faster larvae."}, {"food_efficiency", "Less food eaten."},
                 {"simulation", "Formicarium: more offline catch-up (numbers only, no entities)."}, {"storage", "Storage: more slots and more food room."},
                 {"breeding", "Faster egg laying and Queen rearing."}, {"genetic", "Cheaper lab work; more mutations in Queen Chambers."},
                 {"hunting", "Hunting Ground: stronger hunters, more catches, fewer losses."}, {"automation", "Storage: pushes its finds into the container below."},
@@ -2898,6 +3718,7 @@ public class DataGen {
                 {"site.workers", "Workers %s/%s (want %s)"}, {"site.hunters", "Hunters %s/%s (want %s)"},
                 {"site.farmers", "Farmers %s/%s (want %s)"}, {"site.rate", "%s finds per minute"},
                 {"site.hunt_rate", "%s hunts per minute"}, {"site.food_rate", "%s food per minute"}, {"site.store", "Finds wait here while the Storage is full"},
+                {"site.loot_store", "Loot waits here while the Storage is full"},
                 {"storage.slots", "%s slots"}, {"storage.upgrade_held", "Stuck: take out what won't fit without it"},
                 {"queen_chamber.slots", "Rears a new Queen"}, {"queen_chamber.time", "Takes %s s at full speed"},
                 {"slot.qc_tube", "Test Tube slot"}, {"slot.qc_tube.hint", "An empty Test Tube to hold the new Queen"},
@@ -2956,6 +3777,7 @@ public class DataGen {
         String[][] messages = {{"message." + NS + ".tweezers.no_tube", "You need an empty Test Tube"},
                 {"message." + NS + ".tweezers.caught", "Caught: %s"}, {"message." + NS + ".tweezers.no_eggs", "Not enough eggs"},
                 {"message." + NS + ".tweezers.no_workers", "No spare workers"}, {"message." + NS + ".nest.recovering", "The nest is still recovering"},
+                {"message." + NS + ".nest.recovering_in", "The nest is recovering: its ants are back in %s"},
                 {"scanner." + NS + ".colony", "%s colony, stage %s"}, {"scanner." + NS + ".population", "%s workers, %s larvae, %s eggs"},
                 {"scanner." + NS + ".food", "Food %s / %s (+%s, -%s per minute)"}, {"scanner." + NS + ".health", "Health %s%%, %s chambers"},
                 {"scanner." + NS + ".queen", "Queen %s (%s)"}, {"scanner." + NS + ".linked", "Linked to the Formicarium at %s, %s, %s"},
@@ -2979,7 +3801,8 @@ public class DataGen {
                 {"weight", "Weight %s"}, {"stage", "From stage %s"}, {"special", "Signature find"}, {"climate", "Climate: %s"},
                 {"diet", "Eggs need %s food (%s each)"}, {"rate", "%s finds/min per worker"},
                 {"food_rate", "%s food/min per farmer"}, {"strength", "Hunting strength x%s"},
-                {"loot", "Drops from this mob's own loot table"}, {"hybrid_chance", "Chance: %s%% with both parents at trait level %s"},
+                {"loot", "Drops from this mob's own loot table"},
+                {"trophy", "From stage %3$s also %1$s, from %2$s%% of catches"}, {"hybrid_chance", "Chance: %s%% with both parents at trait level %s"},
                 {"hybrid_quality", "Higher traits raise the chance, lower ones cut it"},
                 {"catalyst", "Catalyst in the Mutation Chamber"}, {"random", "Random only (weight %s)"}, {"negative", "Harmful"},
                 {"level_step", "Level %s -> %s"}, {"energy", "%s FE"}, {"eggs_info", "%s eggs/min, hatch in %s min"},
@@ -2999,9 +3822,12 @@ public class DataGen {
     /** A decorative block: id, display name, how it is modelled (cube, pillar, door, trapdoor, cluster) and its tool. */
     record Decor(String id, String name, String model, String tool) {}
 
+    /** The tones of anthill soil, as SoilTone names them. */
+    static final String[] SOIL_TONES = {"earth", "sand", "red", "frost", "stone", "pale", "dark", "nether"};
+
     static final List<Decor> DECOR = List.of(
-            new Decor("anthill_soil", "Anthill Soil", "cube", "shovel"),
-            new Decor("packed_anthill_soil", "Packed Anthill Soil", "cube", "pickaxe"),
+            new Decor("anthill_soil", "Anthill Soil", "toned", "shovel"),
+            new Decor("packed_anthill_soil", "Packed Anthill Soil", "toned", "pickaxe"),
             new Decor("anthill_bricks", "Anthill Bricks", "cube", "pickaxe"),
             new Decor("polished_anthill_bricks", "Polished Anthill Bricks", "cube", "pickaxe"),
             new Decor("nest_pillar", "Nest Pillar", "pillar", "pickaxe"),
@@ -3153,6 +3979,17 @@ public class DataGen {
                 case "cube" -> {
                     write(models.resolve(id + ".json"), obj("parent", "minecraft:block/cube_all", "textures", obj("all", texture)));
                     write(states.resolve(id + ".json"), obj("variants", obj("", obj("model", ac("block/" + id)))));
+                    write(items.resolve(id + ".json"), obj("model", obj("type", "minecraft:model", "model", ac("block/" + id))));
+                }
+                case "toned" -> {
+                    // One model a tone; earth, the first, keeps the block's plain name and is the item's look.
+                    Map<String, Object> variants = new LinkedHashMap<>();
+                    for (String tone : SOIL_TONES) {
+                        String name = tone.equals(SOIL_TONES[0]) ? id : id + "_" + tone;
+                        write(models.resolve(name + ".json"), obj("parent", "minecraft:block/cube_all", "textures", obj("all", ac("block/" + name))));
+                        variants.put("tone=" + tone, obj("model", ac("block/" + name)));
+                    }
+                    write(states.resolve(id + ".json"), obj("variants", variants));
                     write(items.resolve(id + ".json"), obj("model", obj("type", "minecraft:model", "model", ac("block/" + id))));
                 }
                 case "pillar" -> {
@@ -3430,9 +4267,20 @@ public class DataGen {
                 "P", ac("nether_trail_pheromone"), "B", "blaze_rod", "M", "magma_block", "T", ac("test_tube"));
     }
 
-    /** Weights of the nuggets Vibranium and Unobtainium Ants bring from expeditions, among about 120 and 60 of other finds. */
-    static final double VIBRANIUM_NUGGETS = 0.2;
-    static final double UNOBTAINIUM_NUGGETS = 0.06;
+    /**
+     * Weights of the nuggets Vibranium and Unobtainium Ants bring from expeditions, among about 120 and 60 of other finds.
+     * Set by the yield the user asked for: about 4 and 3 nuggets an hour from each of three full sites (256 ants), as
+     * OreModGameTests measures it a minute at a time. One long step caps a site at 256 finds and measures nothing.
+     */
+    static final double VIBRANIUM_NUGGETS = 0.26;
+    static final double UNOBTAINIUM_NUGGETS = 0.12;
+    /**
+     * The chance with each find that ants adapted to the Nether or the End turn up its trail pheromone in another
+     * dimension: very small, a pheromone in an hour or two from one full site, where a colony living there finds 40.
+     */
+    static final double TRAIL_AWAY = 0.0003;
+    /** The weight of each of the three froglights on a Nether expedition, a third of a ghast tear's. */
+    static final double FROGLIGHTS = 0.2;
 
     /** The Nether and End expedition tables, the species that can go on them, and the Foraging Site modes' mineral tag. */
     static void expeditions() {
@@ -3440,13 +4288,19 @@ public class DataGen {
                 ac("netherite"), ac("wither"), ac("crimson"), obj("id", ac("vibranium"), "required", false))));
         write(DATA.resolve("tags/antcolonies/species/end_adapted.json"), obj("values", arr(ac("chorus"), ac("ender"), ac("dragon"),
                 obj("id", ac("unobtainium"), "required", false))));
+        List<Object> dwellers = new ArrayList<>();
+        NEST_DWELLERS.keySet().stream().sorted().forEach(id -> dwellers.add(obj("id", ac(id), "required", false)));
+        write(DATA.resolve("tags/antcolonies/species/nest_dwellers.json"), obj("values", dwellers));
         List<Object> nether = arr(
                 Out.of("quartz", 20).json(), Out.of("glowstone_dust", 15).json(), Out.of("nether_wart", 14).json(), Out.of("blackstone", 10).json(),
                 Out.of("soul_sand", 10).json(), Out.of("basalt", 8).json(), Out.of("magma_cream", 8).json(), Out.of("soul_soil", 6).json(),
                 Out.of("crimson_fungus", 5).json(), Out.of("warped_fungus", 5).json(), Out.of("blaze_powder", 6).atStage(2).json(),
                 Out.of("shroomlight", 3).atStage(2).json(), Out.of("gold_nugget", 6).withCount(2).atStage(2).json(),
                 Out.of("blaze_rod", 1.5).atStage(3).json(), Out.of("gilded_blackstone", 0.6).atStage(3).asSpecial().json(),
-                Out.of("ghast_tear", 0.6).atStage(3).asSpecial().json(), Out.of(ac("infernal_chitin"), 0.8).atStage(3).asSpecial().json());
+                Out.of("ghast_tear", 0.6).atStage(3).asSpecial().json(), Out.of(ac("infernal_chitin"), 0.8).atStage(3).asSpecial().json(),
+                // Froglights: what a frog makes of a magma cube. Rare, one colour as likely as another.
+                Out.of("ochre_froglight", FROGLIGHTS).atStage(3).asSpecial().json(), Out.of("verdant_froglight", FROGLIGHTS).atStage(3).asSpecial().json(),
+                Out.of("pearlescent_froglight", FROGLIGHTS).atStage(3).asSpecial().json());
         Map<String, Object> debris = Out.of("ancient_debris", 0.08).atStage(4).asSpecial().json();
         debris.put("species", arr(ac("netherite"), ac("wither")));
         nether.add(debris);
@@ -3458,7 +4312,7 @@ public class DataGen {
         vibranium.put("species", arr(ac("vibranium")));
         nether.add(vibranium);
         write(DATA.resolve("antcolonies/expedition/nether.json"), obj("site", "nether_foraging_site", "adapted", ac("nether_adapted"), "rate", 0.8,
-                "home", "minecraft:the_nether", "trail", obj("item", ac("nether_trail_pheromone"), "chance", 0.02), "outputs", nether));
+                "home", "minecraft:the_nether", "trail", obj("item", ac("nether_trail_pheromone"), "chance", 0.02, "away_chance", TRAIL_AWAY), "outputs", nether));
         List<Object> end = arr(
                 Out.of("end_stone", 25).json(), Out.of("chorus_fruit", 18).json(), Out.of("obsidian", 4).json(),
                 Out.of("purpur_block", 6).atStage(2).json(), Out.of("ender_pearl", 5).atStage(2).json(), Out.of("end_rod", 2).atStage(3).json(),
@@ -3471,7 +4325,7 @@ public class DataGen {
         unobtainium.put("species", arr(ac("unobtainium")));
         end.add(unobtainium);
         write(DATA.resolve("antcolonies/expedition/end.json"), obj("site", "end_foraging_site", "adapted", ac("end_adapted"), "rate", 0.7,
-                "home", "minecraft:the_end", "trail", obj("item", ac("end_trail_pheromone"), "chance", 0.02), "outputs", end));
+                "home", "minecraft:the_end", "trail", obj("item", ac("end_trail_pheromone"), "chance", 0.02, "away_chance", TRAIL_AWAY), "outputs", end));
         // What Mineral Gathering looks for; everything else counts as organic.
         List<Object> mineral = arr("#c:ores", "#c:raw_materials", "#c:ingots", "#c:nuggets", "#c:gems", "#c:dusts", "#minecraft:coals",
                 obj("id", "#c:stones", "required", false), obj("id", "#c:cobblestones", "required", false));
@@ -3486,8 +4340,16 @@ public class DataGen {
         for (String item : new String[] {"diamond_fragment", "emerald_fragment"}) {
             mineral.add(ac(item));
         }
+        // Minerals of other mods that a species names outright, and the Sulfur Ant's rare find (MachinaOpus's petroleum coke).
+        if (NEEDS_ITEMS.isEmpty()) {
+            throw new IllegalStateException("The species must be written before the foraging tags");
+        }
+        NEEDS_ITEMS.values().forEach(items -> items.forEach(item -> mineral.add(obj("id", item, "required", false))));
+        mineral.add("#" + ac("foraging/sulfur_vents"));
         write(DATA.resolve("tags/item/foraging/mineral.json"), obj("values", mineral));
         LANG.put("tag.item." + NS + ".foraging.mineral", "Mineral Finds (Foraging Site Mineral Mode)");
+        write(DATA.resolve("tags/item/foraging/sulfur_vents.json"), obj("values", arr(obj("id", "machinaopus:petroleum_coke", "required", false))));
+        LANG.put("tag.item." + NS + ".foraging.sulfur_vents", "Rare Finds of Sulfur Ants");
     }
 
     /** Models and blockstates of the Nether and End Foraging Sites and the Colony Connector. */
@@ -3789,6 +4651,12 @@ public class DataGen {
         l.put(g + "connector.flow", "%s colonies in range; food in %s, out %s; items %s a minute");
         l.put("jei." + NS + ".expedition", "Expeditions");
         l.put("jei." + NS + ".expedition_dimension", "Simulated expeditions into %s (no power, no chunk loading)");
+        l.put("jei." + NS + ".trail_home", "Found by colonies in %s");
+        l.put("jei." + NS + ".trail_site", "Any ants, at a Foraging Site");
+        l.put("jei." + NS + ".trail_away", "Found away from %s too, very rarely");
+        l.put("jei." + NS + ".trail_away_site", "Only these ants, at a Foraging Site");
+        l.put("jei." + NS + ".trail_chance", "Chance: %s%% with each find");
+        l.put("jei." + NS + ".trail_use", "Needed for the %s");
         l.put("jade." + NS + ".expedition.active", "Ants out on expeditions");
         l.put("jade." + NS + ".expedition.idle", "Portal dark: no expedition");
     }
@@ -3799,9 +4667,32 @@ public class DataGen {
      * Per droplet: {@code amount} in mB, {@code energy} in FE, {@code time} in ticks. A null {@code mod} is the base game.
      */
     record Liquid(String id, String ant, String mod, String fluid, String fluidName, String from, String feed, String dimension, int tier, String climate,
-                  String body, String plates, String crop, boolean glow, double rate, double food, int amount, int energy, int time, String description) {
+                  String body, String plates, String crop, boolean glow, double rate, double food, int amount, int energy, int time, String description,
+                  List<String[]> others) {
+        Liquid(String id, String ant, String mod, String fluid, String fluidName, String from, String feed, String dimension, int tier, String climate,
+               String body, String plates, String crop, boolean glow, double rate, double food, int amount, int energy, int time, String description) {
+            this(id, ant, mod, fluid, fluidName, from, feed, dimension, tier, climate, body, plates, crop, glow, rate, food, amount, energy, time,
+                    description, List.of());
+        }
+
         String droplet() {
             return id + "_droplet";
+        }
+
+        /** The same liquid as another mod adds it: used when the mods before it are not installed. */
+        Liquid or(String otherMod, String otherFluid, String otherFeed) {
+            List<String[]> all = new ArrayList<>(others);
+            all.add(new String[] {otherMod, otherFluid, otherFeed});
+            return new Liquid(id, ant, mod, fluid, fluidName, from, feed, dimension, tier, climate, body, plates, crop, glow, rate, food, amount, energy,
+                    time, description, all);
+        }
+
+        /** Each mod that adds the liquid, the preferred one first: mod, fluid, what the Queen is fed. */
+        List<String[]> sources() {
+            List<String[]> all = new ArrayList<>();
+            all.add(new String[] {mod, fluid, feed});
+            all.addAll(others);
+            return all;
         }
     }
 
@@ -3810,13 +4701,19 @@ public class DataGen {
             new Liquid("water", "Water Ant", null, "minecraft:water", "Water", "honeypot", "minecraft:water_bucket", null, 1, "temperate",
                     "2E4A6B", "1E3550", "4F8FEA", false, 1.0, 1.3, 100, 400, 40,
                     "Honeypot Ants fed water. Their crops are full of it, always: at a Liquid Chamber they give Water Droplets and nothing else."),
+            // Milk has no Liquid Ant: Cow Ants give it (see SIDE_LIQUIDS). Only its droplet and Centrifuge recipe are made here.
+            new Liquid("milk", null, null, "minecraft:milk", "Milk", null, "", null, 0, null, null, null, "F4EEDD", false, 0, 0, 50, 600, 50, null),
             new Liquid("lava", "Lava Ant", null, "minecraft:lava", "Lava", "honeypot", "minecraft:lava_bucket", NETHER, 2, "hot",
                     "3A1A10", "5A2410", "FF7A1A", true, 0.1, 1.8, 50, 2000, 100,
                     "Honeypot Ants fed lava in the Nether. Their glowing crops hold lava: slow, hungry makers of Lava Droplets."),
             // MachinaOpus.
             new Liquid("crude_oil", "Oil Ant", "machinaopus", "machinaopus:crude_oil", "Crude Oil", "water", "machinaopus:crude_oil_bucket", null, 2, "hot",
                     "2A2420", "14110E", "2B211A", false, 0.08, 1.6, 50, 2400, 120,
-                    "Water Ants fed crude oil. Black-cropped ants that give Crude Oil Droplets: oil for MachinaOpus without a Pumpjack, a little at a time."),
+                    "Water Ants fed crude oil. Black-cropped ants that give Crude Oil Droplets: oil with no pump, a little at a time.")
+                    .or("pneumaticcraft", "pneumaticcraft:oil", "pneumaticcraft:oil_bucket")
+                    .or("modern_industrialization", "modern_industrialization:crude_oil", "modern_industrialization:crude_oil_bucket")
+                    .or("oritech", "oritech:still_oil", "oritech:still_oil_bucket").or("ad_astra", "ad_astra:oil", "ad_astra:oil_bucket")
+                    .or("stellaris", "stellaris:oil", "stellaris:oil_bucket"),
             new Liquid("liquid_blaze", "Blaze Ant", "machinaopus", "machinaopus:liquid_blaze", "Liquid Blaze", "lava", "machinaopus:liquid_blaze_bucket", null, 2,
                     "hot", "6A3A0A", "8A4A0A", "FFA020", true, 0.04, 2.0, 25, 4000, 160,
                     "Lava Ants fed liquid blaze. Their crops burn gold: Liquid Blaze Droplets for MachinaOpus's Blaze Crucible, slowly."),
@@ -3826,11 +4723,15 @@ public class DataGen {
                     "Water Ants fed brine. Pale-cropped ants that give Brine Droplets for Mekanism's chemistry."),
             new Liquid("heavy_water", "Heavy Water Ant", "mekanism", "mekanism:heavy_water", "Heavy Water", "water", "mekanism:heavy_water_bucket", null, 2,
                     "temperate", "1E2450", "141838", "2A3AB0", false, 0.05, 1.8, 25, 3200, 140,
-                    "Water Ants fed heavy water. Deep blue crops and a slow trickle of Heavy Water Droplets for Mekanism's reactors."),
+                    "Water Ants fed heavy water. Deep blue crops and a slow trickle of Heavy Water Droplets for reactors.")
+                    .or("modern_industrialization", "modern_industrialization:heavy_water", "modern_industrialization:heavy_water_bucket"),
             // Create.
             new Liquid("honey", "Honey Ant", "create", "create:honey", "Honey", "honeypot", "create:honey_bucket", null, 2, "temperate",
                     "6A3A12", "4A2808", "E8A126", false, 0.2, 1.4, 50, 800, 60,
-                    "Honeypot Ants fed liquid honey. All crop, they give Honey Droplets for Create's pipes and basins."),
+                    "Honeypot Ants fed liquid honey. All crop, they give Honey Droplets for pipes, basins and hives.")
+                    .or("productivebees", "productivebees:honey", "productivebees:honey_bucket")
+                    .or("extended_industrialization", "extended_industrialization:honey", "extended_industrialization:honey_bucket")
+                    .or("the_bumblezone", "the_bumblezone:honey_fluid_still", "the_bumblezone:honey_bucket"),
             new Liquid("chocolate", "Chocolate Ant", "create", "create:chocolate", "Chocolate", "water", "create:chocolate_bucket", null, 2, "temperate",
                     "4A2A1E", "2E1810", "8A4A30", false, 0.2, 1.4, 50, 800, 60,
                     "Water Ants fed chocolate. Brown-cropped ants that give Chocolate Droplets for Create's kitchens."),
@@ -3857,25 +4758,213 @@ public class DataGen {
                     "Water Ants fed resin. Amber-cropped ants that give Resin Droplets for Thermal's machines."),
             new Liquid("sap", "Sap Ant", "thermal", "thermal:sap", "Sap", "water", "thermal:sap_bucket", null, 2, "temperate",
                     "6A2E08", "4A1E04", "D85A10", false, 0.2, 1.4, 50, 800, 60,
-                    "Water Ants fed sap. They give Sap Droplets for Thermal's machines."),
+                    "Water Ants fed sap. They give Sap Droplets: tree sap with no tapping.")
+                    .or("productivetrees", "productivetrees:maple_sap", "productivetrees:maple_sap_bucket"),
             // Immersive Engineering.
             new Liquid("creosote", "Creosote Ant", "immersiveengineering", "immersiveengineering:creosote", "Creosote Oil", "lava",
                     "immersiveengineering:creosote_bucket", null, 2, "hot", "2E1A0E", "1C0E06", "4A2208", false, 0.15, 1.5, 50, 1200, 80,
-                    "Lava Ants fed creosote oil. Tar-dark crops, and Creosote Oil Droplets for Immersive Engineering."),
+                    "Lava Ants fed creosote oil. Tar-dark crops, and Creosote Oil Droplets for treated wood and rails.")
+                    .or("railcraft", "railcraft:creosote", "railcraft:creosote_bucket")
+                    .or("modern_industrialization", "modern_industrialization:creosote", "modern_industrialization:creosote_bucket"),
             new Liquid("plant_oil", "Plant Oil Ant", "immersiveengineering", "immersiveengineering:plantoil", "Plant Oil", "water",
                     "immersiveengineering:plantoil_bucket", null, 2, "temperate", "4A4A22", "32321A", "A8A450", false, 0.15, 1.5, 50, 1200, 80,
-                    "Water Ants fed plant oil. They give Plant Oil Droplets for Immersive Engineering."));
+                    "Water Ants fed plant oil. They give Plant Oil Droplets: oil pressed from seeds, with no press.")
+                    .or("pneumaticcraft", "pneumaticcraft:vegetable_oil", "pneumaticcraft:vegetable_oil_bucket")
+                    .or("createaddition", "createaddition:seed_oil", "createaddition:seed_oil_bucket")
+                    .or("modern_industrialization", "modern_industrialization:plant_oil", "modern_industrialization:plant_oil_bucket"),
+            // --- The fluids of big packs (All the Mods 11) ---
+            // Liquid experience: nearly every pack has one. 20 mB is one point of experience in all of them.
+            liquid("experience", "Experience Ant", "enderio", "enderio:fluid_xp_juice_still", "Liquid Experience", "water",
+                    "enderio:xp_juice_bucket,minecraft:experience_bottle", "temperate", "8CFE16", true, 0.1, 1.8, 20, 2000, 100,
+                    "Water Ants fed liquid experience. Their crops glow green: Experience Droplets, a point at a time.")
+                    .or("industrialforegoing", "industrialforegoing:essence", "industrialforegoing:essence_bucket")
+                    .or("pneumaticcraft", "pneumaticcraft:memory_essence", "pneumaticcraft:memory_essence_bucket")
+                    .or("mob_grinding_utils", "mob_grinding_utils:fluid_xp", "mob_grinding_utils:fluid_xp_bucket")
+                    .or("create_enchantment_industry", "create_enchantment_industry:experience", "create_enchantment_industry:experience_bucket")
+                    .or("justdirethings", "justdirethings:xp_fluid_source", "justdirethings:xp_fluid_bucket")
+                    .or("energizedpower", "energizedpower:liquid_xp", "energizedpower:liquid_xp_bucket")
+                    .or("neovitae", "neovitae:liquified_experience_source", "neovitae:liquified_experience_bucket")
+                    .or("sophisticatedcore", "sophisticatedcore:xp_still", "sophisticatedcore:xp_bucket"),
+            // Ender IO's Vat fluids, each from the ant of the fluid the Vat makes it from.
+            liquid("fire_water", "Fire Water Ant", "enderio", "enderio:fluid_fire_water_still", "Fire Water", "hootch", "enderio:fire_water_bucket",
+                    "hot", "9A4F10", true, 0.06, 1.8, 50, 2400, 120,
+                    "Hootch Ants fed fire water. They give Fire Water Droplets, a strong fuel for Ender IO."),
+            liquid("liquid_sunshine", "Sunshine Ant", "enderio", "enderio:fluid_liquid_sunshine_still", "Liquid Sunshine", "hootch",
+                    "enderio:liquid_sunshine_bucket", "hot", "E6D64A", true, 0.08, 1.6, 50, 2000, 100,
+                    "Hootch Ants fed liquid sunshine. Their crops shine: Liquid Sunshine Droplets for Ender IO."),
+            liquid("dew_of_the_void", "Void Dew Ant", "enderio", "enderio:fluid_dew_of_the_void_still", "Dew of the Void", "nutrient_distillation",
+                    "enderio:dew_of_the_void_bucket", "temperate", "129238", false, 0.06, 1.8, 50, 2400, 120,
+                    "Nutrient Ants fed dew of the void. They give Dew of the Void Droplets for Ender IO's crystals."),
+            liquid("cloud_seed", "Cloud Seed Ant", "enderio", "enderio:fluid_cloud_seed_still", "Cloud Seed", "water", "enderio:cloud_seed_bucket",
+                    "temperate", "248589", false, 0.15, 1.5, 50, 1200, 80,
+                    "Water Ants fed cloud seed. They give Cloud Seed Droplets for Ender IO's weather machines."),
+            // EvilCraft.
+            liquid("blood", "Blood Ant", "evilcraft", "evilcraft:blood", "Blood", "water", "evilcraft:bucket_blood", "temperate", "8D0A0A", false,
+                    0.15, 1.6, 50, 1200, 80,
+                    "Water Ants fed blood. Dark red crops, and Blood Droplets for EvilCraft with nothing harmed."),
+            // Allthemodium.
+            liquid("soul_lava", "Soul Lava Ant", "allthemodium", "allthemodium:soul_lava", "Soul Lava", "lava", "allthemodium:soul_lava_bucket",
+                    "hot", "5B80B2", true, 0.06, 1.9, 25, 3200, 140,
+                    "Lava Ants fed soul lava. Their crops burn blue: Soul Lava Droplets from The Other, slowly."),
+            // Integrated Dynamics.
+            liquid("menril_resin", "Menril Ant", "integrateddynamics", "integrateddynamics:menril_resin", "Menril Resin", "water",
+                    "integrateddynamics:bucket_menril_resin", "temperate", "7ECDE1", false, 0.15, 1.5, 50, 1200, 80,
+                    "Water Ants fed menril resin. Pale blue crops, and Menril Resin Droplets for Integrated Dynamics."),
+            liquid("liquid_chorus", "Liquid Chorus Ant", "integrateddynamics", "integrateddynamics:liquid_chorus", "Liquid Chorus", "water",
+                    "integrateddynamics:bucket_liquid_chorus", "temperate", "B58CD6", false, 0.12, 1.6, 50, 1600, 100,
+                    "Water Ants fed liquid chorus. They give Liquid Chorus Droplets for Integrated Dynamics."),
+            // Theurgy: a liquid that shares its name with the Sal Ammoniac Ant's crystal.
+            liquid("sal_ammoniac_solution", "Solvent Ant", "theurgy", "theurgy:sal_ammoniac", "Sal Ammoniac", "water", "theurgy:sal_ammoniac_bucket",
+                    "temperate", "D020D0", false, 0.2, 1.4, 50, 800, 60,
+                    "Water Ants fed liquid sal ammoniac. They give Sal Ammoniac Droplets, the solvent of Theurgy's alchemy."),
+            // Forcecraft.
+            liquid("liquid_force", "Liquid Force Ant", "forcecraft", "forcecraft:fluid_force_source", "Liquid Force", "water", "forcecraft:force_bucket",
+                    "temperate", "A99E00", true, 0.12, 1.6, 50, 1600, 100,
+                    "Water Ants fed liquid force. Their crops glow yellow: Liquid Force Droplets for Forcecraft."),
+            // Ars Magica: Legacy.
+            liquid("liquid_etherium", "Etherium Ant", "arsmagicalegacy", "arsmagicalegacy:liquid_etherium", "Liquid Etherium", "water",
+                    "arsmagicalegacy:liquid_etherium_bucket", "temperate", "B7DAFF", true, 0.1, 1.7, 50, 2000, 100,
+                    "Water Ants fed liquid etherium. Pale, glowing crops, and Liquid Etherium Droplets for Ars Magica."),
+            // The Undergarden.
+            liquid("virulent_mix", "Virulent Ant", "undergarden", "undergarden:virulent_mix_source", "Virulent Mix", "water",
+                    "undergarden:virulent_mix_bucket", "underground", "5A1466", false, 0.15, 1.5, 50, 1200, 80,
+                    "Water Ants fed virulent mix. Purple crops, and Virulent Mix Droplets from the Undergarden's pools."),
+            // Just Dire Things.
+            liquid("polymorphic_fluid", "Polymorphic Ant", "justdirethings", "justdirethings:polymorphic_fluid_source", "Polymorphic Fluid", "water",
+                    "justdirethings:polymorphic_fluid_bucket", "temperate", "E02020", true, 0.12, 1.6, 50, 1600, 100,
+                    "Water Ants fed polymorphic fluid. Red crops, and Polymorphic Fluid Droplets for Just Dire Things."),
+            // Sulfuric acid: Mekanism's and Modern Industrialization's share a tag, so they come before Oritech's.
+            liquid("sulfuric_acid", "Acid Ant", "mekanism", "mekanism:sulfuric_acid", "Sulfuric Acid", "water", "mekanism:sulfuric_acid_bucket",
+                    "hot", "4ACE40", false, 0.1, 1.7, 50, 2000, 100,
+                    "Water Ants fed sulfuric acid. Their crops hold it somehow: Sulfuric Acid Droplets for ore processing.")
+                    .or("modern_industrialization", "modern_industrialization:sulfuric_acid", "modern_industrialization:sulfuric_acid_bucket")
+                    .or("oritech", "oritech:still_sulfuric_acid", "oritech:still_sulfuric_acid_bucket"),
+            // --- Fuels: each ant from the ant of the fluid its own is made from, slower the further down the line ---
+            // Oritech's refinery. Heavy oil is half a bucket of crude; diesel and naphtha take a catalyst or a second
+            // pass; turbofuel is diesel and a fluxite. Stellaris' diesel is in the same tag as Oritech's: one ant.
+            liquid("heavy_oil", "Heavy Oil Ant", "oritech", "oritech:still_heavy_oil", "Heavy Oil", "crude_oil", "oritech:still_heavy_oil_bucket",
+                    "hot", "4A3A26", false, 0.05, 1.7, 50, 2400, 120,
+                    "Oil Ants fed heavy oil. Tar-brown crops, and Heavy Oil Droplets with no refinery."),
+            liquid("diesel", "Diesel Ant", "oritech", "oritech:still_diesel", "Diesel", "crude_oil", "oritech:still_diesel_bucket",
+                    "hot", "8FA02A", false, 0.06, 1.7, 50, 2400, 120,
+                    "Oil Ants fed diesel. Yellow-green crops, and Diesel Droplets for generators and for turbofuel.")
+                    .or("stellaris", "stellaris:diesel", "stellaris:diesel_bucket"),
+            liquid("naphtha", "Naphtha Ant", "oritech", "oritech:still_naphtha", "Light Naphtha", "crude_oil", "oritech:still_naphtha_bucket",
+                    "hot", "D4C070", false, 0.06, 1.7, 50, 2400, 120,
+                    "Oil Ants fed light naphtha. Pale straw crops, and Light Naphtha Droplets for Oritech's plastics."),
+            liquid("turbofuel", "Turbofuel Ant", "oritech", "oritech:still_fuel", "Turbofuel", "diesel", "oritech:still_fuel_bucket",
+                    "hot", "34566C", false, 0.03, 1.9, 50, 3200, 140,
+                    "Diesel Ants fed turbofuel. Slate-blue crops and a slow trickle of Turbofuel Droplets, Oritech's best fuel."),
+            // Stellaris: fuel is the other half of its oil; hydrogen and oxygen are water, split. Oxygen has no bucket:
+            // its ants are fed the Fluid Cell that carries it.
+            liquid("fuel", "Fuel Ant", "stellaris", "stellaris:fuel", "Fuel", "crude_oil", "stellaris:fuel_bucket",
+                    "hot", "A8862E", false, 0.06, 1.7, 50, 2400, 120,
+                    "Oil Ants fed fuel. Ochre crops, and Fuel Droplets to fill a rocket for Stellaris."),
+            liquid("hydrogen", "Hydrogen Ant", "stellaris", "stellaris:hydrogen", "Hydrogen", "water", "stellaris:hydrogen_bucket",
+                    "temperate", "22B8E8", false, 0.15, 1.5, 50, 1200, 80,
+                    "Water Ants fed hydrogen. Their crops fizz bright blue: Hydrogen Droplets for Stellaris, with no electrolyzer."),
+            liquid("oxygen", "Oxygen Ant", "stellaris", "stellaris:oxygen", "Oxygen", "water", "stellaris:fluid_cell",
+                    "temperate", "B8ECF8", false, 0.1, 1.5, 50, 1200, 80,
+                    "Water Ants fed Fluid Cells of oxygen. Pale, fizzing crops, and Oxygen Droplets for Stellaris: air to take along."),
+            // Ender IO's rocket fuel: hootch, gunpowder and redstone in the Vat. No tag joins it to Stellaris' fuel.
+            liquid("rocket_fuel", "Rocket Fuel Ant", "enderio", "enderio:fluid_rocket_fuel_still", "Rocket Fuel", "hootch", "enderio:rocket_fuel_bucket",
+                    "hot", "6E6E58", false, 0.06, 1.8, 50, 2400, 120,
+                    "Hootch Ants fed rocket fuel. Drab olive crops, and Rocket Fuel Droplets for Ender IO."),
+            // Just Dire Things' fuels: each needs the goo of its tier (the Nether, the End, an Ancient City) and a bucket of
+            // the fuel before it. Time Fluid needs the last goo and all three dimensions; Portal Fluid the End's.
+            liquid("blaze_ember_fuel", "Blaze Ember Ant", "justdirethings", "justdirethings:refined_t2_fluid_source", "Blaze Ember Fuel", "polymorphic_fluid",
+                    "justdirethings:refined_t2_fluid_bucket", "hot", "B83210", true, 0.03, 1.9, 25, 3200, 140,
+                    "Polymorphic Ants fed Blaze Ember Fuel. Their crops glow like embers: refined fuel for Just Dire Things, slowly."),
+            liquid("voidflame_fuel", "Voidflame Ant", "justdirethings", "justdirethings:refined_t3_fluid_source", "Voidflame Fuel", "blaze_ember_fuel",
+                    "justdirethings:refined_t3_fluid_bucket", "temperate", "38C4C0", true, 0.012, 2.0, 25, 4000, 160,
+                    "Blaze Ember Ants fed Voidflame Fuel. Their crops burn teal: a bucket of refined fuel in an hour and a half."),
+            liquid("eclipse_ember_fuel", "Eclipse Ember Ant", "justdirethings", "justdirethings:refined_t4_fluid_source", "Eclipse Ember Fuel",
+                    "voidflame_fuel", "justdirethings:refined_t4_fluid_bucket", "underground", "2C2226", true, 0.005, 2.2, 25, 6000, 200,
+                    "Voidflame Ants fed Eclipse Ember Fuel. Dark crops with a pale fire inside: the last fuel of Just Dire Things, a bucket in "
+                            + "about four hours."),
+            liquid("time_fluid", "Time Ant", "justdirethings", "justdirethings:time_fluid_source", "Time Fluid", "polymorphic_fluid",
+                    "justdirethings:time_fluid_bucket", "temperate", "5CFF9A", true, 0.005, 2.2, 25, 6000, 200,
+                    "Polymorphic Ants fed Time Fluid. Their crops glow green and they are never late: a bucket in about four hours."),
+            liquid("portal_fluid", "Portal Ant", "justdirethings", "justdirethings:portal_fluid_source", "Portal Fluid", "polymorphic_fluid",
+                    "justdirethings:portal_fluid_bucket", "temperate", "00B48C", true, 0.012, 2.0, 25, 4000, 160,
+                    "Polymorphic Ants fed Portal Fluid. Bubbling green crops, and Portal Fluid Droplets for the Portal Gun."),
+            // --- The fluids of mods that are in All the Mods 10 only: ids read from their sources, never run ---
+            liquid("canola_oil", "Canola Ant", "actuallyadditions", "actuallyadditions:canola_oil", "Canola Oil", "water",
+                    "actuallyadditions:canola_oil_bucket", "temperate", "F4CF2F", false, 0.15, 1.5, 50, 1200, 80,
+                    "Water Ants fed canola oil. Bright yellow crops, and Canola Oil Droplets for Actually Additions."),
+            // Biofuel: Oritech's dark green comes first, as the one that has been run; Industrial Foregoing's is purple.
+            liquid("biofuel", "Biofuel Ant", "oritech", "oritech:still_biofuel", "Biofuel", "water", "oritech:still_biofuel_bucket",
+                    "temperate", "2E6A2A", false, 0.12, 1.6, 50, 1600, 100,
+                    "Water Ants fed biofuel. Dark green crops, and Biofuel Droplets: fuel pressed from plants, with no press.")
+                    .or("industrialforegoing", "industrialforegoing:biofuel", "industrialforegoing:biofuel_bucket"),
+            liquid("bioethanol", "Bioethanol Ant", "mekanismgenerators", "mekanismgenerators:bioethanol", "Bioethanol", "water",
+                    "mekanismgenerators:bioethanol_bucket", "temperate", "CEEB3D", false, 0.12, 1.6, 50, 1600, 100,
+                    "Water Ants fed bioethanol. They give Bioethanol Droplets: fuel grown, not drilled.")
+                    .or("createaddition", "createaddition:bioethanol", "createaddition:bioethanol_bucket"),
+            liquid("ether", "Ether Ant", "eternal_starlight", "eternal_starlight:ether", "Ether", "water", "eternal_starlight:ether_bucket",
+                    "temperate", "BFF5E1", true, 0.12, 1.6, 50, 1600, 100,
+                    "Water Ants fed ether. Pale mint crops, and Ether Droplets from the rivers of the Starlight dimension."),
+            liquid("liquid_starlight", "Starlight Ant", "astralsorcery", "astralsorcery:liquid_starlight", "Liquid Starlight", "water",
+                    "astralsorcery:liquid_starlight_bucket", "cold", "C8D2F0", true, 0.1, 1.7, 50, 2000, 100,
+                    "Water Ants fed liquid starlight. Their crops shine by night and by day: Liquid Starlight Droplets for Astral Sorcery."));
+
+    /** A row for a tier 2 liquid of another mod; the ant's body and plates are shades of the fluid's one colour. */
+    static Liquid liquid(String id, String ant, String mod, String fluid, String fluidName, String from, String feed, String climate, String colour,
+                         boolean glow, double rate, double food, int amount, int energy, int time, String description) {
+        int rgb = Integer.parseInt(colour, 16);
+        return new Liquid(id, ant, mod, fluid, fluidName, from, feed, null, 2, climate, toward(rgb, 0x000000, 0.55), toward(rgb, 0x000000, 0.68),
+                colour, glow, rate, food, amount, energy, time, description);
+    }
 
     /** The names of the mods the liquids come from, for "these ants need ..." when a mod is gone. */
-    static final Map<String, String> MOD_NAMES = Map.of("minecraft", "Minecraft", "machinaopus", "MachinaOpus", "mekanism", "Mekanism", "create", "Create",
-            "industrialforegoing", "Industrial Foregoing", "enderio", "Ender IO", "thermal", "Thermal Series", "immersiveengineering", "Immersive Engineering");
+    static final Map<String, String> MOD_NAMES = new LinkedHashMap<>();
+
+    static {
+        String[][] names = {{"minecraft", "Minecraft"}, {"machinaopus", "MachinaOpus"}, {"mekanism", "Mekanism"}, {"create", "Create"},
+                {"industrialforegoing", "Industrial Foregoing"}, {"enderio", "Ender IO"}, {"thermal", "Thermal Series"},
+                {"immersiveengineering", "Immersive Engineering"}, {"oritech", "Oritech"}, {"stellaris", "Stellaris"},
+                {"productivebees", "Productive Bees"}, {"the_bumblezone", "The Bumblezone"}, {"productivetrees", "Productive Trees"},
+                {"railcraft", "Railcraft"}, {"justdirethings", "Just Dire Things"}, {"energizedpower", "Energized Power"},
+                {"neovitae", "Neo Vitae"}, {"sophisticatedcore", "Sophisticated Core"}, {"evilcraft", "EvilCraft"},
+                {"allthemodium", "Allthemodium"}, {"integrateddynamics", "Integrated Dynamics"}, {"theurgy", "Theurgy"},
+                {"forcecraft", "Forcecraft"}, {"arsmagicalegacy", "Ars Magica: Legacy"}, {"undergarden", "The Undergarden"},
+                {"pneumaticcraft", "PneumaticCraft"}, {"modern_industrialization", "Modern Industrialization"}, {"ad_astra", "Ad Astra"},
+                {"extended_industrialization", "Extended Industrialization"}, {"mob_grinding_utils", "Mob Grinding Utils"},
+                {"create_enchantment_industry", "Create: Enchantment Industry"}, {"createaddition", "Create Crafts & Additions"},
+                {"actuallyadditions", "Actually Additions"}, {"mekanismgenerators", "Mekanism Generators"},
+                {"eternal_starlight", "Eternal Starlight"}, {"astralsorcery", "Astral Sorcery"}};
+        for (String[] name : names) {
+            MOD_NAMES.put(name[0], name[1]);
+        }
+    }
 
     /** Load conditions for another mod's liquid: the mod, its fluid and the droplet item are there. Null for the base game's. */
     static List<Object> liquidConditions(Liquid l) {
-        return l.mod() == null ? null : arr(
-                obj("type", "neoforge:mod_loaded", "modid", l.mod()),
-                obj("type", "neoforge:registered", "registry", "minecraft:fluid", "value", l.fluid()),
-                obj("type", "neoforge:registered", "registry", "minecraft:item", "value", ac(l.droplet())));
+        if (l.mod() == null) {
+            return null;
+        }
+        Object droplet = obj("type", ac("registered"), "registry", "minecraft:item", "value", ac(l.droplet()));
+        if (l.others().isEmpty()) {
+            return arr(obj("type", "neoforge:mod_loaded", "modid", l.mod()),
+                    obj("type", ac("registered"), "registry", "minecraft:fluid", "value", l.fluid()), droplet);
+        }
+        // Several mods add it: the droplet item is registered only while one of their fluids is in the game.
+        List<Object> all = new ArrayList<>(conditions(l.sources().stream().map(source -> source[0]).toList()));
+        all.add(droplet);
+        return all;
+    }
+
+    /** The load conditions of the Centrifuge recipe for one source of a liquid: no mod listed before it has its fluid. */
+    static List<Object> recipeConditions(Liquid l, int index) {
+        String[] source = l.sources().get(index);
+        List<Object> all = new ArrayList<>(arr(obj("type", "neoforge:mod_loaded", "modid", source[0]),
+                obj("type", ac("registered"), "registry", "minecraft:fluid", "value", source[1]),
+                obj("type", ac("registered"), "registry", "minecraft:item", "value", ac(l.droplet()))));
+        for (int before = 0; before < index; before++) {
+            all.add(obj("type", "neoforge:not", "value",
+                    obj("type", ac("registered"), "registry", "minecraft:fluid", "value", l.sources().get(before)[1])));
+        }
+        return all;
     }
 
     /**
@@ -3917,42 +5006,74 @@ public class DataGen {
         model(name, textures, elements);
     }
 
+    /** The Liquid Ant of a liquid: its species, the evolution into it and what its Queen is fed. */
+    /** Liquids a bucket of which is a day's work in their own mod: their ants take four buckets at most, not twenty-four. */
+    static final Set<String> PRECIOUS_LIQUIDS = Set.of("voidflame_fuel", "eclipse_ember_fuel", "time_fluid", "portal_fluid");
+
+    static void liquidAnt(Liquid liquid, List<Object> conditions) {
+        Map<String, String> l = LANG;
+        // --- The species: a Liquid Ant, with its crop colour and its one droplet ---
+        Map<String, Object> species = obj("tier", liquid.tier(), "category", "liquid",
+                "look", obj("body", "#" + liquid.body(), "gaster", "#" + liquid.plates(), "accent", "#" + liquid.plates(), "pattern", "plain",
+                        "glow", liquid.glow() ? true : null, "crop", "#" + liquid.crop()),
+                "climate", liquid.climate(),
+                "diet", obj("consumption", liquid.food()),
+                "liquid", obj("fluid", liquid.others().isEmpty() ? liquid.fluid() : liquid.sources().stream().map(source -> (Object) source[1]).toList(),
+                        "droplet", ac(liquid.droplet()), "rate", liquid.rate()),
+                "rearing", obj("cost", arr(obj("ingredient", ac("royal_jelly"), "count", 2), obj("ingredient", "minecraft:honey_bottle", "count", 2)),
+                        "time", 3600),
+                "breeding", obj("eggs", 0.9, "growth", 0.9));
+        if (conditions != null) {
+            species.put("neoforge:conditions", conditions);
+        }
+        write(DATA.resolve(NS + "/species/" + liquid.id() + ".json"), species);
+        l.put("species." + NS + "." + liquid.id(), liquid.ant());
+        l.put("species." + NS + "." + liquid.id() + ".desc", liquid.description());
+        // --- How to get it: its parent species' Queen fed the fluid (what she is fed is a tag, so packs can add to it) ---
+        boolean precious = PRECIOUS_LIQUIDS.contains(liquid.id());
+        Map<String, Object> evolution = obj("from", ac(liquid.from()), "to", ac(liquid.id()), "item", "#" + ac("liquid_feed/" + liquid.id()),
+                "chance", precious ? 0.25 : 0.08, "guaranteed_after", precious ? 4 : 24, "min_stage", 2, "min_population", 300L);
+        if (liquid.dimension() != null) {
+            evolution.put("dimension", liquid.dimension());
+        }
+        if (conditions != null) {
+            evolution.put("neoforge:conditions", conditions);
+        }
+        write(DATA.resolve(NS + "/evolution/" + liquid.from() + "_to_" + liquid.id() + ".json"), evolution);
+        List<Object> feeds = new ArrayList<>();
+        for (String[] source : liquid.sources()) {
+            for (String feed : source[2].split(",")) {
+                Object entry = liquid.mod() == null ? feed : obj("id", feed, "required", false);
+                if (!feeds.contains(entry)) {
+                    feeds.add(entry);
+                }
+            }
+        }
+        write(DATA.resolve("tags/item/liquid_feed/" + liquid.id() + ".json"), obj("values", feeds));
+    }
+
     static void liquids() {
         Map<String, String> l = LANG;
         List<Object> droplets = new ArrayList<>();
+        List<Object> kinds = new ArrayList<>();
         for (Liquid liquid : LIQUIDS) {
             if (SPECIES.stream().anyMatch(s -> s.id().equals(liquid.id()))) {
                 throw new IllegalStateException("A liquid kind and a species share the id " + liquid.id());
             }
             List<Object> conditions = liquidConditions(liquid);
-            // --- The species: a Liquid Ant, with its crop colour and its one droplet ---
-            Map<String, Object> species = obj("tier", liquid.tier(), "category", "liquid",
-                    "look", obj("body", "#" + liquid.body(), "gaster", "#" + liquid.plates(), "accent", "#" + liquid.plates(), "pattern", "plain",
-                            "glow", liquid.glow() ? true : null, "crop", "#" + liquid.crop()),
-                    "climate", liquid.climate(),
-                    "diet", obj("consumption", liquid.food()),
-                    "liquid", obj("fluid", liquid.fluid(), "droplet", ac(liquid.droplet()), "rate", liquid.rate()),
-                    "rearing", obj("cost", arr(obj("ingredient", ac("royal_jelly"), "count", 2), obj("ingredient", "minecraft:honey_bottle", "count", 2)),
-                            "time", 3600),
-                    "breeding", obj("eggs", 0.9, "growth", 0.9));
-            if (conditions != null) {
-                species.put("neoforge:conditions", conditions);
+            if (liquid.ant() != null) {
+                liquidAnt(liquid, conditions);
             }
-            write(DATA.resolve(NS + "/species/" + liquid.id() + ".json"), species);
-            l.put("species." + NS + "." + liquid.id(), liquid.ant());
-            l.put("species." + NS + "." + liquid.id() + ".desc", liquid.description());
-            // --- How to get it: its parent species' Queen fed the fluid (what she is fed is a tag, so packs can add to it) ---
-            Map<String, Object> evolution = obj("from", ac(liquid.from()), "to", ac(liquid.id()), "item", "#" + ac("liquid_feed/" + liquid.id()),
-                    "chance", 0.08, "guaranteed_after", 24, "min_stage", 2, "min_population", 300L);
-            if (liquid.dimension() != null) {
-                evolution.put("dimension", liquid.dimension());
+            if (liquid.mod() != null) {
+                List<Object> sources = new ArrayList<>();
+                for (String[] source : liquid.sources()) {
+                    if (!MOD_NAMES.containsKey(source[0])) {
+                        throw new IllegalStateException("MOD_NAMES has no name for " + source[0]);
+                    }
+                    sources.add(obj("mod", source[0], "fluid", source[1]));
+                }
+                kinds.add(obj("name", liquid.id(), "sources", sources));
             }
-            if (conditions != null) {
-                evolution.put("neoforge:conditions", conditions);
-            }
-            write(DATA.resolve(NS + "/evolution/" + liquid.from() + "_to_" + liquid.id() + ".json"), evolution);
-            write(DATA.resolve("tags/item/liquid_feed/" + liquid.id() + ".json"), obj("values", arr(
-                    liquid.mod() == null ? liquid.feed() : obj("id", liquid.feed(), "required", false))));
             // --- The droplet: its name from the fluid's, its flat model ---
             l.put("item." + NS + "." + liquid.droplet(), liquid.fluidName() + " Droplet");
             write(ASSETS.resolve("models/item/" + liquid.droplet() + ".json"), obj("parent", "minecraft:item/generated",
@@ -3960,20 +5081,28 @@ public class DataGen {
             write(ASSETS.resolve("items/" + liquid.droplet() + ".json"), obj("model", obj("type", "minecraft:model", "model", ac("item/" + liquid.droplet()))));
             droplets.add(liquid.mod() == null ? ac(liquid.droplet()) : obj("id", ac(liquid.droplet()), "required", false));
             // --- The Centrifuge recipe: one droplet into the fluid ---
-            Map<String, Object> recipe = obj("type", ac("centrifuging"), "ingredient", ac(liquid.droplet()),
-                    "result", obj("id", liquid.fluid(), "amount", liquid.amount()), "energy", liquid.energy(), "time", liquid.time());
-            if (conditions != null) {
-                recipe.put("neoforge:conditions", conditions);
+            for (int index = 0; index < liquid.sources().size(); index++) {
+                String[] source = liquid.sources().get(index);
+                Map<String, Object> recipe = obj("type", ac("centrifuging"), "ingredient", ac(liquid.droplet()),
+                        "result", obj("id", source[1], "amount", liquid.amount()), "energy", liquid.energy(), "time", liquid.time());
+                if (conditions != null) {
+                    recipe.put("neoforge:conditions", liquid.others().isEmpty() ? conditions : recipeConditions(liquid, index));
+                }
+                write(DATA.resolve("recipe/centrifuging/" + liquid.id() + (index == 0 ? "" : "_" + source[0]) + ".json"), recipe);
             }
-            write(DATA.resolve("recipe/centrifuging/" + liquid.id() + ".json"), recipe);
         }
         write(DATA.resolve("tags/item/droplets.json"), obj("values", droplets));
+        // The kinds the mod offers when it starts (compat/liquid/LiquidIntegrations reads this from the jar).
+        write(RES.resolve("antcolonies.liquid_kinds.json"), obj("kinds", kinds));
         MOD_NAMES.forEach((id, name) -> l.put("mod." + NS + "." + id, name));
         l.put("category." + NS + ".liquid", "Liquid");
         l.put("tag.item." + NS + ".droplets", "Droplets");
         for (Liquid liquid : LIQUIDS) {
-            l.put("tag.item." + NS + ".liquid_feed." + liquid.id(), "Fed to a Queen for " + liquid.ant() + "s");
+            if (liquid.ant() != null) {
+                l.put("tag.item." + NS + ".liquid_feed." + liquid.id(), "Fed to a Queen for " + liquid.ant() + "s");
+            }
         }
+        l.put("item." + NS + ".droplet", "%s Droplet");
         l.put("tooltip." + NS + ".droplet", "A drop of %s from Liquid Ants. A Droplet Centrifuge spins it into the fluid.");
 
         // --- The Liquid Chamber: a rack the full ants hang from (as honeypot ants do), over a bowl that catches the drips ---
@@ -3996,7 +5125,7 @@ public class DataGen {
         shaped("liquid_chamber", ac("liquid_chamber"), 1, new String[] {"BHB", "DMD", "DCD"}, "B", "glass_bottle", "H", "honeycomb", "D", "clay",
                 "M", "packed_mud", "C", "chest");
         l.put("block." + NS + ".liquid_chamber", "Liquid Chamber");
-        l.put("tooltip." + NS + ".liquid_chamber", "Liquid Ants hang here with full crops and give droplets of their fluid. Only Liquid Ants work here.");
+        l.put("tooltip." + NS + ".liquid_chamber", "Liquid Ants hang here with full crops and give droplets of their fluid. Only ants that carry a liquid work here.");
 
         // --- The Droplet Centrifuge: casing, glass drum section, lid; its front panel lights up while it works ---
         for (String working : new String[] {"", "_working"}) {
@@ -4030,7 +5159,7 @@ public class DataGen {
         String[][] gui = {
                 {"site.liquid_ants", "Liquid Ants %s/%s (want %s)"}, {"site.droplet_rate", "%s droplets/min"},
                 {"site.droplet_store", "Droplets wait here while the Storage is full"},
-                {"liquid.needs", "Only Liquid Ants work here"}, {"liquid.only", "Liquid Ants work only at a Liquid Chamber"},
+                {"liquid.needs", "Only ants that carry a liquid work here"}, {"liquid.only", "Liquid Ants work only at a Liquid Chamber"},
                 {"liquid.makes", "%s: a Droplet Centrifuge spins it into %s"}, {"liquid.missing", "These ants need %s"},
                 {"liquid.line", "%s ants: %s, %s/min (%s)"}, {"card.liquid", "%s Liquid Ants, full of %s"},
                 {"centrifuge.status.idle", "Waiting for droplets"}, {"centrifuge.status.working", "Spinning: %s"},
@@ -4042,13 +5171,17 @@ public class DataGen {
                 {"centrifuge.energy", "Energy"}, {"centrifuge.energy.hint", "Takes FE on every side: a Generator next to it will do"},
                 {"centrifuge.slot", "Droplets"}, {"centrifuge.slot.hint", "From the Liquid Chambers of Liquid Ants"},
                 {"centrifuge.tank.hint", "Use a bucket on the block, or put a tank or a pipe next to it"},
-                {"centrifuge.run", "%s s of %s s"}};
+                {"centrifuge.run", "%s s of %s s"}, {"centrifuge.speed", "%s steps a tick (Speed Upgrades)"},
+                {"centrifuge.upgrade", "Speed Upgrade"},
+                {"centrifuge.upgrade.hint", "Each tier spins one more step a tick. A droplet takes the same FE."}};
         for (String[] g : gui) {
             l.put("gui." + NS + "." + g[0], g[1]);
         }
         l.put("status." + NS + ".no_droplet", "Their fluid is not in this game: these ants make nothing");
         l.put("status." + NS + ".no_droplet.short", "No fluid");
         l.put("info." + NS + ".liquid", "Liquid Ant: works only at a Liquid Chamber");
+        l.put("info." + NS + ".liquid.also", "At a Liquid Chamber its workers give a liquid");
+        l.put("jei." + NS + ".liquid.also", "At a Liquid Chamber; it has other work too");
         l.put("info." + NS + ".liquid.makes", "Makes %s");
         l.put("info." + NS + ".liquid.fluid", "A drop of %s");
         l.put("info." + NS + ".liquid.centrifuge", "Droplet Centrifuge: %s mB of %s for %s FE");

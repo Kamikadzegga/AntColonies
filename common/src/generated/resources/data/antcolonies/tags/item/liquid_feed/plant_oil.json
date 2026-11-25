@@ -3,6 +3,18 @@
     {
       "id": "immersiveengineering:plantoil_bucket",
       "required": false
+    },
+    {
+      "id": "pneumaticcraft:vegetable_oil_bucket",
+      "required": false
+    },
+    {
+      "id": "createaddition:seed_oil_bucket",
+      "required": false
+    },
+    {
+      "id": "modern_industrialization:plant_oil_bucket",
+      "required": false
     }
   ]
 }

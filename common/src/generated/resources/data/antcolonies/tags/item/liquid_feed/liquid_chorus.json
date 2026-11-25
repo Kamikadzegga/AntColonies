@@ -1,0 +1,8 @@
+{
+  "values": [
+    {
+      "id": "integrateddynamics:bucket_liquid_chorus",
+      "required": false
+    }
+  ]
+}

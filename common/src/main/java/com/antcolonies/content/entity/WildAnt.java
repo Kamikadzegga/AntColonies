@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.content.block.WildNestBlock;
 import com.antcolonies.content.blockentity.HomeNestBlockEntity;
+import com.antcolonies.content.blockentity.WildNestBlockEntity;
 import com.antcolonies.content.item.ChitinGear;
 import com.antcolonies.content.worldgen.AnthillAlarm;
 import com.antcolonies.core.config.AntConfig;
@@ -119,6 +121,10 @@ public class WildAnt extends PathfinderMob implements AntLike {
     private static final int TENDS_PER_TRIP = 5;
     /** The home nest it lives in (a nest a player placed), or null for a wild ant. */
     private @Nullable BlockPos nest;
+    /** How far (blocks) a wild nest's own ant walks from it. */
+    public static final int WILD_NEST_RANGE = 5;
+    /** The wild nest it walks around so players can spot the nest, or null. */
+    private @Nullable BlockPos wildNest;
     private final List<ItemStack> carried = new ArrayList<>();
     private boolean returning;
     private int outTicks;
@@ -351,14 +357,27 @@ public class WildAnt extends PathfinderMob implements AntLike {
 
     /** A species that lives in a biome, or Common Ants where none does. */
     public static Identifier speciesFor(RegistryAccess registries, Holder<Biome> biome, RandomSource random) {
-        List<Identifier> candidates = new ArrayList<>();
+        List<Identifier> candidates = natives(registries, biome);
+        return candidates.isEmpty() ? ModRegistries.COMMON : candidates.get(random.nextInt(candidates.size()));
+    }
+
+    /**
+     * Every species that lives in a biome. Where nest dwellers are at home (Crimson Ants in a crimson forest), they
+     * are the biome's ants, and the species whose nests they live in is not.
+     */
+    public static List<Identifier> natives(RegistryAccess registries, Holder<Biome> biome) {
+        List<Identifier> natives = new ArrayList<>();
+        List<Identifier> dwellers = new ArrayList<>();
         registries.lookup(ModRegistries.SPECIES).ifPresent(lookup -> lookup.listElements().forEach(entry -> {
             AntSpecies species = entry.value();
             if (species.spawn().isPresent() && biome.is(species.spawn().get())) {
-                candidates.add(entry.key().identifier());
+                natives.add(entry.key().identifier());
+                if (entry.is(WildNestBlockEntity.NEST_DWELLERS)) {
+                    dwellers.add(entry.key().identifier());
+                }
             }
         }));
-        return candidates.isEmpty() ? ModRegistries.COMMON : candidates.get(random.nextInt(candidates.size()));
+        return dwellers.isEmpty() ? natives : dwellers;
     }
 
     @Override
@@ -384,6 +403,9 @@ public class WildAnt extends PathfinderMob implements AntLike {
                 entry.putLong("until", until);
             }
         });
+        if (wildNest != null) {
+            output.putLong("wild_nest", wildNest.asLong());
+        }
         if (nest != null) {
             output.putLong("nest", nest.asLong());
             output.putBoolean("returning", returning);
@@ -405,6 +427,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
         alarms.clear();
         input.childrenListOrEmpty("alarms").forEach(entry -> entry.read("player", UUIDUtil.CODEC)
                 .ifPresent(player -> alarms.put(player, entry.getLongOr("until", 0))));
+        input.getLong("wild_nest").ifPresent(packed -> setWildNest(BlockPos.of(packed)));
         input.getLong("nest").ifPresent(packed -> {
             setNest(BlockPos.of(packed));
             returning = input.getBooleanOr("returning", false);
@@ -530,7 +553,48 @@ public class WildAnt extends PathfinderMob implements AntLike {
 
     @Override
     public boolean removeWhenFarAway(double distance) {
-        return caste() != Caste.QUEEN && !guardian && nest == null;
+        return caste() != Caste.QUEEN && !guardian && nest == null && wildNest == null;
+    }
+
+    /** A wild nest's ant stays while its nest keeps it: {@link #watchWildNest} lets it go. */
+    @Override
+    public boolean requiresCustomPersistence() {
+        return wildNest != null || super.requiresCustomPersistence();
+    }
+
+    // --- A wild nest's own ant: it walks around the nest while a player is near ---
+
+    public void setWildNest(BlockPos pos) {
+        wildNest = pos.immutable();
+        setHomeTo(wildNest, WILD_NEST_RANGE);
+    }
+
+    public @Nullable BlockPos wildNest() {
+        return wildNest;
+    }
+
+    /** Goes back in once no player is near, and lives wild from then on if its nest is gone or has become a home. */
+    private void watchWildNest(ServerLevel level) {
+        if (!level.isLoaded(wildNest)) {
+            return;
+        }
+        BlockState state = level.getBlockState(wildNest);
+        if (!(state.getBlock() instanceof WildNestBlock) || state.getValue(WildNestBlock.HOME)) {
+            wildNest = null;
+            clearHome();
+        } else if (!level.hasNearbyAlivePlayer(wildNest.getX() + 0.5, wildNest.getY() + 0.5, wildNest.getZ() + 0.5,
+                WildNestBlockEntity.ANT_LEAVE_RANGE)) {
+            discard();
+        }
+    }
+
+    /** Tells its wild nest it won't come back: the nest sends out another after a while. */
+    private void leaveWildNest() {
+        if (wildNest != null && level() instanceof ServerLevel server && server.isLoaded(wildNest)
+                && server.getBlockEntity(wildNest) instanceof WildNestBlockEntity nestEntity) {
+            nestEntity.antLost();
+        }
+        wildNest = null;
     }
 
     /** Whether this is an anthill's Queen: she can't be hurt and never despawns, so she only leaves in a Test Tube. */
@@ -618,6 +682,9 @@ public class WildAnt extends PathfinderMob implements AntLike {
                 }
             }
         }
+        if (wildNest != null && level() instanceof ServerLevel server && tickCount % WildNestBlockEntity.ANT_CHECK_INTERVAL == 0) {
+            watchWildNest(server);
+        }
         if (nest != null && !level().isClientSide() && !returning) {
             outTicks++;
             if (outTicks > tripTicks || !HomeNestBlockEntity.foragingWeather(level())) {
@@ -629,12 +696,14 @@ public class WildAnt extends PathfinderMob implements AntLike {
     @Override
     public void die(DamageSource source) {
         leaveHomeNest();
+        leaveWildNest();
         super.die(source);
     }
 
-    /** Caught in Tweezers: it leaves the world without dying, so its home nest must still be told. */
+    /** Caught in Tweezers: it leaves the world without dying, so its nest must still be told. */
     public void caught() {
         leaveHomeNest();
+        leaveWildNest();
         discard();
     }
 

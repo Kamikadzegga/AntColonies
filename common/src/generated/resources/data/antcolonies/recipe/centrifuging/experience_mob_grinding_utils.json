@@ -1,0 +1,50 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:experience_droplet",
+  "result": {
+    "id": "mob_grinding_utils:fluid_xp",
+    "amount": 20
+  },
+  "energy": 2000,
+  "time": 100,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "mob_grinding_utils"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "mob_grinding_utils:fluid_xp"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:experience_droplet"
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "enderio:fluid_xp_juice_still"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "industrialforegoing:essence"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "pneumaticcraft:memory_essence"
+      }
+    }
+  ]
+}

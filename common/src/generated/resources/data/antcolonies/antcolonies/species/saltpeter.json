@@ -1,0 +1,77 @@
+{
+  "tier": 1,
+  "category": "mineral",
+  "look": {
+    "body": "#6A6A58",
+    "gaster": "#E0E0C8",
+    "accent": "#FFFFF0",
+    "pattern": "speckled"
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.3,
+    "special_food": "mineral",
+    "special_per_egg": 0.4
+  },
+  "production": {
+    "rate": 0.6,
+    "outputs": [
+      {
+        "tag": "c:dusts/saltpeter",
+        "weight": 38
+      },
+      {
+        "item": "minecraft:sand",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:gravel",
+        "weight": 8
+      },
+      {
+        "tag": "c:dusts/sulfur",
+        "weight": 6,
+        "min_stage": 2
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 4800
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "railcraft"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "neovitae"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "eternal_starlight"
+        }
+      ]
+    }
+  ]
+}

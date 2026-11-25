@@ -1,0 +1,96 @@
+{
+  "tier": 2,
+  "category": "liquid",
+  "look": {
+    "body": "#3F720A",
+    "gaster": "#2D5107",
+    "accent": "#2D5107",
+    "pattern": "plain",
+    "glow": true,
+    "crop": "#8CFE16"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.8
+  },
+  "liquid": {
+    "fluid": [
+      "enderio:fluid_xp_juice_still",
+      "industrialforegoing:essence",
+      "pneumaticcraft:memory_essence",
+      "mob_grinding_utils:fluid_xp",
+      "create_enchantment_industry:experience",
+      "justdirethings:xp_fluid_source",
+      "energizedpower:liquid_xp",
+      "neovitae:liquified_experience_source",
+      "sophisticatedcore:xp_still"
+    ],
+    "droplet": "antcolonies:experience_droplet",
+    "rate": 0.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "minecraft:honey_bottle",
+        "count": 2
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "enderio"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "industrialforegoing"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "pneumaticcraft"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mob_grinding_utils"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "create_enchantment_industry"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "justdirethings"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "energizedpower"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "neovitae"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "sophisticatedcore"
+        }
+      ]
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:experience_droplet"
+    }
+  ]
+}

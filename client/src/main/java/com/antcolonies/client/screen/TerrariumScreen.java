@@ -7,6 +7,7 @@ import java.util.Locale;
 
 import com.antcolonies.AntColonies;
 import com.antcolonies.client.ClientSpecies;
+import com.antcolonies.client.model.SideSprites;
 import com.antcolonies.colony.expedition.Expedition;
 import com.antcolonies.colony.genetics.Genetics;
 import com.antcolonies.colony.genetics.Genome;
@@ -41,6 +42,7 @@ import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModRegistries;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -317,7 +319,12 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                 continue;
             }
             graphics.blit(RenderPipelines.GUI_TEXTURED, SIDE, leftPos + x, topPos + y, frame * 24, rows[part] * 12, 24 * scale, 12 * scale,
-                    24, 12, 96, 192, 0xFF000000 | tints[part]);
+                    24, 12, SideSprites.TEX_W, SideSprites.TEX_H, 0xFF000000 | tints[part]);
+        }
+        if (look.costume().isPresent()) {
+            // What the species wears, in its own colours.
+            graphics.blit(RenderPipelines.GUI_TEXTURED, SIDE, leftPos + x, topPos + y, frame * 24, SideSprites.costumeRow(look.costume().get(), caste) * 12,
+                    24 * scale, 12 * scale, 24, 12, SideSprites.TEX_W, SideSprites.TEX_H, -1);
         }
     }
 
@@ -454,8 +461,9 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                 // Liquid Ants of a fluid that is gone: say which mod they need back.
                 LiquidKind kind = LiquidKinds.bySpecies(colony.species());
                 if (kind != null) {
-                    text = Component.translatable("gui.antcolonies.liquid.missing",
-                            Component.translatable("mod.antcolonies." + kind.mod())).getString();
+                    String mods = kind.sources().stream().map(source -> Component.translatable("mod.antcolonies." + source.mod()).getString())
+                            .distinct().collect(Collectors.joining(" / "));
+                    text = Component.translatable("gui.antcolonies.liquid.missing", mods).getString();
                 }
             }
             int color = status == ColonyStatus.WORKING ? GOOD : status.problem() ? BAD : WARN;
@@ -595,7 +603,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
             default -> {
                 // The colony's kind of job site: a Liquid Chamber for Liquid Ants.
                 AntSpecies cardSpecies = ClientSpecies.get(colony.species());
-                StructureKind site = cardSpecies != null && cardSpecies.makesLiquid() ? StructureKind.LIQUID_CHAMBER : StructureKind.FORAGING_SITE;
+                StructureKind site = cardSpecies != null && cardSpecies.liquidOnly() ? StructureKind.LIQUID_CHAMBER : StructureKind.FORAGING_SITE;
                 graphics.item(new ItemStack(ModBlocks.STRUCTURES.get(site).get()), leftPos + x + 10, topPos + y + 5);
             }
         }
@@ -661,7 +669,7 @@ public class TerrariumScreen extends AntScreen<TerrariumMenu> {
                 if (lines.size() == 1) {
                     lines.add(Component.translatable("gui.antcolonies.no_jobs"));
                 }
-                if (species != null && species.makesLiquid()) {
+                if (species != null && species.liquidOnly()) {
                     // Liquid Ants: how many there are, and the fluid they are full of.
                     lines.add(Component.translatable("gui.antcolonies.card.liquid", number(colony.workers()),
                             liquidName(species)).withStyle(ChatFormatting.AQUA));

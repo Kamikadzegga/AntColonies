@@ -11,6 +11,7 @@
     "size": 1.2
   },
   "climate": "underground",
+  "spawn_biomes": "antcolonies:spawns/the_other",
   "diet": {
     "consumption": 2.8,
     "special_food": "mineral",
@@ -33,13 +34,13 @@
       },
       {
         "tag": "c:nuggets/allthemodium",
-        "weight": 1.5,
+        "weight": 165,
         "min_stage": 3,
         "special": true
       },
       {
         "tag": "c:raw_materials/allthemodium",
-        "weight": 0.25,
+        "weight": 3,
         "min_stage": 4,
         "special": true
       }

@@ -1,0 +1,8 @@
+{
+  "values": [
+    {
+      "id": "integrateddynamics:bucket_menril_resin",
+      "required": false
+    }
+  ]
+}

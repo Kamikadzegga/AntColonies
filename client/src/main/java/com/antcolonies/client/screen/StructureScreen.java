@@ -198,7 +198,7 @@ public class StructureScreen extends AntScreen<StructureMenu> {
                 AntSpecies species = colonySpecies();
                 if (kind == StructureKind.LIQUID_CHAMBER) {
                     full = Component.translatable("gui.antcolonies.liquid.needs").getString();
-                } else if (species != null && species.makesLiquid()) {
+                } else if (species != null && species.liquidOnly()) {
                     full = Component.translatable("gui.antcolonies.liquid.only").getString();
                 }
             }
@@ -469,7 +469,8 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         }
         if (hoveredSlot != null && kind.siteStore() && hoveredSlot.container == menu.structure() && !hoveredSlot.hasItem()) {
             graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable(
-                    kind == StructureKind.LIQUID_CHAMBER ? "gui.antcolonies.site.droplet_store" : "gui.antcolonies.site.store")), mouseX, mouseY);
+                    kind == StructureKind.LIQUID_CHAMBER ? "gui.antcolonies.site.droplet_store"
+                            : kind == StructureKind.HUNTING_GROUND ? "gui.antcolonies.site.loot_store" : "gui.antcolonies.site.store")), mouseX, mouseY);
             return;
         }
         if (hoveredSlot != null && hoveredSlot.container == menu.structure().upgrades() && hoveredSlot.hasItem()
