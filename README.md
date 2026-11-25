@@ -24,8 +24,8 @@ that mine, farm, hunt and evolve.
 
 - **Living colonies.** A Formicarium holds a Queen, her brood and thousands of workers you can watch behind the glass.
   Chambers placed against it join the colony.
-- **56 species.** Catch 17 wild ones, mutate them into iron, diamond and netherite ants, breed hybrids, and reach the
-  endgame Wither and Dragon Ants. Ten are just for fun: a Cow Ant that gives milk, a Baker, a Pirate, a Fisher.
+- **59 species.** Catch 17 wild ones, mutate them into iron, diamond and netherite ants, breed hybrids, and reach the
+  endgame Wither and Dragon Ants. Thirteen are just for fun: a Cow Ant that gives milk, a Baker, a Pirate, a Fisher.
 - **Genetic research.** Scan materials in the Genetic Laboratory to discover species mutations and genes for good.
 - **Genetics.** Every Queen has ten traits and can carry any of 31 mutations. Edit, cross and stabilize her genes in
   the laboratory.
@@ -34,7 +34,8 @@ that mine, farm, hunt and evolve.
   items.
 - **Giant anthills.** Structures in all three dimensions, built and furnished to suit their biome, with loot, soldiers
   and a great Queen to catch.
-- **Chitin gear and Guard Ants.** Four tiers of armor and tools, and an ant that follows you and fights for you.
+- **Chitin gear.** Four tiers of armor and tools.
+- **Guard Ants.** Any ant of any species can join you: it fights, levels up, wears armor and hats, and pulls a cart.
 - **Made for modpacks.** Species, evolutions, mutations, food and loot are data packs, and a server config sets the
   numbers. JEI, EMI and Jade are supported, and any mod's pipes and cables work.
 

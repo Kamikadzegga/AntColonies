@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "T": "minecraft:torch",
+    "I": "minecraft:iron_nugget",
+    "N": "minecraft:yellow_dye"
+  },
+  "pattern": [" T ", "INI"],
+  "result": {
+    "id": "antcolonies:ant_costume_miner"
+  }
+}

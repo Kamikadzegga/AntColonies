@@ -1,9 +1,9 @@
 package com.antcolonies.content.entity;
 
+import com.antcolonies.companion.CompanionCommand;
+import com.antcolonies.companion.CompanionData;
+import com.antcolonies.companion.Companions;
 import com.antcolonies.content.item.GuardData;
-import com.antcolonies.core.registry.ModDataComponents;
-import com.antcolonies.core.registry.ModDataMaps;
-import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModRegistries;
 import com.antcolonies.core.registry.ModSounds;
 import com.antcolonies.colony.species.AntSpecies;
@@ -11,8 +11,6 @@ import com.antcolonies.colony.species.Caste;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -20,8 +18,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
@@ -34,18 +30,11 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
 import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -55,7 +44,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
-/** A Guard Ant: a soldier a colony gave up to follow and defend its owner. */
+/** A Guard Ant from before the companions (recruits are now ants of their own kind); it lives on as one of them. */
 public class GuardAnt extends TamableAnimal implements AntLike {
     private static final EntityDataAccessor<String> DATA_SPECIES = SynchedEntityData.defineId(GuardAnt.class, EntityDataSerializers.STRING);
     /** How much bigger than a wild soldier it is. */
@@ -92,18 +81,10 @@ public class GuardAnt extends TamableAnimal implements AntLike {
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
-        goalSelector.addGoal(1, new SitWhenOrderedToGoal(this));
         goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.25, true));
-        goalSelector.addGoal(3, new FollowOwnerGoal(this, 1.1, 6.0F, 2.0F));
         goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.8));
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
-        targetSelector.addGoal(1, new OwnerHurtByTargetGoal(this));
-        targetSelector.addGoal(2, new OwnerHurtTargetGoal(this));
-        targetSelector.addGoal(3, new HurtByTargetGoal(this));
-        // A guard: hostile mobs near it are fair game, except the ones that explode.
-        targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, Mob.class, 10, true, false,
-                (target, level) -> isTame() && !isOrderedToSit() && target instanceof Enemy && !(target instanceof Creeper)));
     }
 
     @Override
@@ -130,7 +111,8 @@ public class GuardAnt extends TamableAnimal implements AntLike {
 
     @Override
     public boolean sitting() {
-        return isInSittingPose();
+        CompanionData data = Companions.get(this);
+        return data == null ? isInSittingPose() : data.command() == CompanionCommand.STAY && !walkAnimation.isMoving();
     }
 
     public int strength() {
@@ -158,49 +140,21 @@ public class GuardAnt extends TamableAnimal implements AntLike {
         }
     }
 
-    public GuardData toData() {
-        return new GuardData(species(), strength, getHealth() >= getMaxHealth() ? -1 : getHealth());
-    }
-
-    @Override
-    public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
-        if (!isOwnedBy(player)) {
-            return super.mobInteract(player, hand);
+    /** An owned Guard Ant from before the companions becomes one, with all it had: owner, strength, orders, name and health. */
+    public void becomeCompanion() {
+        if (Companions.isCompanion(this) || getOwnerReference() == null) {
+            return;
         }
-        ModDataMaps.AntFood food = ModDataMaps.food(stack);
-        if (food != null && getHealth() < getMaxHealth()) {
-            if (!level().isClientSide()) {
-                heal((float) Math.max(2, food.food() / 5));
-                stack.consume(1, player);
-                if (level() instanceof ServerLevel server) {
-                    server.sendParticles(ParticleTypes.HEART, getX(), getY() + 0.4, getZ(), 2, 0.2, 0.1, 0.2, 0);
-                }
-            }
-            return InteractionResult.SUCCESS;
-        }
-        if (!stack.isEmpty()) {
-            return super.mobInteract(player, hand);
-        }
-        if (!level().isClientSide()) {
-            if (player.isShiftKeyDown()) {
-                // Back into its tube, health and all.
-                ItemStack tube = new ItemStack(ModItems.GUARD_ANT.get());
-                tube.set(ModDataComponents.GUARD.get(), toData());
-                if (hasCustomName()) {
-                    tube.set(DataComponents.CUSTOM_NAME, getCustomName());
-                }
-                player.getInventory().placeItemBackInInventory(tube);
-                discard();
-            } else {
-                setOrderedToSit(!isOrderedToSit());
-                jumping = false;
-                getNavigation().stop();
-                setTarget(null);
-                player.sendOverlayMessage(Component.translatable(isOrderedToSit() ? "message.antcolonies.guard.stay" : "message.antcolonies.guard.follow"));
-            }
-        }
-        return InteractionResult.SUCCESS;
+        String name = getOwner() instanceof Player player ? player.getGameProfile().name() : "";
+        float health = getHealth();
+        CompanionData data = Companions.create(this, strength, getRandom()).withId(getUUID())
+                .withOwner(new CompanionData.Owner(getOwnerReference().getUUID(), name))
+                .withCommand(isOrderedToSit() ? CompanionCommand.STAY : CompanionCommand.FOLLOW, blockPosition());
+        Companions.set(this, data);
+        setHealth(health);
+        setOrderedToSit(false);
+        setInSittingPose(false);
+        setPersistenceRequired();
     }
 
     @Override
@@ -212,6 +166,20 @@ public class GuardAnt extends TamableAnimal implements AntLike {
             return false;
         }
         return !(target instanceof Player player && owner instanceof Player ownerPlayer && !ownerPlayer.canHarmPlayer(player));
+    }
+
+    @Override
+    public void aiStep() {
+        super.aiStep();
+        if (!level().isClientSide()) {
+            Companions.rest(this);
+        }
+    }
+
+    @Override
+    protected Component getTypeName() {
+        CompanionData data = Companions.get(this);
+        return data == null ? super.getTypeName() : Companions.guardName(data);
     }
 
     @Override

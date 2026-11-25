@@ -9,6 +9,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.companion.CompanionCommand;
+import com.antcolonies.companion.CompanionData;
+import com.antcolonies.companion.CompanionStats;
+import com.antcolonies.companion.Companions;
 import com.antcolonies.content.block.WildNestBlock;
 import com.antcolonies.content.blockentity.HomeNestBlockEntity;
 import com.antcolonies.content.blockentity.WildNestBlockEntity;
@@ -164,13 +168,13 @@ public class WildAnt extends PathfinderMob implements AntLike {
             @Override
             public boolean canUse() {
                 // An alarmed anthill's workers swarm the intruder too.
-                return (caste() == Caste.SOLDIER || alarmed && caste() == Caste.WORKER) && super.canUse();
+                return (caste() == Caste.SOLDIER || companion() || alarmed && caste() == Caste.WORKER) && super.canUse();
             }
         });
         goalSelector.addGoal(2, new PanicGoal(this, 1.4) {
             @Override
             public boolean canUse() {
-                return caste() != Caste.SOLDIER && !alarmed && super.canUse();
+                return caste() != Caste.SOLDIER && !alarmed && !companion() && super.canUse();
             }
         });
         goalSelector.addGoal(3, new ReturnToNestGoal());
@@ -195,7 +199,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
     // --- Royal Guard Ants: the great Queen's guard ---
 
     public boolean royalGuard() {
-        return rank() == Rank.ROYAL && caste() == Caste.SOLDIER;
+        return rank() == Rank.ROYAL && caste() == Caste.SOLDIER && !companion();
     }
 
     public BlockPos post() {
@@ -212,6 +216,10 @@ public class WildAnt extends PathfinderMob implements AntLike {
 
     @Override
     protected Component getTypeName() {
+        CompanionData data = Companions.get(this);
+        if (data != null) {
+            return Companions.guardName(data);
+        }
         return royalGuard() ? Component.translatable("entity." + AntColonies.MODID + ".royal_guard_ant") : super.getTypeName();
     }
 
@@ -274,6 +282,9 @@ public class WildAnt extends PathfinderMob implements AntLike {
 
     @Override
     public float renderScale() {
+        if (companion()) {
+            return CompanionStats.size(caste());
+        }
         return switch (rank()) {
             case GREAT_QUEEN -> 2.0F;
             case ROYAL -> 1.3F;
@@ -342,7 +353,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason reason,
                                                   @Nullable SpawnGroupData groupData) {
         SpawnGroupData data = super.finalizeSpawn(level, difficulty, reason, groupData);
-        if (reason != EntitySpawnReason.TRIGGERED) {
+        if (reason != EntitySpawnReason.TRIGGERED && !companion()) {
             setSpecies(speciesFor(level, blockPosition(), getRandom()));
             double roll = getRandom().nextDouble();
             setCaste(roll < AntConfig.get(AntConfig.WILD_QUEEN_CHANCE) ? Caste.QUEEN
@@ -553,7 +564,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
 
     @Override
     public boolean removeWhenFarAway(double distance) {
-        return caste() != Caste.QUEEN && !guardian && nest == null && wildNest == null;
+        return caste() != Caste.QUEEN && !guardian && nest == null && wildNest == null && !companion();
     }
 
     /** A wild nest's ant stays while its nest keeps it: {@link #watchWildNest} lets it go. */
@@ -662,6 +673,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
     public void aiStep() {
         super.aiStep();
         if (level() instanceof ServerLevel server) {
+            Companions.rest(this);
             if (!alarms.isEmpty()) {
                 long now = server.getGameTime();
                 if (tickCount % 40 == 0) {
@@ -705,6 +717,35 @@ public class WildAnt extends PathfinderMob implements AntLike {
         leaveHomeNest();
         leaveWildNest();
         discard();
+    }
+
+    // --- A companion: recruited, it has no nest and no anthill any more ---
+
+    public boolean companion() {
+        return Companions.isCompanion(this);
+    }
+
+    @Override
+    public boolean sitting() {
+        CompanionData data = Companions.get(this);
+        return data != null && data.command() == CompanionCommand.STAY && !walkAnimation.isMoving();
+    }
+
+    /** Leaves whatever it belonged to, in peace. */
+    public void leaveHome() {
+        leaveHomeNest();
+        leaveWildNest();
+        setGuardian(false);
+        anthill = null;
+        chamber = null;
+        alarms.clear();
+        alarmed = false;
+        returning = false;
+        clearHome();
+        if (rank() != Rank.NORMAL) {
+            // It left the Queen's guard.
+            setRank(Rank.NORMAL);
+        }
     }
 
     /** Tells its home nest it won't come back (the nest raises a new ant) and drops what it carried. */

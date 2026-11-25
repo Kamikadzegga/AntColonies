@@ -1,0 +1,28 @@
+{
+  "parent": "antcolonies:companion_level_10",
+  "criteria": {
+    "companion_level_30": {
+      "trigger": "antcolonies:companion",
+      "conditions": {
+        "what": "level_30"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:void_chitin_ant_plates"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.companion_level_30.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.companion_level_30.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "companion_level_30"
+    ]
+  ]
+}

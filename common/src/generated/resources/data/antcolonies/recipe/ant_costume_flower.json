@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": "#minecraft:small_flowers",
+    "V": "minecraft:vine"
+  },
+  "pattern": ["FFF", "FVF"],
+  "result": {
+    "id": "antcolonies:ant_costume_flower"
+  }
+}

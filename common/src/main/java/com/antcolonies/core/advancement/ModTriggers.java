@@ -13,5 +13,7 @@ public final class ModTriggers {
 
     public static final Supplier<ColonyTrigger> COLONY = TRIGGERS.register("colony", ColonyTrigger::new);
 
+    public static final Supplier<CompanionTrigger> COMPANION = TRIGGERS.register("companion", CompanionTrigger::new);
+
     private ModTriggers() {}
 }

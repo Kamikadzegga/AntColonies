@@ -1,0 +1,29 @@
+{
+  "parent": "antcolonies:companion",
+  "criteria": {
+    "companion_jumping": {
+      "trigger": "antcolonies:companion",
+      "conditions": {
+        "what": "jumping"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:rabbit_foot"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.companion_jumping.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.companion_jumping.description"
+    },
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "requirements": [
+    [
+      "companion_jumping"
+    ]
+  ]
+}

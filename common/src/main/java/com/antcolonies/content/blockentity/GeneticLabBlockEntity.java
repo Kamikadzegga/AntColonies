@@ -29,6 +29,7 @@ import com.antcolonies.core.registry.ModSounds;
 import com.antcolonies.colony.species.AntSpecies;
 import com.antcolonies.colony.species.Cost;
 import com.antcolonies.content.item.UpgradeItem;
+import com.antcolonies.colony.upgrade.UpgradeEffects;
 import com.antcolonies.colony.upgrade.UpgradeType;
 
 import net.minecraft.core.BlockPos;
@@ -165,7 +166,7 @@ public class GeneticLabBlockEntity extends BlockEntity implements WorldlyContain
     private final SimpleContainer upgrades = new SimpleContainer(UPGRADE_SLOTS) {
         @Override
         public boolean canPlaceItem(int slot, ItemStack stack) {
-            return stack.getItem() instanceof UpgradeItem upgrade && (upgrade.type() == UpgradeType.SPEED || upgrade.type() == UpgradeType.GENETIC);
+            return UpgradeEffects.Host.LAB.takes(stack);
         }
 
         @Override

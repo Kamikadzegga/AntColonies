@@ -23,6 +23,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import com.antcolonies.content.block.WildNestBlock;
+import com.antcolonies.companion.CompanionData;
+import com.antcolonies.companion.Companions;
 import com.antcolonies.content.entity.WildAnt;
 import net.minecraft.world.item.DyeColor;
 import snownee.jade.api.BlockAccessor;
@@ -256,6 +258,13 @@ final class ColonyProviders {
             if (ant.rank() != WildAnt.Rank.NORMAL) {
                 tooltip.add(Component.translatable("jade.antcolonies.rank."
                         + ant.rank().name().toLowerCase(Locale.ROOT)).withStyle(ChatFormatting.GOLD));
+            }
+            CompanionData companion = Companions.get(ant);
+            if (companion != null) {
+                // A companion is somebody: its level and whose it is, not what its kind is good for.
+                tooltip.add(Component.translatable("jade.antcolonies.companion", companion.level(),
+                        companion.owner().map(CompanionData.Owner::name).orElse("?")).withStyle(ChatFormatting.GREEN));
+                return;
             }
             Tooltips.speciesFacts(accessor.getLevel().registryAccess(), ant.species(), tooltip::add, false);
             tooltip.add(Component.translatable("jade.antcolonies.catch").withStyle(ChatFormatting.DARK_GRAY));

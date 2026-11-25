@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": "minecraft:leather",
+    "W": "minecraft:green_wool",
+    "S": "minecraft:string"
+  },
+  "pattern": ["LWL", "LSL"],
+  "result": {
+    "id": "antcolonies:ant_costume_backpack"
+  }
+}

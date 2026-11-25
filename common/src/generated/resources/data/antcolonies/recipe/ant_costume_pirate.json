@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:bone_meal",
+    "W": "minecraft:black_wool",
+    "G": "minecraft:gold_nugget"
+  },
+  "pattern": [" B ", "WGW"],
+  "result": {
+    "id": "antcolonies:ant_costume_pirate"
+  }
+}

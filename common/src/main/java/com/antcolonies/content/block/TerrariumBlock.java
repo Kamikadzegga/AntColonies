@@ -5,13 +5,12 @@ import com.antcolonies.colony.genetics.Trait;
 import com.antcolonies.colony.model.Colony;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.client.ClientHooks;
-import com.antcolonies.content.item.GuardData;
+import com.antcolonies.content.item.GuardAntItem;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.core.registry.ModBlockEntities;
 import com.antcolonies.core.registry.ModDataMaps;
 import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModDataComponents;
-import com.antcolonies.core.registry.ModRegistries;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
@@ -116,18 +115,12 @@ public class TerrariumBlock extends ColonyPartBlock {
         return InteractionResult.SUCCESS;
     }
 
-    /** A Rally Pheromone used on a Terrarium: a hunter colony gives up ants for one Guard Ant of its Queen's Hunting Strength. */
+    /** A Rally Pheromone used on a Terrarium: the colony gives up ants for one Guard Ant of its species and its Queen's Hunting Strength. */
     public static boolean recruitGuard(TerrariumBlockEntity terrarium, Player player, ItemStack pheromone) {
         Colony colony = terrarium.colony();
         int cost = AntConfig.get(AntConfig.GUARD_COST);
-        if (colony.queen() == null) {
+        if (colony.queen() == null || !(terrarium.getLevel() instanceof ServerLevel level)) {
             player.sendOverlayMessage(Component.translatable("message.antcolonies.guard.no_queen")
-                    .withStyle(ChatFormatting.RED));
-            return false;
-        }
-        var species = ModRegistries.species(terrarium.getLevel() == null ? null : terrarium.getLevel().registryAccess(), colony.species());
-        if (species == null || !species.canHunt()) {
-            player.sendOverlayMessage(Component.translatable("message.antcolonies.guard.not_hunters")
                     .withStyle(ChatFormatting.RED));
             return false;
         }
@@ -137,8 +130,7 @@ public class TerrariumBlock extends ColonyPartBlock {
             return false;
         }
         int strength = colony.queen().genome().level(Trait.SOLDIER_STRENGTH);
-        ItemStack tube = new ItemStack(ModItems.GUARD_ANT.get());
-        tube.set(ModDataComponents.GUARD.get(), new GuardData(colony.species(), Math.clamp(strength, 1, 10), -1));
+        ItemStack tube = GuardAntItem.recruit(level, colony.species(), Math.clamp(strength, 1, 10));
         pheromone.consume(1, player);
         player.getInventory().placeItemBackInInventory(tube);
         player.sendOverlayMessage(Component.translatable("message.antcolonies.guard.recruited", cost)

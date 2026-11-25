@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": "minecraft:white_wool",
+    "P": "minecraft:paper"
+  },
+  "pattern": ["WW", "WP"],
+  "result": {
+    "id": "antcolonies:ant_costume_chef"
+  }
+}

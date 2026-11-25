@@ -3,8 +3,10 @@ package com.antcolonies.client.model;
 import java.util.EnumMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.client.companion.CompanionLook;
 import com.antcolonies.colony.species.AntLook;
 import com.antcolonies.colony.species.Caste;
 import com.antcolonies.colony.species.Costume;
@@ -14,6 +16,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -21,6 +24,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.LightCoordsUtil;
+import org.jspecify.annotations.Nullable;
 
 /** Draws ants for every renderer: the grey model tinted per species, with its pattern, crystals and load. */
 public final class AntDrawer {
@@ -65,18 +69,52 @@ public final class AntDrawer {
         }
     }
 
+    /** Wear textures, made as they are first needed: paint over the ant and the wear's own parts. */
+    private static final Map<String, RenderType> WEAR_PAINT = new ConcurrentHashMap<>();
+    private static final Map<String, RenderType> WEAR_PARTS = new ConcurrentHashMap<>();
+    private static final Map<String, RenderType> MARKS = new ConcurrentHashMap<>();
+    private static final Map<String, RenderType> MARKS_GLOW = new ConcurrentHashMap<>();
+    private static final RenderType CART_TYPE = RenderTypes.entityCutout(AntColonies.id("textures/entity/ant/cart.png"));
+    /** From this marks step on a veteran's shell marks shine. */
+    private static final int GLOWING_MARKS = 4;
+
     private final Map<Caste, AntModel> models = new EnumMap<>(Caste.class);
     private final ModelPart carried;
+    private final CartModel cart;
 
     public AntDrawer(EntityModelSet models) {
         this.models.put(Caste.WORKER, new AntModel(models.bakeLayer(AntModel.WORKER), Caste.WORKER));
         this.models.put(Caste.SOLDIER, new AntModel(models.bakeLayer(AntModel.SOLDIER), Caste.SOLDIER));
         this.models.put(Caste.QUEEN, new AntModel(models.bakeLayer(AntModel.QUEEN), Caste.QUEEN));
         this.carried = models.bakeLayer(CarryModel.LAYER);
+        this.cart = new CartModel(models.bakeLayer(CartModel.LAYER));
     }
 
     public AntModel model(Caste caste) {
         return models.get(caste);
+    }
+
+    private static RenderType wearType(Map<String, RenderType> types, String texture, boolean paint) {
+        return types.computeIfAbsent(texture, name -> {
+            Identifier id = AntColonies.id("textures/entity/ant/" + name + ".png");
+            return paint ? RenderTypes.entityCutoutZOffset(id) : RenderTypes.entityCutout(id);
+        });
+    }
+
+    /** The texture of a wear's own parts for one caste. */
+    public static RenderType wearParts(String texture, Caste caste) {
+        return wearType(WEAR_PARTS, "wear/" + texture + "_" + caste.getSerializedName(), false);
+    }
+
+    /** An ant that wears nothing of its own. */
+    public void draw(SubmitNodeCollector collector, PoseStack poseStack, Caste caste, AntLook look, AntPose pose, float length, int light,
+                     int overlay, int carry, int outline) {
+        draw(collector, poseStack, caste, look, pose, length, light, overlay, carry, outline, null);
+    }
+
+    /** Draws a cart with its hitch at the pose stack's origin, in units of 1/16 block, y down. */
+    public void cart(SubmitNodeCollector collector, PoseStack poseStack, CompanionLook.Cart state, int light, int overlay, int outline) {
+        collector.submitModel(cart, state, poseStack, CART_TYPE, light, overlay, -1, null, outline, null);
     }
 
     /**
@@ -85,11 +123,15 @@ public final class AntDrawer {
      * @param carry ARGB of what it carries between its mandibles (0 for nothing)
      */
     public void draw(SubmitNodeCollector collector, PoseStack poseStack, Caste caste, AntLook look, AntPose pose, float length, int light,
-                     int overlay, int carry, int outline) {
+                     int overlay, int carry, int outline, @Nullable CompanionLook worn) {
         AntModel model = models.get(caste);
         // Parts are drawn later and their joints read only then: each goes in as a model that re-poses this ant (Posed).
         // Posing here as well gives the mouth's place for what it carries.
         AntPose frozen = pose.copy();
+        frozen.costume = look.costume().orElse(null);
+        if (worn != null) {
+            frozen.wear = worn.wears();
+        }
         model.pose(frozen);
         // Model parts are 1/16 block per unit: the whole ant (its length in units) becomes `length` blocks.
         float k = 16.0F * length * look.size() / AntModel.length(caste);
@@ -136,11 +178,18 @@ public final class AntDrawer {
             RenderType paint = COSTUME_PAINT.get(caste).get(costume);
             RenderType parts = COSTUME_PARTS.get(caste).get(costume);
             submit(collector, frozen, model, model.body, poseStack, paint, light, overlay, null, -1);
-            submit(collector, frozen, model, model.costume(costume), poseStack, parts, light, overlay, null, -1, outline);
+            // One hat at a time: a companion's hat takes the place of its species' own.
+            if (worn == null || !worn.hat() || !costume.hat()) {
+                submit(collector, frozen, model, model.costume(costume), poseStack, parts, light, overlay, null, -1, outline);
+            }
             if (!replete) {
                 submit(collector, frozen, model, model.gaster, poseStack, paint, light, overlay, null, -1);
                 submit(collector, frozen, model, model.costumeGaster(costume), poseStack, parts, light, overlay, null, -1, outline);
             }
+        }
+        if (worn != null) {
+            boolean ownHat = look.costume().map(Costume::hat).orElse(false);
+            drawWorn(collector, poseStack, model, frozen, worn, replete, ownHat, light, overlay, outline);
         }
         if (carry != 0) {
             float[] mouth = model.mouth();
@@ -150,6 +199,59 @@ public final class AntDrawer {
             poseStack.popPose();
         }
         poseStack.popPose();
+    }
+
+    /** A companion's level marks, transformation, plates, costume and cart, from the skin outwards. */
+    private void drawWorn(SubmitNodeCollector collector, PoseStack poseStack, AntModel model, AntPose pose, CompanionLook worn, boolean replete,
+                          boolean ownHat, int light, int overlay, int outline) {
+        Caste caste = model.caste;
+        if (worn.marks() > 0) {
+            String texture = "marks/" + worn.marks() + "_" + caste.getSerializedName();
+            RenderType marks = wearType(MARKS, texture, true);
+            submit(collector, pose, model, model.body, poseStack, marks, light, overlay, null, -1);
+            if (!replete) {
+                submit(collector, pose, model, model.gaster, poseStack, marks, light, overlay, null, -1);
+            }
+            if (worn.marks() >= GLOWING_MARKS) {
+                RenderType glow = MARKS_GLOW.computeIfAbsent(texture, name -> RenderTypes.eyes(AntColonies.id("textures/entity/ant/" + name + ".png")));
+                int tint = ARGB.color(255, 110, 100, 70);
+                submit(collector, pose, model, model.body, poseStack, glow, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, null, tint);
+                if (!replete) {
+                    submit(collector, pose, model, model.gaster, poseStack, glow, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, null, tint);
+                }
+            }
+        }
+        int order = 1;
+        for (CompanionLook.Wear wear : worn.layers()) {
+            if (ownHat && wear.parts().equals(CostumeParts.HELM)) {
+                continue;
+            }
+            String texture = "wear/" + wear.texture() + "_" + caste.getSerializedName();
+            RenderType paint = wearType(WEAR_PAINT, texture, true);
+            RenderType parts = wearType(WEAR_PARTS, texture, false);
+            var layer = collector.order(order++);
+            if (CostumeParts.PAINTS_BODY.contains(wear.parts())) {
+                submitOn(layer, pose, model, model.body, poseStack, paint, light, overlay, outline);
+            }
+            submitOn(layer, pose, model, model.wear(wear.parts()), poseStack, parts, light, overlay, outline);
+            if (!replete && CostumeParts.PAINTS_GASTER.contains(wear.parts())) {
+                submitOn(layer, pose, model, model.gaster, poseStack, paint, light, overlay, outline);
+            }
+            if (!replete && model.wearsOnGaster(wear.parts())) {
+                submitOn(layer, pose, model, model.wearGaster(wear.parts()), poseStack, parts, light, overlay, outline);
+            }
+        }
+        if (worn.cart() != null) {
+            poseStack.pushPose();
+            poseStack.translate(0, 0, AntModel.rear(caste, replete) / 16.0F);
+            cart(collector, poseStack, worn.cart(), light, overlay, outline);
+            poseStack.popPose();
+        }
+    }
+
+    private void submitOn(OrderedSubmitNodeCollector collector, AntPose pose, AntModel model, ModelPart part, PoseStack poseStack, RenderType type,
+                          int light, int overlay, int outline) {
+        collector.submitModel(posedParts.computeIfAbsent(part, p -> new Posed(model, p)), pose, poseStack, type, light, overlay, -1, null, outline, null);
     }
 
     private void submit(SubmitNodeCollector collector, AntPose pose, AntModel model, ModelPart part, PoseStack poseStack,

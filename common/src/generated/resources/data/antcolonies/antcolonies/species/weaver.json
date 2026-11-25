@@ -1,0 +1,70 @@
+{
+  "tier": 1,
+  "category": "base",
+  "look": {
+    "body": "#B8662A",
+    "gaster": "#8AB04A",
+    "accent": "#E8D8A0",
+    "pattern": "plain",
+    "costume": "weaver"
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.0
+  },
+  "production": {
+    "rate": 0.6,
+    "outputs": [
+      {
+        "item": "minecraft:string",
+        "weight": 26
+      },
+      {
+        "item": "minecraft:jungle_leaves",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:vine",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:white_wool",
+        "weight": 3,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:cobweb",
+        "weight": 1,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:lead",
+        "weight": 0.5,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:string",
+        "count": 8
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 1.0,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:string"
+}

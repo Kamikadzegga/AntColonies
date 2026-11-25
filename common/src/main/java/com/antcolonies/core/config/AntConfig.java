@@ -131,6 +131,17 @@ public final class AntConfig {
 
     // --- Guard Ants ---
     public static final ModConfigSpec.IntValue GUARD_COST;
+    public static final ModConfigSpec.IntValue COMPANION_MAX;
+    public static final ModConfigSpec.DoubleValue COMPANION_REGEN;
+    public static final ModConfigSpec.IntValue COMPANION_MAX_LEVEL;
+    public static final ModConfigSpec.DoubleValue COMPANION_XP;
+    public static final ModConfigSpec.DoubleValue COMPANION_XP_BASE;
+    public static final ModConfigSpec.DoubleValue COMPANION_XP_GROWTH;
+    public static final ModConfigSpec.DoubleValue COMPANION_HEALTH;
+    public static final ModConfigSpec.DoubleValue COMPANION_DAMAGE;
+    public static final ModConfigSpec.DoubleValue COMPANION_ARMOR;
+    public static final ModConfigSpec.DoubleValue COMPANION_TELEPORT;
+    public static final ModConfigSpec.BooleanValue COMPANION_DIMENSIONS;
 
     // --- Connections ---
     public static final ModConfigSpec.IntValue GENERATOR_OUTPUT;
@@ -378,8 +389,24 @@ public final class AntConfig {
         s.pop();
 
         s.push("guards");
-        GUARD_COST = s.comment("Ants a hunter colony gives up for one Guard Ant (a Rally Pheromone used on its Formicarium).")
+        GUARD_COST = s.comment("Ants a colony gives up for one Guard Ant (a Rally Pheromone used on its Formicarium).")
                 .defineInRange("antCost", 50, 1, 1000000);
+        COMPANION_MAX = s.comment("Guard Ants one player may have out in the world at once (those in tubes do not count). 0: any number.")
+                .defineInRange("maxPerPlayer", 16, 0, 10000);
+        COMPANION_REGEN = s.comment("Seconds a resting Guard Ant takes to get one health point back. 0: only food heals it.")
+                .defineInRange("restSeconds", 4.0, 0, 3600);
+        COMPANION_MAX_LEVEL = s.comment("The highest level a Guard Ant reaches.").defineInRange("maxLevel", 50, 1, 1000);
+        COMPANION_XP = s.comment("Experience from kills, compared to the normal amount.").defineInRange("experience", 1.0, 0, 1000);
+        COMPANION_XP_BASE = s.comment("Experience from level 1 to 2.").defineInRange("experienceBase", 20.0, 1, 1000000);
+        COMPANION_XP_GROWTH = s.comment("How fast the experience a level takes grows: level to this power, times experienceBase.")
+                .defineInRange("experienceGrowth", 1.2, 0, 10);
+        COMPANION_HEALTH = s.comment("Health a level adds.").defineInRange("healthPerLevel", 0.4, 0, 100);
+        COMPANION_DAMAGE = s.comment("Attack damage a level adds.").defineInRange("damagePerLevel", 0.04, 0, 100);
+        COMPANION_ARMOR = s.comment("Armor a level adds.").defineInRange("armorPerLevel", 0.08, 0, 100);
+        COMPANION_TELEPORT = s.comment("A following Guard Ant this many blocks from its owner catches up at once.")
+                .defineInRange("catchUpDistance", 14.0, 8, 64);
+        COMPANION_DIMENSIONS = s.comment("Whether a following Guard Ant near its owner goes through portals with them.")
+                .define("followsThroughDimensions", true);
         s.pop();
 
         s.push("power");

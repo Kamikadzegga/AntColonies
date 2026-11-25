@@ -1,0 +1,94 @@
+{
+  "tier": 1,
+  "category": "farmer",
+  "look": {
+    "body": "#8A3E1E",
+    "gaster": "#A8522A",
+    "accent": "#D8864A",
+    "pattern": "plain",
+    "size": 1.05,
+    "costume": "leafcutter"
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.0
+  },
+  "production": {
+    "rate": 0.7,
+    "outputs": [
+      {
+        "item": "minecraft:jungle_leaves",
+        "weight": 16
+      },
+      {
+        "item": "minecraft:oak_leaves",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:azalea_leaves",
+        "weight": 5
+      },
+      {
+        "item": "minecraft:moss_block",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:vine",
+        "weight": 6
+      },
+      {
+        "item": "minecraft:bone_meal",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:flowering_azalea",
+        "weight": 1,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "farming": {
+    "food": 0.9,
+    "harvest": [
+      {
+        "item": "minecraft:brown_mushroom",
+        "weight": 40
+      },
+      {
+        "item": "minecraft:red_mushroom",
+        "weight": 25
+      },
+      {
+        "item": "minecraft:bone_meal",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:glow_lichen",
+        "weight": 4,
+        "min_stage": 2
+      }
+    ]
+  },
+  "combat": {
+    "strength": 0.9
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "#minecraft:leaves",
+        "count": 8
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 1.1,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:jungle_leaves"
+}

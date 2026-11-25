@@ -9,6 +9,10 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import com.antcolonies.AntColonies;
+import com.antcolonies.companion.item.CompanionArmorItem;
+import com.antcolonies.companion.item.CompanionCartItem;
+import com.antcolonies.companion.item.CompanionCostumeItem;
+import com.antcolonies.companion.item.RallyPheromoneItem;
 import com.antcolonies.content.item.AntTestTubeItem;
 import com.antcolonies.content.item.BroodClusterItem;
 import com.antcolonies.content.item.ChitinGear;
@@ -150,9 +154,31 @@ public final class ModItems {
             p -> p.spawnEgg(ModEntities.WILD_ANT.get()));
 
     // --- Guard Ants ---
-    public static final DeferredItem<DescribedItem> RALLY_PHEROMONE = ITEMS.registerItem("rally_pheromone", DescribedItem::new);
+    public static final DeferredItem<RallyPheromoneItem> RALLY_PHEROMONE = ITEMS.registerItem("rally_pheromone", RallyPheromoneItem::new);
     public static final DeferredItem<GuardAntItem> GUARD_ANT = ITEMS.registerItem("guard_ant", GuardAntItem::new,
             p -> p.stacksTo(1).rarity(Rarity.UNCOMMON));
+    /** What a Guard Ant wears: plates by tier, costumes by name, and the cart of a Cart Ant. */
+    public static final Map<ChitinGear.Tier, DeferredItem<CompanionArmorItem>> COMPANION_ARMOR = companionArmor();
+    public static final Map<String, DeferredItem<CompanionCostumeItem>> COSTUMES = costumes();
+    public static final DeferredItem<CompanionCartItem> ANT_CART = ITEMS.registerItem("ant_cart", CompanionCartItem::new, p -> p.stacksTo(1));
+
+    private static Map<ChitinGear.Tier, DeferredItem<CompanionArmorItem>> companionArmor() {
+        Map<ChitinGear.Tier, DeferredItem<CompanionArmorItem>> plates = new EnumMap<>(ChitinGear.Tier.class);
+        for (ChitinGear.Tier tier : ChitinGear.Tier.values()) {
+            plates.put(tier, ITEMS.registerItem(tier.id("ant_plates"), p -> new CompanionArmorItem(tier, p),
+                    p -> tier.fireproof ? p.stacksTo(1).fireResistant() : p.stacksTo(1)));
+        }
+        return Collections.unmodifiableMap(plates);
+    }
+
+    private static Map<String, DeferredItem<CompanionCostumeItem>> costumes() {
+        Map<String, DeferredItem<CompanionCostumeItem>> costumes = new LinkedHashMap<>();
+        for (String name : List.of("pirate", "explorer", "miner", "crown", "chef", "flower", "backpack", "party")) {
+            costumes.put(name, ITEMS.registerItem("ant_costume_" + name, p -> new CompanionCostumeItem(AntColonies.id(name), p), p -> p.stacksTo(1)));
+        }
+        return Collections.unmodifiableMap(costumes);
+    }
+
     // --- Chitin gear ---
     public static final DeferredItem<ChitinGear.Piece> CHITIN_HELMET = armor("chitin_helmet", ArmorType.HELMET);
     public static final DeferredItem<ChitinGear.Piece> CHITIN_CHESTPLATE = armor("chitin_chestplate", ArmorType.CHESTPLATE);

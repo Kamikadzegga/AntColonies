@@ -150,25 +150,81 @@ an axe knocks it down for three quarters as long, and it lasts 450 blocks, not 3
 
 ## Guard Ants
 
-A hunter colony can give up some of its ants for a Guard Ant that follows you and fights for you.
+Any ant can become a Guard Ant: a companion that follows you, fights, learns, and wears what you give it. It stays the
+ant it was, so an Iron Ant becomes an Iron Guard Ant and still looks like an Iron Ant.
 
-1. Craft a **Rally Pheromone** (Test Tube, Chitin Plate, sugar, redstone).
-2. Use it on the Formicarium of a hunter colony with a Queen and at least 50 ants. The colony loses the ants and you
-   get a **Guard Ant** in a tube.
-3. Use the tube on a block to let the ant out. It is tamed to you.
+### Getting one
 
-| Stat | Comes from | Range |
+Craft a **Rally Pheromone** (Test Tube, Chitin Plate, sugar, redstone), then either:
+
+- **Use it on a wild ant.** Workers and soldiers of every species join you. Queens and angry ants refuse. A wild ant's
+  Hunting Strength is 1 to 3.
+- **Use it on a Formicarium** with a Queen and at least 50 ants. The colony loses the ants and you get one soldier of
+  its species in a tube, as strong as the Queen's Hunting Strength (1 to 10). Use the tube on a block to let it out.
+
+Guard Ants from older worlds, let out or in a tube, go on as companions with all they had.
+
+### Looking after it
+
+| Do this | What happens |
+|---|---|
+| Right-click with an empty hand | Opens its screen (a Cart Ant: its cart) |
+| Sneak and right-click | Gives the next order: follow, stay, guard |
+| Use ant food | Heals it at once |
+| Leave it in peace | It mends by itself, a health point every 4 seconds |
+| Use plates, a costume or a cart | Puts it on |
+| Use an empty Test Tube, or Pick up on its screen | Puts it in a tube, with all it has |
+| Write a name on its screen, or use a name tag | Names it |
+
+**Finding them.** Use a Rally Pheromone in the air for the list of your Guard Ants: where each one is, and a Call
+button that brings it to you from anywhere for one pheromone. You can have 16 out at once; those in tubes do not
+count.
+
+**Trading one.** Craft its tube with a name tag (the tag is used up). The tube then has no owner, and whoever opens it
+becomes the new one. Level, gear and name go along.
+
+- **Follow.** It stays near you, catches up when it falls behind, and goes with you through portals and teleports.
+  While you are away it waits where it is.
+- **Stay.** It waits, and fights only what is after it or you.
+- **Guard.** It keeps the place clear of hostile mobs, 14 blocks round its post.
+
+It fights who hurts you, whom you hit, and hostile mobs near it. It leaves creepers, neutral mobs, your friends and
+other players' pets alone. Only its owner can touch it or open its tube.
+
+**It can die, and death is for good.** Anything can hurt it, its owner too, as with a wolf. It leaves its gear and
+its load on the ground.
+
+### Stats and levels
+
+| Stat | The Guard Form adds | Each level adds |
 |---|---|---|
-| Health | The Queen's Hunting Strength level | 24 to 60 |
-| Bite | The Queen's Hunting Strength level | 3.6 to 9 damage |
-| Armor | The species' tier | 2 per tier, up to 10 |
+| Health | 12, and 4 for each point of Hunting Strength | 0.4 |
+| Bite | 0.5, and 0.6 for each point of Hunting Strength, times its species' skill | 0.04 |
+| Armor | 2 for each tier of its species, up to 10 | 0.08 |
 
-It fights whatever attacks you, whatever you attack, and hostile mobs near it (not creepers). It follows you and
-teleports to you when it falls far behind.
+**Species matter in a fight.** A species whose hunters are strong in a colony bites harder as a Guard, by half of what
+it is ahead: a species with hunting strength 2.0 bites half again as hard as one with 1.0.
 
-- **Right-click** it to make it stay or follow.
-- **Feed it ant food** to heal it.
-- **Sneak-right-click** with an empty hand to put it back in its tube. It keeps its health and name.
+A kill's experience goes to the one ant that lands the last blow, and tougher mobs give more. The highest level is 50.
+From level 10 it wears a band round its gaster, one more every ten levels up to three. They turn gold at level 30 and
+shine from level 40.
+
+### Gear and costumes
+
+| Gear | Made from | What it does |
+|---|---|---|
+| Chitin Ant Plates | Chitin Plates, string | 3 armor |
+| Hardened Chitin Ant Plates | Chitin Ant Plates, Hardened Chitin | 4 armor |
+| Infernal Chitin Ant Plates | Hardened Chitin Ant Plates, Infernal Chitin | 6 armor, 1 toughness |
+| Void Chitin Ant Plates | Infernal Chitin Ant Plates, Void Chitin | 7 armor, 2 toughness |
+| Ant Cart | Planks, iron nuggets, a stick | Makes it a Cart Ant with 9 slots |
+
+Costumes are only for looks and go with any armor: Pirate, Explorer, Miner, Chef and Party hats, a Royal Crown, a
+Flower Crown and a Backpack. A hat is worn in place of the plates' helm.
+
+A loaded cart stays on, and its ant does not fit in a tube until the cart is empty.
+
+Two vanilla items do something unexpected to a Guard Ant. Milk undoes it.
 
 ## Building blocks
 

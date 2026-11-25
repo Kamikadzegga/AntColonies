@@ -1,0 +1,25 @@
+{
+  "parent": "antcolonies:guard_ant",
+  "criteria": {
+    "companion": {
+      "trigger": "antcolonies:companion",
+      "conditions": {
+        "what": "recruited"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "antcolonies:rally_pheromone"
+    },
+    "title": {
+      "translate": "advancements.antcolonies.companion.title"
+    },
+    "description": {
+      "translate": "advancements.antcolonies.companion.description"
+    }
+  },
+  "requirements": [
+    ["companion"]
+  ]
+}

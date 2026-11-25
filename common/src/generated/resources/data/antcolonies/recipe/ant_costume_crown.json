@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "E": "minecraft:emerald",
+    "R": "minecraft:red_wool"
+  },
+  "pattern": ["GEG", "GRG"],
+  "result": {
+    "id": "antcolonies:ant_costume_crown"
+  }
+}

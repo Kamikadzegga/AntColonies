@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": "minecraft:yellow_wool",
+    "L": "minecraft:leather"
+  },
+  "pattern": [" W ", "WLW"],
+  "result": {
+    "id": "antcolonies:ant_costume_explorer"
+  }
+}

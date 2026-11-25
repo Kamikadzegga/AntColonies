@@ -85,7 +85,9 @@ public class IdentificationBookScreen extends Screen {
             new Guide("gear", () -> stacks(ModItems.CHITIN_CHESTPLATE.get(),
                     ModItems.CHITIN_TIERS.get(ChitinGear.Tier.HARDENED).get("chestplate").get(),
                     ModItems.CHITIN_TIERS.get(ChitinGear.Tier.INFERNAL).get("chestplate").get(),
-                    ModItems.CHITIN_TIERS.get(ChitinGear.Tier.VOID).get("chestplate").get())));
+                    ModItems.CHITIN_TIERS.get(ChitinGear.Tier.VOID).get("chestplate").get())),
+            new Guide("companions", () -> stacks(ModItems.RALLY_PHEROMONE.get(), ModItems.GUARD_ANT.get(),
+                    ModItems.COMPANION_ARMOR.get(ChitinGear.Tier.CHITIN).get(), ModItems.ANT_CART.get())));
 
     private final List<Holder.Reference<AntSpecies>> species = ordered();
     private final InfoPanel info = new InfoPanel();

@@ -2,7 +2,10 @@ package com.antcolonies.client.model;
 
 import com.antcolonies.AntColonies;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.antcolonies.colony.species.Caste;
 import com.antcolonies.colony.species.Costume;
@@ -53,6 +56,11 @@ public final class AntModel {
     private final Map<Costume, ModelPart> costumes = new EnumMap<>(Costume.class);
     private final Map<Costume, ModelPart> costumeHeads = new EnumMap<>(Costume.class);
     private final Map<Costume, ModelPart> costumeGasters = new EnumMap<>(Costume.class);
+    /** The same for what a companion wears (CostumeParts.WEAR). */
+    private final Map<String, ModelPart> wears = new HashMap<>();
+    private final Map<String, ModelPart> wearHeads = new HashMap<>();
+    private final Map<String, ModelPart> wearGasters = new HashMap<>();
+    private final Set<String> gasterWears = new HashSet<>();
     public final ModelPart[] femurs = new ModelPart[6];
     public final ModelPart[] tibias = new ModelPart[6];
     public final ModelPart[] antennae = new ModelPart[2];
@@ -96,6 +104,16 @@ public final class AntModel {
             costumes.put(costume, parts);
             costumeHeads.put(costume, parts.getChild("head"));
             costumeGasters.put(costume, root.getChild("costume_" + costume.getSerializedName() + "_gaster"));
+        }
+        for (String name : CostumeParts.WEAR) {
+            ModelPart parts = root.getChild(name);
+            wears.put(name, parts);
+            wearHeads.put(name, parts.getChild("head"));
+            ModelPart onGaster = root.getChild(name + "_gaster");
+            wearGasters.put(name, onGaster);
+            if (onGaster.getAllParts().size() > 1) {
+                gasterWears.add(name);
+            }
         }
         bodyRest = body.storePose();
         gasterRest = gaster.storePose();
@@ -184,21 +202,10 @@ public final class AntModel {
         CostumeParts.Dims dims = new CostumeParts.Dims(s.thoraxW(), s.thoraxH(), s.thoraxL(), s.headW(), s.headH(), s.headL(), s.gasterW(),
                 s.gasterH(), s.gasterL());
         for (String name : CostumeParts.NAMES) {
-            PartDefinition onBody = root.addOrReplaceChild("costume_" + name, CubeListBuilder.create(), PartPose.offset(0, -s.bodyHeight(), 0));
-            PartDefinition onHead = onBody.addOrReplaceChild("head", CubeListBuilder.create(),
-                    PartPose.offsetAndRotation(0, -0.8F, -halfL + 0.3F, 0.18F, 0, 0));
-            PartDefinition onGaster = root.addOrReplaceChild("costume_" + name + "_gaster", CubeListBuilder.create(), gasterPose);
-            int index = 0;
-            for (CostumeParts.Part part : CostumeParts.parts(name, dims)) {
-                PartDefinition parent = switch (part.anchor()) {
-                    case HEAD -> onHead;
-                    case BODY -> onBody;
-                    case GASTER -> onGaster;
-                };
-                parent.addOrReplaceChild("part" + index++, CubeListBuilder.create().texOffs(part.u(), part.v())
-                                .addBox(part.x(), part.y(), part.z(), part.w(), part.h(), part.d(), new CubeDeformation(part.grow())),
-                        PartPose.offsetAndRotation(part.pivotX(), part.pivotY(), part.pivotZ(), part.pitch(), part.yaw(), part.roll()));
-            }
+            addParts(root, "costume_" + name, name, dims, s, gasterPose);
+        }
+        for (String name : CostumeParts.WEAR) {
+            addParts(root, name, name, dims, s, gasterPose);
         }
         // A Liquid Ant's crop, one size and always full: the rounded liquid, its thin skin a little bigger, the plates on top.
         float cw = cropWidth(caste);
@@ -219,7 +226,27 @@ public final class AntModel {
         return LayerDefinition.create(mesh, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }
 
+    /** One costume's or wear's boxes, under roots of its own that follow the body and the gaster. */
+    private static void addParts(PartDefinition root, String rootName, String name, CostumeParts.Dims dims, Shape s, PartPose gasterPose) {
+        PartDefinition onBody = root.addOrReplaceChild(rootName, CubeListBuilder.create(), PartPose.offset(0, -s.bodyHeight(), 0));
+        PartDefinition onHead = onBody.addOrReplaceChild("head", CubeListBuilder.create(),
+                PartPose.offsetAndRotation(0, -0.8F, -s.thoraxL() / 2 + 0.3F, 0.18F, 0, 0));
+        PartDefinition onGaster = root.addOrReplaceChild(rootName + "_gaster", CubeListBuilder.create(), gasterPose);
+        int index = 0;
+        for (CostumeParts.Part part : CostumeParts.parts(name, dims)) {
+            PartDefinition parent = switch (part.anchor()) {
+                case HEAD -> onHead;
+                case BODY -> onBody;
+                case GASTER -> onGaster;
+            };
+            parent.addOrReplaceChild("part" + index++, CubeListBuilder.create().texOffs(part.u(), part.v())
+                            .addBox(part.x(), part.y(), part.z(), part.w(), part.h(), part.d(), new CubeDeformation(part.grow())),
+                    PartPose.offsetAndRotation(part.pivotX(), part.pivotY(), part.pivotZ(), part.pitch(), part.yaw(), part.roll()));
+        }
+    }
+
     public static final int CROP_PLATES = 4;
+
     /** How much of each edge of the crop's bounding box is cut away to round it, in units. */
     public static final float CROP_CHAMFER = 1.5F;
     /** How far the crop's skin stands off the liquid inside it. */
@@ -247,7 +274,14 @@ public final class AntModel {
         return Shape.of(caste).gasterL() * (caste == Caste.QUEEN ? 1.1F : 1.25F);
     }
 
+    /** The pose the parts are in: the same one again changes nothing. */
+    private AntPose posed;
+
     public void pose(AntPose pose) {
+        if (pose == posed) {
+            return;
+        }
+        posed = pose;
         body.loadPose(bodyRest);
         gaster.loadPose(gasterRest);
         head.loadPose(headRest);
@@ -277,12 +311,12 @@ public final class AntModel {
             }
         }
         float bob = Mth.sin(phase * 2) * 0.25F * walk;
-        body.y += bob;
-        gaster.y += bob;
+        body.y += bob + pose.bounce;
+        gaster.y += bob + pose.bounce;
         // The body rears up when alarmed (soldiers), the head nods while eating or tending.
         body.xRot -= pose.rear * 0.35F;
         gaster.xRot += pose.rear * 0.25F + Mth.sin(pose.time * 0.07F) * 0.02F;
-        head.xRot += pose.headPitch;
+        head.xRot += pose.headPitch + pose.droop * 0.24F;
         head.yRot += pose.headYaw;
         if (pose.gasterPulse > 0) {
             float pulse = Mth.sin(pose.time * 0.25F) * 0.04F * pose.gasterPulse;
@@ -297,7 +331,7 @@ public final class AntModel {
             antennae[i].loadPose(antennaRest[i]);
             mandibles[i].loadPose(mandibleRest[i]);
             float wave = Mth.sin(pose.time * (0.21F + i * 0.04F) + i * 1.7F + pose.seed);
-            antennae[i].xRot += wave * 0.18F * (1 + pose.alert);
+            antennae[i].xRot += wave * 0.18F * (1 + pose.alert) * (1 - pose.droop * 0.7F) + pose.droop * 0.85F;
             antennae[i].yRot += -side * Mth.cos(pose.time * 0.17F + i + pose.seed) * 0.15F;
             mandibles[i].yRot += side * pose.mandibleOpen * -0.35F + side * Mth.sin(pose.time * 0.3F) * 0.03F;
         }
@@ -308,10 +342,18 @@ public final class AntModel {
         crystalsBody.loadPose(body.storePose());
         crystalsBody.xRot = body.xRot;
         crystalsGaster.loadPose(gaster.storePose());
-        for (Costume costume : Costume.values()) {
-            costumes.get(costume).loadPose(body.storePose());
-            costumeHeads.get(costume).loadPose(head.storePose());
-            ModelPart onGaster = costumeGasters.get(costume);
+        if (pose.costume != null) {
+            costumes.get(pose.costume).loadPose(body.storePose());
+            costumeHeads.get(pose.costume).loadPose(head.storePose());
+            ModelPart onGaster = costumeGasters.get(pose.costume);
+            onGaster.loadPose(gaster.storePose());
+            onGaster.xScale = gaster.xScale;
+            onGaster.yScale = gaster.yScale;
+        }
+        for (String name : pose.wear) {
+            wears.get(name).loadPose(body.storePose());
+            wearHeads.get(name).loadPose(head.storePose());
+            ModelPart onGaster = wearGasters.get(name);
             onGaster.loadPose(gaster.storePose());
             onGaster.xScale = gaster.xScale;
             onGaster.yScale = gaster.yScale;
@@ -332,6 +374,26 @@ public final class AntModel {
     /** A costume's parts on the gaster. */
     public ModelPart costumeGaster(Costume costume) {
         return costumeGasters.get(costume);
+    }
+
+    /** A wear's parts on the thorax and the head. */
+    public ModelPart wear(String name) {
+        return wears.get(name);
+    }
+
+    /** Whether a wear has parts on the gaster at all. */
+    public boolean wearsOnGaster(String name) {
+        return gasterWears.contains(name);
+    }
+
+    public ModelPart wearGaster(String name) {
+        return wearGasters.get(name);
+    }
+
+    /** The ant's back end (units, ant space): where a cart is hitched. */
+    public static float rear(Caste caste, boolean replete) {
+        Shape s = Shape.of(caste);
+        return s.thoraxL() / 2 + 2.2F + (replete ? cropLength(caste) : s.gasterL() + 1.5F);
     }
 
     /** Where the carried thing sits: between the mandibles (units, ant space). */

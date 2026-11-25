@@ -576,6 +576,8 @@ To let your own species go on the Nether's expeditions, add it to the tag
 | `antcolonies:nether_adapted`, `antcolonies:end_adapted` | Species | Who goes on [expeditions](#expeditions) |
 | `antcolonies:has_wild_ants`, `antcolonies:spawns/<species>` | Biome | [Wild ants and nests](#wild-ants-and-nests) |
 | `antcolonies:nest_dwellers` | Species | Species that live in any wild nest standing in their biomes |
+| `antcolonies:no_companion_xp` | Entity type | Mobs that give a Guard Ant no experience |
+| `antcolonies:companion_lasting_damage` | Damage type | Damage that goes on after the blow (wither, fire): its kills count for the Guard Ant that caused it |
 
 Diamond and Emerald Fragments are in `c:nuggets/diamond` and `c:nuggets/emerald`.
 
@@ -609,7 +611,7 @@ file. For a modpack, ship the edited file in the pack; it is one file for all wo
 | `[genetics]` | Trait multipliers, Queen growth, mutations, lab scaling | `queenGrowthMinutes`, `queenGrowthCap`, `queenGrowthTraits`, `maxBeneficialMutations`, `labCostMultiplier` |
 | `[evolution]` | Evolution and hybrid chances | `chanceMultiplier`, `hybridChanceMultiplier`, `hybridQualityBonus`, `hybridWeakChance`, `feedingMakesLabSpecies` |
 | `[wild]` | Wild ants, home nests, anthills | `queenChance`, `nestQueenChance`, `firstNestCatchQueen`, `nestRecoverySeconds`, `nestAnt`, `nestAntSeconds`, `homeNestAnts`, `nestCropGrowth`, `nestHarvest`, `anthillAlarmSeconds`, `broodClusterMinutes`, `royalGuardReach` |
-| `[guards]` | Guard Ants | `antCost` |
+| `[guards]` | Guard Ants | `antCost`, `maxPerPlayer`, `restSeconds`, `maxLevel`, `experience`, `healthPerLevel`, `damagePerLevel`, `armorPerLevel`, `followsThroughDimensions` |
 | `[power]` | Generator, laboratory and Centrifuge energy and tanks | `generatorOutput`, `generatorCapacity`, `labEnergy`, `labEnergyInput`, `centrifugeEnergyMultiplier`, `centrifugeTimeMultiplier` |
 
 **`rareFindMultiplier`** scales the chance of every rare find (outputs marked `special`) at once: 0.5 halves diamonds,

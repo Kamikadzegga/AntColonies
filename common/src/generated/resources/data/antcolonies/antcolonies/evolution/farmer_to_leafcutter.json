@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:farmer",
+  "to": "antcolonies:leafcutter",
+  "item": "minecraft:shears",
+  "chance": 0.15,
+  "guaranteed_after": 8,
+  "min_stage": 2,
+  "min_population": 200
+}

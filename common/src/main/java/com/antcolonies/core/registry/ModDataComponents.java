@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import com.antcolonies.AntColonies;
 import com.antcolonies.colony.genetics.QueenData;
+import com.antcolonies.companion.CompanionTube;
 import com.antcolonies.content.item.AntSample;
 import com.antcolonies.content.item.GuardData;
 import com.antcolonies.content.item.SpeciesUpgrade;
@@ -36,6 +37,11 @@ public final class ModDataComponents {
     public static final Supplier<DataComponentType<CustomData>> COLONY = DATA_COMPONENTS.registerComponentType("colony",
             builder -> builder.persistent(CustomData.CODEC).networkSynchronized(CustomData.STREAM_CODEC));
 
+    /** A Guard Ant's tube: the whole companion. */
+    public static final Supplier<DataComponentType<CompanionTube>> COMPANION = DATA_COMPONENTS.registerComponentType("companion",
+            builder -> builder.persistent(CompanionTube.CODEC).networkSynchronized(CompanionTube.STREAM_CODEC));
+
+    /** A Guard Ant's tube from before the companions. */
     public static final Supplier<DataComponentType<GuardData>> GUARD = DATA_COMPONENTS.registerComponentType("guard",
             builder -> builder.persistent(GuardData.CODEC).networkSynchronized(GuardData.STREAM_CODEC));
 
