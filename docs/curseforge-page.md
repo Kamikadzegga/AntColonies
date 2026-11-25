@@ -49,8 +49,9 @@ into thousands of workers that mine, farm, hunt and evolve.
 
 - **Living colonies.** A Formicarium holds a whole colony you can watch: tunnels, eggs, larvae and workers. Place
   chambers against it to grow it: nests, Foraging and Harvesting Sites, Hunting Grounds and Storage.
-- **56 species.** Catch 16 wild ones, mutate them into iron, diamond, netherite and other mineral ants, breed hybrids,
-  and reach the endgame Wither and Dragon Ants.
+- **56 species.** Catch 17 wild ones, mutate them into iron, diamond, netherite and other mineral ants, breed hybrids,
+  and reach the endgame Wither and Dragon Ants. Ten are just for fun: a Cow Ant that gives milk, a Baker, a Pirate, a
+  Fisher.
 - **Genetic research.** Scan materials in the Genetic Laboratory. Discoveries are permanent, fill in the Ant
   Identification Book and unlock species mutations.
 - **Genetics.** Every Queen has ten traits and can carry any of 31 mutations, and the game says what each one does.
@@ -61,8 +62,9 @@ into thousands of workers that mine, farm, hunt and evolve.
   droplets into the real fluid.
 - **Expeditions.** Nether and End ants bring back that dimension's riches through little portals at home.
 - **Colony Connectors.** Link nearby colonies so food and items flow to where they are needed.
-- **Anthills.** Explore giant anthills in the Overworld, the Nether and the End, each shaped by its biome, with loot,
-  soldiers and a great Queen guarded by her Royal Guard Ants. Touch their chests and the whole anthill comes after you.
+- **Anthills.** Explore giant anthills in the Overworld, the Nether and the End, each built and furnished to suit its
+  biome, with loot, soldiers and a great Queen guarded by her Royal Guard Ants. Touch their chests and the whole
+  anthill comes after you.
 - **Chitin gear.** Four tiers of ant armor and tools, with jaws, spines and wings. In a full set, wild ants leave you
   alone.
 - **Building blocks.** Anthill bricks, chitin plates, amber, fungal and royal blocks, with stairs, slabs and walls.
@@ -75,7 +77,7 @@ into thousands of workers that mine, farm, hunt and evolve.
 ## Getting started
 
 1. Craft **Tweezers** and **Test Tubes**.
-2. Use the Tweezers on a wild ant nest until you catch a Queen.
+2. Use the Tweezers on a wild ant nest: your first catch from each kind of nest is a Queen.
 3. Place a **Formicarium** and put the Queen and some Ant Food in it.
 4. Add chambers as the colony grows. JEI or EMI shows every recipe.
 5. Build a **Genetic Laboratory**, scan materials in it and mutate your Queens into mineral ants.
@@ -99,7 +101,7 @@ Free to use in any modpack (MIT License).
 
 ## 3. Images (Media tab)
 
-Upload these 27 from `docs/images/screenshots/`, in this order:
+Upload these 33 from `docs/images/screenshots/`, in this order:
 
 | File | Title | Description |
 |---|---|---|
@@ -107,6 +109,8 @@ Upload these 27 from `docs/images/screenshots/`, in this order:
 | `terrarium.jpg` | A living Formicarium | Workers dig tunnels and carry food behind the glass |
 | `vertical-formicarium.jpg` | Built upward | Stacked blocks become one nest behind glass, chambers joined by tunnels |
 | `liquid-ants.jpg` | Liquid Ants | Ants that carry fluids, and the Droplet Centrifuge |
+| `ants-for-fun.jpg` | Ants for fun | Ten species in costumes: a Cow Ant, a Baker, a Pirate and more |
+| `hunting-ground.jpg` | Hunters | Bullet Ants fighting at their Hunting Ground |
 | `colony-screen.png` | The colony screen | Queen, health, food and ants at a glance |
 | `jobs-screen.png` | Jobs | Ants, priority and modes for every working site |
 | `statistics-screen.png` | Statistics | The colony over the last half hour |
@@ -123,9 +127,13 @@ Upload these 27 from `docs/images/screenshots/`, in this order:
 | `chitin-tiers-back.jpg` | Spines and wings | The higher tiers from behind |
 | `expedition-sites.jpg` | Expeditions | Nether and End Foraging Sites |
 | `connected-colonies.jpg` | Colony Connectors | Food and items between nearby colonies |
-| `building-blocks.jpg` | Building blocks | Anthill, chitin, amber, fungal and royal blocks |
-| `giant-anthill.jpg` | A giant anthill | A structure shaped by its biome, with loot and defenders |
-| `anthill-queen-chamber.jpg` | Inside an anthill | Tunnels and chambers, and a Queen to catch |
+| `building-blocks.jpg` | Building blocks | Anthill, chitin, royal, amber and fungal blocks, and anthill soil in four of its tones |
+| `giant-anthill.jpg` | A giant anthill | A structure with loot and defenders |
+| `anthills-overworld.jpg` | Anthills by biome | Desert, badlands, taiga and ice spikes |
+| `anthills-nether-end.jpg` | Nether and End anthills | Crimson and warped forests, a soul sand valley and the End's highlands |
+| `anthill-queen-chamber.jpg` | Inside an anthill | The great Queen's chamber, and a Queen to catch |
+| `anthill-rooms.jpg` | Furnished rooms | A fungus garden, an aphid farm, a nursery and a treasure chamber |
+| `wild-nest.jpg` | A wild nest | One worker walks around every nest |
 | `machines.jpg` | The machines | The Generator and the Droplet Centrifuge, working and idle |
 | `recipe-viewer.png` | JEI and EMI | Expeditions and every recipe |
 | `recipe-viewer-mutation.png` | Species Mutation recipes | Every species mutation and what it needs |

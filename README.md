@@ -24,7 +24,7 @@ that mine, farm, hunt and evolve.
 
 - **Living colonies.** A Formicarium holds a Queen, her brood and thousands of workers you can watch behind the glass.
   Chambers placed against it join the colony.
-- **56 species.** Catch 16 wild ones, mutate them into iron, diamond and netherite ants, breed hybrids, and reach the
+- **56 species.** Catch 17 wild ones, mutate them into iron, diamond and netherite ants, breed hybrids, and reach the
   endgame Wither and Dragon Ants. Ten are just for fun: a Cow Ant that gives milk, a Baker, a Pirate, a Fisher.
 - **Genetic research.** Scan materials in the Genetic Laboratory to discover species mutations and genes for good.
 - **Genetics.** Every Queen has ten traits and can carry any of 31 mutations. Edit, cross and stabilize her genes in
@@ -32,7 +32,8 @@ that mine, farm, hunt and evolve.
 - **Liquid Ants.** Ants that carry water, lava and other mods' fluids, and a Droplet Centrifuge for their droplets.
 - **The Nether and the End.** Expeditions through little portals at home, and Colony Connectors that share food and
   items.
-- **Giant anthills.** Structures in all three dimensions, with loot, soldiers and a great Queen to catch.
+- **Giant anthills.** Structures in all three dimensions, built and furnished to suit their biome, with loot, soldiers
+  and a great Queen to catch.
 - **Chitin gear and Guard Ants.** Four tiers of armor and tools, and an ant that follows you and fights for you.
 - **Made for modpacks.** Species, evolutions, mutations, food and loot are data packs, and a server config sets the
   numbers. JEI, EMI and Jade are supported, and any mod's pipes and cables work.
@@ -47,8 +48,10 @@ that mine, farm, hunt and evolve.
 | A colony built upward: one nest behind glass | Liquid Ants and the Droplet Centrifuge |
 | ![The Genetic Laboratory's scanner](docs/images/screenshots/laboratory-research.png) | ![Species Mutation](docs/images/screenshots/laboratory-mutation.png) |
 | Genetic research: scan a material, keep the discovery | Species Mutation: a Stone Ant Queen becomes an Iron Ant |
-| ![Giant anthill](docs/images/screenshots/giant-anthill.jpg) | ![Chitin armor tiers](docs/images/screenshots/chitin-tiers.jpg) |
-| A giant anthill | Chitin, Hardened, Infernal and Void armor |
+| ![Ants for fun](docs/images/screenshots/ants-for-fun.jpg) | ![Hunters at a Hunting Ground](docs/images/screenshots/hunting-ground.jpg) |
+| The ten ants for fun, each in its costume | Hunters fighting at their Hunting Ground |
+| ![Anthills of the Overworld](docs/images/screenshots/anthills-overworld.jpg) | ![Chitin armor tiers](docs/images/screenshots/chitin-tiers.jpg) |
+| Giant anthills take the look of their biome | Chitin, Hardened, Infernal and Void armor |
 
 More in the [gallery](docs/gallery.md).
 

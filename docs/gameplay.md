@@ -29,13 +29,16 @@ The numbers on these pages are the defaults. A server can change most of them in
 ## Getting started
 
 1. Craft **Tweezers** and a few **Test Tubes**.
-2. Find wild ants or a wild **Ant Nest**. They live in plains, forests, taigas, mountains, snowy biomes, deserts and
-   jungles. A nest is easy to miss, so look for its ant: **one worker walks around every wild nest** while you are near.
-   Right-click the nest or an ant with the Tweezers. Workers go into a tube of the same ants if you carry one with room,
-   anything else into an empty tube from your inventory. **Your first catch from each kind of nest is always a Queen**:
-   one from the first Stone Ant nest you try, one from the first Wood Ant nest, and so on. After that a nest of that
-   kind gives a Queen only now and then (5%). **A nest you took ants from needs ten minutes** until its ants are
-   back: Tweezers on it show the time left, and so does Jade.
+2. Find a wild **Ant Nest** or wild ants, and right-click the nest or an ant with the Tweezers. They live in plains,
+   forests, taigas, mountains, snowy biomes, deserts and jungles.
+   - **Look for the nest's ant.** A nest is easy to miss, but one worker walks around every wild nest while you are
+     near.
+   - **Your first catch from each kind of nest is always a Queen**: one from the first Stone Ant nest you try, one
+     from the first Wood Ant nest, and so on. After that a nest of that kind gives a Queen only now and then (5%).
+   - **A nest you took ants from needs ten minutes** until its ants are back. Tweezers on it show the time left, and
+     so does Jade.
+   - **Tubes.** Workers go into a tube of the same ants if you carry one with room, anything else into an empty tube
+     from your inventory.
 3. Place a **Formicarium**. Put the **Queen Test Tube** in (right-click, or the Queen slot) and add some **Ant Food**.
 4. Open the **Info** tab. If the climate is wrong, put the block it shows under the Formicarium.
 5. Add chambers as the colony grows: a **Nest Chamber** for more ants, a **Foraging Site** to put workers to work and a
@@ -154,7 +157,7 @@ Chambers join a colony. Job sites that only some species use are left alone by t
 | Nest Chamber | Eggs at full speed, faster larvae, and room for 3,000 adults and 1,500 larvae. More chambers lay faster, each a little less. |
 | Foraging Site | Workers find the species' items. Takes species upgrades. |
 | Harvesting Site | Farmer species grow food and harvest mushrooms, seeds and berries. |
-| Hunting Ground | Hunter species hunt mobs. Each catch gives the mob's own drops and 40 food. No mobs are spawned. Its nine slots hold the loot while the Storage is full. From stage 3 Bullet Ants also bring phantom membranes and Rabbit Ants, rarely, a rabbit's foot, drops those mobs only give a player. |
+| Hunting Ground | Hunter species hunt mobs. Each catch gives the mob's own drops and 40 food. Behind the glass the hunters fight a small mob of the kind they hunt; no real mob is spawned. Its nine slots hold the loot while the Storage is full. From stage 3 Bullet Ants also bring phantom membranes and Rabbit Ants, rarely, a rabbit's foot. |
 | Liquid Chamber | [Liquid Ants](#liquid-ants-and-the-droplet-centrifuge) give droplets of their fluid. |
 | Storage | Holds the finds in 18 slots and adds 25,000 food room. Hoppers can empty it. |
 | Queen Chamber | Raises daughter Queens. With a Genetic Sample it can raise [hybrids](species-and-genetics.md#hybrids). |

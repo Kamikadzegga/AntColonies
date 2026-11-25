@@ -12,6 +12,8 @@ Screenshots of Ant Colonies. The [gameplay guide](gameplay.md) explains what the
 | A colony built upward: one nest behind glass, its chambers joined by tunnels | Liquid Ants, each carrying its fluid, and the Droplet Centrifuge |
 | ![Expedition sites](images/screenshots/expedition-sites.jpg) | ![Connected colonies](images/screenshots/connected-colonies.jpg) |
 | Nether and End Foraging Sites | Colonies linked by Colony Connectors |
+| ![Ants for fun](images/screenshots/ants-for-fun.jpg) | ![Hunters at a Hunting Ground](images/screenshots/hunting-ground.jpg) |
+| The ten ants for fun, each in its costume | Bullet Ants fighting at their Hunting Ground |
 
 ## Screens
 
@@ -39,12 +41,16 @@ Screenshots of Ant Colonies. The [gameplay guide](gameplay.md) explains what the
 
 | | |
 |:---:|:---:|
-| ![Giant anthill](images/screenshots/giant-anthill.jpg) | ![Inside a giant anthill](images/screenshots/anthill-queen-chamber.jpg) |
-| A giant anthill | Inside it |
+| ![Giant anthill](images/screenshots/giant-anthill.jpg) | ![Anthills of the Overworld](images/screenshots/anthills-overworld.jpg) |
+| A giant anthill | Anthills take the look of their biome: desert, badlands, taiga and ice spikes |
+| ![Anthills of the Nether and the End](images/screenshots/anthills-nether-end.jpg) | ![Inside a giant anthill](images/screenshots/anthill-queen-chamber.jpg) |
+| Crimson and warped forests, a soul sand valley and the End's highlands | Inside: the great Queen's chamber |
+| ![Rooms of an anthill](images/screenshots/anthill-rooms.jpg) | ![A wild nest](images/screenshots/wild-nest.jpg) |
+| Furnished rooms: a fungus garden, an aphid farm, a nursery and a treasure chamber | A wild nest, and the ant that walks around it |
 | ![Chitin armor tiers](images/screenshots/chitin-tiers.jpg) | ![Chitin armor from behind](images/screenshots/chitin-tiers-back.jpg) |
 | Chitin, Hardened, Infernal and Void armor | Spines and a Queen's wings on the back |
 | ![Building blocks](images/screenshots/building-blocks.jpg) | ![Generator and Droplet Centrifuge](images/screenshots/machines.jpg) |
-| Building blocks: anthill, chitin, amber, fungal and royal | The Generator and the Droplet Centrifuge, working and idle |
+| Building blocks: anthill and chitin; royal, amber and the Pheromone Lamp; fungal, a Nest Door, Formicarium Glass and anthill soil in four of its tones | The Generator and the Droplet Centrifuge, working and idle |
 
 ## Other mods
 
