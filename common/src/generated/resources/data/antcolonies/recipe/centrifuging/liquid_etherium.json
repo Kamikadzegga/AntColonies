@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:liquid_etherium_droplet",
+  "result": {
+    "id": "arsmagicalegacy:liquid_etherium",
+    "amount": 50
+  },
+  "energy": 2000,
+  "time": 100,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "arsmagicalegacy"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "arsmagicalegacy:liquid_etherium"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:liquid_etherium_droplet"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "material": "aether_ii:ambrosium_shard",
+  "species": "antcolonies:ambrosium",
+  "tier": "basic",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "aether_ii"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "aether_ii:ambrosium_shard"
+    }
+  ]
+}

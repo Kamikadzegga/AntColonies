@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:liquid_starlight_droplet",
+  "result": {
+    "id": "astralsorcery:liquid_starlight",
+    "amount": 50
+  },
+  "energy": 2000,
+  "time": 100,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "astralsorcery"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "astralsorcery:liquid_starlight"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:liquid_starlight_droplet"
+    }
+  ]
+}

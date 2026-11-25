@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "antcolonies:item/eclipse_ember_fuel_droplet"
+  }
+}

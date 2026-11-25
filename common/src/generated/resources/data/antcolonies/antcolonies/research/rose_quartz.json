@@ -1,0 +1,17 @@
+{
+  "material": "#c:gems/rose_quartz",
+  "species": "antcolonies:rose_quartz",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "silentgems"
+    }
+  ]
+}

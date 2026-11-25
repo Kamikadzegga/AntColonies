@@ -1,0 +1,67 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#3A3F34",
+    "gaster": "#99A788",
+    "accent": "#D1D7C9",
+    "pattern": "metallic",
+    "crystal": "#B3BDA6"
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.008,
+    "outputs": [
+      {
+        "item": "twilightforest:armor_shard",
+        "weight": 40
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 10
+      },
+      {
+        "tag": "c:raw_materials/knightmetal",
+        "weight": 0.5,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "twilightforest"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "twilightforest:armor_shard"
+    }
+  ]
+}

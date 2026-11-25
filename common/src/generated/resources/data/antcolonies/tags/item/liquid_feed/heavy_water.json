@@ -3,6 +3,10 @@
     {
       "id": "mekanism:heavy_water_bucket",
       "required": false
+    },
+    {
+      "id": "modern_industrialization:heavy_water_bucket",
+      "required": false
     }
   ]
 }

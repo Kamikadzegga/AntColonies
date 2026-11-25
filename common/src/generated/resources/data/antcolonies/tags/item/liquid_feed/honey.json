@@ -3,6 +3,18 @@
     {
       "id": "create:honey_bucket",
       "required": false
+    },
+    {
+      "id": "productivebees:honey_bucket",
+      "required": false
+    },
+    {
+      "id": "extended_industrialization:honey_bucket",
+      "required": false
+    },
+    {
+      "id": "the_bumblezone:honey_bucket",
+      "required": false
     }
   ]
 }

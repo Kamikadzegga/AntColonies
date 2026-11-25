@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:liquid_force_droplet",
+  "result": {
+    "id": "forcecraft:fluid_force_source",
+    "amount": 50
+  },
+  "energy": 1600,
+  "time": 100,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "forcecraft"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "forcecraft:fluid_force_source"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:liquid_force_droplet"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#2E1C13",
+    "gaster": "#7A4A32",
+    "accent": "#C3AEA3",
+    "pattern": "speckled",
+    "crystal": "#9B7765"
+  },
+  "climate": "nether",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "nether",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.4,
+    "outputs": [
+      {
+        "item": "mysticalagriculture:soulium_dust",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:soul_sand",
+        "weight": 16
+      },
+      {
+        "item": "minecraft:soul_soil",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:netherrack",
+        "weight": 10
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:nether_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "mysticalagriculture"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "mysticalagriculture:soulium_dust"
+    }
+  ]
+}

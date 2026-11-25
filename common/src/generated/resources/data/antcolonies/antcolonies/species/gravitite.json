@@ -1,0 +1,62 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#4A1040",
+    "gaster": "#E060C8",
+    "accent": "#FFC0F0",
+    "pattern": "metallic",
+    "crystal": "#F080E0",
+    "glow": true
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.03,
+    "outputs": [
+      {
+        "item": "aether_ii:gravitite_plate",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 40
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "aether_ii"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "aether_ii:gravitite_plate"
+    }
+  ]
+}

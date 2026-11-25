@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:turbofuel_droplet",
+  "result": {
+    "id": "oritech:still_fuel",
+    "amount": 50
+  },
+  "energy": 3200,
+  "time": 140,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "oritech"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "oritech:still_fuel"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:turbofuel_droplet"
+    }
+  ]
+}

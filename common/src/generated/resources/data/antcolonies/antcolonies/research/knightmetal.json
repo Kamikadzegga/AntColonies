@@ -1,0 +1,22 @@
+{
+  "material": "#c:ingots/knightmetal",
+  "species": "antcolonies:knightmetal",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "twilightforest"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "twilightforest:armor_shard"
+    }
+  ]
+}

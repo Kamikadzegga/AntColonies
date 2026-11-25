@@ -12,6 +12,7 @@ import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.client.nest.NestVisuals;
 import com.antcolonies.client.ClientSpecies;
 import com.antcolonies.client.model.AntDrawer;
+import com.antcolonies.client.model.SideSprites;
 import com.antcolonies.client.model.AntPose;
 import com.antcolonies.client.terrarium.TerrariumVisuals;
 import com.antcolonies.client.terrarium.TunnelLayout;
@@ -62,7 +63,7 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
     private static final int SIDE_CELL_W = 24;
     private static final int SIDE_CELL_H = 12;
     private static final int SIDE_TEX_W = 96;
-    private static final int SIDE_TEX_H = 192;
+    private static final int SIDE_TEX_H = SideSprites.TEX_H;
     /** Liquid Ants in the sprite sheet: per caste a row for the full crop (from this row) and one for the plates on it. */
     private static final int SIDE_CROP_ROW = 10;
     private static final int SIDE_PLATES_ROW = 13;
@@ -417,6 +418,9 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
             spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, row + 2, 0xFF000000 | look.crystal().get(), 0.1F);
             g.light = light;
         }
+        if (look.costume().isPresent()) {
+            spriteLayer(g, face, u, v, fu, fv, upU, upV, len, height, frame, SideSprites.costumeRow(look.costume().get(), caste), -1, 0.105F);
+        }
         if (carry != 0) {
             // The load between the mandibles, at the front.
             float cu = u + fu * len * 0.5F + upU * height * 0.35F;
@@ -484,6 +488,9 @@ public class TerrariumRenderer implements BlockEntityRenderer<TerrariumBlockEnti
                 g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
                 surfaceLayer(g, x, z, fx, fz, n, len, height, frame, row + 2, 0xFF000000 | look.crystal().get(), 0.03F);
                 g.light = light;
+            }
+            if (look.costume().isPresent()) {
+                surfaceLayer(g, x, z, fx, fz, n, len, height, frame, SideSprites.costumeRow(look.costume().get(), actor.caste), -1, 0.035F);
             }
         }
     }

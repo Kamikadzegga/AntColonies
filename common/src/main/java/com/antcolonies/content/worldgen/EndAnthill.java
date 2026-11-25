@@ -6,6 +6,7 @@ import com.antcolonies.core.registry.ModStructures;
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.QuartPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -49,7 +50,7 @@ public class EndAnthill extends Structure {
         }
         BlockPos center = new BlockPos(cx, middle - 1, cz);
         AnthillPiece piece = AnthillPiece.plan(center, AnthillPiece.Kind.END, context.seed() ^ center.asLong() * 0x9E3779B97F4A7C15L, middle - 26,
-                AnthillTheme.END);
+                AnthillTheme.ofEnd(context.biomeResolver().getNoiseBiome(QuartPos.fromBlock(cx), QuartPos.fromBlock(middle), QuartPos.fromBlock(cz))));
         return Optional.of(new GenerationStub(center, builder -> builder.addPiece(piece)));
     }
 

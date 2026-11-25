@@ -1,0 +1,34 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:honey_droplet",
+  "result": {
+    "id": "productivebees:honey",
+    "amount": 50
+  },
+  "energy": 800,
+  "time": 60,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "productivebees"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "productivebees:honey"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:honey_droplet"
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "create:honey"
+      }
+    }
+  ]
+}

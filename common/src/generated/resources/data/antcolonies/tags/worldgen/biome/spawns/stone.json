@@ -5,6 +5,74 @@
     "minecraft:windswept_hills",
     "minecraft:windswept_gravelly_hills",
     "minecraft:dripstone_caves",
-    "minecraft:jagged_peaks"
+    "minecraft:jagged_peaks",
+    "#c:is_mountain",
+    "#c:is_hill",
+    "#c:is_stony_shores",
+    "#c:is_windswept",
+    {
+      "id": "terralith:basalt_cliffs",
+      "required": false
+    },
+    {
+      "id": "terralith:granite_cliffs",
+      "required": false
+    },
+    {
+      "id": "terralith:white_cliffs",
+      "required": false
+    },
+    {
+      "id": "terralith:yellowstone",
+      "required": false
+    },
+    {
+      "id": "terralith:yosemite_cliffs",
+      "required": false
+    },
+    {
+      "id": "terralith:frozen_cliffs",
+      "required": false
+    },
+    {
+      "id": "regions_unexplored:chalk_cliffs",
+      "required": false
+    },
+    {
+      "id": "twilightforest:thornlands",
+      "required": false
+    },
+    {
+      "id": "twilightforest:final_plateau",
+      "required": false
+    },
+    {
+      "id": "aether_ii:magnetic_scar",
+      "required": false
+    },
+    {
+      "id": "aether_ii:battleground_wastes",
+      "required": false
+    },
+    {
+      "id": "undergarden:forgotten_field",
+      "required": false
+    },
+    {
+      "id": "undergarden:barren_abyss",
+      "required": false
+    },
+    {
+      "id": "undergarden:smog_spires",
+      "required": false
+    },
+    {
+      "id": "undergarden:depths",
+      "required": false
+    },
+    {
+      "id": "undergarden:gronglegrowth",
+      "required": false
+    }
   ]
 }

@@ -2,6 +2,20 @@
   "values": [
     "#minecraft:is_savanna",
     "minecraft:plains",
-    "minecraft:sunflower_plains"
+    "minecraft:sunflower_plains",
+    "#c:is_savanna",
+    "#c:is_plains",
+    {
+      "id": "terralith:hot_shrubland",
+      "required": false
+    },
+    {
+      "id": "terralith:brushland",
+      "required": false
+    },
+    {
+      "id": "twilightforest:oak_savannah",
+      "required": false
+    }
   ]
 }

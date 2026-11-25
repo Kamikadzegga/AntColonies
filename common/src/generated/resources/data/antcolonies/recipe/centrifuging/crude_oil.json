@@ -13,12 +13,12 @@
       "modid": "machinaopus"
     },
     {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:fluid",
       "value": "machinaopus:crude_oil"
     },
     {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:item",
       "value": "antcolonies:crude_oil_droplet"
     }

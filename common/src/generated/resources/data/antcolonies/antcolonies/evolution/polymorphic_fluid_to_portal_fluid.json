@@ -1,0 +1,25 @@
+{
+  "from": "antcolonies:polymorphic_fluid",
+  "to": "antcolonies:portal_fluid",
+  "item": "#antcolonies:liquid_feed/portal_fluid",
+  "chance": 0.25,
+  "guaranteed_after": 4,
+  "min_stage": 2,
+  "min_population": 300,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "justdirethings"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "justdirethings:portal_fluid_source"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:portal_fluid_droplet"
+    }
+  ]
+}

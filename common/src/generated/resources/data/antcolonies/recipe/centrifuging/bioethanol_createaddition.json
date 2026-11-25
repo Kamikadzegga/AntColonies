@@ -1,0 +1,34 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:bioethanol_droplet",
+  "result": {
+    "id": "createaddition:bioethanol",
+    "amount": 50
+  },
+  "energy": 1600,
+  "time": 100,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "createaddition"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "createaddition:bioethanol"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:bioethanol_droplet"
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "mekanismgenerators:bioethanol"
+      }
+    }
+  ]
+}

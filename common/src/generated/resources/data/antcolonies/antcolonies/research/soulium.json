@@ -1,0 +1,22 @@
+{
+  "material": "mysticalagriculture:soulium_dust",
+  "species": "antcolonies:soulium",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "mysticalagriculture"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "mysticalagriculture:soulium_dust"
+    }
+  ]
+}

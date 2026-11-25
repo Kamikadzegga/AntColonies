@@ -1,0 +1,25 @@
+{
+  "from": "antcolonies:crude_oil",
+  "to": "antcolonies:naphtha",
+  "item": "#antcolonies:liquid_feed/naphtha",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "oritech"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "oritech:still_naphtha"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:naphtha_droplet"
+    }
+  ]
+}

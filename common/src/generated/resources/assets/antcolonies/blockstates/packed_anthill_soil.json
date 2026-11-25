@@ -1,7 +1,28 @@
 {
   "variants": {
-    "": {
+    "tone=earth": {
       "model": "antcolonies:block/packed_anthill_soil"
+    },
+    "tone=sand": {
+      "model": "antcolonies:block/packed_anthill_soil_sand"
+    },
+    "tone=red": {
+      "model": "antcolonies:block/packed_anthill_soil_red"
+    },
+    "tone=frost": {
+      "model": "antcolonies:block/packed_anthill_soil_frost"
+    },
+    "tone=stone": {
+      "model": "antcolonies:block/packed_anthill_soil_stone"
+    },
+    "tone=pale": {
+      "model": "antcolonies:block/packed_anthill_soil_pale"
+    },
+    "tone=dark": {
+      "model": "antcolonies:block/packed_anthill_soil_dark"
+    },
+    "tone=nether": {
+      "model": "antcolonies:block/packed_anthill_soil_nether"
     }
   }
 }

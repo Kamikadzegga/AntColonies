@@ -1,0 +1,78 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#3A2A4A",
+    "gaster": "#C890D8",
+    "accent": "#F0D8FF",
+    "pattern": "faceted",
+    "crystal": "#D8A8F0",
+    "glow": true
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "crystal",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.4,
+    "outputs": [
+      {
+        "tag": "c:gems/chimerite",
+        "weight": 30
+      },
+      {
+        "tag": "c:dusts/vinteum",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 12
+      },
+      {
+        "tag": "c:gems/topaz",
+        "weight": 8,
+        "min_stage": 2
+      },
+      {
+        "tag": "c:gems/moonstone",
+        "weight": 0.1,
+        "min_stage": 4,
+        "special": true
+      },
+      {
+        "tag": "c:gems/sunstone",
+        "weight": 0.3,
+        "min_stage": 4,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "arsmagicalegacy"
+    }
+  ]
+}

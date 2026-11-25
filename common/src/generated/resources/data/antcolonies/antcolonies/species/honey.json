@@ -13,7 +13,12 @@
     "consumption": 1.4
   },
   "liquid": {
-    "fluid": "create:honey",
+    "fluid": [
+      "create:honey",
+      "productivebees:honey",
+      "extended_industrialization:honey",
+      "the_bumblezone:honey_fluid_still"
+    ],
     "droplet": "antcolonies:honey_droplet",
     "rate": 0.2
   },
@@ -36,16 +41,28 @@
   },
   "neoforge:conditions": [
     {
-      "type": "neoforge:mod_loaded",
-      "modid": "create"
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "create"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "productivebees"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "extended_industrialization"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "the_bumblezone"
+        }
+      ]
     },
     {
-      "type": "neoforge:registered",
-      "registry": "minecraft:fluid",
-      "value": "create:honey"
-    },
-    {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:item",
       "value": "antcolonies:honey_droplet"
     }

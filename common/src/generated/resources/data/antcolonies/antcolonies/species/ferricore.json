@@ -1,0 +1,62 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#2D3B3C",
+    "gaster": "#779C9D",
+    "accent": "#C2D2D3",
+    "pattern": "metallic",
+    "crystal": "#99B5B6"
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "mineral",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.45,
+    "outputs": [
+      {
+        "tag": "c:raw_materials/ferricore",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 30
+      },
+      {
+        "tag": "c:ingots/ferricore",
+        "weight": 1,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "justdirethings"
+    }
+  ]
+}

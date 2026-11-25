@@ -64,6 +64,111 @@
     "minecraft:crying_obsidian",
     "minecraft:purpur_block",
     "antcolonies:diamond_fragment",
-    "antcolonies:emerald_fragment"
+    "antcolonies:emerald_fragment",
+    {
+      "id": "mysticalagriculture:inferium_essence",
+      "required": false
+    },
+    {
+      "id": "mysticalagriculture:prosperity_shard",
+      "required": false
+    },
+    {
+      "id": "forbidden_arcanus:rune",
+      "required": false
+    },
+    {
+      "id": "forbidden_arcanus:stellarite_piece",
+      "required": false
+    },
+    {
+      "id": "evilcraft:dark_gem",
+      "required": false
+    },
+    {
+      "id": "evilcraft:dark_gem_crushed",
+      "required": false
+    },
+    {
+      "id": "rftoolsbase:dimensionalshard",
+      "required": false
+    },
+    {
+      "id": "aether_ii:ambrosium_shard",
+      "required": false
+    },
+    {
+      "id": "aether_ii:zanite_gemstone",
+      "required": false
+    },
+    {
+      "id": "aether_ii:arkenium_plate",
+      "required": false
+    },
+    {
+      "id": "aether_ii:gravitite_plate",
+      "required": false
+    },
+    {
+      "id": "silentgems:chaos_essence",
+      "required": false
+    },
+    {
+      "id": "justdirethings:celestigem",
+      "required": false
+    },
+    {
+      "id": "twilightforest:liveroot",
+      "required": false
+    },
+    {
+      "id": "twilightforest:armor_shard",
+      "required": false
+    },
+    {
+      "id": "mysticalagriculture:soulium_dust",
+      "required": false
+    },
+    {
+      "id": "railcraft:raw_firestone",
+      "required": false
+    },
+    {
+      "id": "aether_ii:corrobonite_crystal",
+      "required": false
+    },
+    {
+      "id": "bigreactors:anglesite_crystal",
+      "required": false
+    },
+    {
+      "id": "bigreactors:benitoite_crystal",
+      "required": false
+    },
+    {
+      "id": "xycraft_world:xychorium_gem_blue",
+      "required": false
+    },
+    {
+      "id": "xycraft_world:xychorium_gem_green",
+      "required": false
+    },
+    {
+      "id": "xycraft_world:xychorium_gem_red",
+      "required": false
+    },
+    {
+      "id": "xycraft_world:xychorium_gem_dark",
+      "required": false
+    },
+    {
+      "id": "xycraft_world:xychorium_gem_light",
+      "required": false
+    },
+    {
+      "id": "ad_astra:ice_shard",
+      "required": false
+    },
+    "#antcolonies:foraging/sulfur_vents"
   ]
 }

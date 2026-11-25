@@ -1,0 +1,22 @@
+{
+  "material": "bigreactors:anglesite_crystal",
+  "species": "antcolonies:anglesite",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "bigreactors"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "bigreactors:anglesite_crystal"
+    }
+  ]
+}

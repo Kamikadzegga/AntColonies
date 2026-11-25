@@ -1,0 +1,22 @@
+{
+  "material": "aether_ii:arkenium_plate",
+  "species": "antcolonies:arkenium",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "aether_ii"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "aether_ii:arkenium_plate"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "material": "justdirethings:celestigem",
+  "species": "antcolonies:celestigem",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "requires": [
+    "antcolonies:blazegold"
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "justdirethings"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "justdirethings:celestigem"
+    }
+  ]
+}

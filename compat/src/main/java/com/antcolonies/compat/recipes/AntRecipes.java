@@ -6,6 +6,7 @@ import java.util.Locale;
 
 import com.antcolonies.AntColonies;
 import com.antcolonies.colony.expedition.Expedition;
+import com.antcolonies.colony.model.StructureKind;
 import com.antcolonies.colony.simulation.ColonySimulator;
 import com.antcolonies.colony.upgrade.UpgradeEffects;
 import com.antcolonies.colony.upgrade.UpgradeType;
@@ -143,7 +144,7 @@ public final class AntRecipes {
                 lines.add(line("diet", data.diet().specialKind(), data.diet().specialPerEgg()));
             }
             // What it brings: a Liquid Ant its one droplet, a farmer its harvest, anyone else their finds.
-            List<AntRecipe.Output> brings = data.makesLiquid() && data.liquid().isPresent() && data.liquid().get().available()
+            List<AntRecipe.Output> brings = data.liquidOnly() && data.liquid().isPresent() && data.liquid().get().available()
                     ? List.of(AntRecipe.Output.of(new ItemStack(data.liquid().get().dropletItem().get())))
                     : outputs(data.canFarm() ? data.farming().harvest() : data.production().outputs());
             list.add(new AntRecipe(id("species", id), List.of(List.of(queen(id)), List.of(ants(id, Caste.WORKER)), List.of(ants(id, Caste.SOLDIER))),
@@ -165,7 +166,7 @@ public final class AntRecipes {
             list.add(new AntRecipe(id("liquid", id), List.of(List.of(queen(id)), List.of(ants(id, Caste.WORKER))),
                     List.of(AntRecipe.Output.of(droplet, Component.translatable("info.antcolonies.liquid.fluid",
                             liquid.fluidValue().get().getFluidType().getDescription()).withStyle(ChatFormatting.GRAY))),
-                    List.of(Tooltips.species(id).withStyle(ChatFormatting.DARK_GREEN), line("liquid.only"),
+                    List.of(Tooltips.species(id).withStyle(ChatFormatting.DARK_GREEN), line(data.liquidOnly() ? "liquid.only" : "liquid.also"),
                             line("liquid.rate", String.format(Locale.ROOT, "%.2f", liquid.rate()),
                                     String.format(Locale.ROOT, "%.2f", data.diet().consumption())))));
         }
@@ -364,8 +365,32 @@ public final class AntRecipes {
     public List<AntRecipe> expeditions() {
         List<AntRecipe> list = new ArrayList<>();
         double base = AntConfig.get(AntConfig.EXPEDITION_ROLLS);
+        // Any species finds a trail pheromone: the entry turns through the worker of each.
+        List<ItemStack> anyWorkers = species.stream().map(entry -> ants(entry.key().identifier(), Caste.WORKER)).toList();
         for (Expedition expedition : Expedition.all(registries)) {
             ItemStack site = new ItemStack(ModBlocks.STRUCTURES.get(expedition.site()).get());
+            Component dimension = Component.translatable("dimension." + expedition.home().identifier().getNamespace() + "."
+                    + expedition.home().identifier().getPath());
+            if (expedition.trail().isPresent() && !anyWorkers.isEmpty()) {
+                // Where its trail pheromone comes from: any colony living in the dimension, at an ordinary Foraging Site.
+                Expedition.Trail trail = expedition.trail().get();
+                list.add(new AntRecipe(id("expedition", AntColonies.id(expedition.site().getSerializedName() + "_trail")),
+                        List.of(anyWorkers, List.of(new ItemStack(ModBlocks.STRUCTURES.get(StructureKind.FORAGING_SITE).get()))),
+                        List.of(AntRecipe.Output.of(new ItemStack(trail.item()),
+                                line("trail_chance", percent(trail.chance())).withStyle(ChatFormatting.GRAY),
+                                line("trail_use", site.getHoverName()).withStyle(ChatFormatting.GRAY))),
+                        List.of(line("trail_home", dimension).withStyle(ChatFormatting.DARK_PURPLE), line("trail_site"))));
+                List<ItemStack> adapted = expedition.adaptedSpecies(registries).stream().map(id -> ants(id, Caste.WORKER)).toList();
+                if (trail.awayChance() > 0 && !adapted.isEmpty()) {
+                    // The ants that go on this expedition find the pheromone at home too, far more rarely.
+                    list.add(new AntRecipe(id("expedition", AntColonies.id(expedition.site().getSerializedName() + "_away_trail")),
+                            List.of(adapted, List.of(new ItemStack(ModBlocks.STRUCTURES.get(StructureKind.FORAGING_SITE).get()))),
+                            List.of(AntRecipe.Output.of(new ItemStack(trail.item()),
+                                    line("trail_chance", percent(trail.awayChance())).withStyle(ChatFormatting.GRAY),
+                                    line("trail_use", site.getHoverName()).withStyle(ChatFormatting.GRAY))),
+                            List.of(line("trail_away", dimension).withStyle(ChatFormatting.DARK_PURPLE), line("trail_away_site"))));
+                }
+            }
             for (Identifier id : expedition.adaptedSpecies(registries)) {
                 List<SpeciesOutput> finds = expedition.outputsFor(id);
                 if (finds.isEmpty()) {
@@ -410,8 +435,11 @@ public final class AntRecipes {
             List<AntRecipe.Output> outputs = new ArrayList<>();
             for (AntSpecies.Combat.Target target : targets) {
                 ItemStack egg = spawnEgg(target.entity().value());
-                outputs.add(new AntRecipe.Output(List.of(egg), List.of(target.entity().value().getDescription().copy().withStyle(ChatFormatting.GOLD),
-                        line("weight", percent(target.weight() / (double) total) + "%"), line("loot").withStyle(ChatFormatting.GRAY))));
+                List<Component> lines = new ArrayList<>(List.of(target.entity().value().getDescription().copy().withStyle(ChatFormatting.GOLD),
+                        line("weight", percent(target.weight() / (double) total) + "%"), line("loot").withStyle(ChatFormatting.GRAY)));
+                target.trophy().ifPresent(trophy -> lines.add(line("trophy", new ItemStack(trophy.item()).getHoverName(),
+                        percent(trophy.chance()), trophy.minStage()).withStyle(ChatFormatting.AQUA)));
+                outputs.add(new AntRecipe.Output(List.of(egg), lines));
             }
             list.add(new AntRecipe(id("fighting", id), List.of(List.of(ants(id, Caste.WORKER))), outputs,
                     List.of(line("strength", String.format(Locale.ROOT, "%.2f", data.combat().strength())), line("loot"))));

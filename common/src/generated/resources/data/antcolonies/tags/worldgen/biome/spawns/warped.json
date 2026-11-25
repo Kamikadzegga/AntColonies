@@ -1,6 +1,19 @@
 {
   "values": [
     "minecraft:warped_forest",
-    "minecraft:crimson_forest"
+    "minecraft:crimson_forest",
+    "#c:is_nether_forest",
+    {
+      "id": "regions_unexplored:glistering_meadow",
+      "required": false
+    },
+    {
+      "id": "regions_unexplored:mycotoxic_undergrowth",
+      "required": false
+    },
+    {
+      "id": "regions_unexplored:infernal_holt",
+      "required": false
+    }
   ]
 }

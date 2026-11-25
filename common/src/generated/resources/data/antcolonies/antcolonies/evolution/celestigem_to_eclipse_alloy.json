@@ -1,0 +1,16 @@
+{
+  "from": "antcolonies:celestigem",
+  "to": "antcolonies:eclipse_alloy",
+  "item": "#c:ingots/eclipsealloy",
+  "chance": 0.02,
+  "guaranteed_after": 48,
+  "min_stage": 4,
+  "min_population": 5000,
+  "lab_amount": 4,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "justdirethings"
+    }
+  ]
+}

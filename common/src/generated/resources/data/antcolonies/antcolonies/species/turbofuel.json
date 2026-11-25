@@ -1,0 +1,53 @@
+{
+  "tier": 2,
+  "category": "liquid",
+  "look": {
+    "body": "#172731",
+    "gaster": "#111C23",
+    "accent": "#111C23",
+    "pattern": "plain",
+    "crop": "#34566C"
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.9
+  },
+  "liquid": {
+    "fluid": "oritech:still_fuel",
+    "droplet": "antcolonies:turbofuel_droplet",
+    "rate": 0.03
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "minecraft:honey_bottle",
+        "count": 2
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "oritech"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "oritech:still_fuel"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:turbofuel_droplet"
+    }
+  ]
+}

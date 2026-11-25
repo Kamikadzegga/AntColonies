@@ -1,0 +1,8 @@
+{
+  "values": [
+    {
+      "id": "stellaris:fluid_cell",
+      "required": false
+    }
+  ]
+}

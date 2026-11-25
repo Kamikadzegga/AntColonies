@@ -72,7 +72,7 @@ public class StructureMenu extends BaseMenu {
                             () -> window.storageSlot(s) < data.get(StructureBlockEntity.DATA_UNLOCKED)));
                 }
             }
-            case FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER -> {
+            case FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER, HUNTING_GROUND -> {
                 for (int slot = 0; slot < kind.slots(); slot++) {
                     addSlot(new FilteredSlot(structure, slot, 8 + slot * 18, STORE_Y, stack -> true, 64));
                 }

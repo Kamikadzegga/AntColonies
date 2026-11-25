@@ -1,6 +1,11 @@
 {
   "values": [
-    "#minecraft:base_stone_overworld",
+    "minecraft:stone",
+    "minecraft:granite",
+    "minecraft:diorite",
+    "minecraft:andesite",
+    "minecraft:tuff",
+    "minecraft:deepslate",
     "minecraft:smooth_stone",
     "minecraft:polished_granite",
     "minecraft:polished_diorite",

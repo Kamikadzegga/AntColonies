@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:army",
+  "to": "antcolonies:rabbit",
+  "item": "minecraft:rabbit_hide",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300
+}

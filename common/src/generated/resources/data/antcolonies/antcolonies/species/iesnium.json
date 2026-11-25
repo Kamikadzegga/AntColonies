@@ -1,0 +1,68 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#0E3438",
+    "gaster": "#2AB8C0",
+    "accent": "#A8F4F8",
+    "pattern": "metallic",
+    "crystal": "#50D8E0",
+    "glow": true,
+    "size": 1.05
+  },
+  "climate": "nether",
+  "diet": {
+    "consumption": 1.65,
+    "special_food": "mineral",
+    "special_per_egg": 0.75
+  },
+  "production": {
+    "rate": 0.008,
+    "outputs": [
+      {
+        "tag": "c:nuggets/iesnium",
+        "weight": 40
+      },
+      {
+        "tag": "c:raw_materials/iesnium",
+        "weight": 3
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 15
+      },
+      {
+        "tag": "c:ingots/iesnium",
+        "weight": 2,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "occultism"
+    }
+  ]
+}

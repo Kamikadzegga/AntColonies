@@ -1,0 +1,44 @@
+{
+  "values": [
+    {
+      "id": "enderio:xp_juice_bucket",
+      "required": false
+    },
+    {
+      "id": "minecraft:experience_bottle",
+      "required": false
+    },
+    {
+      "id": "industrialforegoing:essence_bucket",
+      "required": false
+    },
+    {
+      "id": "pneumaticcraft:memory_essence_bucket",
+      "required": false
+    },
+    {
+      "id": "mob_grinding_utils:fluid_xp_bucket",
+      "required": false
+    },
+    {
+      "id": "create_enchantment_industry:experience_bucket",
+      "required": false
+    },
+    {
+      "id": "justdirethings:xp_fluid_bucket",
+      "required": false
+    },
+    {
+      "id": "energizedpower:liquid_xp_bucket",
+      "required": false
+    },
+    {
+      "id": "neovitae:liquified_experience_bucket",
+      "required": false
+    },
+    {
+      "id": "sophisticatedcore:xp_bucket",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "values": [
+    {
+      "id": "forcecraft:force_bucket",
+      "required": false
+    }
+  ]
+}

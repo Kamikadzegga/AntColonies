@@ -1,0 +1,21 @@
+{
+  "material": "mysticalagriculture:inferium_essence",
+  "species": "antcolonies:inferium",
+  "tier": "basic",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "mysticalagriculture"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "mysticalagriculture:inferium_essence"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "mysticalagriculture:prosperity_shard"
+    }
+  ]
+}

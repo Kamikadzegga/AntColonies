@@ -1,0 +1,42 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:sulfuric_acid_droplet",
+  "result": {
+    "id": "oritech:still_sulfuric_acid",
+    "amount": 50
+  },
+  "energy": 2000,
+  "time": 100,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "oritech"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "oritech:still_sulfuric_acid"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:sulfuric_acid_droplet"
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "mekanism:sulfuric_acid"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "modern_industrialization:sulfuric_acid"
+      }
+    }
+  ]
+}

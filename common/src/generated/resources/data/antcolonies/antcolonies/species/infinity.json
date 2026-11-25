@@ -1,0 +1,60 @@
+{
+  "tier": 1,
+  "category": "mineral",
+  "look": {
+    "body": "#292929",
+    "gaster": "#6C6C6C",
+    "accent": "#BDBDBD",
+    "pattern": "speckled",
+    "crystal": "#919191"
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.3,
+    "special_food": "mineral",
+    "special_per_egg": 0.4
+  },
+  "production": {
+    "rate": 0.3,
+    "outputs": [
+      {
+        "item": "minecraft:cobbled_deepslate",
+        "weight": 30
+      },
+      {
+        "tag": "c:dusts/grains_of_infinity",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:flint",
+        "weight": 10
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 4800
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "enderio"
+    }
+  ]
+}

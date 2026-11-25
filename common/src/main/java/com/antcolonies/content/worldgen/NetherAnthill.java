@@ -6,6 +6,8 @@ import com.antcolonies.core.registry.ModStructures;
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.QuartPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.block.state.BlockState;
@@ -13,13 +15,17 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 
-/** A Nether anthill. The Nether has a roof, so each column is scanned down for a dry floor with open air above it. */
+/**
+ * An anthill of the Nether, and of other mods' cave worlds. Such a world has a roof, so each column is scanned down for
+ * a dry floor with open air above it.
+ */
 public class NetherAnthill extends Structure {
     public static final MapCodec<NetherAnthill> CODEC = simpleCodec(NetherAnthill::new);
 
-    /** The highest floor looked for, and the lowest: the nest goes {@link AnthillPiece#DEPTH} down, and lava lies at 31. */
-    private static final int TOP = 100;
-    private static final int LOWEST = 31 + AnthillPiece.DEPTH + 6;
+    /** How far under the top of the world's terrain the highest floor is looked for: the roof is passed over (the Nether's floors start at 100). */
+    private static final int UNDER_ROOF = 28;
+    /** How far over the sea (the Nether's lava) the lowest floor is: the nest goes {@link AnthillPiece#DEPTH} down and stays dry. */
+    private static final int OVER_SEA = AnthillPiece.DEPTH + 5;
     private static final int HEADROOM = AnthillPiece.HEIGHT + 3;
     private static final int MAX_SLOPE = 3;
 
@@ -33,7 +39,8 @@ public class NetherAnthill extends Structure {
         int cx = chunk.getMinBlockX() + 8;
         int cz = chunk.getMinBlockZ() + 8;
         ChunkGenerator generator = context.chunkGenerator();
-        int middle = floor(generator, context, cx, cz, TOP, LOWEST);
+        int sea = generator.getSeaLevel();
+        int middle = floor(generator, context, cx, cz, generator.getMinY() + generator.getGenDepth() - UNDER_ROOF, sea + OVER_SEA);
         if (middle < 0) {
             return Optional.empty();
         }
@@ -45,9 +52,12 @@ public class NetherAnthill extends Structure {
             }
         }
         BlockPos center = new BlockPos(cx, middle, cz);
-        // Planned to stay above the lava sea (at 31), so its tunnels stay dry.
-        AnthillPiece piece = AnthillPiece.plan(center, AnthillPiece.Kind.NETHER, context.seed() ^ center.asLong() * 0x9E3779B97F4A7C15L, 35,
-                AnthillTheme.NETHER);
+        // Another mod's cave world is built of its own ground; the Nether's look follows its biome.
+        Block rock = AnthillPiece.foreignRock(generator.getBaseColumn(cx, cz, context.heightAccessor(), context.randomState()), middle, middle - 10);
+        AnthillTheme theme = rock != null ? AnthillTheme.LOCAL : AnthillTheme.ofNether(context.biomeResolver().getNoiseBiome(QuartPos.fromBlock(cx), QuartPos.fromBlock(middle), QuartPos.fromBlock(cz)));
+        // Planned to stay above the sea (the Nether's lava), so its tunnels stay dry.
+        AnthillPiece piece = AnthillPiece.plan(center, AnthillPiece.Kind.NETHER, context.seed() ^ center.asLong() * 0x9E3779B97F4A7C15L, sea + 3,
+                theme, rock);
         return Optional.of(new GenerationStub(center, builder -> builder.addPiece(piece)));
     }
 

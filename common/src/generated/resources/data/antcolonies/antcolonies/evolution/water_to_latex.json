@@ -12,12 +12,12 @@
       "modid": "industrialforegoing"
     },
     {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:fluid",
       "value": "industrialforegoing:latex"
     },
     {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:item",
       "value": "antcolonies:latex_droplet"
     }

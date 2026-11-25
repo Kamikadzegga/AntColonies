@@ -27,6 +27,12 @@
         "item": "minecraft:glowstone_dust",
         "weight": 4,
         "min_stage": 2
+      },
+      {
+        "item": "minecraft:phantom_membrane",
+        "weight": 0.3,
+        "min_stage": 3,
+        "special": true
       }
     ]
   },
@@ -51,7 +57,12 @@
       },
       {
         "entity": "minecraft:phantom",
-        "weight": 10
+        "weight": 10,
+        "trophy": {
+          "item": "minecraft:phantom_membrane",
+          "chance": 0.25,
+          "min_stage": 3
+        }
       }
     ]
   },

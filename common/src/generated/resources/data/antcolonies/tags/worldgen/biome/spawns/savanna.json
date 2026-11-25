@@ -1,5 +1,18 @@
 {
   "values": [
-    "#minecraft:is_savanna"
+    "#minecraft:is_savanna",
+    "#c:is_savanna",
+    {
+      "id": "terralith:hot_shrubland",
+      "required": false
+    },
+    {
+      "id": "terralith:brushland",
+      "required": false
+    },
+    {
+      "id": "twilightforest:oak_savannah",
+      "required": false
+    }
   ]
 }

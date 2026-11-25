@@ -41,12 +41,12 @@
       "modid": "machinaopus"
     },
     {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:fluid",
       "value": "machinaopus:liquid_blaze"
     },
     {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:item",
       "value": "antcolonies:liquid_blaze_droplet"
     }

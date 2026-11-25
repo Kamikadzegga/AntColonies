@@ -13,12 +13,12 @@
       "modid": "create"
     },
     {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:fluid",
       "value": "create:honey"
     },
     {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:item",
       "value": "antcolonies:honey_droplet"
     }

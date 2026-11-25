@@ -1,0 +1,85 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#2A2F34",
+    "gaster": "#6E7B88",
+    "accent": "#BEC4C9",
+    "pattern": "faceted",
+    "crystal": "#929CA6"
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "mineral",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.315,
+    "outputs": [
+      {
+        "tag": "c:silicon",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:sand",
+        "weight": 22
+      },
+      {
+        "item": "minecraft:gravel",
+        "weight": 12
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "ae2"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "enderio"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "energizedpower"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "oritech"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "refinedstorage"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "stellaris"
+        }
+      ]
+    }
+  ]
+}

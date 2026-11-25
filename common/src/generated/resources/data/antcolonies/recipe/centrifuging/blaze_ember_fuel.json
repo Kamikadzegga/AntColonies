@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:blaze_ember_fuel_droplet",
+  "result": {
+    "id": "justdirethings:refined_t2_fluid_source",
+    "amount": 25
+  },
+  "energy": 3200,
+  "time": 140,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "justdirethings"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "justdirethings:refined_t2_fluid_source"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:blaze_ember_fuel_droplet"
+    }
+  ]
+}

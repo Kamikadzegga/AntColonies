@@ -1,0 +1,11 @@
+{
+  "material": "#c:dusts/bauxite",
+  "species": "antcolonies:bauxite",
+  "tier": "basic",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "modern_industrialization"
+    }
+  ]
+}

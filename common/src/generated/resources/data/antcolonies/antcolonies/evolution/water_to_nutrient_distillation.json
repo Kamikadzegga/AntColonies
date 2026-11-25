@@ -12,12 +12,12 @@
       "modid": "enderio"
     },
     {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:fluid",
       "value": "enderio:fluid_nutrient_distillation_still"
     },
     {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:item",
       "value": "antcolonies:nutrient_distillation_droplet"
     }

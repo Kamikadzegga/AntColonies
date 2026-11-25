@@ -33,7 +33,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
 /** A nest a player placed ({@code home=true}): its worker ants go out to farm and carry the harvest into its store. */
-public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer {
+public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer, RaidedNest {
     public static final int SLOTS = 9;
     private static final int[] ALL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
@@ -41,6 +41,18 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
     private int inside = residents();
     private int out;
     private int replaceTimer;
+    private long recoveredAt;
+
+    @Override
+    public long recoveredAt() {
+        return recoveredAt;
+    }
+
+    @Override
+    public void setRecoveredAt(long gameTime) {
+        recoveredAt = gameTime;
+        setChanged();
+    }
 
     public HomeNestBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.HOME_NEST.get(), pos, state);
@@ -170,7 +182,7 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
 
     /** Sends one ant out to forage, or returns null. It leaves by a side: a mob on top of the low nest finds no path. */
     public @Nullable WildAnt release(ServerLevel level) {
-        BlockPos exit = exit(level);
+        BlockPos exit = exit(level, worldPosition);
         if (inside <= 0 || exit == null || !(getBlockState().getBlock() instanceof WildNestBlock block)) {
             return null;
         }
@@ -189,13 +201,13 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
         return ant;
     }
 
-    /** A free spot beside the nest, one with ground under it if there is one, or null if walled in. */
-    private @Nullable BlockPos exit(ServerLevel level) {
+    /** A free spot beside a nest, one with ground under it if there is one, or null if walled in. */
+    public static @Nullable BlockPos exit(ServerLevel level, BlockPos nest) {
         List<Direction> sides = new ArrayList<>(Direction.Plane.HORIZONTAL.stream().toList());
         Collections.shuffle(sides, new Random(level.getRandom().nextLong()));
         BlockPos open = null;
         for (Direction side : sides) {
-            BlockPos spot = worldPosition.relative(side);
+            BlockPos spot = nest.relative(side);
             if (level.getBlockState(spot).getCollisionShape(level, spot).isEmpty()) {
                 if (level.getBlockState(spot.below()).isFaceSturdy(level, spot.below(), Direction.UP)) {
                     return spot;
@@ -265,6 +277,7 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
         output.putInt("inside", inside);
         output.putInt("out", out);
         output.putInt("replace_timer", replaceTimer);
+        output.putLong("recovered_at", recoveredAt);
         ContainerHelper.saveAllItems(output, items);
     }
 
@@ -274,6 +287,7 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
         inside = input.getIntOr("inside", residents());
         out = input.getIntOr("out", 0);
         replaceTimer = input.getIntOr("replace_timer", 0);
+        recoveredAt = input.getLongOr("recovered_at", 0);
         items.clear();
         ContainerHelper.loadAllItems(input, items);
     }

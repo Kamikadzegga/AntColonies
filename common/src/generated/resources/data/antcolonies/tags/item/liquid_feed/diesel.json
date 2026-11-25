@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "oritech:still_diesel_bucket",
+      "required": false
+    },
+    {
+      "id": "stellaris:diesel_bucket",
+      "required": false
+    }
+  ]
+}

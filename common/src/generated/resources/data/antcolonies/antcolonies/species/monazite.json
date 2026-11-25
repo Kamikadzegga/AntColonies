@@ -1,0 +1,60 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#390E36",
+    "gaster": "#96248E",
+    "accent": "#D09CCC",
+    "pattern": "speckled",
+    "crystal": "#B05BAA"
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.03,
+    "outputs": [
+      {
+        "tag": "c:dusts/monazite",
+        "weight": 9
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:sand",
+        "weight": 8
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "modern_industrialization"
+    }
+  ]
+}

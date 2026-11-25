@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "mekanismgenerators:bioethanol_bucket",
+      "required": false
+    },
+    {
+      "id": "createaddition:bioethanol_bucket",
+      "required": false
+    }
+  ]
+}

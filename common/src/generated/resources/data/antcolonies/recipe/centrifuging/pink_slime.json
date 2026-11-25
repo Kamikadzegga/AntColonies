@@ -13,12 +13,12 @@
       "modid": "industrialforegoing"
     },
     {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:fluid",
       "value": "industrialforegoing:pink_slime"
     },
     {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:item",
       "value": "antcolonies:pink_slime_droplet"
     }

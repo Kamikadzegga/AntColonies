@@ -1,0 +1,22 @@
+{
+  "material": "bigreactors:benitoite_crystal",
+  "species": "antcolonies:benitoite",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "bigreactors"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "bigreactors:benitoite_crystal"
+    }
+  ]
+}

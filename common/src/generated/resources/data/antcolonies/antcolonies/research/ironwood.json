@@ -1,0 +1,22 @@
+{
+  "material": "#c:ingots/ironwood",
+  "species": "antcolonies:ironwood",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "twilightforest"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "twilightforest:liveroot"
+    }
+  ]
+}

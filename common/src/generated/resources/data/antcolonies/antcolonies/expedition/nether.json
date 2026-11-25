@@ -5,7 +5,8 @@
   "home": "minecraft:the_nether",
   "trail": {
     "item": "antcolonies:nether_trail_pheromone",
-    "chance": 0.02
+    "chance": 0.02,
+    "away_chance": 3.0E-4
   },
   "outputs": [
     {
@@ -88,6 +89,24 @@
       "special": true
     },
     {
+      "item": "minecraft:ochre_froglight",
+      "weight": 0.2,
+      "min_stage": 3,
+      "special": true
+    },
+    {
+      "item": "minecraft:verdant_froglight",
+      "weight": 0.2,
+      "min_stage": 3,
+      "special": true
+    },
+    {
+      "item": "minecraft:pearlescent_froglight",
+      "weight": 0.2,
+      "min_stage": 3,
+      "special": true
+    },
+    {
       "item": "minecraft:ancient_debris",
       "weight": 0.08,
       "min_stage": 4,
@@ -109,7 +128,7 @@
     },
     {
       "tag": "c:nuggets/vibranium",
-      "weight": 0.2,
+      "weight": 0.26,
       "min_stage": 3,
       "special": true,
       "species": [

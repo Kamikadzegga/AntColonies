@@ -1,5 +1,5 @@
 {
-  "tier": 2,
+  "tier": 3,
   "category": "mineral",
   "look": {
     "body": "#5A6E80",
@@ -11,12 +11,12 @@
   },
   "climate": "any",
   "diet": {
-    "consumption": 1.5,
+    "consumption": 1.65,
     "special_food": "mineral",
-    "special_per_egg": 0.6
+    "special_per_egg": 0.75
   },
   "production": {
-    "rate": 0.45,
+    "rate": 0.03,
     "outputs": [
       {
         "tag": "c:nuggets/osmium",
@@ -24,8 +24,7 @@
       },
       {
         "tag": "c:raw_materials/osmium",
-        "weight": 10,
-        "min_stage": 2
+        "weight": 10
       },
       {
         "item": "minecraft:cobblestone",
@@ -53,7 +52,7 @@
         "count": 4
       }
     ],
-    "time": 6000
+    "time": 7200
   },
   "breeding": {
     "eggs": 0.9,

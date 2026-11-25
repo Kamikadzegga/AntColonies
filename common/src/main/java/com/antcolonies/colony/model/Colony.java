@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.antcolonies.colony.genetics.QueenData;
+import com.antcolonies.colony.species.RetiredSpecies;
 import com.antcolonies.core.registry.ModRegistries;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -483,8 +484,8 @@ public final class Colony {
     public void load(ValueInput input) {
         id = input.read("id", UUIDUtil.CODEC).orElse(id);
         queen = input.read("queen", QueenData.CODEC).orElse(null);
-        species = input.read("species", Identifier.CODEC).orElse(ModRegistries.COMMON);
-        formerSpecies = input.read("former_species", Identifier.CODEC).orElse(null);
+        species = input.read("species", RetiredSpecies.CODEC).orElse(ModRegistries.COMMON);
+        formerSpecies = input.read("former_species", RetiredSpecies.CODEC).orElse(null);
         conversion = input.getDoubleOr("conversion", 1);
         eggs = Math.max(0, input.getDoubleOr("eggs", 0));
         larvae = Math.max(0, input.getDoubleOr("larvae", 0));

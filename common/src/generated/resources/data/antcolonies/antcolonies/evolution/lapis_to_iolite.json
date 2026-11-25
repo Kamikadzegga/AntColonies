@@ -1,0 +1,16 @@
+{
+  "from": "antcolonies:lapis",
+  "to": "antcolonies:iolite",
+  "item": "#c:gems/iolite",
+  "chance": 0.05,
+  "guaranteed_after": 32,
+  "min_stage": 3,
+  "min_population": 1000,
+  "lab_amount": 8,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "silentgems"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:hydrogen_droplet",
+  "result": {
+    "id": "stellaris:hydrogen",
+    "amount": 50
+  },
+  "energy": 1200,
+  "time": 80,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "stellaris"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "stellaris:hydrogen"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:hydrogen_droplet"
+    }
+  ]
+}

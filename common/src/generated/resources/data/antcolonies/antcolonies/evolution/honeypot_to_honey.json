@@ -8,16 +8,28 @@
   "min_population": 300,
   "neoforge:conditions": [
     {
-      "type": "neoforge:mod_loaded",
-      "modid": "create"
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "create"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "productivebees"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "extended_industrialization"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "the_bumblezone"
+        }
+      ]
     },
     {
-      "type": "neoforge:registered",
-      "registry": "minecraft:fluid",
-      "value": "create:honey"
-    },
-    {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:item",
       "value": "antcolonies:honey_droplet"
     }

@@ -1,5 +1,50 @@
 {
   "values": {
+    "#c:seeds": {
+      "food": 4.0
+    },
+    "#c:crops": {
+      "food": 20.0
+    },
+    "#c:foods/vegetable": {
+      "food": 25.0
+    },
+    "#c:foods/berry": {
+      "food": 30.0
+    },
+    "#c:foods/fruit": {
+      "food": 40.0
+    },
+    "#c:foods/raw_fish": {
+      "food": 30.0
+    },
+    "#c:foods/raw_meat": {
+      "food": 40.0
+    },
+    "#c:foods/cooked_fish": {
+      "food": 50.0
+    },
+    "#c:foods/cooked_meat": {
+      "food": 65.0
+    },
+    "#c:foods/dough": {
+      "food": 30.0
+    },
+    "#c:foods/cookie": {
+      "food": 40.0
+    },
+    "#c:foods/candy": {
+      "food": 40.0
+    },
+    "#c:foods/soup": {
+      "food": 70.0
+    },
+    "#c:foods/bread": {
+      "food": 80.0
+    },
+    "#c:foods/pie": {
+      "food": 90.0
+    },
     "antcolonies:ant_food": {
       "food": 200.0
     },
@@ -95,6 +140,54 @@
     },
     "minecraft:cookie": {
       "food": 40.0
+    },
+    "minecraft:baked_potato": {
+      "food": 50.0
+    },
+    "minecraft:poisonous_potato": {
+      "food": 15.0
+    },
+    "minecraft:melon": {
+      "food": 225.0
+    },
+    "minecraft:pumpkin": {
+      "food": 60.0
+    },
+    "minecraft:sugar_cane": {
+      "food": 10.0
+    },
+    "minecraft:cactus": {
+      "food": 10.0
+    },
+    "minecraft:cocoa_beans": {
+      "food": 15.0
+    },
+    "minecraft:nether_wart": {
+      "food": 15.0
+    },
+    "minecraft:chorus_fruit": {
+      "food": 30.0
+    },
+    "minecraft:dried_kelp": {
+      "food": 10.0
+    },
+    "minecraft:crimson_fungus": {
+      "food": 25.0
+    },
+    "minecraft:warped_fungus": {
+      "food": 25.0
+    },
+    "minecraft:blue_egg": {
+      "food": 30.0
+    },
+    "minecraft:brown_egg": {
+      "food": 30.0
     }
-  }
+  },
+  "remove": [
+    "minecraft:golden_carrot",
+    "minecraft:golden_apple",
+    "minecraft:enchanted_golden_apple",
+    "minecraft:cake"
+  ]
 }

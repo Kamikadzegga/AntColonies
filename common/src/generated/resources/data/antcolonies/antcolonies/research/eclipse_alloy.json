@@ -1,0 +1,20 @@
+{
+  "material": "#c:ingots/eclipsealloy",
+  "species": "antcolonies:eclipse_alloy",
+  "tier": "experimental",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 2
+    }
+  ],
+  "requires": [
+    "antcolonies:celestigem"
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "justdirethings"
+    }
+  ]
+}

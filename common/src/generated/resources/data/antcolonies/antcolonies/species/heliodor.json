@@ -1,0 +1,66 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#41390F",
+    "gaster": "#AC9728",
+    "accent": "#DAD09E",
+    "pattern": "faceted",
+    "crystal": "#C1B15E",
+    "glow": true
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "crystal",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.03,
+    "outputs": [
+      {
+        "tag": "c:gems/heliodor",
+        "weight": 20
+      },
+      {
+        "tag": "c:dusts/heliodor",
+        "weight": 4
+      },
+      {
+        "item": "minecraft:cobbled_deepslate",
+        "weight": 22
+      },
+      {
+        "item": "minecraft:calcite",
+        "weight": 4,
+        "min_stage": 2
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.8,
+    "growth": 0.85
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "silentgems"
+    }
+  ]
+}

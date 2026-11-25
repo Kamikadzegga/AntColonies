@@ -1,0 +1,67 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#184E3F",
+    "gaster": "#3FCDA6",
+    "accent": "#A9E9D7",
+    "pattern": "metallic",
+    "crystal": "#6FDABC",
+    "glow": true
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.2,
+    "outputs": [
+      {
+        "item": "minecraft:prismarine_shard",
+        "weight": 24
+      },
+      {
+        "item": "minecraft:sand",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:kelp",
+        "weight": 10
+      },
+      {
+        "tag": "c:nuggets/neptunium",
+        "weight": 0.25,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "aquaculture"
+    }
+  ]
+}

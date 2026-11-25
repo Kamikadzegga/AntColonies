@@ -94,6 +94,8 @@ public final class AntConfig {
     public static final ModConfigSpec.IntValue QUEEN_GROWTH_CAP;
     public static final ModConfigSpec.IntValue QUEEN_GROWTH_TRAITS;
     public static final ModConfigSpec.ConfigValue<List<? extends Integer>> STARTING_LEVEL_WEIGHTS;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> PREFERRED_ITEM_MODS;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> PREFERRED_ITEMS;
     public static final ModConfigSpec.DoubleValue INHERITANCE_VARIATION;
     public static final ModConfigSpec.DoubleValue BASE_MUTATION_CHANCE;
     public static final ModConfigSpec.DoubleValue LAB_TIME_MULTIPLIER;
@@ -112,7 +114,10 @@ public final class AntConfig {
     public static final ModConfigSpec.DoubleValue WILD_QUEEN_CHANCE;
     public static final ModConfigSpec.DoubleValue WILD_SOLDIER_CHANCE;
     public static final ModConfigSpec.DoubleValue NEST_QUEEN_CHANCE;
-    public static final ModConfigSpec.IntValue NEST_COOLDOWN_SECONDS;
+    public static final ModConfigSpec.BooleanValue FIRST_NEST_CATCH_QUEEN;
+    public static final ModConfigSpec.IntValue NEST_RECOVERY_SECONDS;
+    public static final ModConfigSpec.BooleanValue NEST_ANT;
+    public static final ModConfigSpec.IntValue NEST_ANT_SECONDS;
     public static final ModConfigSpec.DoubleValue NEST_CROP_GROWTH;
     public static final ModConfigSpec.BooleanValue NEST_HARVEST;
     public static final ModConfigSpec.IntValue ANTHILL_ALARM_SECONDS;
@@ -277,6 +282,13 @@ public final class AntConfig {
         LIQUID_FOOD_CHANCE = s.comment("Chance that a droplet comes with one Ant Food as well. Keep it small: Farmer Ants are the colony's food makers.",
                         "0 turns it off.")
                 .defineInRange("liquidFoodChance", 0.0005, 0, 1);
+        PREFERRED_ITEM_MODS = s.comment("Mod ids, in order. When several mods add the item of a find (tin nuggets in a big pack), ants bring",
+                        "the one of the first mod listed here that has it. With none of these mods in the pack, they bring the one",
+                        "of the mod the game loaded first.")
+                .defineListAllowEmpty("preferredItemMods", List.of("minecraft", "alltheores", "allthemodium"), () -> "", o -> o instanceof String);
+        PREFERRED_ITEMS = s.comment("Item ids. An item listed here is the one ants bring whenever a find could be it, whatever the mod order",
+                        "above says. Example: [\"silentgems:topaz\", \"railcraft:tin_nugget\"].")
+                .defineListAllowEmpty("preferredItems", List.of(), () -> "", o -> o instanceof String);
         s.pop();
 
         s.push("connectors");
@@ -334,7 +346,14 @@ public final class AntConfig {
         WILD_QUEEN_CHANCE = s.comment("Chance a naturally spawned wild ant is a Queen.").defineInRange("queenChance", 0.02, 0, 1);
         WILD_SOLDIER_CHANCE = s.comment("Chance a naturally spawned wild ant is a soldier.").defineInRange("soldierChance", 0.15, 0, 1);
         NEST_QUEEN_CHANCE = s.comment("Chance Tweezers pull a Queen instead of workers from a wild nest.").defineInRange("nestQueenChance", 0.05, 0, 1);
-        NEST_COOLDOWN_SECONDS = s.comment("Seconds a wild nest needs to recover after ants were taken from it.").defineInRange("nestCooldownSeconds", 60, 0, 86400);
+        FIRST_NEST_CATCH_QUEEN = s.comment("A player's first catch from each kind of wild nest is always a Queen. Later catches from that kind use nestQueenChance.")
+                .define("firstNestCatchQueen", true);
+        NEST_RECOVERY_SECONDS = s.comment("Seconds a nest needs until its ants are back after Tweezers took some. Ten minutes by default.")
+                .defineInRange("nestRecoverySeconds", 600, 0, 86400);
+        NEST_ANT = s.comment("A wild nest keeps one worker walking around it while a player is near, so the nest is easier to spot.")
+                .define("nestAnt", true);
+        NEST_ANT_SECONDS = s.comment("Seconds before a wild nest sends out a new ant after its ant was caught or killed.")
+                .defineInRange("nestAntSeconds", 300, 0, 86400);
         NEST_CROP_GROWTH = s.comment("Chance per tick that an ant from a home nest, standing at a crop or sapling, grows it a stage (0 turns tending off).")
                 .defineInRange("nestCropGrowth", 0.02, 0, 1);
         NEST_HARVEST = s.comment("Ants from a home nest harvest ripe crops around it, replant them and carry the harvest into the nest.")
@@ -420,6 +439,10 @@ public final class AntConfig {
 
     public static boolean get(ModConfigSpec.BooleanValue value) {
         return SERVER_SPEC.isLoaded() ? value.getAsBoolean() : value.getDefault();
+    }
+
+    public static List<? extends String> strings(ModConfigSpec.ConfigValue<List<? extends String>> value) {
+        return SERVER_SPEC.isLoaded() ? value.get() : value.getDefault();
     }
 
     public static List<? extends Integer> get(ModConfigSpec.ConfigValue<List<? extends Integer>> value) {

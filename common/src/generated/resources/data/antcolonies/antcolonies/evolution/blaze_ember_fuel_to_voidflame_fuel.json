@@ -1,0 +1,25 @@
+{
+  "from": "antcolonies:blaze_ember_fuel",
+  "to": "antcolonies:voidflame_fuel",
+  "item": "#antcolonies:liquid_feed/voidflame_fuel",
+  "chance": 0.25,
+  "guaranteed_after": 4,
+  "min_stage": 2,
+  "min_population": 300,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "justdirethings"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "justdirethings:refined_t3_fluid_source"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:voidflame_fuel_droplet"
+    }
+  ]
+}

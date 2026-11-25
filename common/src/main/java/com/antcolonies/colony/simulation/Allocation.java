@@ -94,8 +94,8 @@ public final class Allocation {
                 wanted = 0;
                 status |= ColonyStatus.INCOMPATIBLE_SPECIES.bit();
             }
-            if ((kind == StructureKind.LIQUID_CHAMBER) != step.species.makesLiquid()) {
-                // Liquid Ants work only at Liquid Chambers, and only Liquid Ants work there.
+            if (kind == StructureKind.LIQUID_CHAMBER ? !step.species.makesLiquid() : step.species.liquidOnly()) {
+                // Liquid Ants work only at Liquid Chambers, and only ants that make a liquid work there.
                 wanted = 0;
                 status |= ColonyStatus.INCOMPATIBLE_SPECIES.bit();
             }

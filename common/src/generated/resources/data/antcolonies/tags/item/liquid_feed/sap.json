@@ -3,6 +3,10 @@
     {
       "id": "thermal:sap_bucket",
       "required": false
+    },
+    {
+      "id": "productivetrees:maple_sap_bucket",
+      "required": false
     }
   ]
 }

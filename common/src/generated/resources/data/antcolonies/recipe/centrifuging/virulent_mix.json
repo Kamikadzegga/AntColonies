@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:virulent_mix_droplet",
+  "result": {
+    "id": "undergarden:virulent_mix_source",
+    "amount": 50
+  },
+  "energy": 1200,
+  "time": 80,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "undergarden"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "undergarden:virulent_mix_source"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:virulent_mix_droplet"
+    }
+  ]
+}

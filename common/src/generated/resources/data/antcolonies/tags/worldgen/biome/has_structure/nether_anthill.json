@@ -3,6 +3,95 @@
     "minecraft:nether_wastes",
     "minecraft:crimson_forest",
     "minecraft:warped_forest",
-    "minecraft:soul_sand_valley"
+    "minecraft:soul_sand_valley",
+    "minecraft:basalt_deltas",
+    {
+      "id": "undergarden:barren_abyss",
+      "required": false
+    },
+    {
+      "id": "undergarden:blood_mushroom_bog",
+      "required": false
+    },
+    {
+      "id": "undergarden:dense_forest",
+      "required": false
+    },
+    {
+      "id": "undergarden:depths",
+      "required": false
+    },
+    {
+      "id": "undergarden:forgotten_field",
+      "required": false
+    },
+    {
+      "id": "undergarden:frostfields",
+      "required": false
+    },
+    {
+      "id": "undergarden:frosty_smogstem_forest",
+      "required": false
+    },
+    {
+      "id": "undergarden:gronglegrowth",
+      "required": false
+    },
+    {
+      "id": "undergarden:indigo_mushroom_bog",
+      "required": false
+    },
+    {
+      "id": "undergarden:ink_mushroom_bog",
+      "required": false
+    },
+    {
+      "id": "undergarden:puff_mushroom_forest",
+      "required": false
+    },
+    {
+      "id": "undergarden:smog_spires",
+      "required": false
+    },
+    {
+      "id": "undergarden:smogstem_forest",
+      "required": false
+    },
+    {
+      "id": "undergarden:veil_mushroom_bog",
+      "required": false
+    },
+    {
+      "id": "undergarden:wigglewood_forest",
+      "required": false
+    },
+    {
+      "id": "allthemodium:the_other",
+      "required": false
+    },
+    {
+      "id": "allthemodium:warped_forest",
+      "required": false
+    },
+    {
+      "id": "allthemodium:crimson_forest",
+      "required": false
+    },
+    {
+      "id": "allthemodium:soul_sand_valley",
+      "required": false
+    },
+    {
+      "id": "allthemodium:basalt_deltas",
+      "required": false
+    },
+    {
+      "id": "allthemodium:desert",
+      "required": false
+    },
+    {
+      "id": "allthemodium:desert_hills",
+      "required": false
+    }
   ]
 }

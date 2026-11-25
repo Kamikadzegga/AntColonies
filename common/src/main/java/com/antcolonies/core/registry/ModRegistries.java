@@ -15,8 +15,13 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceKey;
+import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.registries.NewDatapackRegistryEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jspecify.annotations.Nullable;
 
 /** The mod's datapack registries, loaded from {@code data/<namespace>/antcolonies/<registry>/} and synced to clients. */
@@ -29,6 +34,12 @@ public final class ModRegistries {
     public static final ResourceKey<Registry<Expedition>> EXPEDITION =
             ResourceKey.createRegistryKey(AntColonies.id("expedition"));
     public static final ResourceKey<Registry<Research>> RESEARCH = ResourceKey.createRegistryKey(AntColonies.id("research"));
+
+    /** The mod's own load condition for data files (see {@link RegisteredCondition}). */
+    public static final DeferredRegister<MapCodec<? extends ICondition>> CONDITIONS =
+            DeferredRegister.create(NeoForgeRegistries.Keys.CONDITION_CODECS, AntColonies.MODID);
+    public static final DeferredHolder<MapCodec<? extends ICondition>, MapCodec<RegisteredCondition>> REGISTERED =
+            CONDITIONS.register("registered", () -> RegisteredCondition.CODEC);
 
     /** The species every new player starts with, and the fallback of unknown ids. */
     public static final Identifier COMMON = AntColonies.id("common");

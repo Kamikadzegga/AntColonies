@@ -1,0 +1,25 @@
+{
+  "from": "antcolonies:water",
+  "to": "antcolonies:hydrogen",
+  "item": "#antcolonies:liquid_feed/hydrogen",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "stellaris"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "stellaris:hydrogen"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:hydrogen_droplet"
+    }
+  ]
+}

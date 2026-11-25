@@ -1,0 +1,16 @@
+{
+  "from": "antcolonies:diamond",
+  "to": "antcolonies:white_diamond",
+  "item": "#c:gems/white_diamond",
+  "chance": 0.05,
+  "guaranteed_after": 32,
+  "min_stage": 3,
+  "min_population": 1000,
+  "lab_amount": 8,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "silentgems"
+    }
+  ]
+}

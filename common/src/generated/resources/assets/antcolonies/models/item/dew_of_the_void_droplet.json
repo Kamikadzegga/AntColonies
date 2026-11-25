@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "antcolonies:item/dew_of_the_void_droplet"
+  }
+}

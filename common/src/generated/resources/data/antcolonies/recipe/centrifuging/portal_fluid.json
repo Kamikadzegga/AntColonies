@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:portal_fluid_droplet",
+  "result": {
+    "id": "justdirethings:portal_fluid_source",
+    "amount": 25
+  },
+  "energy": 4000,
+  "time": 160,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "justdirethings"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "justdirethings:portal_fluid_source"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:portal_fluid_droplet"
+    }
+  ]
+}

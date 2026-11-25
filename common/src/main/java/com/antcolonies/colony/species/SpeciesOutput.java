@@ -1,5 +1,6 @@
 package com.antcolonies.colony.species;
 
+import com.antcolonies.core.config.AntConfig;
 import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 
@@ -16,7 +17,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * One thing a species can find: a fixed item, or the first item of a tag (skipped while the tag is empty).
+ * One thing a species can find: a fixed item, or an item of a tag (skipped while the tag is empty). Of a tag that several
+ * mods fill, one item is found: see {@link #preferred}.
  *
  * @param weight    how often it is picked compared to the species' other outputs
  * @param minStage  the colony stage (1-4) it needs
@@ -63,7 +65,31 @@ public record SpeciesOutput(Optional<Holder<Item>> item, Optional<TagKey<Item>> 
         if (set.isEmpty() || set.get().size() == 0) {
             return ItemStack.EMPTY;
         }
-        return new ItemStack(set.get().get(0), amount);
+        return new ItemStack(preferred(set.get()), amount);
+    }
+
+    /**
+     * Which of a tag's items is found: one named in the config's preferredItems, else the one of the first mod in
+     * preferredItemMods (All The Ores by default), else the tag's first, which is that of the mod the game loaded first.
+     */
+    private static Holder<Item> preferred(HolderSet.Named<Item> items) {
+        if (items.size() > 1) {
+            for (String id : AntConfig.strings(AntConfig.PREFERRED_ITEMS)) {
+                for (Holder<Item> item : items) {
+                    if (item.unwrapKey().map(key -> key.identifier().toString().equals(id)).orElse(false)) {
+                        return item;
+                    }
+                }
+            }
+            for (String mod : AntConfig.strings(AntConfig.PREFERRED_ITEM_MODS)) {
+                for (Holder<Item> item : items) {
+                    if (item.unwrapKey().map(key -> key.identifier().getNamespace().equals(mod)).orElse(false)) {
+                        return item;
+                    }
+                }
+            }
+        }
+        return items.get(0);
     }
 
     public ItemStack create() {

@@ -1,6 +1,18 @@
 {
   "values": [
     "minecraft:end_highlands",
-    "minecraft:end_midlands"
+    "minecraft:end_midlands",
+    {
+      "id": "nullscape:shadowlands",
+      "required": false
+    },
+    {
+      "id": "nullscape:crystal_peaks",
+      "required": false
+    },
+    {
+      "id": "allthemodium:the_beyond",
+      "required": false
+    }
   ]
 }

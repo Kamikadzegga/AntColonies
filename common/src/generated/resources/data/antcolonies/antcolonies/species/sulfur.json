@@ -18,7 +18,7 @@
     "rate": 0.5,
     "outputs": [
       {
-        "item": "machinaopus:sulfur",
+        "tag": "c:dusts/sulfur",
         "weight": 36
       },
       {
@@ -39,7 +39,7 @@
         "min_stage": 2
       },
       {
-        "item": "machinaopus:petroleum_coke",
+        "tag": "antcolonies:foraging/sulfur_vents",
         "weight": 0.5,
         "min_stage": 3,
         "special": true
@@ -66,11 +66,27 @@
     "eggs": 0.9,
     "growth": 1.0
   },
-  "signature_item": "machinaopus:sulfur",
   "neoforge:conditions": [
     {
-      "type": "neoforge:mod_loaded",
-      "modid": "machinaopus"
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "machinaopus"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "alltheores"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "railcraft"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "neovitae"
+        }
+      ]
     }
   ]
 }

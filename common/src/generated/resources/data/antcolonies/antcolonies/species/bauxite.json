@@ -1,0 +1,60 @@
+{
+  "tier": 1,
+  "category": "mineral",
+  "look": {
+    "body": "#4C2600",
+    "gaster": "#C86400",
+    "accent": "#E6B98C",
+    "pattern": "speckled",
+    "crystal": "#D68B40"
+  },
+  "climate": "hot",
+  "diet": {
+    "consumption": 1.3,
+    "special_food": "mineral",
+    "special_per_egg": 0.4
+  },
+  "production": {
+    "rate": 0.5,
+    "outputs": [
+      {
+        "tag": "c:dusts/bauxite",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:clay_ball",
+        "weight": 8
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 4800
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "modern_industrialization"
+    }
+  ]
+}

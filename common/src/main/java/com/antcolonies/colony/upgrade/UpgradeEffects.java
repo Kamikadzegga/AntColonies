@@ -37,6 +37,9 @@ public final class UpgradeEffects {
         if (type == UpgradeType.SPEED || type == UpgradeType.GENETIC) {
             list.add(new ItemStack(ModItems.GENETIC_LAB.get()));
         }
+        if (type == UpgradeType.SPEED) {
+            list.add(new ItemStack(ModItems.CENTRIFUGE.get()));
+        }
         return list;
     }
 
@@ -49,6 +52,7 @@ public final class UpgradeEffects {
                 effects.add(effect("nest", value("speed.larvae", speed), value("speed.eggs", 10 * tier)));
                 effects.add(effect("queen", value("speed.queen", 25 * tier)));
                 effects.add(effect("lab", value("speed.lab", 1 + tier)));
+                effects.add(effect("centrifuge", value("speed.centrifuge", 1 + tier)));
             }
             case FOOD_EFFICIENCY -> effects.add(effect("terrarium_or_site",
                     value("food_efficiency", Math.min(75, percent(AntConfig.get(AntConfig.FOOD_UPGRADE_SAVING) * tier)))));

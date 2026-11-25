@@ -1,0 +1,10 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:milk_droplet",
+  "result": {
+    "id": "minecraft:milk",
+    "amount": 50
+  },
+  "energy": 600,
+  "time": 50
+}

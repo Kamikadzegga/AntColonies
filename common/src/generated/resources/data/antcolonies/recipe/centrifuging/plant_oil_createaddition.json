@@ -1,0 +1,42 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:plant_oil_droplet",
+  "result": {
+    "id": "createaddition:seed_oil",
+    "amount": 50
+  },
+  "energy": 1200,
+  "time": 80,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "createaddition"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "createaddition:seed_oil"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:plant_oil_droplet"
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "immersiveengineering:plantoil"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "pneumaticcraft:vegetable_oil"
+      }
+    }
+  ]
+}

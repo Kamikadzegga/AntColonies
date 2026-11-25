@@ -14,6 +14,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -56,7 +57,8 @@ public final class MobLoot {
 
     private static Optional<LivingEntity> create(ServerLevel level, EntityType<?> type) {
         try {
-            Entity entity = type.create(level, EntitySpawnReason.LOAD);
+            // Never spawned, so the checks on what may spawn are skipped: in Peaceful a hostile mob would not be made.
+            Entity entity = type.create(level, new EntitySpawnRequest(EntitySpawnReason.LOAD, true));
             return entity instanceof LivingEntity living ? Optional.of(living) : Optional.empty();
         } catch (RuntimeException e) {
             // Hunt targets come from datapacks and may be any mod's mob: one that can't be made off-world gives no loot.

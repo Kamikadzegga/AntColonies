@@ -1,0 +1,60 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#332442",
+    "gaster": "#8760AD",
+    "accent": "#C9B7DA",
+    "pattern": "metallic",
+    "crystal": "#A588C2"
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.03,
+    "outputs": [
+      {
+        "tag": "c:nuggets/tungsten",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:cobbled_deepslate",
+        "weight": 14
+      },
+      {
+        "tag": "c:raw_materials/tungsten",
+        "weight": 10
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "modern_industrialization"
+    }
+  ]
+}

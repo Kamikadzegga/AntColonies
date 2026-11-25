@@ -49,7 +49,7 @@ into thousands of workers that mine, farm, hunt and evolve.
 
 - **Living colonies.** A Formicarium holds a whole colony you can watch: tunnels, eggs, larvae and workers. Place
   chambers against it to grow it: nests, Foraging and Harvesting Sites, Hunting Grounds and Storage.
-- **48 species.** Catch 16 wild ones, mutate them into iron, diamond, netherite and other mineral ants, breed hybrids,
+- **56 species.** Catch 16 wild ones, mutate them into iron, diamond, netherite and other mineral ants, breed hybrids,
   and reach the endgame Wither and Dragon Ants.
 - **Genetic research.** Scan materials in the Genetic Laboratory. Discoveries are permanent, fill in the Ant
   Identification Book and unlock species mutations.

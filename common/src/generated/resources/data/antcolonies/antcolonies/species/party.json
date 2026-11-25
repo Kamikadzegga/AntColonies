@@ -1,0 +1,92 @@
+{
+  "tier": 1,
+  "category": "base",
+  "look": {
+    "body": "#D83A8A",
+    "gaster": "#3AB8E8",
+    "accent": "#FFE040",
+    "pattern": "striped",
+    "glow": true,
+    "costume": "party"
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.1
+  },
+  "production": {
+    "rate": 0.6,
+    "outputs": [
+      {
+        "item": "minecraft:firework_rocket",
+        "weight": 22
+      },
+      {
+        "item": "minecraft:paper",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:gunpowder",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:sugar",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:note_block",
+        "weight": 3,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:cake",
+        "weight": 0.5,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:music_disc_13",
+        "weight": 0.02,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:music_disc_cat",
+        "weight": 0.02,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:music_disc_blocks",
+        "weight": 0.02,
+        "min_stage": 3,
+        "special": true
+      },
+      {
+        "item": "minecraft:music_disc_chirp",
+        "weight": 0.02,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:firework_rocket",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 1.1,
+    "growth": 1.0
+  },
+  "signature_item": "minecraft:firework_rocket"
+}

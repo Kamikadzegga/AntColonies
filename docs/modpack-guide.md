@@ -120,6 +120,10 @@ The built-in ones are in `data/antcolonies/recipe/centrifuging/`. `neoforge:cond
 ## Ant food
 
 What colonies can eat is the data map `antcolonies:ant_food`. Items that are not in it can't be fed to a Formicarium.
+The built-in map starts with whole kinds by tag (`#c:seeds`, `#c:crops`, `#c:foods/vegetable`, `/berry`, `/fruit`,
+`/raw_fish`, `/raw_meat`, `/cooked_fish`, `/cooked_meat`, `/dough`, `/cookie`, `/candy`, `/soup`, `/bread`, `/pie`), then
+names items, which keep their own number: a file is read in order. So an item your pack adds to one of those tags is
+ant food with no data map of its own.
 
 `data/antcolonies/data_maps/item/ant_food.json`:
 
@@ -185,6 +189,7 @@ required.
 | `look.glow` | `false` | Crystals (or a Liquid Ant's crop) glow in the dark |
 | `look.size` | `1.0` | 0.25 to 4 |
 | `look.crop` | none | Liquid Ants: the colour of the fluid in their crop |
+| `look.costume` | none | One of the mod's costumes, worn over the colours: `cow`, `chicken`, `sheep`, `baker`, `bookworm`, `party`, `pirate`, `pig`, `rabbit`, `fisher` |
 | `climate` | `temperate` | `temperate`, `cold`, `hot`, `underground`, `nether`, `end` or `any` |
 | `spawn_biomes` | none | A biome tag where the species is wild. See [Wild ants and nests](#wild-ants-and-nests). |
 | `diet.consumption` | `1.0` | Food use multiplier |
@@ -193,7 +198,7 @@ required.
 | `production.outputs` | none | What workers find (fields below) |
 | `farming.food`, `farming.harvest` | `0`, none | A `food` above 0 lets the species work at Harvesting Sites: food per minute per farmer, plus `harvest` outputs |
 | `combat.strength` | `1.0` | Hunting strength, for `"category": "hunter"` |
-| `combat.targets` | zombie, skeleton, spider, creeper, slime | A list of `{"entity": "minecraft:blaze", "weight": 10}`. Hunters roll that mob's own loot table. |
+| `combat.targets` | zombie, skeleton, spider, creeper, slime | A list of `{"entity": "minecraft:blaze", "weight": 10}`. Hunters roll that mob's own loot table. A target may add `"trophy": {"item": "minecraft:phantom_membrane", "chance": 0.25, "min_stage": 3}`: a drop the mob only gives a player, which hunters of a colony at that stage bring with that chance a catch. |
 | `liquid.fluid`, `liquid.droplet`, `liquid.rate` | none, none, `1.0` | For `"category": "liquid"`: the fluid's id, the item its workers give, and droplets per minute compared to Water Ants |
 | `rearing.cost` | none | What a Queen Chamber uses to rear a Queen of this species |
 | `rearing.time` | `2400` | Rearing time in ticks |
@@ -214,8 +219,28 @@ Used in `outputs`, `harvest` and expedition tables. Each has either `item` or `t
 | `processed` | none | What Processing species upgrades turn it into |
 | `ratio` | `9` | How many of it make one `processed` item |
 
-A `tag` output gives the first item in the tag and is skipped while the tag is empty. **Use tags for other mods'
+A `tag` output gives one item of the tag and is skipped while the tag is empty. **Use tags for other mods'
 materials** (`c:nuggets/...`, `c:raw_materials/...`, `c:gems/...`): they work with whichever mod provides the item.
+When several mods fill a tag, one item of it is found, picked in this order:
+
+1. an item listed in the config's `preferredItems` (item ids), for a pack that wants one specific drop;
+2. the item of the first mod in `preferredItemMods` (mod ids, in order; `minecraft`, `alltheores`, `allthemodium` by
+   default), so All The Ores wins where it is installed;
+3. the tag's first item, which is that of the mod the game loaded first.
+
+An `item` output must exist, or the world does not load. A species that names another mod's item outright should carry
+an `antcolonies:registered` condition for it beside `neoforge:mod_loaded`, as the built-in ones do:
+
+```json
+"neoforge:conditions": [
+  { "type": "neoforge:mod_loaded", "modid": "mysticalagriculture" },
+  { "type": "antcolonies:registered", "registry": "minecraft:item", "value": "mysticalagriculture:inferium_essence" }
+]
+```
+
+Use `antcolonies:registered`, not `neoforge:registered`, in data a **mod** ships. A player's game reads a mod's data
+from its own jar and cannot test NeoForge's condition there: it drops the species the server kept, and on that server
+every list of species then reads one species off. Data packs and script data are sent whole, so either works there.
 
 ### Costs
 
@@ -283,13 +308,16 @@ A species with `"category": "liquid"` works only at Liquid Chambers and gives on
 }
 ```
 
+`fluid` can also be a list, for a liquid several mods add: `"fluid": ["create:honey", "productivebees:honey"]`. The
+ants make the first one that is in the game, and each fluid needs its own Centrifuge recipe.
+
 If the fluid or the item comes from a mod that may be missing, guard the files as the built-in ones do:
 
 ```json
 "neoforge:conditions": [
   { "type": "neoforge:mod_loaded", "modid": "create" },
-  { "type": "neoforge:registered", "registry": "minecraft:fluid", "value": "create:chocolate" },
-  { "type": "neoforge:registered", "registry": "minecraft:item", "value": "antcolonies:chocolate_droplet" }
+  { "type": "antcolonies:registered", "registry": "minecraft:fluid", "value": "create:chocolate" },
+  { "type": "antcolonies:registered", "registry": "minecraft:item", "value": "antcolonies:chocolate_droplet" }
 ]
 ```
 
@@ -453,8 +481,21 @@ Two separate things:
 
 - **Wild ants**, the walking mobs, spawn in every biome of the tag `#antcolonies:has_wild_ants`. Each takes a species
   whose `spawn_biomes` tag contains that biome, or Common Ants if none does.
-- **Nests**, the blocks, exist for the 13 built-in wild species of the Overworld. They generate in the biomes of
-  `#antcolonies:spawns/<species>`.
+- **Nests**, the blocks, exist for the built-in wild species. They generate in the biomes of
+  `#antcolonies:spawns/<species>`. Each wild nest keeps one worker walking around it while a player is within 48 blocks
+  (`nestAnt`); a caught or killed one is replaced after `nestAntSeconds`.
+
+The built-in tags are made of the common biome tags (`#c:is_forest`, `#c:is_snowy`, `#c:is_desert` and so on), so the
+biomes of world generation mods get nests and wild ants without any work, as long as the mod tags its biomes. Biomes of
+Terralith, Regions Unexplored, Nullscape, the Twilight Forest, Aether II, the Undergarden and Allthemodium that no
+common tag sorts are listed by name, as optional entries.
+
+A species with no nest block of its own can still live in nests: put it in the species tag
+`antcolonies:nest_dwellers`. Any wild nest that generates in a biome of its `spawn_biomes` then holds its ants,
+whatever kind of nest it is. Allthemodium and Vibranium Ants live this way in The Other (`antcolonies:spawns/the_other`).
+
+A nest stands on solid ground under the leaves. In a dimension with a roof (the Nether, the Undergarden) it stands on a
+cave floor instead, so adding such a dimension's biomes to a tag is all it takes.
 
 To make a new species wild:
 
@@ -479,7 +520,8 @@ The anthills are ordinary world-generation data:
 | File in `data/antcolonies/` | What it sets |
 |---|---|
 | `worldgen/structure_set/giant_anthills.json` | How often: `spacing` 32 and `separation` 10, in chunks |
-| `tags/worldgen/biome/has_structure/giant_anthill.json` | Which biomes. An empty tag with `"replace": true` turns them off. |
+| `tags/worldgen/biome/has_structure/giant_anthill.json` | Which biomes. An empty tag with `"replace": true` turns them off. Add another mod's surface biomes here: where the ground is not the base game's stone, the anthill is built of the ground it finds. |
+| `tags/worldgen/biome/has_structure/nether_anthill.json` | The same for the Nether, and for cave worlds with a roof |
 | `loot_table/chests/giant_anthill.json` | What its chests and barrels hold |
 | `loot_table/chests/anthill_treasure.json`, `anthill_food.json` | The treasure chambers and food stores |
 
@@ -497,7 +539,7 @@ The Nether and End Foraging Sites take their finds from `data/<ns>/antcolonies/e
   "adapted": "antcolonies:nether_adapted",
   "rate": 0.8,
   "home": "minecraft:the_nether",
-  "trail": { "item": "antcolonies:nether_trail_pheromone", "chance": 0.02 },
+  "trail": { "item": "antcolonies:nether_trail_pheromone", "chance": 0.02, "away_chance": 0.0003 },
   "outputs": [
     { "item": "minecraft:quartz", "weight": 20 },
     { "item": "minecraft:blaze_rod", "weight": 1.5, "min_stage": 3 },
@@ -513,7 +555,7 @@ The Nether and End Foraging Sites take their finds from `data/<ns>/antcolonies/e
 | `adapted` | A species tag: only these species go |
 | `rate` | Finds compared to an ordinary Foraging Site (times `expeditionRolls` in the config) |
 | `home` | The dimension. An ordinary Foraging Site of a colony living there finds the `trail` item. |
-| `trail` | The trail pheromone and its chance per find. Leave it out for none. |
+| `trail` | The trail pheromone and its chance per find. `away_chance` is the chance for adapted ants foraging in any other dimension (0 or left out: never). Leave `trail` out for none. |
 | `outputs` | [Outputs](#outputs), with an optional `species` list: only those species find it |
 
 To let your own species go on the Nether's expeditions, add it to the tag
@@ -533,6 +575,7 @@ To let your own species go on the Nether's expeditions, add it to the tag
 | `antcolonies:droplets` | Item | Every droplet |
 | `antcolonies:nether_adapted`, `antcolonies:end_adapted` | Species | Who goes on [expeditions](#expeditions) |
 | `antcolonies:has_wild_ants`, `antcolonies:spawns/<species>` | Biome | [Wild ants and nests](#wild-ants-and-nests) |
+| `antcolonies:nest_dwellers` | Species | Species that live in any wild nest standing in their biomes |
 
 Diamond and Emerald Fragments are in `c:nuggets/diamond` and `c:nuggets/emerald`.
 
@@ -561,11 +604,11 @@ file. For a modpack, ship the edited file in the pack; it is one file for all wo
 | `[population]` | Housing, egg and growth times, lifespan, stages | `stagePopulations`, `adultLifespanMinutes`, `tweezersAnts`, `clusterBrood` |
 | `[food]` | Food use, food room, starvation | `lowFoodMinutes`, `lowFoodFactor`, `starvedFactor`, `hungryFoodWorkFactor` |
 | `[founding]` | Queen-only founding | `foundingFoodShare`, `foundingWorkers` |
-| `[production]` | Rates, diminishing returns, upgrade strengths | `rareFindMultiplier`, `bonusExponent`, `chitinFindChance`, `focusedForagingBoost`, `focusedForagingPenalty`, `expeditionRolls`, `liquidFoodChance` |
+| `[production]` | Rates, diminishing returns, upgrade strengths | `rareFindMultiplier`, `bonusExponent`, `chitinFindChance`, `focusedForagingBoost`, `focusedForagingPenalty`, `expeditionRolls`, `liquidFoodChance`, `preferredItemMods` |
 | `[connectors]` | Colony Connectors | `transferInterval`, `maxFoodPerMinute`, `maxItemsPerMinute`, `connectorRange` |
 | `[genetics]` | Trait multipliers, Queen growth, mutations, lab scaling | `queenGrowthMinutes`, `queenGrowthCap`, `queenGrowthTraits`, `maxBeneficialMutations`, `labCostMultiplier` |
 | `[evolution]` | Evolution and hybrid chances | `chanceMultiplier`, `hybridChanceMultiplier`, `hybridQualityBonus`, `hybridWeakChance`, `feedingMakesLabSpecies` |
-| `[wild]` | Wild ants, home nests, anthills | `queenChance`, `nestQueenChance`, `homeNestAnts`, `nestCropGrowth`, `nestHarvest`, `anthillAlarmSeconds`, `broodClusterMinutes`, `royalGuardReach` |
+| `[wild]` | Wild ants, home nests, anthills | `queenChance`, `nestQueenChance`, `firstNestCatchQueen`, `nestRecoverySeconds`, `nestAnt`, `nestAntSeconds`, `homeNestAnts`, `nestCropGrowth`, `nestHarvest`, `anthillAlarmSeconds`, `broodClusterMinutes`, `royalGuardReach` |
 | `[guards]` | Guard Ants | `antCost` |
 | `[power]` | Generator, laboratory and Centrifuge energy and tanks | `generatorOutput`, `generatorCapacity`, `labEnergy`, `labEnergyInput`, `centrifugeEnergyMultiplier`, `centrifugeTimeMultiplier` |
 

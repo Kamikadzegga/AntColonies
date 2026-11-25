@@ -1,0 +1,74 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#101014",
+    "gaster": "#2A2A3A",
+    "accent": "#7A7A9A",
+    "pattern": "faceted",
+    "crystal": "#4A4A6A"
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "crystal",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.45,
+    "outputs": [
+      {
+        "item": "evilcraft:dark_gem",
+        "weight": 36
+      },
+      {
+        "item": "evilcraft:dark_gem_crushed",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:coal",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 12
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "evilcraft"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "evilcraft:dark_gem"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "evilcraft:dark_gem_crushed"
+    }
+  ]
+}

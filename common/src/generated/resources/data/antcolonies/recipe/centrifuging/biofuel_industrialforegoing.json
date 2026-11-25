@@ -1,0 +1,34 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:biofuel_droplet",
+  "result": {
+    "id": "industrialforegoing:biofuel",
+    "amount": 50
+  },
+  "energy": 1600,
+  "time": 100,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "industrialforegoing"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "industrialforegoing:biofuel"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:biofuel_droplet"
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "oritech:still_biofuel"
+      }
+    }
+  ]
+}

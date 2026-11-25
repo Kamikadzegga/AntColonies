@@ -1,0 +1,47 @@
+{
+  "material": "#c:ingots/steel",
+  "species": "antcolonies:steel",
+  "tier": "basic",
+  "requires": [
+    "antcolonies:coal"
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "alltheores"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "thermal"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mekanism"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "immersiveengineering"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "railcraft"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "oritech"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "energizedpower"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "modern_industrialization"
+        }
+      ]
+    }
+  ]
+}

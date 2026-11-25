@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.antcolonies.AntColonies;
 import com.antcolonies.client.ClientHooks;
+import com.antcolonies.client.model.SideSprites;
 import com.antcolonies.client.nest.NestLayout;
 import com.antcolonies.client.nest.NestVisuals;
 import com.antcolonies.colony.species.AntLook;
@@ -43,7 +44,7 @@ public final class NestRenderer {
     private static final int SIDE_CELL_W = 24;
     private static final int SIDE_CELL_H = 12;
     private static final int SIDE_TEX_W = 96;
-    private static final int SIDE_TEX_H = 192;
+    private static final int SIDE_TEX_H = SideSprites.TEX_H;
     private static final int SIDE_CROP_ROW = 10;
     private static final int SIDE_PLATES_ROW = 13;
     private static final float SPRITE_LENGTH = 1.9F;
@@ -586,6 +587,9 @@ public final class NestRenderer {
             g.light = look.glow() ? LightCoordsUtil.FULL_BRIGHT : light;
             spriteLayer(g, baseU, baseV, fu, fv, upU, upV, len, height, frame, row + 2, 0xFF000000 | look.crystal().get(), depth - 0.015F);
             g.light = light;
+        }
+        if (look.costume().isPresent()) {
+            spriteLayer(g, baseU, baseV, fu, fv, upU, upV, len, height, frame, SideSprites.costumeRow(look.costume().get(), caste), -1, depth - 0.018F);
         }
         if (carry != 0) {
             // The load between the mandibles, at the front.

@@ -1,0 +1,41 @@
+{
+  "from": "antcolonies:amethyst",
+  "to": "antcolonies:xychorium",
+  "item": "#c:gems/xychorium",
+  "chance": 0.06,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 400,
+  "lab_amount": 8,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "xycraft_world"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "xycraft_world:xychorium_gem_blue"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "xycraft_world:xychorium_gem_green"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "xycraft_world:xychorium_gem_red"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "xycraft_world:xychorium_gem_dark"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "xycraft_world:xychorium_gem_light"
+    }
+  ]
+}

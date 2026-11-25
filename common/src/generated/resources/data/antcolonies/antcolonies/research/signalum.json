@@ -1,0 +1,29 @@
+{
+  "material": "#c:ingots/signalum",
+  "species": "antcolonies:signalum",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "requires": [
+    "antcolonies:silver"
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "alltheores"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "thermal"
+        }
+      ]
+    }
+  ]
+}

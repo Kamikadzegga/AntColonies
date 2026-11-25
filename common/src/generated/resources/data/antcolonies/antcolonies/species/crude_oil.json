@@ -13,7 +13,14 @@
     "consumption": 1.6
   },
   "liquid": {
-    "fluid": "machinaopus:crude_oil",
+    "fluid": [
+      "machinaopus:crude_oil",
+      "pneumaticcraft:oil",
+      "modern_industrialization:crude_oil",
+      "oritech:still_oil",
+      "ad_astra:oil",
+      "stellaris:oil"
+    ],
     "droplet": "antcolonies:crude_oil_droplet",
     "rate": 0.08
   },
@@ -36,16 +43,36 @@
   },
   "neoforge:conditions": [
     {
-      "type": "neoforge:mod_loaded",
-      "modid": "machinaopus"
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "machinaopus"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "pneumaticcraft"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "modern_industrialization"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "oritech"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "ad_astra"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "stellaris"
+        }
+      ]
     },
     {
-      "type": "neoforge:registered",
-      "registry": "minecraft:fluid",
-      "value": "machinaopus:crude_oil"
-    },
-    {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:item",
       "value": "antcolonies:crude_oil_droplet"
     }

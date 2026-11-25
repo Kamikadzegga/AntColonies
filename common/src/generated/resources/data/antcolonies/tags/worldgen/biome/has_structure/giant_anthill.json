@@ -12,6 +12,144 @@
     "#c:is_mushroom",
     "minecraft:cherry_grove",
     "minecraft:snowy_plains",
-    "minecraft:grove"
+    "minecraft:grove",
+    "minecraft:pale_garden",
+    "#c:is_beach",
+    "#c:is_stony_shores",
+    "#c:is_windswept",
+    "#c:is_mountain/peak",
+    "#c:is_icy",
+    {
+      "id": "twilightforest:clearing",
+      "required": false
+    },
+    {
+      "id": "twilightforest:dark_forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:dark_forest_center",
+      "required": false
+    },
+    {
+      "id": "twilightforest:dense_forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:dense_mushroom_forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:enchanted_forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:final_plateau",
+      "required": false
+    },
+    {
+      "id": "twilightforest:fire_swamp",
+      "required": false
+    },
+    {
+      "id": "twilightforest:firefly_forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:glacier",
+      "required": false
+    },
+    {
+      "id": "twilightforest:highlands",
+      "required": false
+    },
+    {
+      "id": "twilightforest:mushroom_forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:oak_savannah",
+      "required": false
+    },
+    {
+      "id": "twilightforest:snowy_forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:spooky_forest",
+      "required": false
+    },
+    {
+      "id": "twilightforest:swamp",
+      "required": false
+    },
+    {
+      "id": "twilightforest:thornlands",
+      "required": false
+    },
+    {
+      "id": "aether_ii:battleground_wastes",
+      "required": false
+    },
+    {
+      "id": "aether_ii:contaminated_jungle",
+      "required": false
+    },
+    {
+      "id": "aether_ii:enduring_woodland",
+      "required": false
+    },
+    {
+      "id": "aether_ii:expanse",
+      "required": false
+    },
+    {
+      "id": "aether_ii:flourishing_field",
+      "required": false
+    },
+    {
+      "id": "aether_ii:frigid_sierra",
+      "required": false
+    },
+    {
+      "id": "aether_ii:frozen_lakes",
+      "required": false
+    },
+    {
+      "id": "aether_ii:glistening_swamp",
+      "required": false
+    },
+    {
+      "id": "aether_ii:magnetic_scar",
+      "required": false
+    },
+    {
+      "id": "aether_ii:sheer_tundra",
+      "required": false
+    },
+    {
+      "id": "aether_ii:shimmering_basin",
+      "required": false
+    },
+    {
+      "id": "aether_ii:shrouded_forest",
+      "required": false
+    },
+    {
+      "id": "aether_ii:turquoise_forest",
+      "required": false
+    },
+    {
+      "id": "aether_ii:verdant_woods",
+      "required": false
+    },
+    {
+      "id": "aether_ii:violet_highwoods",
+      "required": false
+    }
   ]
 }

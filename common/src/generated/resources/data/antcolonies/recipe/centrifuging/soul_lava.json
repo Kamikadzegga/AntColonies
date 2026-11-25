@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:soul_lava_droplet",
+  "result": {
+    "id": "allthemodium:soul_lava",
+    "amount": 25
+  },
+  "energy": 3200,
+  "time": 140,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "allthemodium"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "allthemodium:soul_lava"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:soul_lava_droplet"
+    }
+  ]
+}

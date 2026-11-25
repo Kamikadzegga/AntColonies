@@ -279,6 +279,10 @@ final class ColonyProviders {
                 }
                 data.putInt("stored", stored);
             }
+            int recover = WildNestBlock.secondsToRecover(accessor.getLevel(), accessor.getPosition(), accessor.getBlockState());
+            if (recover != 0) {
+                data.putInt("recover", recover);
+            }
         }
     };
 
@@ -297,6 +301,11 @@ final class ColonyProviders {
                 tooltip.add(Component.translatable("jade.antcolonies.home_nest.stored", data.getIntOr("stored", 0)).withStyle(ChatFormatting.GRAY));
             } else {
                 tooltip.add(Component.translatable("jade.antcolonies.nest").withStyle(ChatFormatting.DARK_GRAY));
+            }
+            int recover = data.getIntOr("recover", 0);
+            if (recover != 0) {
+                tooltip.add((recover > 0 ? Component.translatable("message.antcolonies.nest.recovering_in", WildNestBlock.timer(recover))
+                        : Component.translatable("message.antcolonies.nest.recovering")).withStyle(ChatFormatting.GOLD));
             }
         }
     };

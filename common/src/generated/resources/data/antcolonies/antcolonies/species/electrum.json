@@ -1,0 +1,81 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#57542D",
+    "gaster": "#E4DC76",
+    "accent": "#F3EFC1",
+    "pattern": "metallic",
+    "crystal": "#EBE598",
+    "size": 1.05
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.315,
+    "outputs": [
+      {
+        "tag": "c:nuggets/electrum",
+        "weight": 40
+      },
+      {
+        "tag": "c:dusts/electrum",
+        "weight": 10,
+        "min_stage": 2
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 15
+      },
+      {
+        "tag": "c:ingots/electrum",
+        "weight": 2,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.1
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 2
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 4
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "alltheores"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "thermal"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "immersiveengineering"
+        }
+      ]
+    }
+  ]
+}

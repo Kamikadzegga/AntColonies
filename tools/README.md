@@ -13,16 +13,18 @@ All art is pixel art painted in code, so it can be changed, rescaled or recolour
 
 ## Adding a fluid for Liquid Ants
 
-One row in each of three places, with the same name. Then run `DataGen` and `TexGen`.
+One row in each of two places, with the same name. Then run `DataGen` and `TexGen`.
 
 | Where | What the row holds | What it writes |
 |---|---|---|
-| `DataGen.java`, `LIQUIDS` | The ant's name, the mod and fluid id, the fluid's English name, what it evolves from and is fed, its colours, rate and Centrifuge recipe | The species, evolution, feed tag, recipe, item model and names |
+| `DataGen.java`, `LIQUIDS` | The ant's name, the mod and fluid id, the fluid's English name, what it evolves from and is fed, its colours, rate and Centrifuge recipe | The species, evolution, feed tag, recipes, item model and names, and the list of kinds the mod reads when it starts (`antcolonies.liquid_kinds.json`) |
 | `TexGen.java`, `LIQUIDS` | The droplet's colour and finish (clear, glass, thick, oil, slime or molten) | `item/<name>_droplet.png` |
-| `compat/.../compat/liquid/`, listed in `LiquidIntegrations` | A `LiquidKinds.offer(LiquidKind.of(name, modId, fluidId))` call | Registers the droplet item |
 
-The droplet item is registered, and its data files load, only when that mod is installed and the fluid exists.
-Another mod can offer a fluid from its own constructor with the same call.
+- **A liquid several mods add** is one row with `.or(mod, fluid, bucket)` for each further mod. The ants make the fluid
+  of the first mod in the row that is installed. A mod named there needs a name in `MOD_NAMES`.
+- The droplet item is registered, and its data files load, only when one of those mods is installed and its fluid
+  exists.
+- Another mod can offer a fluid from its own constructor with `LiquidKinds.offer(LiquidKind.of(name, modId, fluidId))`.
 
 ## Adding genetic research
 

@@ -598,6 +598,50 @@ public final class NestLayout {
         return carved(u, v) && !carved(u, v - 1);
     }
 
+    /** The chamber a cell is part of (its node), or -1 for a tunnel, the burrow and solid nest. */
+    public int chamber(int u, int v) {
+        return carved(u, v) ? Math.max(-1, owner[v * N + u]) : -1;
+    }
+
+    /**
+     * The floor the Queen walks: {left cell, right cell, row, her spot's cell}, empty in a block without her. Only her
+     * own chamber's floor, so not a tunnel leaving at its level, and to one side of a shaft that comes up through it.
+     */
+    public int[] queenFloor() {
+        for (Feature feature : features) {
+            if (feature.type() != 'q') {
+                continue;
+            }
+            int v = feature.v();
+            int bestLeft = feature.u();
+            int bestRight = feature.u() - 1;
+            for (int u = 0; u < N; u++) {
+                if (!chamberFloor(u, v, feature.node())) {
+                    continue;
+                }
+                int right = u;
+                while (chamberFloor(right + 1, v, feature.node())) {
+                    right++;
+                }
+                // The stretch her spot is on; with a shaft right under it, the longest one.
+                if (u <= feature.u() && feature.u() <= right) {
+                    return new int[] {u, right, v, feature.u()};
+                }
+                if (right - u > bestRight - bestLeft) {
+                    bestLeft = u;
+                    bestRight = right;
+                }
+                u = right;
+            }
+            return new int[] {bestLeft, Math.max(bestLeft, bestRight), v, feature.u()};
+        }
+        return new int[0];
+    }
+
+    private boolean chamberFloor(int u, int v, int node) {
+        return floor(u, v) && chamber(u, v) == node;
+    }
+
     public int find(Spot spot) {
         for (int i = 0; i < nodes.size(); i++) {
             if (nodes.get(i).spot == spot) {

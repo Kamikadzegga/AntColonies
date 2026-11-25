@@ -1,0 +1,16 @@
+{
+  "values": [
+    {
+      "id": "mekanism:sulfuric_acid_bucket",
+      "required": false
+    },
+    {
+      "id": "modern_industrialization:sulfuric_acid_bucket",
+      "required": false
+    },
+    {
+      "id": "oritech:still_sulfuric_acid_bucket",
+      "required": false
+    }
+  ]
+}

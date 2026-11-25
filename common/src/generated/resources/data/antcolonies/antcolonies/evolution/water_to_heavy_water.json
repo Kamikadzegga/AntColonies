@@ -8,16 +8,20 @@
   "min_population": 300,
   "neoforge:conditions": [
     {
-      "type": "neoforge:mod_loaded",
-      "modid": "mekanism"
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "mekanism"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "modern_industrialization"
+        }
+      ]
     },
     {
-      "type": "neoforge:registered",
-      "registry": "minecraft:fluid",
-      "value": "mekanism:heavy_water"
-    },
-    {
-      "type": "neoforge:registered",
+      "type": "antcolonies:registered",
       "registry": "minecraft:item",
       "value": "antcolonies:heavy_water_droplet"
     }

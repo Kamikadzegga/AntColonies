@@ -21,14 +21,20 @@ A structure of the Overworld, the Nether and the End: a mound with a shaft down 
 
 | Anthill | Where | Its ants | Find one |
 |---|---|---|---|
-| Giant anthill | Plains, meadows, forests, taigas, snowy plains and groves, savannas, jungles, swamps, deserts, badlands, mushroom fields and cherry groves | The local wild species | `/locate structure antcolonies:giant_anthill` |
-| Nether anthill | Nether wastes, crimson and warped forests, soul sand valleys | Fire Ants (Warped Ants in the fungus forests) | `/locate structure antcolonies:nether_anthill` |
+| Giant anthill | Plains, meadows, forests, taigas, snowy plains and groves, savannas, jungles, swamps, deserts, badlands, mushroom fields, cherry groves, pale gardens, beaches, stony shores, windswept hills, peaks and ice spikes | The local wild species | `/locate structure antcolonies:giant_anthill` |
+| Nether anthill | Nether wastes, crimson and warped forests, soul sand valleys, basalt deltas | Fire Ants; Warped Ants in warped forests, Crimson Ants in crimson forests, Soul Ants in soul sand valleys | `/locate structure antcolonies:nether_anthill` |
 | End anthill | The End's outer islands | Chorus Ants | `/locate structure antcolonies:end_anthill` |
 
 - **The look follows the biome**: a soil cone in plains and forests, a needle-thatched dome in taigas, a snow-capped
   cone, a sand crater in deserts, termite spires in badlands and savannas, a moss mound in jungles, a mud mound in
-  swamps, a mycelium cone in mushroom fields. The Nether anthill is soul soil and blackstone, the End anthill end stone
-  and purpur.
+  swamps, a mycelium cone in mushroom fields. Birch and dark forests, flower forests and meadows, pale gardens, bamboo
+  jungles and old growth taigas each have their own mound; mountains have a cairn of rocks, ice spikes have spires of
+  ice, and beaches a low dune of sand and dead coral.
+- **The Nether and the End have theirs**: soul soil and blackstone in the wastes, a wart dome in crimson forests, a
+  warped mound in warped forests, bones standing out of the soul sand valley, a basalt cairn in the deltas. The End
+  anthill is end stone and purpur, with purpur towers and chorus on the highlands.
+- **Other mods' worlds**: in the Twilight Forest, the Aether, the Undergarden and The Other an anthill is built of the
+  ground it stands on, and its ants are the ones that live there.
 - **No two are dug alike.** A nest is small (6 to 8 rooms), medium (9 to 12) or large (13 to 17, up to some 40 blocks
   down). One or two side entrances slope down from the ground beside the mound. One anthill in ten is abandoned: a
   small nest with only its old Queen.
@@ -40,7 +46,8 @@ Every anthill has exactly one Queen, twice the size of any other, in the deepest
 despawns, so the only way she leaves is in a Test Tube, caught with Tweezers. The way to her leads through the
 antechamber of her Royal Guard Ants.
 
-A Nether anthill's Queen is a way to Fire Ants without evolving them.
+A Nether anthill's Queen is a way to Fire Ants without evolving them, and a crimson forest's or a soul sand valley's
+to Crimson and Soul Ants.
 
 ### Rooms and loot
 
@@ -56,8 +63,19 @@ A Nether anthill's Queen is a way to Fire Ants without evolving them.
 | Rare-find chambers | Ore, crystal or amber the ants dug into |
 | Fungus gardens, aphid farms, barracks, galleries | Decoration, and soldiers in the barracks |
 
+**Inside.** The rooms are furnished to what they are for. Royal chitin pillars and amber stand in the Queen's chamber,
+food stores are heaped with the land's harvest and have honeycomb packed into the ceiling, chitin stores hold stacked
+plates, fungus grows over a garden's walls, roots and glow berries hang where aphids are kept, bones lie in the
+middens. Halls and galleries keep pillars: a root of the trees above, or the rock of the place. Lamps in the walls light
+the rooms and the tunnels (glowstone and shroomlights in the Nether, rods under the ceilings in the End); an abandoned
+nest is dark, with webs and fallen earth. Nothing stands in a doorway.
+
 The walls are packed anthill soil in most biomes, so anthills are also where you first find the
-[building blocks](#building-blocks).
+[building blocks](#building-blocks). The soil has the colour of its ground: sandy in deserts and on beaches, red in
+badlands, frosted in snow and ice, grey on mountains, pale in pale gardens.
+
+**The ants suit the anthill**: Snow Ants in a snowy or icy one, Wood Ants under a taiga's dome, Stone Ants in a cairn,
+Shore Ants in a dune. The plain soil cone of plains and forests holds whichever ant lives in its biome.
 
 ### Ants and the alarm
 
@@ -161,6 +179,9 @@ teleports to you when it falls far behind.
 | Amber | Amber Block, Amber Bricks, Amber Glass, Reinforced Amber | Ant Resin, which Wood Ants find; Hardened Chitin to reinforce it |
 | Fungal | Fungal Block, Fungal Bricks, Glowing Fungal Block (light 13) | Mushrooms and leaves; glow berries and glowstone dust to glow |
 | Royal | Royal Chitin Block, Bricks and Pillar, Chiseled Royal Chitin | Chitin Blocks, gold nuggets and Royal Jelly |
+
+Anthill Soil and Packed Anthill Soil come in eight tones (earth, sand, red, frost, stone, pale, dark, nether). A block
+you lay takes the tone of the block you lay it on, or of the soil you lay it against, so one stack suits any ground.
 
 Bricks, polished blocks and tiles have stairs and slabs, also from the stonecutter, and the bricks have walls. There
 are also a **Nest Door** and **Nest Trapdoor**, the **Pheromone Lamp** (light 15), decorative Ant Egg Clusters and Larva

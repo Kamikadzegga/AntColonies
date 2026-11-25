@@ -32,10 +32,13 @@ public final class LiquidKinds {
 
     public static final LiquidKind WATER = LiquidKind.of("water", "minecraft", "minecraft:water");
     public static final LiquidKind LAVA = LiquidKind.of("lava", "minecraft", "minecraft:lava");
+    /** Milk has no Liquid Ant of its own: it is what Cow Ants give. The fluid is NeoForge's, which the mod turns on. */
+    public static final LiquidKind MILK = LiquidKind.of("milk", "minecraft", "minecraft:milk");
 
     static {
         offer(WATER);
         offer(LAVA);
+        offer(MILK);
     }
 
     /** Offers a kind. Must happen before items are registered (in a mod's constructor). */

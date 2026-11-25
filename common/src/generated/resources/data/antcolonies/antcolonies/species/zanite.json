@@ -1,0 +1,62 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#34206A",
+    "gaster": "#8A5AE8",
+    "accent": "#D8C8FF",
+    "pattern": "faceted",
+    "crystal": "#A880FF",
+    "glow": true
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "crystal",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.45,
+    "outputs": [
+      {
+        "item": "aether_ii:zanite_gemstone",
+        "weight": 36
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 14
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "aether_ii"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "aether_ii:zanite_gemstone"
+    }
+  ]
+}

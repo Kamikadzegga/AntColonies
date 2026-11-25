@@ -1,0 +1,22 @@
+{
+  "material": "railcraft:raw_firestone",
+  "species": "antcolonies:firestone",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "railcraft"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "railcraft:raw_firestone"
+    }
+  ]
+}

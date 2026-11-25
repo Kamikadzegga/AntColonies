@@ -1,0 +1,34 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:experience_droplet",
+  "result": {
+    "id": "industrialforegoing:essence",
+    "amount": 20
+  },
+  "energy": 2000,
+  "time": 100,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "industrialforegoing"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "industrialforegoing:essence"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:experience_droplet"
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "enderio:fluid_xp_juice_still"
+      }
+    }
+  ]
+}

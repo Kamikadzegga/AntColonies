@@ -1,0 +1,98 @@
+{
+  "tier": 2,
+  "category": "mineral",
+  "look": {
+    "body": "#1C3452",
+    "gaster": "#4A8AD8",
+    "accent": "#AECAED",
+    "pattern": "faceted",
+    "crystal": "#77A7E2",
+    "glow": true
+  },
+  "climate": "underground",
+  "diet": {
+    "consumption": 1.4,
+    "special_food": "crystal",
+    "special_per_egg": 0.5
+  },
+  "production": {
+    "rate": 0.45,
+    "outputs": [
+      {
+        "item": "xycraft_world:xychorium_gem_blue",
+        "weight": 8
+      },
+      {
+        "item": "xycraft_world:xychorium_gem_green",
+        "weight": 8
+      },
+      {
+        "item": "xycraft_world:xychorium_gem_red",
+        "weight": 8
+      },
+      {
+        "item": "xycraft_world:xychorium_gem_dark",
+        "weight": 8
+      },
+      {
+        "item": "xycraft_world:xychorium_gem_light",
+        "weight": 8
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 16
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 3
+      },
+      {
+        "ingredient": "antcolonies:crystal_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 6000
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "xycraft_world"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "xycraft_world:xychorium_gem_blue"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "xycraft_world:xychorium_gem_green"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "xycraft_world:xychorium_gem_red"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "xycraft_world:xychorium_gem_dark"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "xycraft_world:xychorium_gem_light"
+    }
+  ]
+}

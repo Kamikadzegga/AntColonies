@@ -1,0 +1,71 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#5A2A0E",
+    "gaster": "#E87A28",
+    "accent": "#FFD0A0",
+    "pattern": "metallic",
+    "crystal": "#FF9A40"
+  },
+  "climate": "any",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "mineral",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.03,
+    "outputs": [
+      {
+        "tag": "c:raw_materials/desh",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "weight": 30
+      },
+      {
+        "tag": "c:ingots/desh",
+        "weight": 1,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:mineral_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "stellaris"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "ad_astra"
+        }
+      ]
+    }
+  ]
+}

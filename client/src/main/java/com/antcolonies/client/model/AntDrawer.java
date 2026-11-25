@@ -7,6 +7,7 @@ import java.util.Map;
 import com.antcolonies.AntColonies;
 import com.antcolonies.colony.species.AntLook;
 import com.antcolonies.colony.species.Caste;
+import com.antcolonies.colony.species.Costume;
 import com.antcolonies.colony.species.Pattern;
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -28,6 +29,12 @@ public final class AntDrawer {
     /** A Liquid Ant's crop, per caste: the liquid in it (solid, shaded pale to deep), tinted with the liquid's colour. */
     private static final Map<Caste, RenderType> CROPS = new EnumMap<>(Caste.class);
     private static final Map<Caste, RenderType> CROP_SKINS = new EnumMap<>(Caste.class);
+    /**
+     * A costume's texture per caste, in the ant skin's layout: paint over the ant's own boxes, and the costume's parts in
+     * the corners no box uses. The paint is drawn a hair nearer than the skin under it.
+     */
+    private static final Map<Caste, Map<Costume, RenderType>> COSTUME_PAINT = new EnumMap<>(Caste.class);
+    private static final Map<Caste, Map<Costume, RenderType>> COSTUME_PARTS = new EnumMap<>(Caste.class);
     private static final Identifier CRYSTAL = AntColonies.id("textures/entity/ant/crystal.png");
     private static final RenderType CRYSTAL_TYPE = RenderTypes.entityTranslucent(CRYSTAL);
     private static final RenderType CRYSTAL_GLOW = RenderTypes.eyes(CRYSTAL);
@@ -45,6 +52,15 @@ public final class AntDrawer {
                 }
             }
             PATTERNS.put(caste, patterns);
+            Map<Costume, RenderType> paint = new EnumMap<>(Costume.class);
+            Map<Costume, RenderType> parts = new EnumMap<>(Costume.class);
+            for (Costume costume : Costume.values()) {
+                Identifier texture = AntColonies.id("textures/entity/ant/costume/" + costume.getSerializedName() + "_" + caste.getSerializedName() + ".png");
+                paint.put(costume, RenderTypes.entityCutoutZOffset(texture));
+                parts.put(costume, RenderTypes.entityCutout(texture));
+            }
+            COSTUME_PAINT.put(caste, paint);
+            COSTUME_PARTS.put(caste, parts);
             CROPS.put(caste, RenderTypes.entityCutout(AntColonies.id("textures/entity/ant/crop_" + caste.getSerializedName() + ".png")));
             CROP_SKINS.put(caste,
                     RenderTypes.entityTranslucent(AntColonies.id("textures/entity/ant/crop_skin_" + caste.getSerializedName() + ".png")));
@@ -116,6 +132,17 @@ public final class AntDrawer {
                     submit(collector, frozen, model, model.crystalsGaster, poseStack, CRYSTAL_GLOW, LightCoordsUtil.FULL_BRIGHT,
                             OverlayTexture.NO_OVERLAY, null, ARGB.color(160, look.crystal().get()));
                 }
+            }
+        }
+        if (look.costume().isPresent()) {
+            Costume costume = look.costume().get();
+            RenderType paint = COSTUME_PAINT.get(caste).get(costume);
+            RenderType parts = COSTUME_PARTS.get(caste).get(costume);
+            submit(collector, frozen, model, model.body, poseStack, paint, light, overlay, null, -1);
+            submit(collector, frozen, model, model.costume(costume), poseStack, parts, light, overlay, null, -1, outline);
+            if (!replete) {
+                submit(collector, frozen, model, model.gaster, poseStack, paint, light, overlay, null, -1);
+                submit(collector, frozen, model, model.costumeGaster(costume), poseStack, parts, light, overlay, null, -1, outline);
             }
         }
         if (carry != 0) {

@@ -1,0 +1,34 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:creosote_droplet",
+  "result": {
+    "id": "railcraft:creosote",
+    "amount": 50
+  },
+  "energy": 1200,
+  "time": 80,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "railcraft"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "railcraft:creosote"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:creosote_droplet"
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "antcolonies:registered",
+        "registry": "minecraft:fluid",
+        "value": "immersiveengineering:creosote"
+      }
+    }
+  ]
+}

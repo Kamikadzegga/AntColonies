@@ -1,0 +1,17 @@
+{
+  "material": "#c:ingots/crimson_iron",
+  "species": "antcolonies:crimson_iron",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "silentgear"
+    }
+  ]
+}

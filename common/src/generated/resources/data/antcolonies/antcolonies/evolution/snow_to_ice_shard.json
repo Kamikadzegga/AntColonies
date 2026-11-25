@@ -1,0 +1,21 @@
+{
+  "from": "antcolonies:snow",
+  "to": "antcolonies:ice_shard",
+  "item": "ad_astra:ice_shard",
+  "chance": 0.06,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 400,
+  "lab_amount": 8,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "ad_astra"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "ad_astra:ice_shard"
+    }
+  ]
+}

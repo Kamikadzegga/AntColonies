@@ -12,10 +12,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 
-/** The Droplet Centrifuge: its droplet slot; its FE, run, tank and status are synced for the screen. */
+/** The Droplet Centrifuge: its droplet slot and its Speed Upgrade slots; its FE, run, tank and status are synced for the screen. */
 public class CentrifugeMenu extends BaseMenu {
     public static final int INPUT_X = 20;
     public static final int INPUT_Y = 40;
+    public static final int UPGRADE_X = 7;
+    public static final int UPGRADE_Y = 70;
     public static final int INVENTORY_Y = 126;
 
     private final CentrifugeBlockEntity centrifuge;
@@ -31,6 +33,10 @@ public class CentrifugeMenu extends BaseMenu {
         this.data = data;
         // Only what a Centrifuge recipe takes: the server knows its recipes, the client the copy it was sent.
         addSlot(new FilteredSlot(centrifuge, 0, INPUT_X, INPUT_Y, stack -> CentrifugingRecipe.find(inventory.player.level(), stack) != null, 64));
+        for (int slot = 0; slot < CentrifugeBlockEntity.UPGRADE_SLOTS; slot++) {
+            addUpgradeSlot(new FilteredSlot(centrifuge.upgrades(), slot, UPGRADE_X + slot * 18, UPGRADE_Y,
+                    stack -> centrifuge.upgrades().canPlaceItem(0, stack), 1));
+        }
         addPlayerInventory(inventory, 8, INVENTORY_Y);
         addDataSlots(WideData.slots(data));
     }

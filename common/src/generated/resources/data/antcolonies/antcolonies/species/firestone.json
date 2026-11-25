@@ -1,0 +1,72 @@
+{
+  "tier": 3,
+  "category": "mineral",
+  "look": {
+    "body": "#421301",
+    "gaster": "#AE3102",
+    "accent": "#DBA28D",
+    "pattern": "speckled",
+    "crystal": "#C26541",
+    "glow": true
+  },
+  "climate": "nether",
+  "diet": {
+    "consumption": 1.5,
+    "special_food": "nether",
+    "special_per_egg": 0.6
+  },
+  "production": {
+    "rate": 0.3,
+    "outputs": [
+      {
+        "item": "minecraft:netherrack",
+        "weight": 30
+      },
+      {
+        "item": "minecraft:magma_block",
+        "weight": 14
+      },
+      {
+        "item": "minecraft:blackstone",
+        "weight": 10
+      },
+      {
+        "item": "railcraft:raw_firestone",
+        "weight": 0.06,
+        "min_stage": 3,
+        "special": true
+      }
+    ]
+  },
+  "combat": {
+    "strength": 1.0
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 4
+      },
+      {
+        "ingredient": "antcolonies:nether_ant_food",
+        "count": 6
+      }
+    ],
+    "time": 7200
+  },
+  "breeding": {
+    "eggs": 0.9,
+    "growth": 0.9
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "railcraft"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "railcraft:raw_firestone"
+    }
+  ]
+}

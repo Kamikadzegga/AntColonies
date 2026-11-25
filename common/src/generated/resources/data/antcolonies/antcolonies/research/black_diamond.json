@@ -1,0 +1,17 @@
+{
+  "material": "#c:gems/black_diamond",
+  "species": "antcolonies:black_diamond",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "silentgems"
+    }
+  ]
+}

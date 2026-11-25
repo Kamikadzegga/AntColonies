@@ -1,0 +1,26 @@
+{
+  "type": "antcolonies:centrifuging",
+  "ingredient": "antcolonies:sulfuric_acid_droplet",
+  "result": {
+    "id": "mekanism:sulfuric_acid",
+    "amount": 50
+  },
+  "energy": 2000,
+  "time": 100,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "mekanism"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "mekanism:sulfuric_acid"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:sulfuric_acid_droplet"
+    }
+  ]
+}

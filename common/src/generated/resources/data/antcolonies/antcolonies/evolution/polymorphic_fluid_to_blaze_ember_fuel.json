@@ -1,0 +1,25 @@
+{
+  "from": "antcolonies:polymorphic_fluid",
+  "to": "antcolonies:blaze_ember_fuel",
+  "item": "#antcolonies:liquid_feed/blaze_ember_fuel",
+  "chance": 0.08,
+  "guaranteed_after": 24,
+  "min_stage": 2,
+  "min_population": 300,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "justdirethings"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:fluid",
+      "value": "justdirethings:refined_t2_fluid_source"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "antcolonies:blaze_ember_fuel_droplet"
+    }
+  ]
+}

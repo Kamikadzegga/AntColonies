@@ -1,0 +1,25 @@
+{
+  "material": "aether_ii:corrobonite_crystal",
+  "species": "antcolonies:corrobonite",
+  "tier": "advanced",
+  "catalysts": [
+    {
+      "ingredient": "antcolonies:evolution_catalyst",
+      "count": 1
+    }
+  ],
+  "requires": [
+    "antcolonies:zanite"
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "aether_ii"
+    },
+    {
+      "type": "antcolonies:registered",
+      "registry": "minecraft:item",
+      "value": "aether_ii:corrobonite_crystal"
+    }
+  ]
+}

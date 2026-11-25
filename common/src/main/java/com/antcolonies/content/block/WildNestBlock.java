@@ -4,6 +4,7 @@ import com.antcolonies.AntColonies;
 import com.antcolonies.client.ClientHooks;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.content.blockentity.HomeNestBlockEntity;
+import com.antcolonies.content.blockentity.RaidedNest;
 import com.antcolonies.content.blockentity.WildNestBlockEntity;
 import com.antcolonies.content.entity.WildAnt;
 import com.antcolonies.core.registry.ModBlockEntities;
@@ -33,7 +34,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * An ant nest: a wild anthill to raid with Tweezers, or, placed by a player, a home nest (see {@link HomeNestBlockEntity}).
- * A wild one has a {@link WildNestBlockEntity}, which holds nothing.
+ * A wild one has a {@link WildNestBlockEntity}, which keeps one ant walking around it.
  */
 public class WildNestBlock extends Block implements EntityBlock {
     public static final BooleanProperty RECOVERING = BooleanProperty.create("recovering");
@@ -51,6 +52,11 @@ public class WildNestBlock extends Block implements EntityBlock {
 
     public Identifier species() {
         return species;
+    }
+
+    /** The species of the nest at a spot: a world nest answers for itself (a nest dweller may live in it), else the block's. */
+    public Identifier speciesAt(ServerLevel level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof WildNestBlockEntity nest ? nest.species(level) : species;
     }
 
     @Override
@@ -71,8 +77,15 @@ public class WildNestBlock extends Block implements EntityBlock {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return !level.isClientSide() && state.getValue(HOME) && type == ModBlockEntities.HOME_NEST.get()
-                ? (BlockEntityTicker<T>) (BlockEntityTicker<HomeNestBlockEntity>) HomeNestBlockEntity::serverTick : null;
+        if (level.isClientSide()) {
+            return null;
+        }
+        if (state.getValue(HOME)) {
+            return type == ModBlockEntities.HOME_NEST.get()
+                    ? (BlockEntityTicker<T>) (BlockEntityTicker<HomeNestBlockEntity>) HomeNestBlockEntity::serverTick : null;
+        }
+        return type == ModBlockEntities.WILD_NEST.get()
+                ? (BlockEntityTicker<T>) (BlockEntityTicker<WildNestBlockEntity>) WildNestBlockEntity::serverTick : null;
     }
 
     @Override
@@ -81,9 +94,27 @@ public class WildNestBlock extends Block implements EntityBlock {
     }
 
     public void raid(ServerLevel level, BlockPos pos, BlockState state, Player player) {
+        int ticks = Math.max(1, AntConfig.get(AntConfig.NEST_RECOVERY_SECONDS) * 20);
         level.setBlock(pos, state.setValue(RECOVERING, true), Block.UPDATE_ALL);
-        level.scheduleTick(pos, this, Math.max(1, AntConfig.get(AntConfig.NEST_COOLDOWN_SECONDS) * 20));
+        level.scheduleTick(pos, this, ticks);
+        if (level.getBlockEntity(pos) instanceof RaidedNest nest) {
+            nest.setRecoveredAt(level.getGameTime() + ticks);
+        }
         defend(level, pos, player);
+    }
+
+    /** Seconds until a raided nest's ants are back: 0 when it is not recovering, -1 when it is and its time is not known. */
+    public static int secondsToRecover(Level level, BlockPos pos, BlockState state) {
+        if (!state.getOptionalValue(RECOVERING).orElse(false)) {
+            return 0;
+        }
+        long left = level.getBlockEntity(pos) instanceof RaidedNest nest ? nest.recoveredAt() - level.getGameTime() : 0;
+        return left > 0 ? (int) ((left + 19) / 20) : -1;
+    }
+
+    /** Minutes and seconds, as a timer shows them: 9:05. */
+    public static String timer(int seconds) {
+        return seconds / 60 + ":" + (seconds % 60 < 10 ? "0" : "") + seconds % 60;
     }
 
     @Override
@@ -104,7 +135,7 @@ public class WildNestBlock extends Block implements EntityBlock {
             if (ant == null) {
                 continue;
             }
-            ant.setSpecies(species);
+            ant.setSpecies(speciesAt(level, pos));
             ant.setCaste(Caste.SOLDIER);
             ant.snapTo(pos.getX() + 0.5 + level.getRandom().nextGaussian() * 0.4, pos.getY() + 0.6,
                     pos.getZ() + 0.5 + level.getRandom().nextGaussian() * 0.4, level.getRandom().nextFloat() * 360, 0);

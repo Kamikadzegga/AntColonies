@@ -1,0 +1,9 @@
+{
+  "from": "antcolonies:shore",
+  "to": "antcolonies:fisher",
+  "item": "minecraft:fishing_rod",
+  "chance": 0.15,
+  "guaranteed_after": 8,
+  "min_stage": 2,
+  "min_population": 300
+}

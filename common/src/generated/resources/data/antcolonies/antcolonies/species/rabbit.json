@@ -1,0 +1,69 @@
+{
+  "tier": 1,
+  "category": "hunter",
+  "look": {
+    "body": "#A07850",
+    "gaster": "#C8A27A",
+    "accent": "#F4EEE2",
+    "pattern": "plain",
+    "size": 0.9,
+    "costume": "rabbit"
+  },
+  "climate": "temperate",
+  "diet": {
+    "consumption": 1.0
+  },
+  "production": {
+    "rate": 0.6,
+    "outputs": [
+      {
+        "item": "minecraft:carrot",
+        "weight": 20
+      },
+      {
+        "item": "minecraft:dandelion",
+        "weight": 12
+      },
+      {
+        "item": "minecraft:short_grass",
+        "weight": 10
+      },
+      {
+        "item": "minecraft:wheat_seeds",
+        "weight": 8
+      }
+    ]
+  },
+  "combat": {
+    "strength": 0.8,
+    "targets": [
+      {
+        "entity": "minecraft:rabbit",
+        "weight": 100,
+        "trophy": {
+          "item": "minecraft:rabbit_foot",
+          "chance": 0.008,
+          "min_stage": 3
+        }
+      }
+    ]
+  },
+  "rearing": {
+    "cost": [
+      {
+        "ingredient": "antcolonies:royal_jelly",
+        "count": 1
+      },
+      {
+        "ingredient": "minecraft:carrot",
+        "count": 4
+      }
+    ],
+    "time": 3600
+  },
+  "breeding": {
+    "eggs": 1.3,
+    "growth": 1.2
+  },
+  "signature_item": "minecraft:rabbit_hide"
+}
