@@ -51,7 +51,7 @@ that mine, farm, hunt and evolve.
 | ![Ants for fun](docs/images/screenshots/ants-for-fun.jpg) | ![Hunters at a Hunting Ground](docs/images/screenshots/hunting-ground.jpg) |
 | The ten ants for fun, each in its costume | Hunters fighting at their Hunting Ground |
 | ![Anthills of the Overworld](docs/images/screenshots/anthills-overworld.jpg) | ![Chitin armor tiers](docs/images/screenshots/chitin-tiers.jpg) |
-| Giant anthills take the look of their biome | Chitin, Hardened, Infernal and Void armor |
+| Giant anthills in different biomes| Chitin, Hardened, Infernal and Void armor |
 
 More in the [gallery](docs/gallery.md).
 
