@@ -8,129 +8,59 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [0.7.0] - 2026-11-25
 
-Players need this version too: it adds items (the new droplets).
+Players need this version too: it adds items.
 
 ### Added
 
-- **Seven ants for fun.** Cow, Chicken, Sheep, Baker, Bookworm, Party and Pirate Ants, each fed into being and each in
-  a costume of its own, from horns to a pirate hat. The Cow Ant forages, brings beef and leather from a Hunting Ground
-  and gives milk at a Liquid Chamber.
-- **Milk.** Milk Droplets spin into milk in the Droplet Centrifuge.
-- **Speed Upgrades in the Droplet Centrifuge.** It has two upgrade slots, and each tier spins one more step a tick: with
-  Speed II it is three times as fast. A droplet takes the same FE.
-- **A store in the Hunting Ground.** Nine slots hold its loot while the Storage is full or missing, as in a Foraging
-  Site.
-- **Hunters fight mobs.** On a Hunting Ground the hunters stand round a small mob of the kind their colony hunts and
-  bite it in turn, instead of sparring with each other. Cow Ants fight a cow, Army Ants zombies, skeletons and spiders.
-- **Three more ants for fun.** Pig, Rabbit and Fisher Ants, each in a costume: a snout and a curly tail, long ears and a
-  white tail, a yellow rain hat and a fishing rod. Pig Ants bring porkchops and Rabbit Ants raw rabbit and hide from a
-  Hunting Ground; Fisher Ants bring cod, salmon, tropical fish and pufferfish.
-- **Phantom membranes and rabbit's feet.** From stage 3 a colony's hunters bring what a mob only drops for a player:
-  Bullet Ants a membrane from one phantom in four, Rabbit Ants, rarely, a foot (about two an hour). Bullet Ants also find a
-  membrane now and then.
-- **More food.** Colonies eat far more: cooked meat and fish, baked potatoes, stews, pumpkin pie, whole melons and
-  pumpkins, sugar cane, cactus, cocoa beans, nether wart, fungi, every seed. Crops and food of other mods feed them
-  too, by the common tags. Golden carrots, golden apples and cake are still not food.
-- **Froglights.** Nether expeditions bring the three froglights as rare finds from stage 3.
-- **Trail pheromones at home.** The ants that go on an expedition find its trail pheromone in other dimensions too,
-  very rarely: Fire Ants in the Overworld turn up a Nether Trail Pheromone in an hour or two.
-- **Birch and dark oak saplings.** Wood Ants bring them, so every log the ants bring has its sapling.
-- **Support for All The Ores: alloys.** Nine ants: Bronze, Brass, Steel, Invar, Constantan, Electrum, Signalum, Lumium
-  and Enderium. Each is made from the ant of one of its metals and brings the alloy ready mixed, as nuggets, dust and
-  the odd ingot. An alloy always comes a little slower than the metals in it, since the ants save the work of mixing.
-- **Support for silicon.** A Silicon Ant, made from Desert Ants, brings silicon for Applied Energistics 2, Ender IO,
-  Energized Power, Oritech, Refined Storage and Stellaris. Like the alloys it comes a little slower than what it is
-  made of.
-- **Support for Oritech, Stellaris, Ender IO and Just Dire Things: fuels.** Thirteen Liquid Ants: Heavy Oil, Diesel,
-  Naphtha and Turbofuel; Fuel, Hydrogen and Oxygen; Rocket Fuel; Blaze Ember, Voidflame and Eclipse Ember; Time and
-  Portal. One Diesel Ant serves both Oritech and Stellaris, and the Biofuel Ant now makes Oritech's biofuel too.
-- **For modpacks: hunting trophies.** A hunt target in a species file can name a `trophy`, a drop the mob only gives a
-  player, with its chance a catch and the colony stage it starts at.
-- **Nine more giant anthills.** Birch forests, dark forests, flower forests and meadows, pale gardens, bamboo jungles
-  and old growth taigas each have an anthill of their own look. Anthills now also stand on mountains (a cairn of
-  rocks), in ice spikes (spires of ice) and on beaches (a dune of sand and dead coral).
-- **Anthills of the Nether and the End by biome.** Crimson forests, warped forests, soul sand valleys and basalt deltas
-  each have their own Nether anthill, and the End's highlands have purpur towers. Basalt deltas had none before.
-- **Support for the Twilight Forest, Aether II, the Undergarden and Allthemodium: anthills.** Giant anthills stand in
-  those worlds too, built of the ground they find there, with the ants that live there.
-- **Anthills are furnished inside.** Every room has things of its own: royal pillars and amber round the Queen,
-  heaped stores and honeycomb in the food stores, stacked chitin, fungus on the garden walls, roots and glow berries
-  over the aphids, bones in the middens. Lamps in the walls light the rooms and tunnels, and each land, the Nether
-  and the End furnish with their own blocks.
-- **Anthill soil in eight tones.** Anthill Soil and Packed Anthill Soil take the colour of their ground: sand in deserts
-  and on beaches, red in badlands, frost in snow and ice, stone on mountains, pale in pale gardens. Laid by hand they
-  take the tone of the block they are laid on.
-- **Trail pheromones in JEI and EMI.** Looking up a Nether or End Trail Pheromone shows where it comes from: any colony
-  living in that dimension, at a Foraging Site.
-- **One Liquid Ant for several mods.** Where mods add the same liquid, one ant makes it for all of them: Oil, Honey,
-  Sap, Creosote, Plant Oil, Heavy Water, Acid and Experience Ants use the fluid of the first such mod installed.
-- **For modpacks.** `look.costume` puts one of the costumes on a species, `liquid.fluid` can be a list of fluids, and
-  `preferredItems` in the server config names the exact item ants bring when several mods add the same one. Without
-  it All The Ores comes first, then the mod the game loaded first.
-- **Rates by how hard a material is.** Every ant for another mod's material now works at the pace of that material in
-  its own mod. Platinum, Iridium, Azure Silver, Iesnium and End gems come about as often as diamonds, eclipse alloy or
-  mithril as rarely as netherite; Osmium, Froststeel, Cinnabar and others are slower than before.
-- **Faster Titanium, Uranium and Lead Ants.** Their ores are as common as gold or iron, so their ants now are too.
-- **Ants for more mods.** 54 species and 20 Liquid Ants for the materials and fluids of the mods of All the Mods 11
-  and 10: Silent's Gems, Just Dire Things, the Twilight Forest, Ender IO, Modern Industrialization, Ad Astra and more.
-  Those mods have no builds for this version of the game yet, so none of it has been run here.
-- **A nest's own ant.** Every wild nest keeps one worker walking around it while a player is near, so nests are easier
-  to find. `nestAnt` in the server config turns it off.
-- **Support for world generation mods.** Wild nests and ants live in the biomes of Terralith and Regions Unexplored and
-  in other mods' dimensions: the Twilight Forest, Aether II, the Undergarden and The Other.
-- **Wild Allthemodium and Vibranium Ants.** The nests of The Other hold Allthemodium or Vibranium Ants.
-- **Ants for big packs' ores.** 25 new species for the ores and gems of Powah, Mystical Agriculture, Forbidden and
-  Arcanus, Occultism, EvilCraft, Silent Gear, the Undergarden, Aether II and more. The Sulfur Ant works with any
-  mod's sulfur.
-- **For modpacks.** `preferredItemMods` in the server config picks whose item ants bring when several mods add the
-  same one. All The Ores comes first by default.
+- **Ten ants for fun.** Cow, Chicken, Sheep, Pig, Rabbit, Fisher, Baker, Bookworm, Party and Pirate Ants, each in a
+  costume of its own.
+- **Hunters fight mobs.** On a Hunting Ground the hunters fight a small mob of the kind they hunt, and the site keeps
+  its loot in a store of its own.
+- **Milk.** Cow Ants give Milk Droplets, which spin into milk in the Droplet Centrifuge.
+- **Speed Upgrades in the Droplet Centrifuge.**
+- **More food.** Colonies eat cooked food, seeds and most crops, those of other mods too.
+- **More finds.** Phantom membranes and rabbit's feet from hunting, froglights from the Nether, birch and dark oak
+  saplings, and now and then a trail pheromone far from its dimension.
+- **More giant anthills.** Nine new looks in the Overworld, and Nether and End anthills by biome.
+- **Anthills are furnished inside.** Pillars, stores, lamps and decoration in every room.
+- **Anthill soil takes the colour of its ground.**
+- **A nest's own ant.** One worker walks around every wild nest, so nests are easier to find.
+- **Trail pheromones in JEI and EMI.**
+- **Support for All The Ores.** Nine alloy ants, from Bronze to Enderium.
+- **Support for more mods' materials.** 80 new species for the ores, gems and metals of big packs, a Silicon
+  Ant among them. Most of those mods have no build for this version of the game yet.
+- **Support for more mods' liquids.** 33 new Liquid Ants, fuels among them. One ant serves every mod that adds the
+  same liquid.
+- **Support for world generation mods.** Wild nests, ants and anthills in the biomes of Terralith and Regions
+  Unexplored and in the Twilight Forest, Aether II, the Undergarden and The Other.
+- **For modpacks.** Costumes, hunting trophies and lists of fluids in species files, and server settings for whose
+  item ants bring. `nestCooldownSeconds` is now `nestRecoverySeconds`. See the [modpack guide](docs/modpack-guide.md).
 
 ### Changed
 
-- **Chitin blocks redrawn.** All nine chitin and Royal Chitin textures are new, with the base game's grain and less
-  glare. Royal Chitin is a dark wine red with gold only as small studs, so a great Queen's chamber no longer glares
-  purple.
-- **Wild nests are a tenth rarer.** Every kind of wild nest stands on nine in ten of the spots it had.
-- **A raided nest needs ten minutes.** After Tweezers took ants from a nest its ants are back in ten minutes, where it
-  was one. Tweezers on the nest show the time left, and Jade shows it too. The setting is now `nestRecoverySeconds`;
-  the old `nestCooldownSeconds` is no longer read.
-- **A first Queen from every kind of nest.** Your first catch from each kind of wild nest is always a Queen: one from
-  a Stone Ant nest, one from a Wood Ant nest, and so on. Later catches from that kind keep the 5% chance.
-  `firstNestCatchQueen` in the server config turns it off.
-- **Anthill ants suit their anthill.** A snowy or icy anthill holds Snow Ants, a mountain cairn Stone Ants, a beach
-  dune Shore Ants. Before, any ant of the biome could live there, such as Wood Ants in a snowy taiga's anthill.
-- **Crimson and Soul Ants in the Nether's anthills.** A crimson forest's anthill holds Crimson Ants (it held Warped
-  Ants) and a soul sand valley's holds Soul Ants (it held Fire Ants).
-- **Crimson Ants live wild in crimson forests.** The wild ants and the nests of a crimson forest are Crimson Ants; they
-  were Warped Ants, who keep the warped forests. The nest there is still the block named Warped Ant Nest.
-- **Nest Door and Nest Trapdoor redrawn.** Packed soil panels in a chitin frame with studded bands, a round window with
-  a raised rim and a latch, in the colours of the new chitin blocks.
-- **Nests under trees and in caves.** Wild nests stand under tree canopies too, and on cave floors in dimensions with a
-  roof. Biomes of any world generation mod that uses the common biome tags get nests.
-- **More allthemodium, vibranium and unobtainium.** From each full site a grown colony brings about 5 allthemodium, 4
-  vibranium or 3 unobtainium nuggets an hour. Allthemodium came once in six hours before; unobtainium doubles.
+- **Chitin blocks, Nest Door and Nest Trapdoor redrawn.**
+- **Wild nests are a tenth rarer.**
+- **A raided nest needs ten minutes.** It was one. Tweezers and Jade show the time left.
+- **A first Queen from every kind of nest.** Your first catch from each kind of wild nest is always a Queen.
+- **Ants suit their home.** An anthill holds the ants of its look, and crimson forests have Crimson Ants.
+- **Rates by how hard a material is.** Ants for other mods' materials work at the pace of the material: rare ones
+  slower than before, common ones faster.
+- **Nests under trees and in caves.**
+- **More allthemodium, vibranium and unobtainium.**
 
 ### Fixed
 
-- **Hunting on Peaceful.** Hunters brought no loot on Peaceful difficulty. They do now.
-- **Expeditions on servers.** On a dedicated server, players saw the wrong ants as Nether- or End-adapted: Water, Stone
-  and other mods' metal ants, and never Vibranium or Unobtainium Ants. Their game also did not know other mods' Liquid
-  Ants.
-- **Climate blocks in big packs.** End stone, blackstone and grass under a Formicarium keep their own climate where
-  world generation mods (Nullscape, Terralith) add them to the base game's stone and nylium lists.
-- **Tweezers and a tube you carry.** Caught workers go into a tube of the same ants without an empty Test Tube in the
-  inventory. Taking eggs from a Formicarium needs no tube either.
-- **Ants inside blocks in anthills.** A royal guard, a midden worker or a barracks soldier could be generated inside
-  a lamp or a bone block, and an ant on the mound inside a slope. They have clear spots now.
-- **The Queen stays in her chamber.** In an upright Formicarium she could walk into a tunnel that left at her floor and
-  half vanish in the wall, or stand over a shaft. She keeps to her own floor now.
-- **Loose pixels behind Queens and soldiers.** The tips of their antennae and of a soldier's mandibles showed as dots
-  behind them while they walked, in tunnels and on the Formicarium's screen.
+- **Hunting on Peaceful.** Hunters bring loot on Peaceful difficulty too.
+- **Expeditions on servers.** Players on a dedicated server saw the wrong ants as Nether- or End-adapted.
+- **Climate blocks in big packs.** Blocks under a Formicarium keep their climate with world generation mods.
+- **Tweezers and a tube you carry.** Caught workers go into a tube of the same ants without an empty Test Tube.
+- **Ants generated inside blocks in anthills.**
+- **The Queen stays in her chamber.** In an upright Formicarium she no longer walks into a wall or over a shaft.
+- **Loose pixels behind Queens and soldiers.**
 
 ### Removed
 
-- **Crystal Wood and Frost Emerald Ants.** Everything they found, their parents find. Queens, colonies and tubes of them
-  in older worlds become Wood and Snow Ants.
+- **Crystal Wood and Frost Emerald Ants.** Those in older worlds become Wood and Snow Ants.
 
 ## [0.6.0] - 2026-11-22
 
