@@ -135,14 +135,14 @@ Upload these 27 from `docs/images/screenshots/`, in this order:
 
 | Field | Value |
 |---|---|
-| File | `build/libs/antcolonies-26.3.0.6.0.jar` |
-| Display name | `Ant Colonies 0.6.0` |
+| File | `build/libs/antcolonies-26.3.0.7.0.jar` |
+| Display name | `Ant Colonies 0.7.0` |
 | Release type | Beta (or Release once it has been played for a while) |
 | Game version | 26.3 |
 | Mod loader | NeoForge |
 | Java | Java 25 |
 | Environment | Client and Server |
 | Related projects | Optional: JEI, EMI, Jade, FTB Teams, MachinaOpus |
-| Changelog | The `[0.6.0]` section of `CHANGELOG.md` |
+| Changelog | The `[0.7.0]` section of `CHANGELOG.md` |
 
-The version is 0.6.0 (`mod_version` in `gradle.properties`). `CHANGELOG.md` lists what 0.6.0 changed.
+The version is 0.7.0 (`mod_version` in `gradle.properties`). `CHANGELOG.md` lists what 0.7.0 changed.
