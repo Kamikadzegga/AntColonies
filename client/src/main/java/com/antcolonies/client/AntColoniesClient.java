@@ -15,9 +15,14 @@ import com.antcolonies.client.screen.CompanionCartScreen;
 import com.antcolonies.client.screen.CompanionScreen;
 import com.antcolonies.client.screen.GeneratorScreen;
 import com.antcolonies.client.screen.GeneticLabScreen;
+import com.antcolonies.colony.model.StructureKind;
+import com.antcolonies.content.menu.StructureMenu;
+import com.antcolonies.client.screen.AntScreen;
+import com.antcolonies.client.screen.ConnectorScreen;
 import com.antcolonies.client.screen.StructureScreen;
 import com.antcolonies.client.screen.TerrariumScreen;
 import com.antcolonies.client.screen.UpgradeStationScreen;
+import com.antcolonies.client.terrarium.HuntVisuals;
 import com.antcolonies.content.entity.GuardAnt;
 import com.antcolonies.content.entity.WildAnt;
 import com.antcolonies.content.item.ChitinGear;
@@ -47,6 +52,7 @@ import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsE
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.level.LevelEvent;
 
 /** Client setup: renderers, model layers, screens, particles and the species tint. Never loaded on a dedicated server. */
 @Mod(value = AntColonies.MODID, dist = Dist.CLIENT)
@@ -96,7 +102,10 @@ public final class AntColoniesClient {
     @SubscribeEvent
     static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenus.TERRARIUM.get(), TerrariumScreen::new);
-        event.register(ModMenus.STRUCTURE.get(), StructureScreen::new);
+        // A Colony Connector has a screen of its own.
+        event.<StructureMenu, AntScreen<StructureMenu>>register(ModMenus.STRUCTURE.get(), (menu, inventory, title) ->
+                menu.structure().kind() == StructureKind.COLONY_CONNECTOR ? new ConnectorScreen(menu, inventory, title)
+                        : new StructureScreen(menu, inventory, title));
         event.register(ModMenus.GENETIC_LAB.get(), GeneticLabScreen::new);
         event.register(ModMenus.UPGRADE_STATION.get(), UpgradeStationScreen::new);
         event.register(ModMenus.GENERATOR.get(), GeneratorScreen::new);
@@ -131,5 +140,12 @@ public final class AntColoniesClient {
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event)
                 -> CentrifugingRecipe.setClientRecipes(List.of()));
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> ClientResearch.clear());
+        // The Hunting Grounds' stand-in mobs belong to the world being left (the server's own levels unload on its thread: not those).
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> HuntVisuals.clear());
+        NeoForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
+            if (event.getLevel().isClientSide()) {
+                HuntVisuals.clear();
+            }
+        });
     }
 }

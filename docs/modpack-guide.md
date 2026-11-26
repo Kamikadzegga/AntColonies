@@ -607,7 +607,7 @@ file. For a modpack, ship the edited file in the pack; it is one file for all wo
 | `[food]` | Food use, food room, starvation | `lowFoodMinutes`, `lowFoodFactor`, `starvedFactor`, `hungryFoodWorkFactor` |
 | `[founding]` | Queen-only founding | `foundingFoodShare`, `foundingWorkers` |
 | `[production]` | Rates, diminishing returns, upgrade strengths | `rareFindMultiplier`, `bonusExponent`, `chitinFindChance`, `focusedForagingBoost`, `focusedForagingPenalty`, `expeditionRolls`, `liquidFoodChance`, `preferredItemMods` |
-| `[connectors]` | Colony Connectors | `transferInterval`, `maxFoodPerMinute`, `maxItemsPerMinute`, `connectorRange` |
+| `[connectors]` | Colony Connectors | `transferInterval`, `maxFoodPackage`, `maxItemPackage`, `connectorRange` |
 | `[genetics]` | Trait multipliers, Queen growth, mutations, lab scaling | `queenGrowthMinutes`, `queenGrowthCap`, `queenGrowthTraits`, `maxBeneficialMutations`, `labCostMultiplier` |
 | `[evolution]` | Evolution and hybrid chances | `chanceMultiplier`, `hybridChanceMultiplier`, `hybridQualityBonus`, `hybridWeakChance`, `feedingMakesLabSpecies` |
 | `[wild]` | Wild ants, home nests, anthills | `queenChance`, `nestQueenChance`, `firstNestCatchQueen`, `nestRecoverySeconds`, `nestAnt`, `nestAntSeconds`, `homeNestAnts`, `nestCropGrowth`, `nestHarvest`, `anthillAlarmSeconds`, `broodClusterMinutes`, `royalGuardReach` |

@@ -1,6 +1,7 @@
 package com.antcolonies.content.block;
 
 import com.antcolonies.colony.model.ColonyNetwork;
+import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -69,6 +70,10 @@ public abstract class ColonyEntityBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MenuProvider provider) {
             player.openMenu(provider, pos);
+            if (provider instanceof TerrariumBlockEntity terrarium) {
+                // Its screen's pages are sent only to a viewer: now, not at the next second's sync.
+                terrarium.syncNow();
+            }
         }
         return InteractionResult.SUCCESS;
     }

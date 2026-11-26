@@ -10,7 +10,6 @@ import com.antcolonies.colony.expedition.Expedition;
 import com.antcolonies.colony.genetics.QueenData;
 import com.antcolonies.colony.model.ForagingMode;
 import com.antcolonies.colony.upgrade.UpgradeType;
-import com.antcolonies.content.blockentity.ConnectorSettings;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.client.ClientSpecies;
@@ -33,7 +32,6 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
@@ -116,7 +114,6 @@ public class StructureScreen extends AntScreen<StructureMenu> {
 
     @Override
     protected void extractPage(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        channelSwatches.clear();
         boolean linked = menu.data(StructureBlockEntity.DATA_LINKED) != 0;
         int x = 8;
         int y = kind == StructureKind.STORAGE ? 130 : 18;
@@ -149,10 +146,6 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         }
         label(graphics, linkLine(linked), x, y, linked ? GOOD : BAD);
         y += 10;
-        if (kind == StructureKind.COLONY_CONNECTOR) {
-            connectorPage(graphics, x, y);
-            return;
-        }
         pendingFluid = null;
         if (kind.job().any()) {
             y = jobRow(graphics, x, y);
@@ -329,71 +322,6 @@ public class StructureScreen extends AntScreen<StructureMenu> {
         return names.toString();
     }
 
-    private void connectorPage(GuiGraphicsExtractor graphics, int x, int y) {
-        int channel = menu.data(StructureBlockEntity.DATA_CHANNEL);
-        label(graphics, Component.translatable("gui.antcolonies.connector.channel"), x, y + 2, LABEL);
-        int sx = x + 44;
-        for (int c = 0; c < 16; c++) {
-            int bx = sx + c * 8;
-            button(bx, y, 7, 11, "", StructureMenu.CHANNEL + c,
-                    List.of(Component.translatable("color.minecraft." + DyeColor.byId(c).getName())), true);
-            channelSwatches.add(new int[] {bx, y, c, c == channel ? 1 : 0});
-        }
-        y += 14;
-        int foodMode = menu.data(StructureBlockEntity.DATA_FOOD_MODE);
-        label(graphics, Component.translatable("gui.antcolonies.connector.food"), x, y + 2, LABEL);
-        int bx = x + 44;
-        String[] foodModes = {"off", "supply", "request"};
-        for (int i = 0; i < 3; i++) {
-            String text = Component.translatable("gui.antcolonies.connector.food." + foodModes[i]).getString();
-            int w = buttonWidth(text);
-            toggle(bx, y, w, 12, text, StructureMenu.FOOD_MODE + i,
-                    List.of(Component.translatable("gui.antcolonies.connector.food." + foodModes[i] + ".hint")), foodMode == i);
-            bx += w + 2;
-        }
-        y += 15;
-        int reserve = menu.data(StructureBlockEntity.DATA_RESERVE);
-        int target = menu.data(StructureBlockEntity.DATA_TARGET);
-        boolean supply = foodMode == ConnectorSettings.SUPPLY;
-        String amountKey = supply ? "gui.antcolonies.connector.keep" : "gui.antcolonies.connector.until";
-        int amount = supply ? reserve : target;
-        label(graphics, Component.translatable(amountKey), x, y + 2, foodMode == 0 ? DIM : LABEL);
-        int ax = x + 44;
-        button(ax, y, 12, 12, "-", supply ? StructureMenu.RESERVE_LESS : StructureMenu.TARGET_LESS, null, foodMode != 0);
-        label(graphics, amount + "%", ax + 16, y + 2, foodMode == 0 ? DIM : LABEL);
-        button(ax + 40, y, 12, 12, "+", supply ? StructureMenu.RESERVE_MORE : StructureMenu.TARGET_MORE, null, foodMode != 0);
-        int rate = ConnectorSettings.RATES[Math.clamp(menu.data(StructureBlockEntity.DATA_RATE_LIMIT), 0, 3)];
-        String rateText = rate < 0 ? Component.translatable("gui.antcolonies.connector.rate.max").getString()
-                : Component.translatable("gui.antcolonies.connector.rate", rate).getString();
-        int rw = buttonWidth(rateText);
-        button(x + 170 - rw, y, rw, 12, rateText, StructureMenu.CYCLE_RATE,
-                List.of(Component.translatable("gui.antcolonies.connector.rate.hint")), true);
-        y += 15;
-        int itemMode = menu.data(StructureBlockEntity.DATA_ITEM_MODE);
-        label(graphics, Component.translatable("gui.antcolonies.connector.items"), x, y + 2, LABEL);
-        bx = x + 44;
-        String[] itemModes = {"off", "send", "receive"};
-        for (int i = 0; i < 3; i++) {
-            String text = Component.translatable("gui.antcolonies.connector.items." + itemModes[i]).getString();
-            int w = buttonWidth(text);
-            toggle(bx, y, w, 12, text, StructureMenu.ITEM_MODE + i,
-                    List.of(Component.translatable("gui.antcolonies.connector.items." + itemModes[i] + ".hint")), itemMode == i);
-            bx += w + 2;
-        }
-        y += 15;
-        label(graphics, Component.translatable("gui.antcolonies.connector.filter"), x, StructureMenu.FILTER_Y - 10, itemMode == 1 ? LABEL : DIM);
-        // What it moved, under the filter.
-        int line = y + 1;
-        double in = menu.data(StructureBlockEntity.DATA_FOOD_IN) / 10.0;
-        double out = menu.data(StructureBlockEntity.DATA_FOOD_OUT) / 10.0;
-        double items = menu.data(StructureBlockEntity.DATA_ITEMS_MOVED) / 10.0;
-        int members = menu.data(StructureBlockEntity.DATA_MEMBERS);
-        boolean paused = ColonyStatus.PAUSED.in(menu.data(StructureBlockEntity.DATA_STATUS));
-        String summary = paused ? Component.translatable("status.antcolonies.paused").getString()
-                : Component.translatable("gui.antcolonies.connector.flow", members, rate(in), rate(out), rate(items)).getString();
-        lines(graphics, summary, x, line, line + 9, paused ? WARN : members > 0 ? GOOD : DIM);
-    }
-
     /**
      * Text wrapped to the 170-pixel column, with no line starting below {@code lastY}: the last one is cut if it needs more
      * (the whole text on hover). Returns the y under the text.
@@ -412,23 +340,6 @@ public class StructureScreen extends AntScreen<StructureMenu> {
             y += 9;
         }
         return y;
-    }
-
-    /** The channel swatches drawn this frame: x, y, colour id, selected. */
-    private final List<int[]> channelSwatches = new ArrayList<>();
-
-    @Override
-    protected void drawButton(GuiGraphicsExtractor graphics, Button button, boolean hovered) {
-        super.drawButton(graphics, button, hovered);
-        for (int[] swatch : channelSwatches) {
-            if (button.x() == leftPos + swatch[0] && button.y() == topPos + swatch[1]) {
-                int color = 0xFF000000 | DyeColor.byId(swatch[2]).getTextureDiffuseColor();
-                graphics.fill(button.x() + 1, button.y() + 1, button.x() + button.w() - 1, button.y() + button.h() - 1, color);
-                if (swatch[3] == 1) {
-                    graphics.outline(button.x() - 1, button.y() - 1, button.w() + 2, button.h() + 2, 0xFFFFFFFF);
-                }
-            }
-        }
     }
 
     /** Queen Chamber slot roles: materials, the tube, the sample, the output; null for any other slot. */
@@ -463,15 +374,12 @@ public class StructureScreen extends AntScreen<StructureMenu> {
 
     @Override
     protected void extractPageTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        if (hoveredSlot != null && kind == StructureKind.COLONY_CONNECTOR && hoveredSlot.container == menu.structure() && !hoveredSlot.hasItem()) {
-            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.antcolonies.connector.filter"),
-                    Component.translatable("gui.antcolonies.connector.filter.hint").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
-            return;
-        }
         if (hoveredSlot != null && kind.siteStore() && hoveredSlot.container == menu.structure() && !hoveredSlot.hasItem()) {
             graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable(
                     kind == StructureKind.LIQUID_CHAMBER ? "gui.antcolonies.site.droplet_store"
-                            : kind == StructureKind.HUNTING_GROUND ? "gui.antcolonies.site.loot_store" : "gui.antcolonies.site.store")), mouseX, mouseY);
+                            : kind == StructureKind.HUNTING_GROUND ? "gui.antcolonies.site.loot_store"
+                            : kind == StructureKind.HARVESTING_SITE ? "gui.antcolonies.site.harvest_store" : "gui.antcolonies.site.store")),
+                    mouseX, mouseY);
             return;
         }
         if (hoveredSlot != null && hoveredSlot.container == menu.structure().upgrades() && hoveredSlot.hasItem()

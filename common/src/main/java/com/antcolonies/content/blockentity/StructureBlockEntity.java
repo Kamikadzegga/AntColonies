@@ -104,22 +104,31 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     public static final int DATA_MODE = 13;
     public static final int DATA_ENABLED = 14;
     public static final int DATA_PRIORITY = 15;
-    /** Colony Connectors: their settings and what they moved (food and items per minute, times 10). */
+    /** Colony Connectors: their settings, what they moved (food and items per minute, times 10) and why (ConnectorNote ids). */
     public static final int DATA_CHANNEL = 16;
     public static final int DATA_FOOD_MODE = 17;
     public static final int DATA_RESERVE = 18;
     public static final int DATA_TARGET = 19;
-    public static final int DATA_RATE_LIMIT = 20;
+    public static final int DATA_FOOD_PACKAGE = 20;
     public static final int DATA_ITEM_MODE = 21;
     public static final int DATA_FOOD_IN = 22;
     public static final int DATA_FOOD_OUT = 23;
-    public static final int DATA_ITEMS_MOVED = 24;
+    public static final int DATA_ITEMS_OUT = 24;
     public static final int DATA_MEMBERS = 25;
     /** Queen Chambers, what the sample in the slot does: a CrossState, the hybrid's chance in thousandths, the too-low trait average times 10. */
     public static final int DATA_CROSS = 26;
     public static final int DATA_CROSS_CHANCE = 27;
     public static final int DATA_CROSS_LEVEL = 28;
-    public static final int DATA_COUNT = 29;
+    public static final int DATA_ITEM_PACKAGE = 29;
+    public static final int DATA_INTERVAL = 30;
+    public static final int DATA_FILTER_MODE = 31;
+    public static final int DATA_ORDER = 32;
+    public static final int DATA_FOOD_NOTE = 33;
+    public static final int DATA_ITEM_NOTE = 34;
+    public static final int DATA_ITEMS_IN = 35;
+    /** The first of a connector's nine stock amounts, one per filter slot. */
+    public static final int DATA_STOCK = 36;
+    public static final int DATA_COUNT = DATA_STOCK + ConnectorSettings.FILTER_SLOTS;
 
     /** Job site priorities: the colony hands out its workers to higher ones first. */
     public static final int PRIORITY_LOW = 0;
@@ -179,16 +188,23 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
                 case DATA_FOOD_MODE -> connector == null ? 0 : connector.foodMode;
                 case DATA_RESERVE -> connector == null ? 0 : connector.reserve;
                 case DATA_TARGET -> connector == null ? 0 : connector.target;
-                case DATA_RATE_LIMIT -> connector == null ? 0 : connector.rateLimit;
+                case DATA_FOOD_PACKAGE -> connector == null ? 0 : connector.foodPackage;
                 case DATA_ITEM_MODE -> connector == null ? 0 : connector.itemMode;
                 case DATA_FOOD_IN -> connector == null ? 0 : (int) Math.round(connector.foodIn * 10);
                 case DATA_FOOD_OUT -> connector == null ? 0 : (int) Math.round(connector.foodOut * 10);
-                case DATA_ITEMS_MOVED -> connector == null ? 0 : (int) Math.round(connector.itemsMoved * 10);
+                case DATA_ITEMS_OUT -> connector == null ? 0 : (int) Math.round(connector.itemsOut * 10);
                 case DATA_MEMBERS -> connector == null ? 0 : connector.members;
                 case DATA_CROSS -> cross().state().ordinal();
                 case DATA_CROSS_CHANCE -> (int) Math.round(cross().chance() * 1000);
                 case DATA_CROSS_LEVEL -> (int) Math.round(cross().level() * 10);
-                default -> 0;
+                case DATA_ITEM_PACKAGE -> connector == null ? 0 : connector.itemPackage;
+                case DATA_INTERVAL -> connector == null ? 0 : connector.interval;
+                case DATA_FILTER_MODE -> connector == null ? 0 : connector.filterMode;
+                case DATA_ORDER -> connector == null ? 0 : connector.order;
+                case DATA_FOOD_NOTE -> connector == null ? 0 : connector.foodNote.ordinal();
+                case DATA_ITEM_NOTE -> connector == null ? 0 : connector.itemNote.ordinal();
+                case DATA_ITEMS_IN -> connector == null ? 0 : (int) Math.round(connector.itemsIn * 10);
+                default -> connector != null && id >= DATA_STOCK && id < DATA_COUNT ? connector.stock[id - DATA_STOCK] : 0;
             };
         }
 
@@ -541,6 +557,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, StructureBlockEntity be) {
         long time = level.getGameTime();
+        be.returnHeldItems();
         if (be.terrarium != null && time - be.linkedAt >= LINK_TIMEOUT) {
             be.terrarium = null;
             be.assigned = 0;
@@ -605,6 +622,9 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
 
     @Override
     public ItemStack removeItem(int slot, int count) {
+        if (connector != null) {
+            return ItemStack.EMPTY; // filter marks are not items to take
+        }
         ItemStack removed = ContainerHelper.removeItem(items, slot, count);
         if (!removed.isEmpty()) {
             setChanged();
@@ -615,7 +635,7 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
 
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
-        return ContainerHelper.takeItem(items, slot);
+        return connector != null ? ItemStack.EMPTY : ContainerHelper.takeItem(items, slot);
     }
 
     @Override
@@ -629,9 +649,9 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
         return switch (kind) {
-            case STORAGE, FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER, HUNTING_GROUND -> slot < unlockedSlots();
-            // A Colony Connector's filter: one of each item it should send.
-            case COLONY_CONNECTOR -> slot < items.size();
+            case STORAGE, FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER, HUNTING_GROUND, HARVESTING_SITE ->
+                    slot < unlockedSlots();
+
             case QUEEN_CHAMBER -> slot < StructureKind.QUEEN_CHAMBER_MATERIALS
                     && QueenRearing.isMaterial(level == null ? null : level.registryAccess(), colonySpecies(), stack)
                     || slot == StructureKind.QUEEN_CHAMBER_TUBE && stack.is(ModItems.TEST_TUBE.get())
@@ -664,7 +684,8 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     public int[] getSlotsForFace(Direction side) {
         return switch (kind) {
-            case STORAGE, FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER, HUNTING_GROUND -> range(0, unlockedSlots());
+            case STORAGE, FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER, HUNTING_GROUND, HARVESTING_SITE ->
+                    range(0, unlockedSlots());
             case QUEEN_CHAMBER -> range(0, items.size());
             default -> NO_SLOTS;
         };
@@ -686,7 +707,9 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return kind.stores() || kind == StructureKind.QUEEN_CHAMBER && slot == StructureKind.QUEEN_CHAMBER_OUTPUT;
+        // A material slot gives up what is no material: the empty bottle a honey bottle left behind.
+        return kind.stores() || kind == StructureKind.QUEEN_CHAMBER
+                && (slot == StructureKind.QUEEN_CHAMBER_OUTPUT || slot < StructureKind.QUEEN_CHAMBER_MATERIALS && !canPlaceItem(slot, stack));
     }
 
     // --- Menu ---
@@ -710,6 +733,11 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
 
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (connector != null) {
+            returnHeldItems();
+            // A connector's filter only names items: there is nothing in it to drop.
+            items.clear();
+        }
         super.preRemoveSideEffects(pos, state);
         if (level != null) {
             Containers.dropContents(level, pos, items);
@@ -727,6 +755,36 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         if (connector != null && level instanceof ServerLevel serverLevel) {
             ConnectorNetwork.register(serverLevel, worldPosition, connector.channel);
         }
+    }
+
+    /** A connector saved before its filter became marks holds real items: they drop once, and a mark of each stays. */
+    private void returnHeldItems() {
+        if (connector == null || !connector.heldItems || level == null || level.isClientSide()) {
+            return;
+        }
+        connector.heldItems = false;
+        for (int slot = 0; slot < items.size(); slot++) {
+            ItemStack held = items.get(slot);
+            if (!held.isEmpty()) {
+                Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY() + 1, worldPosition.getZ(), held.copy());
+                items.set(slot, held.copyWithCount(1));
+            }
+        }
+        setChanged();
+    }
+
+    /** Names an item in a connector's filter slot (an empty stack clears it): a mark, no item is used up. */
+    public void setFilter(int slot, ItemStack stack) {
+        if (connector == null || slot < 0 || slot >= items.size()) {
+            return;
+        }
+        ItemStack mark = stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1);
+        // The stock to keep belongs to the item: another item starts without one.
+        if (!ItemStack.isSameItemSameComponents(items.get(slot), mark)) {
+            connector.stock[slot] = 0;
+        }
+        items.set(slot, mark);
+        connectorChanged();
     }
 
     public void connectorChanged() {
@@ -758,6 +816,10 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         }
         requested = input.getIntOr("requested", -1);
         progress = input.getDoubleOr("progress", 0);
+        processingCredit.clear();
+        for (ValueInput credit : input.childrenListOrEmpty("processing_credit")) {
+            credit.read("find", SpeciesOutput.CODEC).ifPresent(find -> processingCredit.put(find, credit.getDoubleOr("credit", 0)));
+        }
         rearingProgress = input.getDoubleOr("rearing", 0);
         rearingStatus = input.getIntOr("rearing_status", 0);
         queensRaised = input.getIntOr("queens_raised", 0);
@@ -802,6 +864,16 @@ public class StructureBlockEntity extends BlockEntity implements WorldlyContaine
         }
         output.putInt("requested", requested);
         output.putDouble("progress", progress);
+        if (!processingCredit.isEmpty()) {
+            ValueOutput.ValueOutputList credits = output.childrenList("processing_credit");
+            processingCredit.forEach((find, credit) -> {
+                if (credit > 0) {
+                    ValueOutput saved = credits.addChild();
+                    saved.store("find", SpeciesOutput.CODEC, find);
+                    saved.putDouble("credit", credit);
+                }
+            });
+        }
         output.putDouble("rearing", rearingProgress);
         output.putInt("rearing_status", rearingStatus);
         output.putInt("queens_raised", queensRaised);

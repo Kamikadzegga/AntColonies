@@ -8,6 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.level.portal.TeleportTransition;
@@ -28,6 +29,8 @@ public final class CompanionTravel {
             return;
         }
         mob.setTarget(null);
+        // Out of a boat or minecart first: its ride would put it back at once.
+        mob.stopRiding();
         if (mob.level() != level) {
             to(mob, level, player, before);
         } else if (!near(mob, level, player, before)) {
@@ -61,6 +64,8 @@ public final class CompanionTravel {
         Vec3 at = spot == null ? target.position() : Vec3.atBottomCenterOf(spot);
         mob.getNavigation().stop();
         mob.setTarget(null);
+        // Its owner may stand in a portal: with the wait a mob has after one, it does not go straight back through.
+        mob.setPortalCooldown();
         mob.teleport(new TeleportTransition(level, at, Vec3.ZERO, mob.getYRot(), mob.getXRot(), TeleportTransition.DO_NOTHING));
     }
 
@@ -91,6 +96,7 @@ public final class CompanionTravel {
             return false;
         }
         return !(level.getBlockState(pos.below()).getBlock() instanceof LeavesBlock)
+                && !(level.getBlockState(pos).getBlock() instanceof Portal)
                 && level.noCollision(mob.getDimensions(mob.getPose()).makeBoundingBox(Vec3.atBottomCenterOf(pos)));
     }
 

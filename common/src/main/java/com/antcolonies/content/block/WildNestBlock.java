@@ -103,13 +103,24 @@ public class WildNestBlock extends Block implements EntityBlock {
         defend(level, pos, player);
     }
 
-    /** Seconds until a raided nest's ants are back: 0 when it is not recovering, -1 when it is and its time is not known. */
+    /** Seconds until a raided nest's ants are back: 0 when they are (or its time has come), -1 when its time is not known. */
     public static int secondsToRecover(Level level, BlockPos pos, BlockState state) {
         if (!state.getOptionalValue(RECOVERING).orElse(false)) {
             return 0;
         }
-        long left = level.getBlockEntity(pos) instanceof RaidedNest nest ? nest.recoveredAt() - level.getGameTime() : 0;
-        return left > 0 ? (int) ((left + 19) / 20) : -1;
+        long recoveredAt = level.getBlockEntity(pos) instanceof RaidedNest nest ? nest.recoveredAt() : 0;
+        if (recoveredAt <= 0) {
+            return -1;
+        }
+        long left = recoveredAt - level.getGameTime();
+        return left > 0 ? (int) ((left + 19) / 20) : 0;
+    }
+
+    /** Ends a raided nest's recovery once its time has come. The nest's own tick calls it, so time in an unloaded chunk counts. */
+    public static void recover(Level level, BlockPos pos, BlockState state, RaidedNest nest) {
+        if (state.getValue(RECOVERING) && nest.recoveredAt() > 0 && level.getGameTime() >= nest.recoveredAt()) {
+            level.setBlock(pos, state.setValue(RECOVERING, false), Block.UPDATE_ALL);
+        }
     }
 
     /** Minutes and seconds, as a timer shows them: 9:05. */
@@ -117,11 +128,18 @@ public class WildNestBlock extends Block implements EntityBlock {
         return seconds / 60 + ":" + (seconds % 60 < 10 ? "0" : "") + seconds % 60;
     }
 
+    /** The scheduled tick ends the recovery of a nest that does not know its time; one that does recovers by the clock. */
     @Override
     protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (state.getValue(RECOVERING)) {
+        if (state.getValue(RECOVERING) && secondsToRecover(level, pos, state) <= 0) {
             level.setBlock(pos, state.setValue(RECOVERING, false), Block.UPDATE_ALL);
         }
+    }
+
+    /** A nest from before nests had a block entity gets one here: asking for it makes it. */
+    @Override
+    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        level.getBlockEntity(pos);
     }
 
     /** Breaking or raiding a wild nest brings out one to three soldiers; a home nest's ants know you. */

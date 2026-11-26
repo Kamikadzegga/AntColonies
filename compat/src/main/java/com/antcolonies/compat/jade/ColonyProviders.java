@@ -5,12 +5,14 @@ import java.util.Locale;
 import com.antcolonies.AntColonies;
 import com.antcolonies.colony.model.ForagingMode;
 import com.antcolonies.colony.model.StructureKind;
+import com.antcolonies.colony.network.ConnectorNote;
 import com.antcolonies.content.blockentity.CentrifugeBlockEntity;
 import com.antcolonies.content.blockentity.GeneratorBlockEntity;
 import com.antcolonies.content.blockentity.GeneticLabBlockEntity;
 import com.antcolonies.content.blockentity.HomeNestBlockEntity;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
+import com.antcolonies.content.blockentity.WildNestBlockEntity;
 import com.antcolonies.colony.model.Colony;
 import com.antcolonies.colony.model.ColonyStatus;
 import com.antcolonies.colony.genetics.Trait;
@@ -22,6 +24,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import com.antcolonies.content.block.WildNestBlock;
 import com.antcolonies.companion.CompanionData;
 import com.antcolonies.companion.Companions;
@@ -114,7 +117,10 @@ final class ColonyProviders {
                 data.putInt("members", connector.members);
                 data.putDouble("food_in", connector.foodIn);
                 data.putDouble("food_out", connector.foodOut);
-                data.putDouble("items", connector.itemsMoved);
+                data.putDouble("items_in", connector.itemsIn);
+                data.putDouble("items_out", connector.itemsOut);
+                data.putInt("food_note", connector.foodNote.ordinal());
+                data.putInt("item_note", connector.itemNote.ordinal());
             }
         }
 
@@ -133,21 +139,18 @@ final class ColonyProviders {
                 return;
             }
             if (data.contains("channel")) {
-                // A Colony Connector: its channel, what it does, what it moved.
+                // A Colony Connector: its channel, what it does with food and with items and why, what it moved.
                 tooltip.add(Component.translatable("gui.antcolonies.network.channel", Component.translatable("color.minecraft."
                         + DyeColor.byId(data.getIntOr("channel", 0)).getName())).withStyle(ChatFormatting.GRAY));
                 String[] foodModes = {"off", "supply", "request"};
                 String[] itemModes = {"off", "send", "receive"};
-                tooltip.add(Component.translatable("gui.antcolonies.connector.food").append(": ")
-                        .append(Component.translatable("gui.antcolonies.connector.food."
-                                + foodModes[Math.clamp(data.getIntOr("food_mode", 0), 0, 2)]))
-                        .append(", ").append(Component.translatable("gui.antcolonies.connector.items")).append(": ")
-                        .append(Component.translatable("gui.antcolonies.connector.items."
-                                + itemModes[Math.clamp(data.getIntOr("item_mode", 0), 0, 2)]))
-                        .withStyle(ChatFormatting.AQUA));
+                int foodMode = Math.clamp(data.getIntOr("food_mode", 0), 0, 2);
+                int itemMode = Math.clamp(data.getIntOr("item_mode", 0), 0, 2);
+                tooltip.add(connectorLine("food", foodModes[foodMode], foodMode, data.getIntOr("food_note", 0)));
+                tooltip.add(connectorLine("items", itemModes[itemMode], itemMode, data.getIntOr("item_note", 0)));
                 tooltip.add(Component.translatable("gui.antcolonies.connector.flow", data.getIntOr("members", 0),
                         rate(data.getDoubleOr("food_in", 0)), rate(data.getDoubleOr("food_out", 0)),
-                        rate(data.getDoubleOr("items", 0))).withStyle(ChatFormatting.GRAY));
+                        rate(data.getDoubleOr("items_in", 0)), rate(data.getDoubleOr("items_out", 0))).withStyle(ChatFormatting.GRAY));
             }
             if (data.contains("mode")) {
                 tooltip.add(Component.translatable(ForagingMode.byId(data.getIntOr("mode", 0)).translationKey())
@@ -287,6 +290,9 @@ final class ColonyProviders {
                     stored += home.getItem(slot).getCount();
                 }
                 data.putInt("stored", stored);
+            } else if (accessor.getBlockEntity() instanceof WildNestBlockEntity wild && accessor.getLevel() instanceof ServerLevel level) {
+                // A world nest answers for its own ants: a nest dweller may live in it.
+                data.putString("species", wild.species(level).toString());
             }
             int recover = WildNestBlock.secondsToRecover(accessor.getLevel(), accessor.getPosition(), accessor.getBlockState());
             if (recover != 0) {
@@ -301,9 +307,11 @@ final class ColonyProviders {
             if (!(accessor.getBlock() instanceof WildNestBlock nest)) {
                 return;
             }
-            tooltip.add(Tooltips.species(nest.species()));
-            Tooltips.speciesFacts(accessor.getLevel().registryAccess(), nest.species(), tooltip::add, false);
             CompoundTag data = accessor.getServerData();
+            // The ants the server says the nest gives; the block's own until it has answered, and for a home nest.
+            Identifier species = data.getString("species").map(Identifier::tryParse).orElse(nest.species());
+            tooltip.add(Tooltips.species(species));
+            Tooltips.speciesFacts(accessor.getLevel().registryAccess(), species, tooltip::add, false);
             if (data.contains("inside")) {
                 tooltip.add(Component.translatable("jade.antcolonies.home_nest", data.getIntOr("inside", 0), data.getIntOr("out", 0))
                         .withStyle(ChatFormatting.GREEN));
@@ -373,6 +381,18 @@ final class ColonyProviders {
             return String.format(Locale.ROOT, "%.1fk", value / 1000.0);
         }
         return String.valueOf(value);
+    }
+
+    /** "Food: Send. Sending", or just "Food: Off". */
+    private static Component connectorLine(String what, String mode, int modeId, int noteId) {
+        MutableComponent line = Component.translatable("gui.antcolonies.connector." + what).append(": ")
+                .append(Component.translatable("gui.antcolonies.connector." + what + "." + mode));
+        ConnectorNote note = ConnectorNote.byId(noteId);
+        if (modeId != 0 && note != ConnectorNote.OFF) {
+            line.append(". ").append(Component.translatable(note.translationKey()));
+        }
+        return line.withStyle(note.tone() == ConnectorNote.Tone.PROBLEM ? ChatFormatting.RED
+                : note.tone() == ConnectorNote.Tone.WAITING ? ChatFormatting.GOLD : ChatFormatting.AQUA);
     }
 
     private static String rate(double perMinute) {

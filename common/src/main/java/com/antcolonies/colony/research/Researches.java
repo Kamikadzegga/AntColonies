@@ -1,8 +1,12 @@
 package com.antcolonies.colony.research;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import com.antcolonies.core.registry.ModRegistries;
 
@@ -17,15 +21,45 @@ public final class Researches {
     public record Entry(Identifier id, Research research) {
     }
 
-    /** Every entry, by tier and then by id: the order lists show them in. */
-    public static List<Entry> all(HolderLookup.@Nullable Provider registries) {
+    /** One research registry's entries, sorted, and by the species each unlocks; {@code size} is the registry's when it was read. */
+    private record Sorted(int size, List<Entry> entries, Map<Identifier, Entry> bySpecies) {
+        static final Sorted NONE = new Sorted(0, List.of(), Collections.emptyMap());
+    }
+
+    /** Per registry (each world, and each side of it, has its own); used from the client and server threads. */
+    private static final Map<HolderLookup.RegistryLookup<Research>, Sorted> SORTED = Collections.synchronizedMap(new WeakHashMap<>());
+
+    private static Sorted sorted(HolderLookup.@Nullable Provider registries) {
+        HolderLookup.RegistryLookup<Research> lookup = ModRegistries.lookup(registries, ModRegistries.RESEARCH).orElse(null);
+        if (lookup == null) {
+            return Sorted.NONE;
+        }
+        int size = (int) lookup.listElements().count();
+        Sorted sorted = SORTED.get(lookup);
+        if (sorted == null || sorted.size() != size) {
+            sorted = sort(lookup, size);
+            SORTED.put(lookup, sorted);
+        }
+        return sorted;
+    }
+
+    private static Sorted sort(HolderLookup.RegistryLookup<Research> lookup, int size) {
         List<Entry> list = new ArrayList<>();
-        ModRegistries.lookup(registries, ModRegistries.RESEARCH).ifPresent(lookup -> lookup.listElements()
-                .forEach(holder -> list.add(new Entry(holder.key().identifier(), holder.value()))));
+        lookup.listElements().forEach(holder -> list.add(new Entry(holder.key().identifier(), holder.value())));
         list.sort(Comparator.<Entry, Research.Tier>comparing(entry -> entry.research().tier())
                 .thenComparing(entry -> entry.research().unlocksSpecies() ? 0 : 1)
                 .thenComparing(entry -> entry.id().toString()));
-        return list;
+        // The first entry in the lists' order wins a species, as a search down the list would find it.
+        Map<Identifier, Entry> bySpecies = new HashMap<>();
+        for (Entry entry : list) {
+            entry.research().species().ifPresent(species -> bySpecies.putIfAbsent(species, entry));
+        }
+        return new Sorted(size, List.copyOf(list), Collections.unmodifiableMap(bySpecies));
+    }
+
+    /** Every entry, by tier and then by id: the order lists show them in. The list is shared: it cannot be changed. */
+    public static List<Entry> all(HolderLookup.@Nullable Provider registries) {
+        return sorted(registries).entries();
     }
 
     public static @Nullable Entry byId(HolderLookup.@Nullable Provider registries, Identifier id) {
@@ -39,12 +73,7 @@ public final class Researches {
 
     /** The research that unlocks a species in the laboratory, or null: the species is not a genetically modified one. */
     public static @Nullable Entry forSpecies(HolderLookup.@Nullable Provider registries, Identifier species) {
-        for (Entry entry : all(registries)) {
-            if (entry.research().species().isPresent() && entry.research().species().get().equals(species)) {
-                return entry;
-            }
-        }
-        return null;
+        return sorted(registries).bySpecies().get(species);
     }
 
     public static @Nullable Entry forMutation(HolderLookup.@Nullable Provider registries, Identifier mutation) {

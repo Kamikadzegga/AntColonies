@@ -156,7 +156,7 @@ Chambers join a colony. Job sites that only some species use are left alone by t
 | Formicarium | The colony itself: the Queen, the food and the colony screen. On its own it houses 60 adults and lays eggs at half speed. |
 | Nest Chamber | Eggs at full speed, faster larvae, and room for 3,000 adults and 1,500 larvae. More chambers lay faster, each a little less. |
 | Foraging Site | Workers find the species' items. Takes species upgrades. |
-| Harvesting Site | Farmer species grow food and harvest mushrooms, seeds and berries. |
+| Harvesting Site | Farmer species grow food and harvest mushrooms, seeds and berries. Its nine slots hold the harvest while the Storage is full. |
 | Hunting Ground | Hunter species hunt mobs. Each catch gives the mob's own drops and 40 food. Behind the glass the hunters fight a small mob of the kind they hunt; no real mob is spawned. Its nine slots hold the loot while the Storage is full. From stage 3 Bullet Ants also bring phantom membranes and Rabbit Ants, rarely, a rabbit's foot. |
 | Liquid Chamber | [Liquid Ants](#liquid-ants-and-the-droplet-centrifuge) give droplets of their fluid. |
 | Storage | Holds the finds in 18 slots and adds 25,000 food room. Hoppers can empty it. |
@@ -324,18 +324,32 @@ Two connectors link when they are on the same **channel** (one of 16 colours, pi
 dimension, at most 30 blocks apart on x and on z (height doesn't matter), and both loaded. Nothing is force-loaded: a
 colony in an unloaded chunk shows as offline. Connectors use no power.
 
+Every connector has its own settings. Changing one changes nothing on another.
+
 | Setting | What it does |
 |---|---|
-| Food: Supply | Gives away the food its colony has above its **Keep** reserve |
-| Food: Request | Takes food while its colony is below its **Ask until** target. The hungriest colony is served first. |
-| Rate | Caps the food moved: 250, 1,000 or 3,000 a minute, or the config's maximum |
-| Items: Send | Moves the items named in its 9 filter slots out of its colony's Storage |
-| Items: Receive | Accepts what other connectors on the channel send, as much as fits in its colony's Storage |
+| Name | What its colony is called on the network |
+| Food: Send | Gives away the food its colony has above what it **keeps** |
+| Food: Receive | Takes food until its colony's food bar reaches its own **Fill to** level |
+| Items: Send | Moves items out of its colony's Storage: only those named in its 9 filter slots, or all but those |
+| Items: Receive | Takes the items sent on the channel into its colony's Storage |
+| Package | How much food, and how many items, leave at a time |
+| Speed | How often a package leaves: every second, or as seldom as once a minute |
+| Order | Who gets a package: every receiver its own, one receiver at a time in turns, or the hungriest first |
 
-Food and items are moved, never made, and nothing is taken that the other side has no room for.
+- **Each receiver fills to its own level.** Three receivers on one channel set to 30%, 55% and 90% each stop at theirs.
+- **Food items go to the food slot.** Food sent as items lands in the food slot of colonies that receive food, only as
+  much as fills them to their level, and never in their Storage.
+- **The filter only names items.** Click a slot with an item to name it: the item stays in your hand. Scroll over a
+  named item to keep a stock of it in the Storage.
+- **The screen says why nothing moves:** no receiver on the channel, nothing to spare, receivers full, no Storage.
+- **Hold a connector** to see sparks run from each sender to the colonies it sends to.
 
-A typical network is a Farmer colony that feeds colonies which mine or hunt. The Formicarium's Network tab draws the
-network and the food moving along it.
+Food and items are moved, never made, and nothing is taken that the other side has no room for. A redstone signal
+pauses a connector.
+
+The **Visual / Detail** button switches the screen between bars and exact numbers. The Formicarium's Network tab
+draws the network by the colonies' names, with an arrow to whoever receives.
 
 ## Liquid Ants and the Droplet Centrifuge
 

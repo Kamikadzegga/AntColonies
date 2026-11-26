@@ -101,10 +101,11 @@ public final class CompanionXp {
         return (int) Math.round(Math.max(1, worth) * AntConfig.get(AntConfig.COMPANION_XP));
     }
 
-    /** Experience from one level to the next. */
+    /** Experience from one level to the next, capped at what an int holds: steep settings would wrap around. */
     public static int needed(int level) {
-        return (int) Math.round(AntConfig.get(AntConfig.COMPANION_XP_BASE)
+        long needed = Math.round(AntConfig.get(AntConfig.COMPANION_XP_BASE)
                 * Math.pow(level, AntConfig.get(AntConfig.COMPANION_XP_GROWTH)));
+        return (int) Math.min(Integer.MAX_VALUE, needed);
     }
 
     public static void award(Mob mob, int xp) {
@@ -141,7 +142,14 @@ public final class CompanionXp {
         if (owner != null) {
             owner.sendOverlayMessage(Component.translatable("message.antcolonies.companion.level_up", mob.getDisplayName(), level)
                     .withStyle(ChatFormatting.GOLD));
-            ModTriggers.COMPANION.get().trigger(owner, level >= 30 ? "level_30" : level >= 10 ? "level_10" : "level");
+            // Every mark it has passed, not only the last: one reached while its owner was away still counts.
+            ModTriggers.COMPANION.get().trigger(owner, "level");
+            if (level >= 10) {
+                ModTriggers.COMPANION.get().trigger(owner, "level_10");
+            }
+            if (level >= 30) {
+                ModTriggers.COMPANION.get().trigger(owner, "level_30");
+            }
         }
     }
 

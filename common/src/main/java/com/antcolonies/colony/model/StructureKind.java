@@ -25,8 +25,8 @@ public enum StructureKind implements StringRepresentable {
     /** Hunter species kill mobs here: their loot, and food from what they catch; a small store for when the Storage is full. */
     HUNTING_GROUND("hunting_ground", Job.HUNTING, 9, 4, EnumSet.of(UpgradeType.SPEED, UpgradeType.HUNTING, UpgradeType.FOOD_EFFICIENCY,
             UpgradeType.POPULATION)),
-    /** Farmer Ants grow food and harvest. */
-    HARVESTING_SITE("harvesting_site", Job.FARMERS, 0, 3, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
+    /** Farmer Ants grow food and harvest; a small store for when the Storage is full. */
+    HARVESTING_SITE("harvesting_site", Job.FARMERS, 9, 3, EnumSet.of(UpgradeType.SPEED, UpgradeType.FOOD_EFFICIENCY, UpgradeType.POPULATION)),
     /** More room for what the colony finds, and food room. */
     STORAGE("storage", Job.NONE, 162, 2, EnumSet.of(UpgradeType.STORAGE, UpgradeType.AUTOMATION)),
     /** Raises new Queens, and hybrids when a Genetic Sample is crossed in. */
@@ -107,9 +107,9 @@ public enum StructureKind implements StringRepresentable {
         return this == STORAGE || siteStore();
     }
 
-    /** The job sites with a small store of their own for what their ants bring: Foraging Sites, Liquid Chamber, Hunting Ground. */
+    /** Every job site has a small store of its own for what its ants bring. */
     public boolean siteStore() {
-        return foraging() || this == LIQUID_CHAMBER || this == HUNTING_GROUND;
+        return job.any();
     }
 
     public boolean foraging() {
@@ -126,7 +126,7 @@ public enum StructureKind implements StringRepresentable {
 
     /** Every job site with a store of its own ({@link #siteStore}), in the order finds overflow into them. */
     public static final List<StructureKind> SITE_STORES =
-            List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER, HUNTING_GROUND);
+            List.of(FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER, HUNTING_GROUND, HARVESTING_SITE);
 
     public String translationKey() {
         return "block.antcolonies." + name;

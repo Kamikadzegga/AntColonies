@@ -58,11 +58,12 @@ public final class Colony {
      * One colony on a Colony Connector channel, as this colony's Network page shows it. {@code self} marks this colony's
      * own connector; {@code online} is false while the other colony's chunk is unloaded.
      */
-    public record NetworkLink(BlockPos terrarium, Identifier species, int channel, float food, float capacity, int mode, int itemMode,
-                              float reserve, float target, float inPerMinute, float outPerMinute, boolean online, boolean self, boolean paused) {
+    public record NetworkLink(BlockPos terrarium, Identifier species, String name, int channel, float food, float capacity, int mode,
+                              int itemMode, float reserve, float target, Flow flow, boolean online, boolean self, boolean paused) {
         public static final Codec<NetworkLink> CODEC = RecordCodecBuilder.create(i -> i.group(
                 BlockPos.CODEC.fieldOf("pos").forGetter(NetworkLink::terrarium),
                 Identifier.CODEC.fieldOf("species").forGetter(NetworkLink::species),
+                Codec.STRING.optionalFieldOf("name", "").forGetter(NetworkLink::name),
                 Codec.INT.fieldOf("channel").forGetter(NetworkLink::channel),
                 Codec.FLOAT.fieldOf("food").forGetter(NetworkLink::food),
                 Codec.FLOAT.fieldOf("capacity").forGetter(NetworkLink::capacity),
@@ -70,12 +71,35 @@ public final class Colony {
                 Codec.INT.optionalFieldOf("item_mode", 0).forGetter(NetworkLink::itemMode),
                 Codec.FLOAT.fieldOf("reserve").forGetter(NetworkLink::reserve),
                 Codec.FLOAT.fieldOf("target").forGetter(NetworkLink::target),
-                Codec.FLOAT.fieldOf("in").forGetter(NetworkLink::inPerMinute),
-                Codec.FLOAT.fieldOf("out").forGetter(NetworkLink::outPerMinute),
+                Flow.CODEC.optionalFieldOf("flow", Flow.NONE).forGetter(NetworkLink::flow),
                 Codec.BOOL.fieldOf("online").forGetter(NetworkLink::online),
                 Codec.BOOL.fieldOf("self").forGetter(NetworkLink::self),
                 Codec.BOOL.optionalFieldOf("paused", false).forGetter(NetworkLink::paused)
         ).apply(i, NetworkLink::new));
+
+        /** This entry as the colony's own. */
+        public NetworkLink asSelf() {
+            return new NetworkLink(terrarium, species, name, channel, food, capacity, mode, itemMode, reserve, target, flow, online, true, paused);
+        }
+
+        public float inPerMinute() {
+            return flow.foodIn();
+        }
+
+        public float outPerMinute() {
+            return flow.foodOut();
+        }
+    }
+
+    /** What a colony's connector moved lately, per minute. */
+    public record Flow(float foodIn, float foodOut, float itemsIn, float itemsOut) {
+        public static final Flow NONE = new Flow(0, 0, 0, 0);
+        public static final Codec<Flow> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.FLOAT.fieldOf("food_in").forGetter(Flow::foodIn),
+                Codec.FLOAT.fieldOf("food_out").forGetter(Flow::foodOut),
+                Codec.FLOAT.fieldOf("items_in").forGetter(Flow::itemsIn),
+                Codec.FLOAT.fieldOf("items_out").forGetter(Flow::itemsOut)
+        ).apply(i, Flow::new));
     }
 
     public record StoredItem(ItemStack item, long count) {
@@ -106,6 +130,12 @@ public final class Colony {
         ).apply(i, Stats::new));
     }
 
+    /** A colony changing species a second time counts its adults as the kind at least this share of them are. */
+    private static final double MAJORITY = 0.5;
+
+    /** Workers taken out of a colony: all of one species. */
+    public record Taken(Identifier species, int count) {}
+
     // --- Saved ---
     UUID id = UUID.randomUUID();
     @Nullable QueenData queen;
@@ -125,7 +155,8 @@ public final class Colony {
     int catalystCharges;
     long lastSimTime = Long.MIN_VALUE;
     long totalFound;
-    long totalLaid;
+    /** Eggs laid so far: fractions too, since one step lays less than one egg. */
+    double totalLaid;
     /** Queen-only founding (see {@link Founding}); NONE for every colony started or moved with ants. */
     Founding founding = Founding.NONE;
     /** Adults raised since the founding Queen began her first brood. */
@@ -240,7 +271,7 @@ public final class Colony {
     }
 
     public long totalLaid() {
-        return totalLaid;
+        return (long) totalLaid;
     }
 
     public long totalFound() {
@@ -309,23 +340,40 @@ public final class Colony {
         }
         this.queen = queen;
         if (queen != null && !queen.species().equals(species)) {
-            boolean empty = exactAdults() < 1;
-            formerSpecies = empty ? null : species;
-            conversion = empty ? 1 : 0;
-            species = queen.species();
+            turnInto(queen.species());
             evolutionAttempts = 0;
         }
     }
 
-    /** The Queen evolved: her new eggs and larvae are the new species at once, adults change as they are replaced. */
-    public void evolve(QueenData evolved) {
-        Identifier old = species;
-        queen = evolved;
-        species = evolved.species();
-        if (exactAdults() >= 1) {
-            formerSpecies = old;
+    /** The colony becomes another species. Its adults stay what they are: of the two kinds it tracks, the one most of them are. */
+    private void turnInto(Identifier next) {
+        if (next.equals(species)) {
+            return;
+        }
+        if (exactAdults() < 1) {
+            formerSpecies = null;
+            conversion = 1;
+        } else if (next.equals(formerSpecies)) {
+            // Back to what its older adults still are: the two kinds change places.
+            formerSpecies = species;
+            conversion = 1 - conversion;
+            if (conversion >= 1) {
+                formerSpecies = null;
+            }
+        } else if (formerSpecies == null || conversion >= MAJORITY) {
+            formerSpecies = species;
+            conversion = 0;
+        } else {
+            // Most adults are still of the older species: they stay the former one.
             conversion = 0;
         }
+        species = next;
+    }
+
+    /** The Queen evolved: her new eggs and larvae are the new species at once, adults change as they are replaced. */
+    public void evolve(QueenData evolved) {
+        queen = evolved;
+        turnInto(evolved.species());
         evolutionAttempts = 0;
     }
 
@@ -400,6 +448,40 @@ public final class Colony {
         return false;
     }
 
+    /** Adults still of the former species. */
+    private double formerAdults() {
+        return formerSpecies == null ? 0 : workers * (1 - conversion);
+    }
+
+    /** What taking up to {@code most} workers gives: one species at a time, the former species' ants first. */
+    public Taken nextTaken(int most) {
+        double former = formerAdults();
+        boolean old = former >= 1;
+        return new Taken(old ? formerSpecies : species, (int) Math.max(0, Math.min(most, old ? former : workers)));
+    }
+
+    /** Takes them out; the share of the current species follows from which kind left. */
+    public void take(Taken taken) {
+        double former = formerAdults();
+        if (taken.species().equals(formerSpecies)) {
+            former = Math.max(0, former - taken.count());
+        }
+        workers = Math.max(0, workers - taken.count());
+        if (formerSpecies != null) {
+            conversion = workers <= 0 ? 1 : Math.clamp(1 - former / workers, 0, 1);
+        }
+    }
+
+    /** Ants of the former species come back in (taken out while the colony was changing): they count as what they are. */
+    public void addFormerWorkers(double count) {
+        if (formerSpecies == null || count <= 0) {
+            return;
+        }
+        double former = formerAdults() + count;
+        workers += count;
+        conversion = Math.clamp(1 - former / workers, 0, 1);
+    }
+
     /** Takes workers away (a Guard Ant leaving); false, and nothing taken, when the colony has fewer. */
     public boolean takeWorkers(double count) {
         if (workers < count) {
@@ -443,7 +525,7 @@ public final class Colony {
         output.putInt("catalyst", catalystCharges);
         output.putLong("last_sim", lastSimTime);
         output.putLong("total_found", totalFound);
-        output.putLong("total_laid", totalLaid);
+        output.putDouble("total_laid", totalLaid);
         if (founding.active()) {
             output.putString("founding", founding.getSerializedName());
             output.putDouble("founding_raised", foundingRaised);
@@ -455,9 +537,10 @@ public final class Colony {
             history.save(output);
             production.save(output);
         }
+        // Saved as well: the first step after loading reads it before it works the stage out again.
+        output.putInt("stage", stage);
         if (sync) {
             output.putDouble("food_factor", foodFactor);
-            output.putInt("stage", stage);
             output.putInt("status", status);
             output.store("stats", Stats.CODEC, stats);
             output.store("activity", Activity.CODEC, activity);
@@ -500,7 +583,7 @@ public final class Colony {
         catalystCharges = input.getIntOr("catalyst", 0);
         lastSimTime = input.getLongOr("last_sim", Long.MIN_VALUE);
         totalFound = input.getLongOr("total_found", 0);
-        totalLaid = input.getLongOr("total_laid", 0);
+        totalLaid = Math.max(0, input.getDoubleOr("total_laid", 0));
         // Colonies saved before founding existed, and every colony started with ants, load as NONE.
         founding = Founding.byName(input.getStringOr("founding", "none"));
         foundingRaised = founding.active() ? input.getDoubleOr("founding_raised", 0) : 0;

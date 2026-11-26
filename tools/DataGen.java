@@ -3877,6 +3877,7 @@ public class DataGen {
                 {"site.farmers", "Farmers %s/%s (want %s)"}, {"site.rate", "%s finds per minute"},
                 {"site.hunt_rate", "%s hunts per minute"}, {"site.food_rate", "%s food per minute"}, {"site.store", "Finds wait here while the Storage is full"},
                 {"site.loot_store", "Loot waits here while the Storage is full"},
+                {"site.harvest_store", "The harvest waits here while the Storage is full"},
                 {"storage.slots", "%s slots"}, {"storage.upgrade_held", "Stuck: take out what won't fit without it"},
                 {"queen_chamber.slots", "Rears a new Queen"}, {"queen_chamber.time", "Takes %s s at full speed"},
                 {"slot.qc_tube", "Test Tube slot"}, {"slot.qc_tube.hint", "An empty Test Tube to hold the new Queen"},
@@ -4586,8 +4587,8 @@ public class DataGen {
                 + "through its little portal and bring back the Nether's finds. Other ants leave it alone. No power needed.");
         l.put("tooltip." + NS + ".end_foraging_site", "End-adapted ants (Chorus, Ender, Dragon) go on expeditions through its little portal and bring back "
                 + "the End's finds. Other ants leave it alone. No power needed.");
-        l.put("tooltip." + NS + ".colony_connector", "Links its colony to the other colonies with a connector on the same channel: food moves from "
-                + "colonies with food to spare to those that ask for it, and the items its filter names move between their Storage.");
+        l.put("tooltip." + NS + ".colony_connector", "Links its colony to the other colonies with a connector on the same channel. Each connector "
+                + "has its own settings: a sender gives food and the items its filter names, a receiver takes them up to its own fill level.");
         l.put("item." + NS + ".nether_trail_pheromone", "Nether Trail Pheromone");
         l.put("item." + NS + ".end_trail_pheromone", "End Trail Pheromone");
         l.put("item." + NS + ".ant_resin", "Ant Resin");
@@ -4620,8 +4621,10 @@ public class DataGen {
                 {"connectors", "Colony Connectors", String.join("\n",
                         "Connectors come in the mid game, after the Nether: one takes Infernal Chitin, a Nether Trail Pheromone, Blaze Rods and a Magma Block.",
                         "A Colony Connector joins a colony like any chamber. Connectors with the same channel colour in one dimension link their colonies when they are at most 30 blocks apart (on x and on z), as long as both are loaded.",
-                        "Supply gives the food a colony has above its reserve; Request takes food up to its target, the hungriest colony first. Send moves the items in its filter out of the colony's Storage to colonies that Receive.",
-                        "A Farmer colony supplying food lets mining and hunting colonies put more ants to work. The Formicarium's Network page shows the network.")},
+                        "Each connector has its own settings. Food: Send gives the food a colony has above what it keeps; Receive takes food up to that connector's own fill level, so three receivers on one channel can fill to 30%, 55% and 90%.",
+                        "Items: Send moves the items named in its filter out of the colony's Storage to colonies that Receive. Food items go into the food slot of colonies that receive food, never into their Storage.",
+                        "A sender also sets how much is in a package, how often one leaves, and who gets it: everyone, in turns, or the hungriest first. A line on the screen says why nothing moves when nothing does.",
+                        "Hold a connector to see the links in the world. The Formicarium's Network page shows the network.")},
                 {"building", "Anthills and Building", String.join("\n",
                         "No two anthills are dug alike: each nest grows room by room, small, medium or large, with nurseries, food stores, fungus gardens, aphid farms, middens to brush, barracks and treasure chambers, side entrances, loops and dead ends. Their look follows the biome: termite spires in savannas and badlands, a crater in the desert, a thatched dome in the taiga, snow, moss or mud elsewhere. The Nether and the End have anthills too.",
                         "Deepest of all, behind her Royal Guard Ants, lies the great Queen. In a full Chitin set the ants let you pass, until you open one of their chests, step into her chamber or strike one of them: then the whole anthill attacks.",
@@ -4741,19 +4744,23 @@ public class DataGen {
         l.put(g + "production.estimate.hint", "Estimated from the sites' rates until the ants have brought something in.");
         // Network.
         l.put(g + "network.none", "No colonies linked yet. Put a Colony Connector against this colony, pick a channel colour, and do the same at "
-                + "another colony up to 30 blocks away: food (and filtered items) then move between them.");
+                + "another colony up to 30 blocks away. Set one to Send and the other to Receive: food and the items in the filter then move.");
         l.put(g + "network.col.colony", "Colony");
+        l.put(g + "network.col.level", "Fill");
         l.put(g + "network.col.food", "Food");
-        l.put(g + "network.col.mode", "Mode");
-        l.put(g + "network.col.flow", "In / out");
+        l.put(g + "network.col.items", "Items");
+        l.put(g + "network.col.flow", "Flow");
+        l.put(g + "network.out", "out");
+        l.put(g + "network.in", "in");
         l.put(g + "network.self.short", "Here");
         l.put(g + "network.self", "This colony");
         l.put(g + "network.offline", "Unloaded");
-        l.put(g + "network.count", "%s other colonies");
+
         l.put(g + "network.channel", "Channel: %s");
         l.put(g + "network.food", "Food: %s / %s");
-        l.put(g + "network.keeps", "Keeps %s for itself");
-        l.put(g + "network.asks", "Asks for food up to %s");
+        l.put(g + "network.keeps", "keeps %s");
+        l.put(g + "network.asks", "fills to %s");
+        l.put(g + "network.item_flow", "In %s / out %s items a minute");
         l.put(g + "network.flow", "In %s / out %s food a minute");
         // Statistics.
         String[][] series = {{"adults", "Adults", "Adults"}, {"brood", "Eggs and larvae", "Brood"}, {"food", "Food stored", "Food"},
@@ -4789,29 +4796,83 @@ public class DataGen {
         l.put(g + "stats.average", "Average %s, now %s");
         l.put(g + "trait.level", "Level %s: %s");
         // The Colony Connector's screen.
-        l.put(g + "connector.channel", "Channel");
-        l.put(g + "connector.food", "Food");
-        l.put(g + "connector.food.off", "Off");
-        l.put(g + "connector.food.supply", "Supply");
-        l.put(g + "connector.food.request", "Request");
-        l.put(g + "connector.food.off.hint", "This colony neither gives nor takes food");
-        l.put(g + "connector.food.supply.hint", "Gives the food it has above its reserve to colonies that ask");
-        l.put(g + "connector.food.request.hint", "Takes food from supplying colonies while below its target (the hungriest colony first)");
-        l.put(g + "connector.keep", "Keep");
-        l.put(g + "connector.until", "Ask until");
-        l.put(g + "connector.rate", "%s/min");
-        l.put(g + "connector.rate.max", "Max/min");
-        l.put(g + "connector.rate.hint", "The most food it moves a minute. Click to change.");
-        l.put(g + "connector.items", "Items");
-        l.put(g + "connector.items.off", "Off");
-        l.put(g + "connector.items.send", "Send");
-        l.put(g + "connector.items.receive", "Receive");
-        l.put(g + "connector.items.off.hint", "Moves no items");
-        l.put(g + "connector.items.send.hint", "The items in its filter leave this colony's Storage for colonies that receive");
-        l.put(g + "connector.items.receive.hint", "Items sent on the channel arrive in this colony's Storage");
-        l.put(g + "connector.filter", "Send these items:");
-        l.put(g + "connector.filter.hint", "Put one of each item to send here (it stays in the connector)");
-        l.put(g + "connector.flow", "%s colonies in range; food in %s, out %s; items %s a minute");
+        String c = g + "connector.";
+        l.put(c + "name", "Name");
+        l.put(c + "channel", "Channel");
+        l.put(c + "channel.hint", "Connectors of one colour within %s blocks form a network");
+        l.put(c + "colonies", "%s colonies in range");
+        l.put(c + "view.visual.hint", "Visual Mode: bars and short notes");
+        l.put(c + "view.detailed.hint", "Detailed Mode: exact numbers and rates per minute");
+        l.put(c + "food", "Food");
+        l.put(c + "food.off", "Off");
+        l.put(c + "food.supply", "Send");
+        l.put(c + "food.request", "Receive");
+        l.put(c + "food.off.hint", "This colony neither gives nor takes food");
+        l.put(c + "food.supply.hint", "Gives the food it has above what it keeps to the colonies that receive");
+        l.put(c + "food.request.hint", "Takes food from sending colonies until it reaches its own fill level");
+        l.put(c + "keep", "Keep");
+        l.put(c + "keep.hint", "Keeps %s%% of its food room for itself and sends only what it has above that");
+        l.put(c + "until", "Fill to");
+        l.put(c + "until.hint", "Takes food until its food bar is %s%% full. Every receiver has its own level.");
+        l.put(c + "has", "Now %s%% (%s food)");
+        l.put(c + "package", "Package");
+        l.put(c + "package.food.hint", "%s food in one package");
+        l.put(c + "package.items.hint", "%s items in one package");
+        l.put(c + "speed", "Speed");
+        l.put(c + "speed.value", "%s s");
+        l.put(c + "speed.hint", "A package every %s seconds");
+        l.put(c + "order", "Order");
+        l.put(c + "order.0", "Everyone");
+        l.put(c + "order.1", "In turns");
+        l.put(c + "order.2", "Hungriest");
+        l.put(c + "order.0.hint", "Every receiver gets its own package each time");
+        l.put(c + "order.1.hint", "Round robin: one package each time, the receivers take turns");
+        l.put(c + "order.2.hint", "Hungriest first: one package each time, to the colony lowest on food");
+        l.put(c + "items", "Items");
+        l.put(c + "items.off", "Off");
+        l.put(c + "items.send", "Send");
+        l.put(c + "items.receive", "Receive");
+        l.put(c + "items.off.hint", "Moves no items");
+        l.put(c + "items.send.hint", "Items leave this colony's Storage for the colonies that receive. Food items go to the food slot of "
+                + "colonies that receive food.");
+        l.put(c + "items.receive.hint", "Items sent on the channel arrive in this colony's Storage");
+        l.put(c + "items.receive.where", "Items arrive in this colony's Storage");
+        l.put(c + "filter.only", "Only the items below");
+        l.put(c + "filter.only.hint", "Sends only the items named in the slots below");
+        l.put(c + "filter.all_but", "All but the items below");
+        l.put(c + "filter.all_but.hint", "Sends everything in the Storage except the items named in the slots below");
+        l.put(c + "filter.only.label", "Send these items:");
+        l.put(c + "filter.all_but.label", "Send everything but these:");
+        l.put(c + "filter.unused", "Filter, used when it sends items");
+        l.put(c + "filter.only.slot", "An item to send");
+        l.put(c + "filter.all_but.slot", "An item to keep");
+        l.put(c + "filter.hint", "Click with an item to name it here. The item stays with you.");
+        l.put(c + "filter.clear", "Click with an empty hand to clear");
+        l.put(c + "stock", "Keeps %s in the Storage");
+        l.put(c + "stock.none", "Sends all of it");
+        l.put(c + "stock.hint", "Scroll to change how many stay");
+        l.put(c + "flow.short", "+%s -%s");
+        l.put(c + "flow", "%s colonies in range; food in %s, out %s; items in %s, out %s a minute");
+        l.put(c + "note.off", "Off");
+        l.put(c + "note.no_colony", "Not part of a colony");
+        l.put(c + "note.paused", "Paused by redstone");
+        l.put(c + "note.alone", "No other connector on this channel");
+        l.put(c + "note.far", "The others on this channel are too far away");
+        l.put(c + "note.unloaded", "The others on this channel are not loaded");
+        l.put(c + "note.no_receiver", "No colony on this channel receives");
+        l.put(c + "note.no_sender", "No colony on this channel sends");
+        l.put(c + "note.at_keep", "Nothing to spare above what it keeps");
+        l.put(c + "note.receivers_full", "Every receiver is at its fill level");
+        l.put(c + "note.receivers_paused", "Every receiver is paused by redstone");
+        l.put(c + "note.filled", "Full: at its fill level");
+        l.put(c + "note.senders_empty", "The senders have no food to spare");
+        l.put(c + "note.no_storage", "This colony has no Storage");
+        l.put(c + "note.no_filter", "Name an item in the slots below");
+        l.put(c + "note.nothing_to_send", "Nothing in the Storage to send");
+        l.put(c + "note.no_room", "No room where it should go");
+        l.put(c + "note.sending", "Sending");
+        l.put(c + "note.receiving", "Receiving");
+        l.put(c + "note.ready", "Linked, waiting for a package");
         l.put("jei." + NS + ".expedition", "Expeditions");
         l.put("jei." + NS + ".expedition_dimension", "Simulated expeditions into %s (no power, no chunk loading)");
         l.put("jei." + NS + ".trail_home", "Found by colonies in %s");

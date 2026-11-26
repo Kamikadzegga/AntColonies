@@ -6,6 +6,49 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
+Players need this version too: the Colony Connector has a new screen.
+
+### Added
+
+- **A fill level for every receiver.** Colonies that receive on the same channel each fill to their own level.
+- **Package size and speed.** A sender sets how much it sends at a time and how often.
+- **Order of receivers.** A sender serves every receiver at once, one at a time in turns, or the hungriest first.
+- **Keep a stock of an item.** A sender can hold back an amount of each item it sends.
+- **Send everything but a few items.** The filter can also name the items that stay.
+- **Colony names.** Type a name in a connector and the Network tab shows it.
+- **A reason when nothing is sent.** The connector's screen says why, such as a full receiver or an empty Storage.
+- **Links you can see.** While you hold a Colony Connector, sparks run from each sender to its receivers.
+
+### Changed
+
+- **New Colony Connector screen.** Food and items side by side, with Visual and Detail views as in the Formicarium.
+- **The filter no longer holds items.** Click a slot with an item to name it, and the item stays in your hand.
+- **Filters from older worlds.** The items in them drop out once, and their slots stay set.
+- **Food sent as items feeds the colony.** It goes to the receiver's food slot and never into its Storage.
+- **Arrows on the Network tab.** They point from each sending colony to the colonies it sends to.
+- **Harvesting Site has nine slots.** Its harvest waits there while the Storage is full, as on the other job sites.
+- **For modpacks.** Largest package sizes replace the connector's limits per minute. See the [modpack
+  guide](docs/modpack-guide.md).
+
+### Fixed
+
+- **Crash on an empty page.** Scrolling an empty Formicarium or Genetic Laboratory page crashed the game.
+- **Guard Ant plates and costumes could be duplicated.**
+- **Storage slots with more than a stack.** A click with a different item no longer picks up the whole pile.
+- **Locked Storage slots take no items.**
+- **Swapping in a Queen of another species.** The colony's older ants keep their species when you take them out.
+- **Catch-up after time far away.** A colony that stayed loaded while you were far off catches up as well.
+- **Several Simulation Upgrades.** Each one adds its own minutes of catch-up; a few small ones gave far too many.
+- **Home nests replace lost ants.** An ant that left through a portal no longer leaves its nest short.
+- **Home nest ants and plants.** They walk past a plant they cannot grow and no longer wait at it.
+- **Raided wild nests recover on time.** Also while no player is near.
+- **Calling a Guard Ant.** It leaves its boat or minecart, and no longer walks back through a portal you stand in.
+- **A Guard Ant's name is kept.** Also when you press Escape after typing it.
+- **Dome and cairn anthills have an open entrance.** In newly generated ones.
+- **The great Queen guards her whole chamber.**
+- **Queen Chamber gives back empty bottles.** Honey bottles used there leave them.
+- **Identification Book in large packs.** It no longer slows the game.
+
 ## [0.7.0] - 2026-11-25
 
 Players need this version too: it adds items.
@@ -28,7 +71,7 @@ Players need this version too: it adds items.
 
 ### Changed
 
-- **Guard Ants keep their own kind.** Those you have, let out or in tubes, become companions with all they had.
+- **Guard Ants from older versions carry over.** Each one, in the world or in a tube, keeps its species and strength.
 - **Right-click opens its screen.** Sneak and right-click gives the next order.
 - **Only its owner can let a Guard Ant out of its tube.** Craft the tube with a name tag to pass it on.
 - **Upgrade slots say what goes in.** Every empty upgrade slot lists its upgrades and what each does there.

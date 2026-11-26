@@ -37,10 +37,9 @@ final class ScrollBar {
         graphics.fill(x, thumbY, x + WIDTH, thumbY + thumb, dragging || over(mouseX, mouseY) ? 0xFF6FD8F5 : 0xFF3FA8C8);
     }
 
-    /** No bar this frame: the list it belongs to is not on screen. */
+    /** No bar this frame unless it is drawn after this; a drag goes on (pages hide their bar before each frame's draw). */
     void hide() {
         shown = false;
-        dragging = false;
     }
 
     private boolean over(double mouseX, double mouseY) {

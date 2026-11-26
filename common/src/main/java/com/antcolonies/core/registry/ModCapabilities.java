@@ -1,5 +1,7 @@
 package com.antcolonies.core.registry;
 
+import com.antcolonies.colony.model.StructureKind;
+
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
@@ -7,7 +9,9 @@ import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
 /** Item, energy and fluid access for hoppers, pipes and other mods; the block entities' {@code WorldlyContainer} rules pick the slots. */
 public final class ModCapabilities {
     public static void register(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.STRUCTURE.get(), (be, side) -> new WorldlyContainerWrapper(be, side));
+        // A Colony Connector's slots only name items: it has no items to give or take.
+        event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.STRUCTURE.get(),
+                (be, side) -> be.kind() == StructureKind.COLONY_CONNECTOR ? null : new WorldlyContainerWrapper(be, side));
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.TERRARIUM.get(), (be, side) -> new WorldlyContainerWrapper(be, side));
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.GENETIC_LAB.get(), (be, side) -> new WorldlyContainerWrapper(be, side));
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.GENERATOR.get(), (be, side) -> new WorldlyContainerWrapper(be, side));

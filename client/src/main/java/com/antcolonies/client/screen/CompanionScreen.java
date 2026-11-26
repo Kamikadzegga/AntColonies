@@ -24,6 +24,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import org.jspecify.annotations.Nullable;
 
 /** A companion's screen: the ant itself, who it is, how far it has come, what it wears and what it is told to do. */
 public class CompanionScreen extends AntScreen<CompanionMenu> {
@@ -37,6 +38,8 @@ public class CompanionScreen extends AntScreen<CompanionMenu> {
     private static final String[] SLOT_NAMES = {"armor", "costume", "cart"};
 
     private EditBox name;
+    /** The name the server was last sent: closing does not send it a second time. */
+    private @Nullable String sent;
 
     public CompanionScreen(CompanionMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 200, CompanionMenu.INVENTORY_Y + 82);
@@ -59,7 +62,9 @@ public class CompanionScreen extends AntScreen<CompanionMenu> {
     }
 
     private void sendName() {
-        if (!name.getValue().strip().equals(customName())) {
+        String typed = name.getValue().strip();
+        if (!typed.equals(sent != null ? sent : customName())) {
+            sent = typed;
             ClientPacketDistributor.sendToServer(new RenameCompanionPayload(name.getValue()));
         }
     }
@@ -86,6 +91,13 @@ public class CompanionScreen extends AntScreen<CompanionMenu> {
             setFocused(null);
         }
         return super.mouseClicked(event, doubleClick);
+    }
+
+    /** The name goes first: once the server is told the screen is closed, it no longer takes one. */
+    @Override
+    public void onClose() {
+        sendName();
+        super.onClose();
     }
 
     @Override

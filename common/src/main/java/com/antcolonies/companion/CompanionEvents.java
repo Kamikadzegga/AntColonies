@@ -8,6 +8,8 @@ import java.util.UUID;
 
 import com.antcolonies.companion.goal.CompanionGoals;
 import com.antcolonies.companion.goal.CompanionTravel;
+import com.antcolonies.companion.menu.CompanionCartMenu;
+import com.antcolonies.companion.menu.CompanionMenu;
 import com.antcolonies.content.entity.GuardAnt;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.core.registry.ModAttachments;
@@ -115,7 +117,7 @@ public final class CompanionEvents {
     private static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         LAST.remove(event.getEntity().getUUID());
         if (event.getEntity() instanceof ServerPlayer player) {
-            CompanionRoster.of(player.level().getServer()).dropCalls(player.getUUID());
+            CompanionRoster.of(player.level().getServer()).dropCalls(player);
         }
     }
 
@@ -158,13 +160,37 @@ public final class CompanionEvents {
         Player player = event.getEntity();
         ItemStack stack = player.getItemInHand(event.getHand());
         CompanionData data = Companions.get(mob);
-        InteractionResult result = data == null ? recruit(mob, player, stack)
-                : Companions.isOwner(data, player)
-                ? CompanionInteractions.run(new CompanionInteractions.Context(mob, data, player, event.getHand(), stack))
+        InteractionResult result = !mob.isAlive() ? dying(mob, data, stack)
+                : data == null ? recruit(mob, player, stack)
+                : Companions.isOwner(data, player) ? owner(mob, data, player, event.getHand(), stack)
                 : stranger(data, player, event.getHand());
         if (result != null) {
             event.setCanceled(true);
             event.setCancellationResult(result);
+        }
+    }
+
+    /** A dying ant takes nothing more: no recruiting, no gear, no tube. Other mobs are left to the game. */
+    private static InteractionResult dying(Mob mob, CompanionData data, ItemStack stack) {
+        boolean ours = data != null || stack.is(ModItems.RALLY_PHEROMONE.get()) && Companions.companionable(mob);
+        return ours ? InteractionResult.CONSUME : null;
+    }
+
+    private static InteractionResult owner(Mob mob, CompanionData data, Player player, InteractionHand hand, ItemStack stack) {
+        closeScreens(mob);
+        return CompanionInteractions.run(new CompanionInteractions.Context(mob, data, player, hand, stack));
+    }
+
+    /** An open screen of this ant holds a copy of what it wears: it is shut before a hand changes that. */
+    private static void closeScreens(Mob mob) {
+        if (!(mob.level() instanceof ServerLevel level)) {
+            return;
+        }
+        for (ServerPlayer viewer : level.getServer().getPlayerList().getPlayers()) {
+            if (viewer.containerMenu instanceof CompanionMenu menu && menu.mob() == mob
+                    || viewer.containerMenu instanceof CompanionCartMenu cart && cart.mob() == mob) {
+                viewer.closeContainer();
+            }
         }
     }
 

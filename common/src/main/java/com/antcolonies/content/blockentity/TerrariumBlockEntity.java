@@ -130,7 +130,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
     private long lastEvolutionAttempt = Long.MIN_VALUE / 2;
     private int lastSyncHash;
     private boolean caughtUp;
-    /** Minutes of catch-up still to run after loading (a few steps a tick, so a long one doesn't stall the server). */
+    /** Minutes of catch-up still to run (a few steps a tick, so a long one doesn't stall the server); saved, so unloading loses none. */
     private double catchUpLeft;
     private static final int CATCH_UP_STEPS_PER_TICK = 4;
     // Climate, looked up now and then.
@@ -265,12 +265,12 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
 
     private void simulate(ServerLevel level, long time, int interval) {
         long last = ColonyAccess.lastSimTime(colony);
-        if (!caughtUp) {
-            caughtUp = true;
-            if (last != Long.MIN_VALUE && time - last > interval * 2L) {
-                catchUpLeft = catchUpMinutes(time - last, upgradeTier(UpgradeType.SIMULATION));
-                catchUp(level);
-            }
+        caughtUp = true;
+        // Unloaded, or loaded but out of ticking range: either way the time is made up, never past the allowance.
+        if (last != Long.MIN_VALUE && time - last > interval * 2L) {
+            int extra = simulationMinutes();
+            catchUpLeft = Math.min(catchUpAllowance(extra), catchUpLeft + catchUpMinutes(time - last, extra));
+            catchUp(level);
         }
         ColonySimulator.step(this, level, interval / 1200.0);
         // Colony advancements, for the players close enough to watch it (every five seconds).
@@ -295,11 +295,25 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         setChanged();
     }
 
-    /** Minutes a colony catches up on after {@code awayTicks} unloaded: at most what the config and its Simulation Upgrades allow. */
-    public static double catchUpMinutes(long awayTicks, int simulationTiers) {
-        double allowance = AntConfig.get(AntConfig.OFFLINE_CATCH_UP_MINUTES)
-                + AntConfig.simulationUpgradeMinutes(Math.min(UpgradeType.MAX_TIER, simulationTiers));
-        return Math.max(0, Math.min(awayTicks / 1200.0, allowance));
+    /** Minutes a colony catches up on after {@code awayTicks} without a step: at most its allowance. */
+    public static double catchUpMinutes(long awayTicks, int upgradeMinutes) {
+        return Math.max(0, Math.min(awayTicks / 1200.0, catchUpAllowance(upgradeMinutes)));
+    }
+
+    /** The most a colony ever has left to catch up on: the config's minutes and those of its Simulation Upgrades. */
+    public static double catchUpAllowance(int upgradeMinutes) {
+        return AntConfig.get(AntConfig.OFFLINE_CATCH_UP_MINUTES) + upgradeMinutes;
+    }
+
+    /** Catch-up minutes its Simulation Upgrades add: each upgrade the minutes of its own tier. */
+    public int simulationMinutes() {
+        int sum = 0;
+        for (int slot = 0; slot < upgrades.getContainerSize(); slot++) {
+            if (upgrades.getItem(slot).getItem() instanceof UpgradeItem upgrade && upgrade.type() == UpgradeType.SIMULATION) {
+                sum += AntConfig.simulationUpgradeMinutes(Math.min(UpgradeType.MAX_TIER, upgrade.tier()));
+            }
+        }
+        return sum;
     }
 
     public void rescan(ServerLevel level) {
@@ -373,7 +387,9 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         AntSample ants = feed.get(ModDataComponents.ANTS.get());
         Identifier species = feed.get(ModDataComponents.SPECIES.get());
         if (ants != null && feed.is(ModItems.ANT_TEST_TUBE.get())) {
-            if (!accepts(ants.species()) || ants.caste() == Caste.QUEEN) {
+            // Ants of the species the colony is changing from (taken out meanwhile) may come back, as what they are.
+            boolean former = ants.species().equals(colony.formerSpecies());
+            if (!former && !accepts(ants.species()) || ants.caste() == Caste.QUEEN) {
                 feedStatus = ColonyStatus.INCOMPATIBLE_SPECIES.bit();
                 return;
             }
@@ -381,9 +397,13 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
                 feedStatus = ColonyStatus.STORAGE_FULL.bit();
                 return;
             }
-            adopt(ants.species());
-            // Caught soldiers join as workers: colonies have no soldiers.
-            colony.addWorkers(ants.count());
+            if (former) {
+                colony.addFormerWorkers(ants.count());
+            } else {
+                adopt(ants.species());
+                // Caught soldiers join as workers: colonies have no soldiers.
+                colony.addWorkers(ants.count());
+            }
             feed.shrink(1);
         } else if (feed.is(ModItems.TEST_TUBE.get())) {
             // Empty Test Tubes fill with the colony's workers, a tube at a time into the output: this is how a colony moves.
@@ -391,13 +411,13 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
                 feedStatus = ColonyStatus.STORAGE_FULL.bit();
                 return;
             }
-            int count = (int) Math.min(AntSample.MAX, colony.workers());
-            if (count <= 0) {
+            Colony.Taken taken = colony.nextTaken(AntSample.MAX);
+            if (taken.count() <= 0) {
                 feedStatus = ColonyStatus.NO_WORKERS.bit();
                 return;
             }
-            colony.addWorkers(-count);
-            items.set(SLOT_OUTPUT, TweezersItem.antTube(new AntSample(colony.species(), Caste.WORKER, count)));
+            colony.take(taken);
+            items.set(SLOT_OUTPUT, TweezersItem.antTube(new AntSample(taken.species(), Caste.WORKER, taken.count())));
             feed.shrink(1);
             syncNow();
         } else if (feed.getItem() instanceof BlockItem blockItem
@@ -487,7 +507,7 @@ public class TerrariumBlockEntity extends BlockEntity implements WorldlyContaine
         boolean special = !kind.isEmpty() && kind.equals(speciesDiet(level)) && value.special() > 0;
         // A founding Queen waits for a full bar: the last item may top it up (the bit over is lost), or she would wait for ever.
         boolean topUp = colony.founding() == Founding.FEEDING && value.food() > 0;
-        while (!stack.isEmpty() && (colony.food() + value.food() <= capacity || topUp && colony.food() < capacity
+        while (!stack.isEmpty() && (value.food() > 0 && colony.food() + value.food() <= capacity || topUp && colony.food() < capacity
                 || special && colony.specialFood() < specialRoom)) {
             colony.addFood(Math.min(value.food(), Math.max(0, capacity - colony.food())), special ? value.special() : 0);
             stack.shrink(1);
@@ -767,6 +787,7 @@ public void queenGrew(ServerLevel level, int stage, List<Trait> raised) {
             }
         }
         input.child("colony").ifPresent(colony::load);
+        catchUpLeft = Math.max(0, input.getDoubleOr("catch_up", 0));
         feedStatus = input.getIntOr("feed_status", 0);
         floor = input.getString("floor").flatMap(name ->
                 Arrays.stream(Climate.values()).filter(c -> c.getSerializedName().equals(name)).findFirst()).orElse(null);
@@ -778,6 +799,9 @@ public void queenGrew(ServerLevel level, int stage, List<Trait> raised) {
         ContainerHelper.saveAllItems(output, items);
         saveUpgrades(output);
         output.putBoolean("upright", upright);
+        if (catchUpLeft > 0) {
+            output.putDouble("catch_up", catchUpLeft);
+        }
         colony.save(output.child("colony"), false);
     }
 
