@@ -6,6 +6,8 @@ Jars are named `antcolonies-<minecraft version>.<mod version>.jar`.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-26
+
 Players need this version too: the Colony Connector has a new screen.
 
 ### Added
@@ -520,6 +522,7 @@ The first release, for Minecraft 26.3 and NeoForge 26.3.0.101 (Java 25).
   and KubeJS guide.
 - Tested together with MachinaOpus and its Tools Addon: no clashing recipes or names.
 
+[0.9.0]: https://github.com/Kamikadzegga/AntColonies/compare/21382ef...30bdac5
 [0.8.0]: https://github.com/Kamikadzegga/AntColonies/compare/872d045...109b40d
 [0.7.0]: https://github.com/Kamikadzegga/AntColonies/compare/v0.6.0...33b3095
 [0.6.0]: https://github.com/Kamikadzegga/AntColonies/releases/tag/v0.6.0
