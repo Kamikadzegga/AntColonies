@@ -90,6 +90,8 @@ public class IdentificationBookScreen extends Screen {
                     ModItems.COMPANION_ARMOR.get(ChitinGear.Tier.CHITIN).get(), ModItems.ANT_CART.get())));
 
     private final List<Holder.Reference<AntSpecies>> species = ordered();
+    /** The species the reader has met, worked out once a frame. */
+    private List<Holder.Reference<AntSpecies>> met = findMet();
     private final InfoPanel info = new InfoPanel();
     private final ScrollBar listBar = new ScrollBar();
     private int section = lastSection;
@@ -153,6 +155,10 @@ public class IdentificationBookScreen extends Screen {
 
     /** The species the reader has met: the Compatibility and Production sections list only these. */
     private List<Holder.Reference<AntSpecies>> metSpecies() {
+        return met;
+    }
+
+    private List<Holder.Reference<AntSpecies>> findMet() {
         return species.stream().filter(entry -> familiarity(entry.key().identifier()) == Familiarity.MET).toList();
     }
 
@@ -255,7 +261,7 @@ public class IdentificationBookScreen extends Screen {
     private int discovered() {
         Knowledge knowledge = ClientResearch.view();
         return switch (section) {
-            case SPECIES -> (int) species.stream().filter(entry -> familiarity(entry.key().identifier()) == Familiarity.MET).count();
+            case SPECIES -> metSpecies().size();
             case RESEARCH -> (int) Researches.all(ClientSpecies.registries()).stream().filter(entry -> knowledge.knowsResearch(entry.id())).count();
             default -> -1;
         };
@@ -264,6 +270,7 @@ public class IdentificationBookScreen extends Screen {
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         super.extractRenderState(graphics, mouseX, mouseY, a);
+        met = findMet();
         int left = left();
         int top = top();
         AntScreen.drawPanel(graphics, left, top, WIDTH, HEIGHT);
@@ -378,7 +385,7 @@ public class IdentificationBookScreen extends Screen {
         if (x >= left() + LIST_W + 8) {
             info.scroll(scrollY);
         } else {
-            scroll[section] -= (int) Math.signum(scrollY);
+            scroll[section] = Math.max(0, scroll[section] - (int) Math.signum(scrollY));
         }
         return true;
     }

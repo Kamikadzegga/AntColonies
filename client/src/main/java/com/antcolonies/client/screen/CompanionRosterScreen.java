@@ -133,7 +133,7 @@ public class CompanionRosterScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
-        scroll -= (int) Math.signum(scrollY);
+        scroll = Math.max(0, scroll - (int) Math.signum(scrollY));
         return true;
     }
 

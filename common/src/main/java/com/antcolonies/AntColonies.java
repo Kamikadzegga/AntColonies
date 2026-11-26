@@ -7,10 +7,12 @@ import com.antcolonies.colony.model.ColonyNetwork;
 import com.antcolonies.colony.network.ConnectorNetwork;
 import com.antcolonies.colony.research.KnowledgePayload;
 import com.antcolonies.colony.research.ResearchSync;
+import com.antcolonies.colony.research.Teams;
 import com.antcolonies.colony.resource.MobLoot;
 import com.antcolonies.companion.CompanionEvents;
 import com.antcolonies.companion.menu.CallCompanionPayload;
 import com.antcolonies.companion.menu.RenameCompanionPayload;
+import com.antcolonies.content.menu.RenameConnectorPayload;
 import com.antcolonies.companion.menu.RosterPayload;
 import com.antcolonies.compat.ftbteams.FtbTeamsResearch;
 import com.antcolonies.compat.liquid.LiquidIntegrations;
@@ -82,6 +84,7 @@ public class AntColonies {
         modEventBus.addListener(ModCapabilities::register);
         modEventBus.addListener(KnowledgePayload::register);
         modEventBus.addListener(RenameCompanionPayload::register);
+        modEventBus.addListener(RenameConnectorPayload::register);
         modEventBus.addListener(RosterPayload::register);
         modEventBus.addListener(CallCompanionPayload::register);
         CompanionEvents.register(NeoForge.EVENT_BUS);
@@ -101,7 +104,13 @@ public class AntColonies {
         NeoForge.EVENT_BUS.addListener(ResearchSync::onServerTick);
         // With FTB Teams, the players of a party share their research.
         if (ModList.get().isLoaded(FtbTeamsResearch.MOD_ID)) {
-            FtbTeamsResearch.register();
+            try {
+                FtbTeamsResearch.register();
+            } catch (RuntimeException | LinkageError e) {
+                // An FTB Teams whose API changed under us must not stop the game: research stays personal.
+                Teams.clearProvider();
+                LOGGER.error("The FTB Teams integration could not start; research stays personal", e);
+            }
         }
     }
 

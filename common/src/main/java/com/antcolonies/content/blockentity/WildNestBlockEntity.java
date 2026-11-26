@@ -94,6 +94,7 @@ public class WildNestBlockEntity extends BlockEntity implements RaidedNest {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, WildNestBlockEntity nest) {
+        WildNestBlock.recover(level, pos, state, nest);
         // Each nest on its own tick of the interval, by where it stands.
         if (level instanceof ServerLevel server && Math.floorMod(level.getGameTime() + pos.asLong(), ANT_CHECK_INTERVAL) == 0) {
             nest.keepAntOut(server, server.hasNearbyAlivePlayer(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, ANT_PLAYER_RANGE));

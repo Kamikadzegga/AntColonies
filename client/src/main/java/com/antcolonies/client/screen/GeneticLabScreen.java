@@ -876,7 +876,7 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
     private void pickMutation(QueenData queen, int row) {
         List<SpeciesMutation.Option> shown = options(queen);
         int index = scroll[GeneticLabMenu.TAB_MUTATION] + row;
-        if (index < shown.size()) {
+        if (index >= 0 && index < shown.size()) {
             List<Identifier> all = SpeciesMutation.options(registries(), queen.species()).stream().map(SpeciesMutation.Option::id).toList();
             onButton(GeneticLabMenu.BUTTON_MUTATION + all.indexOf(shown.get(index).id()));
         }
@@ -1391,7 +1391,7 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
 
     /** Chooses a row of a page's own list (nothing is sent: the choice only changes what the detail panel shows). */
     private void choose(int page, int row, int size) {
-        if (scroll[page] + row < size) {
+        if (scroll[page] + row >= 0 && scroll[page] + row < size) {
             chosen[page] = scroll[page] + row;
             clickSound();
         }
@@ -1415,7 +1415,8 @@ public class GeneticLabScreen extends AntScreen<GeneticLabMenu> {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (over(mouseX, mouseY, LIST_X, PANEL_Y, listW(), PANEL_H)) {
-            scroll[menu.tab()] -= (int) Math.signum(scrollY);
+            // A page with a list keeps its scroll within it when drawn; a page showing none never goes above the top.
+            scroll[menu.tab()] = Math.max(0, scroll[menu.tab()] - (int) Math.signum(scrollY));
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);

@@ -308,7 +308,7 @@ public class AnthillPiece extends StructurePiece {
                         continue;
                     }
                     int ry = y - center.getY();
-                    boolean carved = layout.carved(rx, ry, rz);
+                    boolean carved = layout.carved(rx, ry, rz) || entrance(rx, ry, rz);
                     double roll = hash(hashSeed, x, y, z);
                     if (ry > 0) {
                         BlockState here = level.getBlockState(pos);
@@ -357,6 +357,11 @@ public class AnthillPiece extends StructurePiece {
                 }
             }
         }
+    }
+
+    /** The entrance's way up through the mound: a dome or a cairn stands higher than the plan's shaft, and would close it. */
+    private static boolean entrance(int rx, int ry, int rz) {
+        return rx == 0 && rz == 0 && ry > 0;
     }
 
     /** How deep under and over the anthill's own ground a column's ground is looked for. */
@@ -516,10 +521,7 @@ public class AnthillPiece extends StructurePiece {
                             cluster(level, chunkBB, floor(room, roomRandom.nextInt(7) - 3, roomRandom.nextInt(2) == 0 ? -4 : 4), i % 2 == 0, species, anthill);
                         }
                     }
-                    WildAnt great = spawn(level, chunkBB, anthill, species, Caste.QUEEN, WildAnt.Rank.GREAT_QUEEN, anthill, 2);
-                    if (great != null) {
-                        great.setChamber(chamber(room));
-                    }
+                    spawn(level, chunkBB, anthill, species, Caste.QUEEN, WildAnt.Rank.GREAT_QUEEN, anthill, 2, chamber(room));
                     if (!abandoned) {
                         int guards = grand ? 6 : 5;
                         double radius = grand ? 3.5 : 2.5;
@@ -587,10 +589,12 @@ public class AnthillPiece extends StructurePiece {
                     BlockState spoil = (look == null ? AnthillTheme.TEMPERATE : look).suspicious().defaultBlockState();
                     for (int i = 0; i < 4; i++) {
                         BlockPos spot = floor(room, roomRandom.nextInt(5) - 2, roomRandom.nextInt(5) - 2).below();
+                        // Drawn whichever chunk the spot is in: every chunk of the room draws alike.
+                        long find = roomRandom.nextLong();
                         if (chunkBB.isInside(spot) && !level.getBlockState(spot).isAir()) {
                             level.setBlock(spot, spoil, Block.UPDATE_CLIENTS);
                             if (level.getBlockEntity(spot) instanceof BrushableBlockEntity brushable) {
-                                brushable.setLootTable(MIDDEN, roomRandom.nextLong());
+                                brushable.setLootTable(MIDDEN, find);
                             }
                         }
                     }
@@ -610,17 +614,21 @@ public class AnthillPiece extends StructurePiece {
                     place(level, chunkBB, floor(room, -2, 2), Blocks.BONE_BLOCK.defaultBlockState());
                 }
                 case CHITIN_STORAGE -> {
+                    boolean guarded = !abandoned && layout.grand();
+                    BlockPos post = floor(room, -1, -1);
                     for (int i = 0; i < 3; i++) {
                         int dx = roomRandom.nextInt(5) - 2;
                         int dz = roomRandom.nextInt(3) - 1;
-                        if (dx != 0 || dz != 1) { // never on the chest's spot
-                            place(level, chunkBB, floor(room, dx, dz), ModDecor.CHITIN_BLOCK.get().defaultBlockState());
+                        BlockPos spot = floor(room, dx, dz);
+                        // Never on the chest's spot, nor where the store's soldier is posted.
+                        if ((dx != 0 || dz != 1) && !(guarded && spot.equals(post))) {
+                            place(level, chunkBB, spot, ModDecor.CHITIN_BLOCK.get().defaultBlockState());
                         }
                     }
                     container(level, chunkBB, floor(room, 0, 1), Blocks.CHEST.defaultBlockState()
                             .setValue(ChestBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(roomRandom)), loot, roomRandom);
-                    if (!abandoned && layout.grand()) {
-                        spawn(level, chunkBB, floor(room, -1, -1), species, Caste.SOLDIER, WildAnt.Rank.NORMAL, anthill, 8);
+                    if (guarded) {
+                        spawn(level, chunkBB, post, species, Caste.SOLDIER, WildAnt.Rank.NORMAL, anthill, 8);
                     }
                 }
                 case TREASURE -> {
@@ -637,8 +645,10 @@ public class AnthillPiece extends StructurePiece {
                     BlockState[] finds = AnthillDecor.finds(kind);
                     for (int i = 0; i < 3; i++) {
                         BlockPos spot = floor(room, roomRandom.nextInt(3) - 1, roomRandom.nextInt(3) - 1).below();
+                        // Drawn whichever chunk the spot is in: every chunk of the room draws alike.
+                        BlockState find = finds[roomRandom.nextInt(finds.length)];
                         if (chunkBB.isInside(spot)) {
-                            level.setBlock(spot, finds[roomRandom.nextInt(finds.length)], Block.UPDATE_CLIENTS);
+                            level.setBlock(spot, find, Block.UPDATE_CLIENTS);
                         }
                     }
                     if (layout.grand()) {
@@ -736,10 +746,14 @@ public class AnthillPiece extends StructurePiece {
         }
     }
 
+    /** A container of loot. Its loot's seed is drawn whichever chunk it stands in, so every chunk of its room draws alike after it. */
     private static void container(WorldGenLevel level, BoundingBox chunkBB, BlockPos pos, BlockState state, ResourceKey<LootTable> loot, RandomSource random) {
+        long seed = random.nextLong();
         if (chunkBB.isInside(pos) && free(level.getBlockState(pos))) {
             level.setBlock(pos, state, Block.UPDATE_CLIENTS);
-            RandomizableContainer.setBlockEntityLootTable(level, random, pos, loot);
+            if (level.getBlockEntity(pos) instanceof RandomizableContainer container) {
+                container.setLootTable(loot, seed);
+            }
         }
     }
 
@@ -813,6 +827,12 @@ public class AnthillPiece extends StructurePiece {
 
     private static @Nullable WildAnt spawn(WorldGenLevel level, BoundingBox chunkBB, BlockPos pos, Identifier species, Caste caste, WildAnt.Rank rank,
                                            BlockPos anthill, int homeRadius) {
+        return spawn(level, chunkBB, pos, species, caste, rank, anthill, homeRadius, null);
+    }
+
+    /** An ant of the anthill, with the great Queen's chamber if it is hers: all of it set before the ant is added, which saves it at once. */
+    private static @Nullable WildAnt spawn(WorldGenLevel level, BoundingBox chunkBB, BlockPos pos, Identifier species, Caste caste, WildAnt.Rank rank,
+                                           BlockPos anthill, int homeRadius, @Nullable AABB chamber) {
         if (!chunkBB.isInside(pos)) {
             return null;
         }
@@ -829,6 +849,7 @@ public class AnthillPiece extends StructurePiece {
         ant.setAnthill(anthill);
         ant.setPersistenceRequired();
         ant.setHomeTo(pos, homeRadius);
+        ant.setChamber(chamber);
         level.addFreshEntityWithPassengers(ant);
         return ant;
     }

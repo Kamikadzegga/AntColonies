@@ -44,6 +44,12 @@ public final class HuntVisuals {
         return STAND_INS.computeIfAbsent(type, t -> create(level, t)).orElse(null);
     }
 
+    /** Drops the stand-ins on leaving a world: each holds its level, which would otherwise stay in memory. */
+    public static void clear() {
+        STAND_INS.clear();
+        standInLevel = new WeakReference<>(null);
+    }
+
     private static Optional<Entity> create(Level level, EntityType<?> type) {
         try {
             // Never spawned, so the checks on what may spawn are skipped: in Peaceful a hostile mob would not be made.

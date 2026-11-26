@@ -420,6 +420,7 @@ public class WildAnt extends PathfinderMob implements AntLike {
         }
         if (nest != null) {
             output.putLong("nest", nest.asLong());
+            output.store("nest_level", Level.RESOURCE_KEY_CODEC, level().dimension());
             output.putBoolean("returning", returning);
             output.putInt("out_ticks", outTicks);
             output.putInt("trip_ticks", tripTicks);
@@ -442,6 +443,10 @@ public class WildAnt extends PathfinderMob implements AntLike {
                 .ifPresent(player -> alarms.put(player, entry.getLongOr("until", 0))));
         input.getLong("wild_nest").ifPresent(packed -> setWildNest(BlockPos.of(packed)));
         input.getLong("nest").ifPresent(packed -> {
+            // A copy in another dimension (it went through a portal) is no ant of that nest any more; old saves name no dimension.
+            if (input.read("nest_level", Level.RESOURCE_KEY_CODEC).filter(saved -> !saved.equals(level().dimension())).isPresent()) {
+                return;
+            }
             setNest(BlockPos.of(packed));
             returning = input.getBooleanOr("returning", false);
             outTicks = input.getIntOr("out_ticks", 0);
@@ -555,10 +560,10 @@ public class WildAnt extends PathfinderMob implements AntLike {
         return caste() != Caste.QUEEN && !guardian && nest == null && wildNest == null && !companion();
     }
 
-    /** A wild nest's ant stays while its nest keeps it: {@link #watchWildNest} lets it go. */
+    /** A nest's ant stays while it has its nest: a wild nest's until {@link #watchWildNest} lets it go, a home nest's until the nest is gone. */
     @Override
     public boolean requiresCustomPersistence() {
-        return wildNest != null || super.requiresCustomPersistence();
+        return wildNest != null || nest != null || super.requiresCustomPersistence();
     }
 
     // --- A wild nest's own ant: it walks around the nest while a player is near ---
@@ -620,7 +625,6 @@ public class WildAnt extends PathfinderMob implements AntLike {
     public void setNest(BlockPos pos) {
         nest = pos.immutable();
         setHomeTo(nest, NEST_RANGE);
-        setPersistenceRequired();
         tripTicks = 1200 + getRandom().nextInt(1200);
     }
 
@@ -710,6 +714,15 @@ public class WildAnt extends PathfinderMob implements AntLike {
         discard();
     }
 
+    /** Gone for good in any other way too (another mod took it, it left the dimension): its home nest is told all the same. */
+    @Override
+    public void onRemoval(Entity.RemovalReason reason) {
+        super.onRemoval(reason);
+        if (reason != Entity.RemovalReason.UNLOADED_TO_CHUNK && reason != Entity.RemovalReason.UNLOADED_WITH_PLAYER) {
+            leaveHomeNest();
+        }
+    }
+
     // --- A companion: recruited, it has no nest and no anthill any more ---
 
     public boolean companion() {
@@ -752,8 +765,15 @@ public class WildAnt extends PathfinderMob implements AntLike {
     }
 
     private void enterNest(ServerLevel level) {
+        if (!level.isLoaded(nest)) {
+            // Its nest's chunk is not loaded: it waits there rather than load it.
+            return;
+        }
         if (!(level.getBlockEntity(nest) instanceof HomeNestBlockEntity home)) {
-            // The nest is gone: it lives wild from now on.
+            // The nest is gone: it drops what it carried and lives wild from now on.
+            carried.forEach(stack -> spawnAtLocation(level, stack));
+            carried.clear();
+            updateCarry();
             nest = null;
             clearHome();
             returning = false;
@@ -767,6 +787,8 @@ public class WildAnt extends PathfinderMob implements AntLike {
             }
         }
         carried.clear();
+        // Counted home: leaving the world now must not count it lost as well.
+        nest = null;
         discard();
     }
 
@@ -810,10 +832,17 @@ public class WildAnt extends PathfinderMob implements AntLike {
         return growable(level, pos, level.getBlockState(pos));
     }
 
-    /** The same for a state already in hand. */
+    /** The same for a state already in hand: only what {@link #tend} can move on (no full-grown stem, no cave vines). */
     public static boolean growable(Level level, BlockPos pos, BlockState state) {
-        return state.is(BlockTags.SAPLINGS) || state.is(BlockTags.BEE_GROWABLES) && !ripe(level, pos, state)
-                && !(state.getBlock() instanceof CropBlock crop && crop.isMaxAge(state));
+        if (state.is(BlockTags.SAPLINGS)) {
+            return state.getBlock() instanceof SaplingBlock;
+        }
+        if (!state.is(BlockTags.BEE_GROWABLES) || ripe(level, pos, state)) {
+            return false;
+        }
+        return state.getBlock() instanceof CropBlock crop ? !crop.isMaxAge(state)
+                : state.getBlock() instanceof StemBlock ? state.getValue(StemBlock.AGE) < StemBlock.MAX_AGE
+                : state.is(Blocks.SWEET_BERRY_BUSH);
     }
 
     public boolean harvest(ServerLevel level, BlockPos pos) {
@@ -1029,8 +1058,11 @@ public class WildAnt extends PathfinderMob implements AntLike {
                 target = null;
             } else if (!growable(server, target) || tended >= TENDS_PER_TRIP) {
                 target = null;
-            } else if (getRandom().nextDouble() < AntConfig.get(AntConfig.NEST_CROP_GROWTH) && tend(server, target)) {
-                tended++;
+            } else if (getRandom().nextDouble() < AntConfig.get(AntConfig.NEST_CROP_GROWTH)) {
+                // Grown or not, it moves on: a plant it can't grow must not hold it here.
+                if (tend(server, target)) {
+                    tended++;
+                }
                 target = null;
             }
         }

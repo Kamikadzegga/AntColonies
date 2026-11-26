@@ -51,7 +51,7 @@ public class TweezersItem extends Item {
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity target, InteractionHand hand) {
-        if (!(target instanceof WildAnt ant)) {
+        if (!(target instanceof WildAnt ant) || !ant.isAlive()) {
             return InteractionResult.PASS;
         }
         if (player.level().isClientSide()) {
@@ -93,8 +93,8 @@ public class TweezersItem extends Item {
         ServerLevel serverLevel = (ServerLevel) level;
         if (nest) {
             WildNestBlock block = (WildNestBlock) state.getBlock();
-            if (state.getValue(WildNestBlock.RECOVERING)) {
-                int seconds = WildNestBlock.secondsToRecover(level, pos, state);
+            int seconds = WildNestBlock.secondsToRecover(level, pos, state);
+            if (seconds != 0) {
                 player.sendOverlayMessage((seconds > 0
                         ? Component.translatable("message.antcolonies.nest.recovering_in", WildNestBlock.timer(seconds))
                         : Component.translatable("message.antcolonies.nest.recovering")).withStyle(ChatFormatting.GOLD));
@@ -131,17 +131,18 @@ public class TweezersItem extends Item {
             Discovery.species(player, colony.species());
             player.getInventory().placeItemBackInInventory(eggs, Prediction.SERVER_ONLY);
         } else {
-            int count = (int) Math.min(AntSample.pinch(), colony.workers() - colony.maintenanceWorkers());
-            if (count <= 0) {
+            // From a colony that is changing species, the former species' ants come out first, as what they are.
+            Colony.Taken taken = colony.nextTaken((int) Math.min(AntSample.pinch(), colony.workers() - colony.maintenanceWorkers()));
+            if (taken.count() <= 0) {
                 player.sendOverlayMessage(Component.translatable("message.antcolonies.tweezers.no_workers").withStyle(ChatFormatting.RED));
                 return InteractionResult.FAIL;
             }
-            ItemStack caught = antTube(new AntSample(colony.species(), Caste.WORKER, count));
+            ItemStack caught = antTube(new AntSample(taken.species(), Caste.WORKER, taken.count()));
             name = caught.getHoverName();
             if (!store(player, caught)) {
                 return InteractionResult.FAIL;
             }
-            colony.addWorkers(-count);
+            colony.take(taken);
         }
         be.setChanged();
         be.syncNow();
@@ -185,17 +186,17 @@ public class TweezersItem extends Item {
     /** The Terrarium's take button: up to a tube's worth ({@link AntSample#MAX}) of the colony's workers, into a Test Tube. */
     public static boolean takeFromColony(Player player, TerrariumBlockEntity terrarium) {
         Colony colony = terrarium.colony();
-        int count = (int) Math.min(AntSample.MAX, colony.workers());
-        if (count <= 0) {
+        Colony.Taken taken = colony.nextTaken(AntSample.MAX);
+        if (taken.count() <= 0) {
             player.sendOverlayMessage(Component.translatable("message.antcolonies.tweezers.no_workers").withStyle(ChatFormatting.RED));
             return false;
         }
-        ItemStack caught = antTube(new AntSample(colony.species(), Caste.WORKER, count));
+        ItemStack caught = antTube(new AntSample(taken.species(), Caste.WORKER, taken.count()));
         Component name = caught.getHoverName();
         if (!store(player, caught)) {
             return false;
         }
-        colony.addWorkers(-count);
+        colony.take(taken);
         player.level().playSound(null, player.blockPosition(), ModSounds.CAPTURE.get(), SoundSource.PLAYERS, 0.6F, 1.3F);
         player.sendOverlayMessage(Component.translatable("message.antcolonies.tweezers.caught", name).withStyle(ChatFormatting.GREEN));
         terrarium.setChanged();

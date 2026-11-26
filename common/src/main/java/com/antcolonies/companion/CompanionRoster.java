@@ -183,8 +183,17 @@ public final class CompanionRoster extends SavedData {
         }
     }
 
-    /** A player who left is not waiting for anyone. */
-    void dropCalls(UUID owner) {
-        called.keySet().removeIf(id -> !entries.containsKey(id) || entries.get(id).owner().equals(owner));
+    /** A player who left is not waiting for anyone: their calls end, and each one's pheromone comes back. */
+    void dropCalls(ServerPlayer player) {
+        for (UUID id : List.copyOf(called.keySet())) {
+            Entry entry = entries.get(id);
+            if (entry != null && !entry.owner().equals(player.getUUID())) {
+                continue;
+            }
+            called.remove(id);
+            if (entry != null && !player.hasInfiniteMaterials()) {
+                Companions.give(player, new ItemStack(ModItems.RALLY_PHEROMONE.get()));
+            }
+        }
     }
 }

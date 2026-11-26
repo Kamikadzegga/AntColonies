@@ -87,7 +87,7 @@ public final class ColonyAccess {
     }
 
     public static void countLaid(Colony colony, double count) {
-        colony.totalLaid += (long) count;
+        colony.totalLaid += count;
     }
 
     public static void killQueen(Colony colony) {

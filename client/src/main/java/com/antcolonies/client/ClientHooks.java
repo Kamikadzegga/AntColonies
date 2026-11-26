@@ -2,6 +2,7 @@ package com.antcolonies.client;
 
 import com.antcolonies.content.block.ColonyEntityBlock;
 import com.antcolonies.content.blockentity.GeneticLabBlockEntity;
+import com.antcolonies.content.blockentity.ConnectorSettings;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.content.blockentity.TerrariumBlockEntity;
 import com.antcolonies.client.screen.CompanionRosterScreen;
@@ -18,6 +19,7 @@ import com.antcolonies.colony.research.KnowledgePayload;
 import com.antcolonies.colony.model.StructureKind;
 import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.core.registry.ModParticles;
+import com.antcolonies.core.registry.ModBlocks;
 import com.antcolonies.core.registry.ModSounds;
 import com.antcolonies.colony.species.AntLook;
 
@@ -29,9 +31,13 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The client-only calls common code makes. Only this class touches client classes; a dedicated server never calls it. */
@@ -116,6 +122,9 @@ public final class ClientHooks {
         if (level == null) {
             return;
         }
+        if (structure.kind() == StructureKind.COLONY_CONNECTOR) {
+            connectorLinks(structure, level);
+        }
         if (!ColonyPartBlock.upright(structure.getBlockState())) {
             flatSiteTick(structure);
             return;
@@ -146,6 +155,41 @@ public final class ClientHooks {
             structure.clientVisuals = visuals;
         }
         visuals.tick(brief, host(level, pos, facing, home), near(pos, AntConfig.client(AntConfig.VISUAL_DISTANCE) + 8));
+    }
+
+    /** Sparks running from a sending Colony Connector to each connector it sends to, for a player holding or looking at one. */
+    private static void connectorLinks(StructureBlockEntity connector, Level level) {
+        ConnectorSettings settings = connector.connector();
+        if (settings == null || settings.targets.isEmpty() || !AntConfig.client(AntConfig.PARTICLES) || !mindsConnectors(level)) {
+            return;
+        }
+        int color = ARGB.opaque(DyeColor.byId(settings.channel).getTextureDiffuseColor());
+        BlockPos from = connector.getBlockPos();
+        for (BlockPos to : settings.targets) {
+            double dx = to.getX() - from.getX();
+            double dy = to.getY() - from.getY();
+            double dz = to.getZ() - from.getZ();
+            double length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            // A spark every three blocks, each a quarter block further every tick, on an arc over what stands between.
+            for (double at = (level.getGameTime() % 12) * 0.25; at < length; at += 3) {
+                double along = at / length;
+                double lift = Math.sin(Math.PI * along) * Math.min(2.5, length * 0.12);
+                level.addParticle(ColorParticleOption.create(ModParticles.SPARKLE.get(), color), from.getX() + 0.5 + dx * along,
+                        from.getY() + 1.1 + dy * along + lift, from.getZ() + 0.5 + dz * along, 0, 0, 0);
+            }
+        }
+    }
+
+    /** Whether the player holds a Colony Connector or looks at one. */
+    private static boolean mindsConnectors(Level level) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) {
+            return false;
+        }
+        Item item = ModBlocks.STRUCTURES.get(StructureKind.COLONY_CONNECTOR).get().asItem();
+        return minecraft.player.getMainHandItem().is(item) || minecraft.player.getOffhandItem().is(item)
+                || minecraft.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK
+                && level.getBlockEntity(hit.getBlockPos()) instanceof StructureBlockEntity looked && looked.kind() == StructureKind.COLONY_CONNECTOR;
     }
 
     /** A job site in a flat colony: its working ants go about their work while someone is near enough to see them. */

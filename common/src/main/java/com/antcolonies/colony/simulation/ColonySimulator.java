@@ -46,8 +46,8 @@ import org.jspecify.annotations.Nullable;
 
 /** One simulation step of a colony, {@code dt} minutes long, worked out from the colony's numbers and its connected structures. */
 public final class ColonySimulator {
-    /** At most this many finds per site and step, so a long catch-up can't stall the server. */
-    private static final int MAX_ROLLS = 256;
+    /** At most this many finds per site and step, so a long catch-up can't stall the server; what is over waits for the next steps. */
+    public static final int MAX_ROLLS = 256;
 
     /** A Terrarium alone has room for at least this many larvae, however small its capacity is set. */
     private static final double MIN_LARVAE_CAPACITY = 20;
@@ -420,7 +420,7 @@ public final class ColonySimulator {
         if (colony.queen() == null) {
             step.status |= ColonyStatus.NO_QUEEN.bit();
         }
-        if (StructureKind.SITE_STORES.stream().anyMatch(kind -> !step.of(kind).isEmpty()) || !step.of(StructureKind.HARVESTING_SITE).isEmpty()) {
+        if (StructureKind.SITE_STORES.stream().anyMatch(kind -> !step.of(kind).isEmpty())) {
             if (allocation.assignedWorkers() == 0) {
                 step.status |= ColonyStatus.NO_WORKERS.bit();
             }
@@ -428,11 +428,7 @@ public final class ColonySimulator {
         if (step.count(StructureKind.NEST_CHAMBER) == 0 && colony.queen() != null) {
             step.status |= ColonyStatus.NO_NEST_CHAMBER.bit();
         }
-        if (allocation.assigned(StructureKind.HARVESTING_SITE) > 0 && !step.species.farming().harvest().isEmpty()
-                && step.of(StructureKind.STORAGE).isEmpty() && StructureKind.FORAGING_KINDS.stream().allMatch(kind -> step.of(kind).isEmpty())) {
-            // The harvest needs somewhere to go: a Storage, or a Foraging Site's small store.
-            step.status |= ColonyStatus.NO_STORAGE.bit();
-        }
+
         if (bred.full()) {
             step.status |= ColonyStatus.POPULATION_FULL.bit();
         }
@@ -545,11 +541,13 @@ public final class ColonySimulator {
             double rate = AntConfig.get(AntConfig.SCAVENGE_ROLLS) * step.species.production().rate() * step.effective(site) * bonus
                     * step.healthFactor * step.foodFactor;
             site.setRate(rate);
-            ForagingMode mode = entity.mode();
-            if (mode != ForagingMode.BALANCED && step.species.production().outputs().stream()
-                    .noneMatch(output -> output.minStage() <= ColonyAccess.stage(step.colony) && output.available() && mode.wants(output))) {
+            ForagingMode wanted = entity.mode();
+            ForagingMode mode = wanted;
+            if (wanted != ForagingMode.BALANCED && step.species.production().outputs().stream()
+                    .noneMatch(output -> output.minStage() <= ColonyAccess.stage(step.colony) && output.available() && wanted.wants(output))) {
                 // Nothing of the kind it looks for: it gathers as if Balanced, and says so.
                 site.addStatus(ColonyStatus.NOTHING_TO_FOCUS);
+                mode = ForagingMode.BALANCED;
             }
             double rolls = rollOutputs(step, entity, rate, site, from -> from.production().outputs(), false, mode);
             trail(step, entity, (int) rolls);
@@ -706,7 +704,7 @@ public final class ColonySimulator {
                 progress -= 1;
                 rolls++;
             }
-            entity.setProgress(Math.min(progress, MAX_ROLLS));
+            entity.setProgress(progress);
             return rolls;
         }
     }
@@ -752,7 +750,7 @@ public final class ColonySimulator {
                 progress -= 1;
                 rolls++;
             }
-            entity.setProgress(Math.min(progress, MAX_ROLLS));
+            entity.setProgress(progress);
             return rolls;
         }
 
@@ -778,36 +776,49 @@ public final class ColonySimulator {
                                       ForagingMode mode) {
         double progress = entity.progress() + rate * step.dt;
         int rolls = 0;
+        // Turns of former-species ants with nothing to find here: each uses up its turn and counts towards the step's limit.
+        int passed = 0;
         Identifier speciesId = step.colony.species();
         int processingTier = harvest ? 0 : entity.speciesUpgradeTier(speciesId, SpeciesUpgradeKind.PROCESSING);
         int efficiencyTier = harvest ? 0 : entity.speciesUpgradeTier(speciesId, SpeciesUpgradeKind.EFFICIENCY);
         double gathering = ProductionMath.bonus(step.trait(Trait.GATHERING_EFFICIENCY) * step.effects.gathering());
         double specialWeight = ProductionMath.bonus(step.trait(Trait.SPECIALIZATION) * step.effects.special() * (1 + RARE_FINDS_PER_EFFICIENCY_TIER * efficiencyTier));
         int stage = ColonyAccess.stage(step.colony);
-        while (progress >= 1 && rolls < MAX_ROLLS) {
+        while (progress >= 1 && rolls + passed < MAX_ROLLS) {
             AntSpecies from = step.former != null && step.random.nextDouble() >= step.colony.conversion() ? step.former : step.species;
             List<SpeciesOutput> outputs = source.apply(from);
             SpeciesOutput output = pickOutput(outputs, stage, specialWeight, step.random, mode);
             if (output == null) {
+                if (from != step.species) {
+                    progress -= 1;
+                    passed++;
+                    continue;
+                }
                 progress = Math.min(progress, 1);
                 break;
             }
             // Gathering brings more of the common finds; a rare (special) find is one find.
             int count = output.special() ? output.count() : (int) Math.floor(output.count() * gathering + step.random.nextDouble());
             ItemStack stack;
+            // Processing credit this find adds, and what its processed items use up once they are stored.
+            double added = 0;
+            double spent = 0;
             if (processingTier > 0 && output.processed().isPresent()) {
                 // Processing: finds pile up as credit, paid out in processed form with a bonus.
-                double credit = entity.addProcessingCredit(output, count * (1 + AntConfig.get(AntConfig.SPECIES_UPGRADE_BONUS) * processingTier));
+                added = count * (1 + AntConfig.get(AntConfig.SPECIES_UPGRADE_BONUS) * processingTier);
+                double credit = entity.addProcessingCredit(output, added);
                 int made = (int) (credit / output.ratio());
                 stack = made > 0 ? new ItemStack(output.processed().get(), made) : ItemStack.EMPTY;
-                if (made > 0) {
-                    entity.addProcessingCredit(output, -made * output.ratio());
-                }
+                spent = made * output.ratio();
             } else {
                 stack = count > 0 ? output.create(count) : ItemStack.EMPTY;
             }
             if (!stack.isEmpty()) {
                 if (!ColonyStorage.canFit(step.level, step.colony, List.of(stack), entity)) {
+                    if (added > 0) {
+                        // The find is not made: its credit is taken back, the credit from before stays.
+                        entity.addProcessingCredit(output, -added);
+                    }
                     site.addStatus(ColonyStatus.STORAGE_FULL);
                     step.status |= ColonyStatus.STORAGE_FULL.bit();
                     progress = 1;
@@ -815,11 +826,14 @@ public final class ColonySimulator {
                 }
                 ColonyStorage.insert(step.level, step.colony, stack, entity);
                 ColonyAccess.countFound(step.colony, stack.getCount());
+                if (spent > 0) {
+                    entity.addProcessingCredit(output, -spent);
+                }
             }
             progress -= 1;
             rolls++;
         }
-        entity.setProgress(Math.min(progress, MAX_ROLLS));
+        entity.setProgress(progress);
         return rolls;
     }
 

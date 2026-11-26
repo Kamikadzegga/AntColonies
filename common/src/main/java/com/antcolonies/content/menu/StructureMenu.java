@@ -3,6 +3,7 @@ package com.antcolonies.content.menu;
 import com.antcolonies.content.blockentity.ConnectorSettings;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.colony.model.StructureKind;
+import com.antcolonies.core.config.AntConfig;
 import com.antcolonies.core.registry.ModBlocks;
 import com.antcolonies.core.registry.ModItems;
 import com.antcolonies.core.registry.ModMenus;
@@ -31,20 +32,32 @@ public class StructureMenu extends BaseMenu {
     public static final int CYCLE_MODE = 7;
     public static final int TOGGLE = 8;
     public static final int CYCLE_PRIORITY = 9;
-    /** Colony Connectors: channel (CHANNEL + colour), food mode, reserve and target -/+, rate limit, item mode. */
+    /** Colony Connectors: channel (CHANNEL + colour), food mode, reserve and target -/+, the next sending order, item mode. */
     public static final int CHANNEL = 20;
     public static final int FOOD_MODE = 40;
     public static final int RESERVE_LESS = 43;
     public static final int RESERVE_MORE = 44;
     public static final int TARGET_LESS = 45;
     public static final int TARGET_MORE = 46;
-    public static final int CYCLE_RATE = 47;
+    public static final int CYCLE_ORDER = 47;
     public static final int ITEM_MODE = 50;
-    private static final int LAST_ACTION = 52;
+    /** Colony Connectors: package sizes and speed -/+, the other filter mode, a filter slot's stock -/+ (STOCK + slot). */
+    public static final int FOOD_PACKAGE_LESS = 53;
+    public static final int FOOD_PACKAGE_MORE = 54;
+    public static final int ITEM_PACKAGE_LESS = 55;
+    public static final int ITEM_PACKAGE_MORE = 56;
+    public static final int SLOWER = 57;
+    public static final int FASTER = 58;
+    public static final int FILTER_MODE = 59;
+    public static final int STOCK_LESS = 60;
+    public static final int STOCK_MORE = 70;
+    private static final int LAST_ACTION = STOCK_MORE + ConnectorSettings.FILTER_SLOTS - 1;
     public static final int UPGRADE_X = 184;
     public static final int STORE_Y = 88;
-    /** Where a Colony Connector's filter slots are: under its settings and the two lines of what it moved. */
-    public static final int FILTER_Y = 121;
+    /** A Colony Connector's screen is wider than the other chambers'; its filter slots and the inventory sit in its middle. */
+    public static final int CONNECTOR_WIDTH = 252;
+    public static final int CONNECTOR_SLOT_X = 45;
+    public static final int FILTER_Y = 137;
 
     /** Menu button ids from here on scroll a Storage: SCROLL + the first row to show. */
     public static final int SCROLL = 100;
@@ -72,15 +85,20 @@ public class StructureMenu extends BaseMenu {
                             () -> window.storageSlot(s) < data.get(StructureBlockEntity.DATA_UNLOCKED)));
                 }
             }
-            case FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER, HUNTING_GROUND -> {
+            case FORAGING_SITE, NETHER_FORAGING_SITE, END_FORAGING_SITE, LIQUID_CHAMBER, HUNTING_GROUND, HARVESTING_SITE -> {
                 for (int slot = 0; slot < kind.slots(); slot++) {
                     addSlot(new FilteredSlot(structure, slot, 8 + slot * 18, STORE_Y, stack -> true, 64));
                 }
             }
             case COLONY_CONNECTOR -> {
-                // The filter: one of each item to send (they stay in the connector).
+                // The filter only names items: nothing goes in or comes out, a click marks the slot (see clicked).
                 for (int slot = 0; slot < kind.slots(); slot++) {
-                    addSlot(new FilteredSlot(structure, slot, 8 + slot * 18, FILTER_Y, stack -> true, 1));
+                    addSlot(new FilteredSlot(structure, slot, CONNECTOR_SLOT_X + slot * 18, FILTER_Y, stack -> false, 1) {
+                        @Override
+                        public boolean mayPickup(Player player) {
+                            return false;
+                        }
+                    });
                 }
             }
             case QUEEN_CHAMBER -> {
@@ -109,7 +127,7 @@ public class StructureMenu extends BaseMenu {
                 }
             });
         }
-        addPlayerInventory(inventory, 8, inventoryY(kind));
+        addPlayerInventory(inventory, kind == StructureKind.COLONY_CONNECTOR ? CONNECTOR_SLOT_X : 8, inventoryY(kind));
         addDataSlots(WideData.slots(data));
     }
 
@@ -123,7 +141,7 @@ public class StructureMenu extends BaseMenu {
 
     public static int inventoryY(StructureKind kind) {
         if (kind == StructureKind.COLONY_CONNECTOR) {
-            return 161;
+            return 170;
         }
         if (kind == StructureKind.STORAGE) {
             return 152;
@@ -184,6 +202,10 @@ public class StructureMenu extends BaseMenu {
     /** Shift-clicking into a Storage fills the whole Storage, not only the rows on screen: slots holding the item first. */
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
+        if (structure.kind() == StructureKind.COLONY_CONNECTOR) {
+            markFilter(slots.get(index).getItem());
+            return ItemStack.EMPTY;
+        }
         if (window == null || index < blockSlots || structure.acceptsUpgrade(slots.get(index).getItem()) || !slots.get(index).hasItem()) {
             return super.quickMoveStack(player, index);
         }
@@ -267,13 +289,28 @@ public class StructureMenu extends BaseMenu {
             settings.foodMode = action - FOOD_MODE;
         } else if (action >= ITEM_MODE && action <= ITEM_MODE + 2) {
             settings.itemMode = action - ITEM_MODE;
+        } else if (action >= STOCK_LESS && action < STOCK_LESS + ConnectorSettings.FILTER_SLOTS) {
+            settings.stepStock(action - STOCK_LESS, -1);
+        } else if (action >= STOCK_MORE && action < STOCK_MORE + ConnectorSettings.FILTER_SLOTS) {
+            if (!site.getItem(action - STOCK_MORE).isEmpty()) {
+                settings.stepStock(action - STOCK_MORE, 1);
+            }
         } else {
+            int foodCap = AntConfig.get(AntConfig.CONNECTOR_FOOD_PACKAGE);
+            int itemCap = AntConfig.get(AntConfig.CONNECTOR_ITEM_PACKAGE);
             switch (action) {
                 case RESERVE_LESS -> settings.reserve = Math.max(0, settings.reserve - 5);
                 case RESERVE_MORE -> settings.reserve = Math.min(100, settings.reserve + 5);
                 case TARGET_LESS -> settings.target = Math.max(0, settings.target - 5);
                 case TARGET_MORE -> settings.target = Math.min(100, settings.target + 5);
-                case CYCLE_RATE -> settings.rateLimit = (settings.rateLimit + 1) % ConnectorSettings.RATES.length;
+                case CYCLE_ORDER -> settings.order = (settings.order + 1) % 3;
+                case FOOD_PACKAGE_LESS -> settings.foodPackage = Math.max(0, settings.foodPackage - 1);
+                case FOOD_PACKAGE_MORE -> settings.foodPackage = larger(ConnectorSettings.FOOD_PACKAGES, settings.foodPackage, foodCap);
+                case ITEM_PACKAGE_LESS -> settings.itemPackage = Math.max(0, settings.itemPackage - 1);
+                case ITEM_PACKAGE_MORE -> settings.itemPackage = larger(ConnectorSettings.ITEM_PACKAGES, settings.itemPackage, itemCap);
+                case SLOWER -> settings.interval = Math.max(0, settings.interval - 1);
+                case FASTER -> settings.interval = Math.min(ConnectorSettings.INTERVALS.length - 1, settings.interval + 1);
+                case FILTER_MODE -> settings.filterMode = 1 - settings.filterMode;
                 default -> {
                     return;
                 }
@@ -282,9 +319,53 @@ public class StructureMenu extends BaseMenu {
         site.connectorChanged();
     }
 
+    /** The next package size up, unless the config's cap makes it no larger. */
+    private static int larger(int[] sizes, int index, int cap) {
+        return index + 1 < sizes.length && sizes[index] < cap ? index + 1 : index;
+    }
+
+    /** Names an item in the first free filter slot of a Colony Connector, unless the filter already names it. */
+    private void markFilter(ItemStack stack) {
+        int free = -1;
+        for (int slot = ConnectorSettings.FILTER_SLOTS - 1; slot >= 0; slot--) {
+            ItemStack named = structure.getItem(slot);
+            if (ItemStack.isSameItemSameComponents(named, stack)) {
+                return;
+            }
+            if (named.isEmpty()) {
+                free = slot;
+            }
+        }
+        if (free >= 0 && !stack.isEmpty()) {
+            structure.setFilter(free, stack);
+        }
+    }
+
+    /** A player's new name for the Colony Connector whose screen they have open. */
+    public void rename(Player player, String name) {
+        ConnectorSettings settings = structure.connector();
+        if (settings != null && stillValid(player)) {
+            settings.name = ConnectorSettings.clean(name);
+            structure.connectorChanged();
+        }
+    }
+
+    /** Dragging a stack over a connector's filter leaves it alone. */
+    @Override
+    public boolean canDragTo(Slot slot) {
+        return !(structure.kind() == StructureKind.COLONY_CONNECTOR && slot.container == structure) && super.canDragTo(slot);
+    }
+
     /** Swapping a hotbar slot with a Storage slot that holds more than a stack would put it all in the hotbar: not allowed. */
     @Override
     public void clicked(int slotId, int button, ContainerInput clickType, Player player) {
+        if (structure.kind() == StructureKind.COLONY_CONNECTOR && slotId >= 0 && slotId < ConnectorSettings.FILTER_SLOTS) {
+            // A filter slot: a click with an item names it, a click with an empty hand (or a shift-click) clears the slot.
+            if (clickType == ContainerInput.PICKUP || clickType == ContainerInput.QUICK_MOVE) {
+                structure.setFilter(slotId, clickType == ContainerInput.QUICK_MOVE ? ItemStack.EMPTY : getCarried());
+            }
+            return;
+        }
         if (clickType == ContainerInput.SWAP && slotId >= 0 && slotId < slots.size()
                 && slots.get(slotId) instanceof StorageSlot storage && storage.overfull()) {
             return;

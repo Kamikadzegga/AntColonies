@@ -3,19 +3,33 @@ package com.antcolonies.colony.resource;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.antcolonies.AntColonies;
 import com.antcolonies.colony.model.ColonyAccess;
 import com.antcolonies.content.blockentity.StructureBlockEntity;
 import com.antcolonies.colony.model.Colony;
 import com.antcolonies.colony.model.StructureKind;
+import com.antcolonies.core.registry.ModDataMaps;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
 
 /** A colony's stores as one: finds go to Storage first, then into the small stores of its job sites. */
 public final class ColonyStorage {
+    /** Items a colony never eats from its stores. */
+    public static final TagKey<Item> KEPT_IN_STORAGE = TagKey.create(Registries.ITEM, AntColonies.id("kept_in_storage"));
+
+    /** The colony food in one of these items; 0 for what a colony doesn't eat from its stores. */
+    public static double foodValue(ItemStack stack) {
+        ModDataMaps.AntFood value = stack.isEmpty() || stack.is(KEPT_IN_STORAGE) ? null : ModDataMaps.food(stack);
+        return value == null ? 0 : value.food();
+    }
+
     /** The stores in the order finds go into them: Storage, then {@code from} (the site that found it, or null), then the other sites. */
     public static List<StructureBlockEntity> piles(ServerLevel level, Colony colony, @Nullable StructureBlockEntity from) {
         List<StructureBlockEntity> piles = new ArrayList<>(storages(level, colony));

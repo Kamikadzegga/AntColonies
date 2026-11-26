@@ -59,8 +59,8 @@ public final class AntConfig {
 
     // --- Colony Connectors ---
     public static final ModConfigSpec.IntValue CONNECTOR_INTERVAL;
-    public static final ModConfigSpec.IntValue CONNECTOR_FOOD_RATE;
-    public static final ModConfigSpec.IntValue CONNECTOR_ITEM_RATE;
+    public static final ModConfigSpec.IntValue CONNECTOR_FOOD_PACKAGE;
+    public static final ModConfigSpec.IntValue CONNECTOR_ITEM_PACKAGE;
     public static final ModConfigSpec.IntValue CONNECTOR_RANGE;
 
     // --- Production ---
@@ -304,10 +304,10 @@ public final class AntConfig {
 
         s.push("connectors");
         CONNECTOR_INTERVAL = s.comment("Ticks between Colony Connector transfers.").defineInRange("transferInterval", 20, 5, 1200);
-        CONNECTOR_FOOD_RATE = s.comment("Most food one Colony Connector moves per minute (its own setting can be lower).")
-                .defineInRange("maxFoodPerMinute", 3000, 1, 10_000_000);
-        CONNECTOR_ITEM_RATE = s.comment("Most items one sending Colony Connector moves out of its colony's Storage per minute.")
-                .defineInRange("maxItemsPerMinute", 256, 0, 100_000);
+        CONNECTOR_FOOD_PACKAGE = s.comment("Most food in one package a Colony Connector sends (its own setting can be lower).")
+                .defineInRange("maxFoodPackage", 2500, 1, 10_000_000);
+        CONNECTOR_ITEM_PACKAGE = s.comment("Most items in one package a Colony Connector sends (its own setting can be lower).")
+                .defineInRange("maxItemPackage", 256, 0, 100_000);
         CONNECTOR_RANGE = s.comment("How far apart two Colony Connectors may be and still link: at most this many blocks apart on x and on z",
                         "(height doesn't count). Connectors further apart on the same channel don't trade.")
                 .defineInRange("connectorRange", 30, 1, 100_000);

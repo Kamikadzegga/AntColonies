@@ -15,6 +15,7 @@ import com.antcolonies.core.registry.ModDataComponents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
@@ -123,13 +124,18 @@ public class TerrariumBlock extends ColonyPartBlock {
                     .withStyle(ChatFormatting.RED));
             return false;
         }
-        if (!colony.takeWorkers(cost)) {
+        if (colony.workers() < cost) {
             player.sendOverlayMessage(Component.translatable("message.antcolonies.guard.ants", cost, colony.workers())
                     .withStyle(ChatFormatting.RED));
             return false;
         }
+        // In a colony changing species the former species' ants go first: enough of them make a Guard Ant of their own kind.
+        Colony.Taken recruits = colony.nextTaken(cost);
+        Identifier species = recruits.count() >= cost ? recruits.species() : colony.species();
+        colony.take(recruits);
+        colony.take(new Colony.Taken(colony.species(), cost - recruits.count()));
         int strength = colony.queen().genome().level(Trait.SOLDIER_STRENGTH);
-        ItemStack tube = GuardAntItem.recruit(level, colony.species(), Math.clamp(strength, 1, 10));
+        ItemStack tube = GuardAntItem.recruit(level, species, Math.clamp(strength, 1, 10));
         pheromone.consume(1, player);
         player.getInventory().placeItemBackInInventory(tube, Prediction.SERVER_ONLY);
         player.sendOverlayMessage(Component.translatable("message.antcolonies.guard.recruited", cost)

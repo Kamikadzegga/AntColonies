@@ -86,6 +86,7 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HomeNestBlockEntity nest) {
+        WildNestBlock.recover(level, pos, state, nest);
         if (!(level instanceof ServerLevel server) || level.getGameTime() % 20 != 0) {
             return;
         }
@@ -194,7 +195,10 @@ public class HomeNestBlockEntity extends BlockEntity implements WorldlyContainer
         ant.setCaste(Caste.WORKER);
         ant.snapTo(exit.getX() + 0.5, exit.getY(), exit.getZ() + 0.5, level.getRandom().nextFloat() * 360, 0);
         ant.setNest(worldPosition);
-        level.addFreshEntity(ant);
+        // An ant the world did not take (another mod refused it) never went out.
+        if (!level.addFreshEntity(ant)) {
+            return null;
+        }
         inside--;
         out++;
         setChanged();

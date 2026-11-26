@@ -250,7 +250,8 @@ public enum AnthillTheme {
         double body = switch (shape) {
             case CONE, LOW -> f >= 1 ? 0 : shape.height * (1 - f * f);
             case DOME -> f >= 1 ? 0 : shape.height * Math.sqrt(1 - f * f);
-            case MOSSY -> f >= 1 ? 0 : shape.height * (1 - Math.pow(f, 1.5));
+            // By the entrance the noise takes f under 0, and a power of that is no number: the mound is at its full height there.
+            case MOSSY -> f >= 1 ? 0 : shape.height * (1 - Math.pow(Math.max(0, f), 1.5));
             // A ring of dug-out earth round the entrance, pebbles piled on it.
             case CRATER -> f >= 1.15 ? 0 : shape.height * Math.exp(-Math.pow((f - 0.55) / 0.24, 2));
             case SPIRES -> f >= 1 ? 0 : shape.height * (1 - f * f);

@@ -162,7 +162,8 @@ Craft a **Rally Pheromone** (Test Tube, Chitin Plate, sugar, redstone), then eit
 - **Use it on a Formicarium** with a Queen and at least 50 ants. The colony loses the ants and you get one soldier of
   its species in a tube, as strong as the Queen's Hunting Strength (1 to 10). Use the tube on a block to let it out.
 
-Guard Ants from older worlds, let out or in a tube, go on as companions with all they had.
+Guard Ants from before this update carry over, whether they are out in the world or in a tube: each keeps its species
+and strength.
 
 ### Looking after it
 

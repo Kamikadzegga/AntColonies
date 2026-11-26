@@ -18,11 +18,14 @@ import com.antcolonies.colony.species.AntSpecies;
 import com.antcolonies.colony.species.Cost;
 import com.antcolonies.colony.upgrade.UpgradeType;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import org.jspecify.annotations.Nullable;
 
 /** Queen Chambers raise new Queens: a daughter of the colony's Queen, crossed with a Genetic Sample if one is given. */
@@ -149,7 +152,7 @@ public final class QueenRearing {
         double mutationBonus = 1 + 0.25 * chamber.upgradeTier(UpgradeType.GENETIC);
         Genome genome = Genetics.daughter(queen.genome(), sample == null ? null : sample.genome(), daughterSpecies, level.getRandom(),
                 level.registryAccess(), daughterData.category(), mutationBonus);
-        consumeMaterials(chamber, species);
+        consumeMaterials(level, chamber, species);
         chamber.getItem(StructureKind.QUEEN_CHAMBER_TUBE).shrink(1);
         if (sample != null) {
             sampleStack.shrink(1);
@@ -190,15 +193,27 @@ public final class QueenRearing {
         return true;
     }
 
-    private static void consumeMaterials(StructureBlockEntity chamber, AntSpecies species) {
+    /** Uses the rearing materials up. What one leaves behind (a honey bottle's bottle) stays in its emptied slot, or drops on top. */
+    private static void consumeMaterials(ServerLevel level, StructureBlockEntity chamber, AntSpecies species) {
         for (Cost cost : species.rearing().cost()) {
             int left = cost.count();
             for (int slot = 0; slot < StructureKind.QUEEN_CHAMBER_MATERIALS && left > 0; slot++) {
                 ItemStack stack = chamber.getItem(slot);
                 if (cost.test(stack)) {
                     int taken = Math.min(left, stack.getCount());
+                    ItemStackTemplate remainder = stack.getCraftingRemainder();
                     stack.shrink(taken);
                     left -= taken;
+                    if (remainder != null) {
+                        ItemStack leftover = remainder.create();
+                        leftover.setCount(taken);
+                        if (chamber.getItem(slot).isEmpty()) {
+                            chamber.setItem(slot, leftover);
+                        } else {
+                            BlockPos pos = chamber.getBlockPos();
+                            Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, leftover);
+                        }
+                    }
                 }
             }
         }
